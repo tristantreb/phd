@@ -51,5 +51,24 @@ def gaussianSample(moments=[0, 1], nDecimals=2):
     return round(np.random.normal(loc=moments[0], scale=moments[1]), nDecimals)
 
 
-def normalise_list(input_list):
-    return [x / sum(input_list) for x in input_list]
+def normalise(input_dict):
+    """
+    :param input_dict: a one layer dictionary
+    :return: dictionary with normalised values
+    """
+    values = np.array(list(input_dict.values()))
+    return dict(zip(input_dict.keys(), values / sum(values)))
+
+
+def get_second_level_keys(cpt_B_A, init_value=0):
+    """
+    returns a dict with second level keys and values set to init_value
+    """
+    return {key: init_value for key in cpt_B_A[next(iter(cpt_B_A))]}
+
+
+def get_first_level_keys(cpt_B_A, init_value=0):
+    """
+    returns a dict with first level keys and values set to init_value
+    """
+    return {key: init_value for key in cpt_B_A.keys()}
