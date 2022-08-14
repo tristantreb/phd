@@ -51,6 +51,17 @@ def gaussianSample(moments=[0, 1], nDecimals=2):
     return round(np.random.normal(loc=moments[0], scale=moments[1]), nDecimals)
 
 
+def get_stochastic_vector(cpt, obs):
+    """
+
+    :param cpt: conditional probability table P(A|B)
+    :param obs: observed value in B
+    :return:
+    """
+    return [cpt[key][obs] for key in cpt.keys()]
+
+
+
 def normalise(input_dict):
     """
     :param input_dict: a one layer dictionary
