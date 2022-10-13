@@ -88,3 +88,19 @@ def create_date_range(start, end):
     # start >= end, which does not make sense
     else:
         return []
+
+
+# Applies the right label to the measurement
+def add_measurement_exacerbation_label(measurement_date, exacerbation_labels):
+    recovery_days = exacerbation_labels['recovery_period']
+    exacerbated_days = exacerbation_labels['exacerbated_period']
+    stable_days = exacerbation_labels['not_exacerbated_period']
+
+    if measurement_date in recovery_days:
+        return "Recovery Period"
+    elif measurement_date in exacerbated_days:
+        return "Exacerbation Period"
+    elif measurement_date in stable_days:
+        return "Stable Period"
+    else:
+        return "Undefined Period"
