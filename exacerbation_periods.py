@@ -1,8 +1,39 @@
 from datetime import timedelta
+import pandas as pd
+
+# This document contains two ways to compute exacerbation labels, which are exacerbated, not exacerbated, in recovery
+# 1. Is with the results of the predictive classifier from the work done by Damian
+# 2. Is using a rule of thumb for when the patients are in which state. We define:
+#     - Exacerbated from 1 week days before treatment start, excluding treatment start day
+#     - Not exacerbated as until 3 weeks before treatment start
+#     - Recovery: during treatment
+#     - Between 3 and 1 week before treatment start is thrown away.
 
 one_day = timedelta(days=1)
 
 
+# Method 1 using the predictive classifier
+def get_pred_ex_labels(dir):
+    # Get exacerbation labels from the predictive classifier
+    pred_ex_labels = pd.read_csv(dir + "pmFeatureIIndex.csv")
+    pred_ex_labels['Is Exacerbated'] = pd.read_csv(dir + "pmExABxElLabels.csv", dtype=bool)
+
+    # Data types transformation. Use datetime.date for Date recorded and string for ID
+    pred_ex_labels['Date recorded'] = pd.to_datetime(pred_ex_labels['CalcDate']).dt.date
+    pred_ex_labels['ID'] = pred_ex_labels['ID'].astype(str)
+
+    # Set Multi index to prepare the merge with O2_FEV1
+    pred_ex_labels = pred_ex_labels.set_index(['ID', 'Date recorded'])
+
+    # Record the number of rows
+    print(
+        "Exacerbated labels data from the predictive classifier has {} #datapoints, with {} exacerbated and {} not exacerbated measurements".format(
+            pred_ex_labels.shape[0], pred_ex_labels[pred_ex_labels['Is Exacerbated'] == True].shape[0],
+            pred_ex_labels[pred_ex_labels['Is Exacerbated'] == False].shape[0]))
+    return pred_ex_labels
+
+
+# Functions to implement method 2: using rule of thumbs around treatment start/end \dates
 def list_patients(data):
     return data.ID.unique()
 
