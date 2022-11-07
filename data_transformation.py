@@ -13,6 +13,17 @@ def extract_measure(measurements_in, label):
     return measurements_out
 
 
+# Normalise by patients' baseline lung function, which is the avg of stable measurements for that patient
+def normalise_by_stable_baseline(O2_FEV1):
+    # filter stable lung function
+    mask = O2_FEV1["Is Exacerbated"] == True
+    # get avg and std of filtered values
+    avg_lung_function = O2_FEV1[mask][x].mean()
+    std_lung_function = O2_FEV1[mask][x].std()
+    # normalise by mean
+    return O2_FEV1[x].apply(lambda x: (x - avg_lung_function)/std_lung_function)
+
+
 # Functions to partition the data in n balanced groups
 
 # Balance the population density by partitioning the data 3-fold equally
