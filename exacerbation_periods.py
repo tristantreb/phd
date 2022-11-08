@@ -12,6 +12,18 @@ import pandas as pd
 one_day = timedelta(days=1)
 
 
+# Get exacerbation labels from the predictive classifier
+def get_ex_labels_from_pred_classifier(O2_FEV1, pred_ex_labels):
+    # Merge exacerbated labels into O2_FEV1
+    O2_FEV1 = O2_FEV1.merge(pred_ex_labels['Is Exacerbated'], how='left', on=['ID', 'Date recorded'], validate="1:1")
+    tmp = O2_FEV1.shape[0]
+    O2_FEV1.dropna(inplace=True)
+    print(
+        "Dropping {} entries in O2_FEV1 where ex label is NaN after merging with exacerbation labels. {} entries "
+        "remain.".format(
+            tmp - O2_FEV1.shape[0], O2_FEV1.shape[0]))
+
+
 # Method 1 using the predictive classifier
 def get_pred_ex_labels(dir):
     # Get exacerbation labels from the predictive classifier
@@ -24,18 +36,28 @@ def get_pred_ex_labels(dir):
 
     # Set Multi index to prepare the merge with O2_FEV1
     pred_ex_labels = pred_ex_labels.set_index(['ID', 'Date recorded'])
+    pred_ex_labels.dropna(inplace=True)
 
     # Record the number of rows
     print(
-        "Exacerbated labels data from the predictive classifier has {} #datapoints, with {} exacerbated and {} not exacerbated measurements".format(
-            pred_ex_labels.shape[0], pred_ex_labels[pred_ex_labels['Is Exacerbated'] == True].shape[0],
+        "Exacerbated labels data from the predictive classifier has {} #datapoints, with {} exacerbated and {} not "
+        "exacerbated measurements".format(
+            pred_ex_labels.shape[0], pred_ex_labels[pred_ex_labels['Is Exacerbated']].shape[0],
             pred_ex_labels[pred_ex_labels['Is Exacerbated'] == False].shape[0]))
     return pred_ex_labels
 
 
 # Functions to implement method 2: using rule of thumbs around treatment start/end \dates
-def list_patients(data):
-    return data.ID.unique()
+# Compute exacerbation labels
+def compute_ex_labels_from_heuristics(antibioticsdata, patientsdata, O2_FEV1):
+    for id in O2_FEV1.ID.unique():
+        patient_antibioticsdata = get_rows_for_id(id, antibioticsdata)
+        ex_labels = get_patient_ex_labels(patient_antibioticsdata, patientsdata,
+                                          numdays_before_ab_start_is_exacerbated=7,
+                                          numdays_before_ab_start_not_exacerbated=21)
+        O2_FEV1['Exacerbation Labels'] = O2_FEV1['Date recorded'].apply(
+            lambda x: add_measurement_exacerbation_label(x, ex_labels))
+    return O2_FEV1
 
 
 def get_rows_for_id(id, data):
@@ -43,8 +65,8 @@ def get_rows_for_id(id, data):
 
 
 # The patient status can be exacerbated, not exacerbated, in recovery
-def get_patient_exacerbation_labels(patient_antibioticsdata, patientsdata, numdays_before_ab_start_is_exacerbated=7,
-                                    numdays_before_ab_start_not_exacerbated=21):
+def get_patient_ex_labels(patient_antibioticsdata, patientsdata, numdays_before_ab_start_is_exacerbated=7,
+                          numdays_before_ab_start_not_exacerbated=21):
     recovery_period_agg = []
     exacerbated_period_agg = []
     not_exacerbated_period_agg = []
