@@ -12,8 +12,8 @@ import pandas as pd
 one_day = timedelta(days=1)
 
 
-# Get exacerbation labels from the predictive classifier
-def get_ex_labels_from_pred_classifier(O2_FEV1, pred_ex_labels):
+# Merge exacerbation labels from the predictive classifier to O2_FEV1
+def merge_pred_ex_labels_to(O2_FEV1, pred_ex_labels):
     print("Merging exacerbated labels into O2_FEV1")
     O2_FEV1 = O2_FEV1.merge(pred_ex_labels['Is Exacerbated'], how='left', on=['ID', 'Date recorded'], validate="1:1")
     tmp = O2_FEV1.shape[0]
@@ -21,6 +21,7 @@ def get_ex_labels_from_pred_classifier(O2_FEV1, pred_ex_labels):
     print(
         "Dropped {} O2_FEV1 entries with NaN exacerbation label. {} entries remain.".format(
             tmp - O2_FEV1.shape[0], O2_FEV1.shape[0]))
+    return O2_FEV1
 
 
 # Method 1 using the predictive classifier
