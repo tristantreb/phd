@@ -14,13 +14,12 @@ one_day = timedelta(days=1)
 
 # Get exacerbation labels from the predictive classifier
 def get_ex_labels_from_pred_classifier(O2_FEV1, pred_ex_labels):
-    # Merge exacerbated labels into O2_FEV1
+    print("Merging exacerbated labels into O2_FEV1")
     O2_FEV1 = O2_FEV1.merge(pred_ex_labels['Is Exacerbated'], how='left', on=['ID', 'Date recorded'], validate="1:1")
     tmp = O2_FEV1.shape[0]
     O2_FEV1.dropna(inplace=True)
     print(
-        "Dropping {} entries in O2_FEV1 where ex label is NaN after merging with exacerbation labels. {} entries "
-        "remain.".format(
+        "Dropped {} O2_FEV1 entries with NaN exacerbation label. {} entries remain.".format(
             tmp - O2_FEV1.shape[0], O2_FEV1.shape[0]))
 
 
@@ -28,6 +27,7 @@ def get_ex_labels_from_pred_classifier(O2_FEV1, pred_ex_labels):
 def get_pred_ex_labels(dir):
     # Get exacerbation labels from the predictive classifier
     pred_ex_labels = pd.read_csv(dir + "pmFeatureIIndex.csv")
+
     pred_ex_labels['Is Exacerbated'] = pd.read_csv(dir + "pmExABxElLabels.csv", dtype=bool)
 
     # Data types transformation. Use datetime.date for Date recorded and string for ID
@@ -36,14 +36,13 @@ def get_pred_ex_labels(dir):
 
     # Set Multi index to prepare the merge with O2_FEV1
     pred_ex_labels = pred_ex_labels.set_index(['ID', 'Date recorded'])
-    pred_ex_labels.dropna(inplace=True)
 
     # Record the number of rows
     print(
-        "Exacerbated labels data from the predictive classifier has {} #datapoints, with {} exacerbated and {} not "
-        "exacerbated measurements".format(
-            pred_ex_labels.shape[0], pred_ex_labels[pred_ex_labels['Is Exacerbated']].shape[0],
-            pred_ex_labels[pred_ex_labels['Is Exacerbated'] == False].shape[0]))
+        "Exacerbated labels data from the predictive classifier has {} entries ({} exacerbated, {} not "
+        "exacerbated measurements, {} NaN)".format(
+            pred_ex_labels.shape[0], pred_ex_labels[pred_ex_labels['Is Exacerbated'] == True].shape[0],
+            pred_ex_labels[pred_ex_labels['Is Exacerbated'] == False].shape[0], pred_ex_labels[pred_ex_labels['Is Exacerbated'].isna()].shape[0]))
     return pred_ex_labels
 
 
