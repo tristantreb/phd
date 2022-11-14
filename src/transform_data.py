@@ -1,15 +1,6 @@
 import numpy as np
 
 
-# Function to extract one column from the data
-# TODO: check that there's only one measurement per day
-def extract_measure(measurements_in, label):
-    # Could also filter by Recording Type
-    measurements_out = measurements_in[measurements_in[label].notnull()][['ID', 'Date recorded', label]]
-    print("{} contains {} measurements".format(label, measurements_out.shape[0]))
-    return measurements_out
-
-
 # Functions to partition the data in n balanced groups
 
 # Balance the population density by partitioning the data 3-fold equally
