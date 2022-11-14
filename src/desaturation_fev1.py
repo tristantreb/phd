@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from transform_data import *
+from partition import *
 
 
 # Compute FEV1 desaturation, i.e. the threshold of FEV1 at which the O2 starts to desaturate
