@@ -3,4 +3,4 @@
 
 # Jupyter checkpoints
 .ipynb*
-__pycache__
+/src/__pycache__
