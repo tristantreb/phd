@@ -1,19 +1,19 @@
 import numpy as np
 
 
-def norm_by_stable_baseline(O2_FEV1, var_to_normalise):
+def norm_by_stable_baseline(O2_FEV1, var_list):
     """
     Normalise O2_FEV1 vector by stable baseline
     :param O2_FEV1: dataframe with measurements
-    :param var_to_normalise: columns on which to apply normalisation
+    :param var_list: columns on which to apply normalisation
     :return: updated O2_FEV1 dataframe with a new column with suffix "norm"
     """
     patients_ids = O2_FEV1.ID.unique()
-    O2_FEV1["{} norm".format(var_to_normalise)] = np.nan
-    for id in patients_ids:
-        mask_patient = O2_FEV1.ID == id
-        O2_FEV1["{} norm".format(var_to_normalise)][mask_patient] = norm_patient_data(O2_FEV1[mask_patient],
-                                                                                           var_to_normalise, id)
+    for var in var_list:
+        O2_FEV1["{} norm".format(var)] = np.nan
+        for id in patients_ids:
+            mask_patient = O2_FEV1.ID == id
+            O2_FEV1["{} norm".format(var)][mask_patient] = norm_patient_data(O2_FEV1[mask_patient], var, id)
     return O2_FEV1
 
 
