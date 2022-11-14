@@ -1,0 +1,6 @@
+# Jetbrain files
+.idea
+
+# Jupyter checkpoints
+.ipynb*
+
