@@ -1,9 +1,7 @@
 import pandas as pd
 
-datadir = "../../../SmartCareData/"
 
-
-def create_O2_FEV1_df():
+def create_O2_FEV1_df(datadir):
     # patient_ID-patient_hash map
     id_map = pd.read_excel(datadir + "patientidnew.xlsx", dtype={'SmartCareID': str}).drop("Study_ID", axis=1).rename(
         columns={'SmartCareID': 'ID'})
