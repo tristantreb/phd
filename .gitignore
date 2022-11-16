@@ -1,6 +1,8 @@
 # Jetbrain files
 .idea
 
-# Jupyter checkpoints
-.ipynb*
-/src/__pycache__
+# Jupyter notebook checkpoints
+src/.ipynb*
+
+# Jupyter notebook caches
+src/*.pyc
