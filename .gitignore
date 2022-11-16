@@ -2,7 +2,7 @@
 .idea
 
 # Jupyter notebook checkpoints
-src/.ipynb*
+src/*.ipynb_checkpoints
 
 # Jupyter notebook caches
 src/*.pyc
