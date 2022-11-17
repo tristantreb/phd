@@ -13,3 +13,17 @@ def plot_subsampled_scatter(x, y, O2_FEV1, ex_column='Is Exacerbated', ex_color=
   fig = px.scatter(O2_FEV1_sub, x=x, y=y, color=ex_column, color_discrete_map={True: ex_color, False: stable_color})
   fig.update_layout(height=400, width=1150, title='Subsampled measurement done in stable period'.format(x, y))
   return fig
+
+
+# Raw O2-FEV1 scatter plot for a given patient ID
+def plot_o2_fev1_raw_for_id(O2_FEV1, id, plotsdir, x="FEV1 % Predicted", time_scale=False, show=False, save=False):
+    y="O2 Saturation"
+    if time_scale:
+      fig = px.scatter(O2_FEV1[O2_FEV1.ID == id], y="O2 Saturation", x=x, color="Months since study start")
+    else: 
+      fig = px.scatter(O2_FEV1[O2_FEV1.ID == id], y="O2 Saturation", x=x)
+    fig.update_xaxes(title_text=x)
+    fig.update_layout(width=600, height=400)
+
+    if show: fig.show()
+    if save: fig.write_image("{}/Patient raw plots/{} {}-{} raw.pdf".format(plotsdir, id, x, y))
