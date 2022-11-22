@@ -7,7 +7,6 @@ from plotly.subplots import make_subplots
 # Create O2-FEV scatter plot with displots on x and y axes
 # This is the final plot of the O2-FEV analysis
 def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
-
     # Set colors and point opacities
     opacity_scatter = 0.6
     opacity_distplot = 0.7
@@ -29,12 +28,6 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
     )
 
     # Separate x and y data by exacerbation label
-    print("{} exacerbated entries".format(O2_FEV1[ex_column].sum()))
-    print(
-        "{} non-exacerbated entries".format(
-            O2_FEV1[ex_column].shape[0] - O2_FEV1[ex_column].sum()
-        )
-    )
     x_exacerbated = O2_FEV1[x][O2_FEV1[ex_column] == True]
     x_stable = O2_FEV1[x][O2_FEV1[ex_column] == False]
     y_exacerbated = O2_FEV1[y][O2_FEV1[ex_column] == True]
@@ -46,7 +39,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
             x=x_stable,
             y=y_stable,
             mode="markers",
-            name="Stable",
+            # name="Stable",
             marker=dict(
                 size=5,
                 color=stable_color_scatter,
@@ -61,7 +54,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
             x=x_exacerbated,
             y=y_exacerbated,
             mode="markers",
-            name="Exacerbated",
+            # name="Exacerbated",
             marker=dict(
                 size=5,
                 color=ex_color_scatter,
@@ -76,7 +69,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             x=x_stable,
             histnorm="probability density",
-            name="Stable",
+            # name="Stable",
             marker=dict(color=stable_color_distplot),
         ),
         row=1,
@@ -86,7 +79,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             x=x_exacerbated,
             histnorm="probability density",
-            name="Exacerbated",
+            # name="Exacerbated",
             marker=dict(color=ex_color_distplot),
         ),
         row=1,
@@ -97,8 +90,8 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             y=y_stable,
             histnorm="probability density",
-            nbinsy=20,
-            name="Stable",
+            # nbinsy=20,
+            name="Stable ({} points)".format(len(x_stable)),
             marker=dict(color=stable_color_distplot),
         ),
         row=2,
@@ -108,8 +101,8 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             y=y_exacerbated,
             histnorm="probability density",
-            nbinsy=18,
-            name="Exacerbated",
+            # nbinsy=18,
+            name="Exacerbated ({} points)".format(len(x_exacerbated)),
             marker=dict(color=ex_color_distplot),
         ),
         row=2,
