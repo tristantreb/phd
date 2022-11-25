@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # Functions to partition the data in n balanced groups
 
 # Balance the population density by partitioning the data 3-fold equally
@@ -43,16 +42,27 @@ def _value_to_group(value, thresholds):
     thresholds. Don't include the boundaries, e.g. 40.0 returns groups for: <40.0, >= 40.0 :return:
     """
     for i in range(0, len(thresholds)):
-        if thresholds[i] == thresholds[0]:
-            if value < thresholds[i]:
-                return '<' + str(thresholds[i])
-        else:
-            if thresholds[i - 1] <= value < thresholds[i]:
-                return '[' + str(thresholds[i - 1]) + ';' + str(thresholds[i]) + '['
+        # Filter values below the first threshold
+        if value < thresholds[0]:
+            return "<" + str(thresholds[0])
+        # Filter values above the last threshold
+        elif value >= thresholds[-1]:
+            return ">=" + str(thresholds[-1])
+        # Filter values between thresholds
+        elif thresholds[i] <= value < thresholds[i + 1]:
+            return "[" + str(thresholds[i]) + ";" + str(thresholds[i + 1]) + "["
 
-        if thresholds[i] == thresholds[-1]:
-            if value >= thresholds[i]:
-                return '>=' + str(thresholds[i])
+    # for i in range(0, len(thresholds)):
+    #     if thresholds[i] == thresholds[0]:
+    #         if value < thresholds[0]:
+    #             return '<' + str(thresholds[0])
+    #     else:
+    #         if thresholds[i - 1] <= value < thresholds[i]:
+    #             return '[' + str(thresholds[i - 1]) + ';' + str(thresholds[i]) + '['
+
+    #     if thresholds[i] == thresholds[-1]:
+    #         if value >= thresholds[i]:
+    #             return '>=' + str(thresholds[i])
 
 
 def _values_to_group_labels(values):
@@ -61,8 +71,8 @@ def _values_to_group_labels(values):
     :param values: list of values
     :return: list of group labels ordered from lowest to highest values intervals
     """
-    group_labels = ['<' + str(values[0])]
+    group_labels = ["<" + str(values[0])]
     for i in range(0, len(values) - 1):
-        group_labels.append('[' + str(values[i]) + ';' + str(values[i + 1]) + '[')
-    group_labels.append('>=' + str(values[-1]))
+        group_labels.append("[" + str(values[i]) + ";" + str(values[i + 1]) + "[")
+    group_labels.append(">=" + str(values[-1]))
     return group_labels
