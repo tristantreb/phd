@@ -10,10 +10,10 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
     # Set colors and point opacities
     opacity_scatter = 0.6
     opacity_distplot = 0.7
-    ex_color_scatter = "rgba(213,094,000,{})".format(opacity_scatter)
-    stable_color_scatter = "rgba(000,114,178,{})".format(opacity_scatter)
-    ex_color_distplot = "rgba(213,094,000,{})".format(opacity_distplot)
-    stable_color_distplot = "rgba(000,114,178,{})".format(opacity_distplot)
+    ex_color_scatter = get_ex_color(opacity_scatter)
+    stable_color_scatter = get_stable_color(opacity_scatter)
+    ex_color_distplot = get_ex_color(opacity_distplot)
+    stable_color_distplot = get_stable_color(opacity_distplot)
 
     # Create a figure with 3 subplots with shared x and y axes and different row/column sizes.
     fig = make_subplots(
