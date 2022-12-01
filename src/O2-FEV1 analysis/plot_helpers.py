@@ -4,6 +4,16 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
+# Define color for measurements done in exacerbation period
+def get_ex_color(opacity=0.7):
+    return "rgba(213,094,000,{})".format(opacity)
+
+
+# Define color for measurements done in stable period
+def get_stable_color(opacity=0.7):
+    return "rgba(000,114,178,{})".format(opacity)
+
+
 # Create O2-FEV scatter plot with displots on x and y axes
 # This is the final plot of the O2-FEV analysis
 def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
