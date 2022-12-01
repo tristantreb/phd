@@ -13,7 +13,7 @@ def partition_in_n_equal_groups(series, n, labels=False):
     """
     q_quantiles = np.linspace(0, 1, n + 1)[1:-1]
     q_values = series.quantile(q_quantiles).round(decimals=1).to_list()
-    series = series.apply(lambda x: _value_to_group(x, q_values))
+    series = series.apply(lambda x: value_to_group(x, q_values))
 
     if labels:
         return series, _values_to_group_labels(q_values)
@@ -28,7 +28,7 @@ def partition_given_thresholds(series, thresholds, labels=False):
     boundaries, e.g. 40.0 returns groups for: <40.0, >= 40.0 :param labels: bool to return group labels (or not)
     :return: series where values is replaced with group label
     """
-    series = series.apply(lambda x: _value_to_group(x, thresholds))
+    series = series.apply(lambda x: value_to_group(x, thresholds))
 
     if labels:
         return series, _values_to_group_labels(thresholds)
@@ -36,7 +36,7 @@ def partition_given_thresholds(series, thresholds, labels=False):
         return series
 
 
-def _value_to_group(value, thresholds):
+def value_to_group(value, thresholds):
     """
     Map group to value :param value: :param thresholds: list of floats corresponding to the wanted interval
     thresholds. Don't include the boundaries, e.g. 40.0 returns groups for: <40.0, >= 40.0 :return:
