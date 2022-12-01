@@ -52,18 +52,6 @@ def _value_to_group(value, thresholds):
         elif thresholds[i] <= value < thresholds[i + 1]:
             return "[" + str(thresholds[i]) + ";" + str(thresholds[i + 1]) + "["
 
-    # for i in range(0, len(thresholds)):
-    #     if thresholds[i] == thresholds[0]:
-    #         if value < thresholds[0]:
-    #             return '<' + str(thresholds[0])
-    #     else:
-    #         if thresholds[i - 1] <= value < thresholds[i]:
-    #             return '[' + str(thresholds[i - 1]) + ';' + str(thresholds[i]) + '['
-
-    #     if thresholds[i] == thresholds[-1]:
-    #         if value >= thresholds[i]:
-    #             return '>=' + str(thresholds[i])
-
 
 def _values_to_group_labels(values):
     """
