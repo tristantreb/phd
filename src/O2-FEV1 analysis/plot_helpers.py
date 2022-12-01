@@ -119,7 +119,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         col=2,
     )
     fig.update_layout(barmode="overlay")
-    # Set x axis title to x
+    # Set x axis title to x, and range to min max of O2_FEV1[x]
     fig.update_xaxes(title_text=x, row=2, col=1)
     # Set y axis title to y
     fig.update_yaxes(title_text=y, row=2, col=1)
