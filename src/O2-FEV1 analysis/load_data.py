@@ -24,13 +24,7 @@ def create_O2_FEV1_df(datadir):
 
     # Clinical data
     # Patient data: Information describing the patient
-    patientsdata = pd.read_excel(
-        datadir + "clinicaldata_updated.xlsx", sheet_name="Patients", dtype={"ID": str}
-    )
-    patientsdata.Weight = patientsdata.Weight.replace(
-        to_replace="75,4", value="75.4"
-    ).astype(float)
-    patientsdata["Study Date"] = pd.to_datetime(patientsdata["Study Date"]).dt.date
+    patientsdata = load_patient_data(datadir)
 
     # Load antibiotics data, cast datetime to date
     antibioticsdata = pd.read_excel(
@@ -107,16 +101,15 @@ def create_O2_FEV1_df(datadir):
     return O2_FEV1
 
 
-def remove_all_measurements_with_ID_216(O2_FEV1):
-    # Remove measurements done by patient ID 216 (erroneous FEV1 measurements)
-    O2_FEV1 = O2_FEV1[O2_FEV1["ID"] != "216"]
-    # Count number of measurements for patient 216
-    print(
-        "Removed all entries  ({}) for patient 216 because of erroneous FEV1".format(
-            O2_FEV1[O2_FEV1["ID"] == "216"].shape[0]
-        )
+def load_patient_data(datadir):
+    patientsdata = pd.read_excel(
+        datadir + "clinicaldata_updated.xlsx", sheet_name="Patients", dtype={"ID": str}
     )
-    return O2_FEV1
+    patientsdata.Weight = patientsdata.Weight.replace(
+        to_replace="75,4", value="75.4"
+    ).astype(float)
+    patientsdata["Study Date"] = pd.to_datetime(patientsdata["Study Date"]).dt.date
+    return patientsdata
 
 
 # Function to extract one column from the data
