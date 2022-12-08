@@ -78,7 +78,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
     fig.add_trace(
         go.Histogram(
             x=x_stable,
-            histnorm="probability density",
+            histnorm="probability",
             # name="Stable",
             marker=dict(color=stable_color_distplot),
         ),
@@ -88,7 +88,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
     fig.add_trace(
         go.Histogram(
             x=x_exacerbated,
-            histnorm="probability density",
+            histnorm="probability",
             # name="Exacerbated",
             marker=dict(color=ex_color_distplot),
         ),
@@ -99,7 +99,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
     fig.add_trace(
         go.Histogram(
             y=y_stable,
-            histnorm="probability density",
+            histnorm="probability",
             # nbinsy=20,
             name="Stable ({} points)".format(len(x_stable)),
             marker=dict(color=stable_color_distplot),
@@ -110,7 +110,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
     fig.add_trace(
         go.Histogram(
             y=y_exacerbated,
-            histnorm="probability density",
+            histnorm="probability",
             # nbinsy=18,
             name="Exacerbated ({} points)".format(len(x_exacerbated)),
             marker=dict(color=ex_color_distplot),
