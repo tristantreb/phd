@@ -8,13 +8,13 @@ def smooth(O2_FEV1, var_list, mode="mean"):
     O2_FEV1 = O2_FEV1.sort_values(by=["ID", "Date recorded"])
 
     for var in var_list:
-        O2_FEV1["{} {} smoothed".format(var, mode)] = 0.0
+        O2_FEV1["{} smoothed".format(var)] = 0.0
 
         # For each each ID in O2_FEV1
         for id in O2_FEV1["ID"].unique():
             # Create mask for this ID
             mask = O2_FEV1["ID"] == id
-            O2_FEV1["{} {} smoothed".format(var, mode)][mask] = smooth_vector(
+            O2_FEV1["{} smoothed".format(var)][mask] = smooth_vector(
                 O2_FEV1[var][mask].to_numpy(), mode
             )
     return O2_FEV1
