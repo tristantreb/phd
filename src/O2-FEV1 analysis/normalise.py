@@ -13,14 +13,14 @@ def norm_by_stable_baseline(O2_FEV1, var_list):
         O2_FEV1["{} norm".format(var)] = np.nan
         for id in patients_ids:
             mask_patient = O2_FEV1.ID == id
-            O2_FEV1["{} norm".format(var)][mask_patient] = norm_individual_data(
+            O2_FEV1["{} norm".format(var)][mask_patient] = norm_patient_data(
                 O2_FEV1[mask_patient], var, id
             )
     return O2_FEV1
 
 
 # Compute patient stable baseline and normalise by it (mean)
-def norm_individual_data(patient_O2_FEV1, var_to_normalise, id):
+def norm_patient_data(patient_O2_FEV1, var_to_normalise, id):
     # filter stable periods
     patient_O2_FEV1_stable = patient_O2_FEV1[patient_O2_FEV1["Is Exacerbated"] == False]
     if len(patient_O2_FEV1_stable) == 0:
