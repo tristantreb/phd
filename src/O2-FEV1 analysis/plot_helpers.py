@@ -74,12 +74,17 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         row=2,
         col=1,
     )
+    # Define nbins for displots
+    nbins = 20
+
     # Add displot for x
     fig.add_trace(
         go.Histogram(
             x=x_stable,
             histnorm="probability",
             # name="Stable",
+            # add bins
+            nbinsx=nbins,
             marker=dict(color=stable_color_distplot),
         ),
         row=1,
@@ -89,6 +94,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             x=x_exacerbated,
             histnorm="probability",
+            nbinsx=nbins,
             # name="Exacerbated",
             marker=dict(color=ex_color_distplot),
         ),
@@ -100,7 +106,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             y=y_stable,
             histnorm="probability",
-            # nbinsy=20,
+            nbinsy=nbins,
             name="Stable ({} points)".format(len(x_stable)),
             marker=dict(color=stable_color_distplot),
         ),
@@ -111,7 +117,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             y=y_exacerbated,
             histnorm="probability",
-            # nbinsy=18,
+            nbinsy=nbins,
             name="Exacerbated ({} points)".format(len(x_exacerbated)),
             marker=dict(color=ex_color_distplot),
         ),
