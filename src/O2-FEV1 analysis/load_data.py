@@ -24,7 +24,7 @@ def create_O2_FEV1_df(datadir):
 
     # Clinical data
     # Patient data: Information describing the patient
-    patientsdata = load_patient_data(datadir)
+    individual_data = load_individual_data(datadir)
 
     # Load antibiotics data, cast datetime to date
     antibioticsdata = pd.read_excel(
@@ -75,7 +75,7 @@ def create_O2_FEV1_df(datadir):
     )
 
     # Add clinical data
-    O2_FEV1 = O2_FEV1.merge(patientsdata, on="ID", copy=True).drop(
+    O2_FEV1 = O2_FEV1.merge(individual_data, on="ID", copy=True).drop(
         columns=[
             "Hospital",
             "Study Number",
@@ -101,16 +101,41 @@ def create_O2_FEV1_df(datadir):
     return O2_FEV1
 
 
-def load_patient_data(datadir):
-    patientsdata = pd.read_excel(
+def load_individual_data(datadir):
+    individual_data = pd.read_excel(
         datadir + "clinicaldata_updated.xlsx", sheet_name="Patients", dtype={"ID": str}
     )
-    patientsdata.Weight = patientsdata.Weight.replace(
+
+    # Clean data
+    individual_data = correct_individual_data(individual_data)
+    
+    # Data sanity checks
+    individual_data.apply(health_sanity_check, axis=1)
+
+    individual_data.Weight = individual_data.Weight.replace(
         to_replace="75,4", value="75.4"
     ).astype(float)
-    patientsdata["Study Date"] = pd.to_datetime(patientsdata["Study Date"]).dt.date
-    return patientsdata
+    individual_data["Study Date"] = pd.to_datetime(individual_data["Study Date"]).dt.date
+    return individual_data
 
+
+def health_sanity_check(row):
+    if row["Height"] < 120 or row["Height"] > 220:
+        print("Warning - Height ({}) outside 120-220cm range for ID {}".format(row["Height"], row["ID"]))
+    return -1
+
+
+def correct_individual_data(individual_data):
+    # ID 60, convert height from m to cm
+    individual_data.loc[individual_data["ID"] == "60", "Height"] = individual_data.loc[individual_data["ID"] == "60", "Height"] * 100
+    # Print data correction for ID 60
+    print("Corrected height for ID 60 from {} to {}".format(individual_data.loc[individual_data["ID"] == "60", "Height"] / 100, individual_data.loc[individual_data["ID"] == "60", "Height"]))
+    # ID 66, convert height from m to cm
+    individual_data.loc[individual_data["ID"] == "66", "Height"] = individual_data.loc[individual_data["ID"] == "66", "Height"] * 100
+    # Print data correction for ID 66
+    print("Corrected height for ID 66 from {} to {}".format(individual_data.loc[individual_data["ID"] == "66", "Height"] / 100, individual_data.loc[individual_data["ID"] == "66", "Height"]))
+
+    return individual_data
 
 # Function to extract one column from the data
 # TODO: check that there's only one measurement per day
