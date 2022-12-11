@@ -5,8 +5,8 @@ def load(datadir):
     patient_data = pd.read_excel(
         datadir + "clinicaldata_updated.xlsx", sheet_name="Patients", dtype={"ID": str}
     )
-    print("** Loading individual data **")
-    print("Loaded individual data with {} entries".format(patient_data.shape[0]))
+    print("** Loading patient data **")
+    n_initial_entries = patient_data.shape[0]))
 
     # Drop columns that are not needed
     # List of columns to keep
@@ -22,7 +22,7 @@ def load(datadir):
         "FEV1 Set As",
     ]
     patient_data = patient_data[columns_to_keep]
-    print("\n** Dropping unnecessary columns from individual data **")
+    print("\n** Dropping unnecessary columns from patient data **")
     print("Filtering columns: {}".format(columns_to_keep))
     print("Columns dropped: {}".format(set(columns) - set(columns_to_keep)))
 
@@ -44,55 +44,50 @@ def load(datadir):
     patient_data.DOB = pd.to_datetime(patient_data.DOB).dt.date
 
     # Clean data
-    patient_data = correct_patient_data(patient_data)
+    patient_data = _correct_patient_data(patient_data)
 
     # Data sanity checks
-    # patient_data.apply(fev1_sanity_check, axis=1)
-    patient_data.apply(age_sanity_check, axis=1)
-    patient_data.apply(weight_sanity_check, axis=1)
-    patient_data.apply(height_sanity_check, axis=1)
-    patient_data.apply(sex_sanity_check, axis=1)
+    patient_data.apply(_age_sanity_check, axis=1)
+    patient_data.apply(_sex_sanity_check, axis=1)
+    patient_data.apply(_height_sanity_check, axis=1)
+    patient_data.apply(_weight_sanity_check, axis=1)
+    # Not added because need to decide which PRedicted FEV1 to use
+    # patient_data.apply(_predicted_fev1_sanity_check, axis=1)
+    # patient_data.apply(_fev1_set_as_sanity_check, axis=1)
+
+    print("Loaded patient data with {} entries ({} initially)".format(patient_data.shape[0], n_initial_entries))
     return patient_data
 
 
-def fev1_sanity_check(row):
-    assert (
-        row.FEV1 >= 0.5 or row.FEV1 <= 6
-    ), "FEV1 ({} L) outside 0.5-6L range for ID {}".format(row.FEV1, row.ID)
-    return -1
-
-
-def age_sanity_check(row):
+def _age_sanity_check(row):
     assert (
         row.Age >= 18 and row.Age <= 70
     ), "Age ({}) outside 18-70 range for ID {}".format(row.Age, row.ID)
     return -1
 
 
-def weight_sanity_check(row):
-    assert (
-        row.Weight >= 30 and row.Weight <= 120
-    ), "Weight ({}) outside 30-120kg range for ID {}".format(row.Weight, row.ID)
-    return -1
-
-
-def height_sanity_check(row):
-    assert (
-        row.Height >= 120 and row.Height <= 220
-    ), "Height ({}) outside 120-220cm range for ID {}".format(row.Height, row.ID)
-    return -1
-
-
-def sex_sanity_check(row):
+def _sex_sanity_check(row):
     assert row.Sex in [
         "Male",
         "Female",
     ], "Sex ({}) is not 'Male' neither 'Female' for ID {}".format(row.Sex, row.ID)
     return -1
 
+def _height_sanity_check(row):
+    assert (
+        row.Height >= 120 and row.Height <= 220
+    ), "Height ({}) outside 120-220cm range for ID {}".format(row.Height, row.ID)
+    return -1
 
-def correct_patient_data(patient_data):
-    print("\n** Correcting individual data **")
+def _weight_sanity_check(row):
+    assert (
+        row.Weight >= 30 and row.Weight <= 120
+    ), "Weight ({}) outside 30-120kg range for ID {}".format(row.Weight, row.ID)
+    return -1
+
+
+def _correct_patient_data(patient_data):
+    print("\n** Correcting patient data **")
 
     # ID 60, convert height from m to cm
     tmp = patient_data.loc[patient_data.ID == "60", "Height"]

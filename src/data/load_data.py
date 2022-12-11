@@ -10,6 +10,7 @@ def create_O2_FEV1_df(datadir):
         .rename(columns={"SmartCareID": "ID"})
     )
 
+    # Load measurements data
     # Extract data and format datatypes
     # Don't use convert_dtypes as it provides types that mess up when doing np calculations
     measurements = pd.read_csv(datadir + "mydata.csv").rename(columns={"FEV 1": "FEV1"})
@@ -23,7 +24,7 @@ def create_O2_FEV1_df(datadir):
     )
     measurements.drop(columns=["User ID", "UserName", "Patient_ID"], inplace=True)
 
-    # Clinical data
+    # Load clinical data
     # Patient data: Information describing the patient
     patient_data = patient_data.load(datadir)
 
@@ -73,30 +74,6 @@ def create_O2_FEV1_df(datadir):
         "Removed {} duplicates, {} measurements left".format(
             len_all_fev1_o2 - O2_FEV1.shape[0], O2_FEV1.shape[0]
         )
-    )
-
-    # Add clinical data
-    O2_FEV1 = O2_FEV1.merge(patient_data, on="ID", copy=True).drop(
-        columns=[
-            "Hospital",
-            "Study Number",
-            "Study Date",
-            "DOB",
-            "Genetic Testing",
-            "Age 18 Years",
-            "Informed Consent",
-            "Sputum Samples",
-            "Telemetric Measures",
-            "Unable Informed Consent",
-            "Unable Sputum Samples",
-            "Date Consent Obtained",
-            "CFQR Quest Comp",
-            "Inconvenience Payment",
-            "GP Letter Sent",
-            "Remote Monitoring App User ID",
-            "Study Email",
-            "Freezer Required",
-        ]
     )
 
     return O2_FEV1
