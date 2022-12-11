@@ -118,6 +118,22 @@ def load(datadir):
     # df["Predicted FEV"] = df.apply(_predicted_fev_sanity_check, axis=1)
     df["O2 Saturation"] = _O2_saturation_sanity_check(df)
 
+    # Look for duplicates
+    print("\n** Looking for duplicates **")
+    duplicates = df.duplicated(
+        subset=["ID", "Recording Type", "Date recorded"], keep="last"
+    )
+    print(
+        "Found {} duplicates, saving them in DataFiles/SmartCare/duplicates.xlsx".format(
+            duplicates.sum()
+        )
+    )
+    # Save all duplicates in an excel file
+    df[duplicates].to_excel(datadir + "../DataFiles/SmartCare/duplicates.xlsx")
+    # Remove duplicates from df
+    print("Removing {} duplicated entries".format(duplicates.sum()))
+    df = df[~duplicates]
+
     print(
         "\n Loaded measurements data with {} entries (initially {}, removed {})".format(
             df.shape[0], n_initial_entries, n_initial_entries - df.shape[0]
