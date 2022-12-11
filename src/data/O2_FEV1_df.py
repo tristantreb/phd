@@ -3,17 +3,19 @@ import measurements_data
 import pandas as pd
 import patient_data
 
+datadir = "../../../../SmartCareData/"
 
-def create(datadir):
+
+def create():
     # Load measurements data
-    df_measurements = measurements_data.load(datadir)
+    df_measurements = measurements_data.load()
 
     # Load clinical data
     # Patient data
-    df_patient = patient_data.load(datadir)
+    df_patient = patient_data.load()
 
     # Load antibiotics data, cast datetime to date
-    df_antibiotics = antibiotics_data.load(datadir)
+    df_antibiotics = antibiotics_data.load()
 
     print("\n** Creating DataFrame for O2 FEV1 analysis **")
     # Extract O2 and FEV1 measurements

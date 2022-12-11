@@ -1,7 +1,9 @@
 import pandas as pd
 
+datadir = "../../../../SmartCareData/"
 
-def load(datadir):
+
+def load():
     print("\n** Loading antibiotics data **")
     df = pd.read_excel(datadir + "clinicaldata_updated.xlsx", sheet_name="Antibiotics")
     n_initial_entries = df.shape[0]

@@ -1,7 +1,9 @@
 import pandas as pd
 
+datadir = "../../../../SmartCareData/"
 
-def load(datadir):
+
+def load():
     print("\n** Loading measurements data **")
     df = pd.read_csv(datadir + "mydata.csv")
     n_initial_entries = df.shape[0]
