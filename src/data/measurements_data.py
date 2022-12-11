@@ -11,7 +11,7 @@ def load(datadir):
     id_map = pd.read_excel(datadir + "patientidnew.xlsx")
 
     # Merge
-    print("\n** Merging measurements data with ID map to retrieve SmartCare ID **")
+    print("\n* Merging measurements data with ID map to retrieve SmartCare ID *")
     # List User IDs from measurements data that don't have a corresponding Patient_ID in ID map
     user_id_list = df[~df["User ID"].isin(id_map["Patient_ID"])]["User ID"].unique()
     print("List User IDs that have no SmartCare ID {}".format(user_id_list))
@@ -71,8 +71,8 @@ def load(datadir):
         "Activity - Points",
     ]
     df = df[columns_to_keep]
-    print("\n** Dropping unnecessary columns from measurements data **")
-    print("Filtering columns {}".format(columns_to_keep))
+    print("\n* Dropping unnecessary columns from measurements data *")
+    print("Columns filtered {}".format(columns_to_keep))
     print("Dropping columns {}".format(set(tmp_columns) - set(columns_to_keep)))
 
     # Rename columns
@@ -109,17 +109,17 @@ def load(datadir):
     df["Date recorded"] = pd.to_datetime(df["Date recorded"]).dt.date
 
     # Correct erroneous data
-    print("\n** Correcting measurements data **")
+    # print("\n* Correcting measurements data *")
     # df = _correct_measurements_data(df)
 
     # Apply data sanity checks
-    print("\n** Applying data sanity checks **")
-    df["FEV1"] = df.apply(_fev1_sanity_check, axis=1)
+    print("\n* Applying data sanity checks *")
+    df.apply(_fev1_sanity_check, axis=1)
     # df["Predicted FEV"] = df.apply(_predicted_fev_sanity_check, axis=1)
-    df["O2 Saturation"] = _O2_saturation_sanity_check(df)
+    df = _O2_saturation_sanity_check(df)
 
     # Look for duplicates
-    print("\n** Looking for duplicates **")
+    print("\n* Looking for duplicates *")
     duplicates = df.duplicated(
         subset=["ID", "Recording Type", "Date recorded"], keep="last"
     )
@@ -129,13 +129,13 @@ def load(datadir):
         )
     )
     # Save all duplicates in an excel file
-    df[duplicates].to_excel(datadir + "../DataFiles/SmartCare/duplicates.xlsx")
+    # df[duplicates].to_excel(datadir + "../DataFiles/SmartCare/duplicates.xlsx")
     # Remove duplicates from df
     print("Removing {} duplicated entries".format(duplicates.sum()))
     df = df[~duplicates]
 
     print(
-        "\n Loaded measurements data with {} entries (initially {}, removed {})".format(
+        "\nLoaded measurements data with {} entries (initially {}, removed {})".format(
             df.shape[0], n_initial_entries, n_initial_entries - df.shape[0]
         )
     )
@@ -171,4 +171,4 @@ def _O2_saturation_sanity_check(df):
     # Remove rows with O2 Saturation outside 70-100 % range
     print("Removing {} rows with O2 Saturation outside 70-100 % range".format(len(idx)))
     df.drop(idx, inplace=True)
-    return -1
+    return df
