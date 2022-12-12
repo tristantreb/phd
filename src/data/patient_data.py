@@ -1,9 +1,10 @@
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 datadir = "../../../../SmartCareData/"
 
 
-def load():
+def load(use_calc=True):
     print("\n** Loading patient data **")
     df = pd.read_excel(
         datadir + "clinicaldata_updated.xlsx", sheet_name="Patients", dtype={"ID": str}
@@ -15,6 +16,7 @@ def load():
     tmp_columns = df.columns
     columns_to_keep = [
         "ID",
+        "Study Date",
         "DOB",
         "Age",
         "Sex",
@@ -44,10 +46,11 @@ def load():
         }
     )
     # Cast datetime to date
+    df["Study Date"] = pd.to_datetime(df["Study Date"]).dt.date
     df.DOB = pd.to_datetime(df.DOB).dt.date
 
     # Correct erroneous data
-    df = _correct_df(df)
+    df = _correct_df(df, use_calc)
 
     # Apply data sanity checks
     print("\n* Applying data sanity checks *")
@@ -100,8 +103,15 @@ def _weight_sanity_check(row):
     return -1
 
 
-def _correct_df(df):
+def _correct_df(df, use_calc=True):
     print("\n* Correcting patient data *")
+
+    if use_calc:
+        print("Replace Age by use_calculated age")
+        df.Age = df.apply(
+            lambda row: round(_get_years_decimal_delta(row.DOB, row["Study Date"])),
+            axis=1,
+        )
 
     # ID 60, convert height from m to cm
     tmp = df.loc[df.ID == "60", "Height"]
@@ -126,3 +136,10 @@ def _correct_df(df):
         )
     )
     return df
+
+
+def _get_years_decimal_delta(start_date, end_date):
+    return (
+        relativedelta(end_date, start_date).years
+        + relativedelta(end_date, start_date).months / 12
+    )
