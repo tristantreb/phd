@@ -39,10 +39,10 @@ def create():
     ), "There's more than one measurement per day for some patients"
 
     # Merge O2_FEV1 with patient data
-    df_O2_FEV1 = pd.merge(df_O2_FEV1, df_patient, on="ID", how="outer")
+    df_O2_FEV1 = pd.merge(df_O2_FEV1, df_patient, on="ID", how="left")
 
-    # Merge O2_FEV1 with antibiotics data
-    df_O2_FEV1 = pd.merge(df_O2_FEV1, df_antibiotics, on="ID", how="outer")
+    # # Merge O2_FEV1 with antibiotics data
+    # df_O2_FEV1 = pd.merge(df_O2_FEV1, df_antibiotics, on="ID", how="outer")
 
     print(
         "\nCreated df_O2_FEV1 with {} entries (initially {}, removed {})".format(

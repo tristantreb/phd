@@ -1,15 +1,19 @@
 import pandas as pd
+from biology import *
 from dateutil.relativedelta import relativedelta
 
 datadir = "../../../../SmartCareData/"
 
 
-def load(use_calc=True):
+def load(use_calc_age=True, use_calc_predicted_fev1=True):
     print("\n** Loading patient data **")
     df = pd.read_excel(
         datadir + "clinicaldata_updated.xlsx", sheet_name="Patients", dtype={"ID": str}
     )
     n_initial_entries = df.shape[0]
+
+    # Find duplicated IDs
+    assert df[list(df.ID.value_counts() > 1)].empty, "Duplicated IDs found"
 
     # Drop columns that are not needed
     # List of columns to keep
@@ -50,7 +54,22 @@ def load(use_calc=True):
     df.DOB = pd.to_datetime(df.DOB).dt.date
 
     # Correct erroneous data
-    df = _correct_df(df, use_calc)
+    df = _correct_df(df)
+
+    # Compute age and predicted FEV1 if necessary
+    if use_calc_age:
+        print("Replace Age by calculate age")
+        df.Age = df.apply(
+            lambda row: round(_get_years_decimal_delta(row.DOB, row["Study Date"])),
+            axis=1,
+        )
+    if use_calc_predicted_fev1:
+        print("Replace Predicted FEV1 by the calculated version")
+        df["Predicted FEV1"] = df.apply(
+            lambda row: calc_predicted_fev1(row.Height, row.Age, row.Sex), axis=1
+        )
+        print("Drop FEV1 Set As")
+        df = df.drop(columns=["FEV1 Set As"])
 
     # Apply data sanity checks
     print("\n* Applying data sanity checks *")
@@ -58,9 +77,7 @@ def load(use_calc=True):
     df.apply(_sex_sanity_check, axis=1)
     df.apply(_height_sanity_check, axis=1)
     df.apply(_weight_sanity_check, axis=1)
-    # Not added because need to decide which PRedicted FEV1 to use
-    # df.apply(_predicted_fev1_sanity_check, axis=1)
-    # df.apply(_fev1_set_as_sanity_check, axis=1)
+    df.apply(_predicted_fev1_sanity_check, axis=1)
 
     print(
         "Loaded patient data with {} entries ({} initially)".format(
@@ -103,16 +120,18 @@ def _weight_sanity_check(row):
     return -1
 
 
-def _correct_df(df, use_calc=True):
-    print("\n* Correcting patient data *")
-
-    if use_calc:
-        print("Replace Age by use_calculated age")
-        df.Age = df.apply(
-            lambda row: round(_get_years_decimal_delta(row.DOB, row["Study Date"])),
-            axis=1,
+def _predicted_fev1_sanity_check(row):
+    if row["Predicted FEV1"] >= 5 or row["Predicted FEV1"] <= 2:
+        print(
+            "Warning - ID {} has Predicted FEV1 ({}) outside 2-5L range".format(
+                row.ID, row["Predicted FEV1"]
+            )
         )
+    return -1
 
+
+def _correct_df(df):
+    print("\n* Correcting patient data *")
     # ID 60, convert height from m to cm
     tmp = df.loc[df.ID == "60", "Height"]
     df.Height.loc[df.ID == "60"] = tmp * 100
