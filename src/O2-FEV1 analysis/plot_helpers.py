@@ -1,3 +1,5 @@
+from math import ceil # math.ceil converts to int, np.ceil returns float
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -74,8 +76,9 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         row=2,
         col=1,
     )
-    # Define nbins for displots
-    nbins = 20
+    # Define the number of bins for the distribution plots
+    bins_width = 0.2  # Liters
+    bins_n = ceil((max(x_stable) - min(x_stable)) / bins_width)
 
     # Add displot for x
     fig.add_trace(
@@ -84,7 +87,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
             histnorm="probability",
             # name="Stable",
             # add bins
-            nbinsx=nbins,
+            nbinsx=bins_n,
             marker=dict(color=stable_color_distplot),
         ),
         row=1,
@@ -94,7 +97,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             x=x_exacerbated,
             histnorm="probability",
-            nbinsx=nbins,
+            nbinsx=bins_n,
             # name="Exacerbated",
             marker=dict(color=ex_color_distplot),
         ),
@@ -106,7 +109,8 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             y=y_stable,
             histnorm="probability",
-            nbinsy=nbins,
+            # Number of bins automatically set is good enough because O2 saturation is a dicsrete variable with a small values span
+            # nbinsy=nbins,
             name="Stable ({} points)".format(len(x_stable)),
             marker=dict(color=stable_color_distplot),
         ),
@@ -117,7 +121,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             y=y_exacerbated,
             histnorm="probability",
-            nbinsy=nbins,
+            # nbinsy=nbins,
             name="Exacerbated ({} points)".format(len(x_exacerbated)),
             marker=dict(color=ex_color_distplot),
         ),

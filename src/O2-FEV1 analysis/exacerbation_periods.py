@@ -17,24 +17,21 @@ one_day = timedelta(days=1)
 
 # Merge exacerbation labels from the predictive classifier to O2_FEV1
 def merge_pred_ex_labels_to(O2_FEV1, pred_ex_labels):
-    print("Merging exacerbated labels into O2_FEV1")
-    O2_FEV1 = O2_FEV1.merge(
+    O2_FEV1_out = O2_FEV1.merge(
         pred_ex_labels["Is Exacerbated"],
-        how="left",
+        how="inner",
         on=["ID", "Date recorded"],
         validate="1:1",
     )
-    tmp = O2_FEV1.shape[0]
-    O2_FEV1.dropna(inplace=True)
     print(
-        "Dropped {} O2_FEV1 entries with NaN exacerbation label. {} entries remain.".format(
-            tmp - O2_FEV1.shape[0], O2_FEV1.shape[0]
+        "The inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date recorded' outputs {} entries (initially {} in O2_FEV1, {} in pred_ex_labels)".format(
+            O2_FEV1_out.shape[0], O2_FEV1.shape[0], pred_ex_labels.shape[0]
         )
     )
-    return O2_FEV1
+    return O2_FEV1_out
 
 
-# Method 1 using the predictive classifier
+# Method 1: getting the exacerbation labels inferred with the predictive classifier
 def get_pred_ex_labels():
     # Get exacerbation labels from the predictive classifier
     pred_ex_labels = pd.read_csv(datadir + "pmFeatureIIndex.csv")
@@ -64,7 +61,7 @@ def get_pred_ex_labels():
 
 
 # Functions to implement method 2: using rule of thumbs around treatment start/end \dates
-# Compute exacerbation labels
+# to compute exacerbation labels
 def compute_ex_labels_from_heuristics(antibioticsdata, patientsdata, O2_FEV1):
     for id in O2_FEV1.ID.unique():
         patient_antibioticsdata = get_rows_for_id(id, antibioticsdata)
