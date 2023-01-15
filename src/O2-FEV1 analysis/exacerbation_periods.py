@@ -24,8 +24,12 @@ def merge_pred_ex_labels_to(O2_FEV1, pred_ex_labels):
         validate="1:1",
     )
     print(
-        "The inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date recorded' outputs {} entries (initially {} in O2_FEV1, {} in pred_ex_labels)".format(
-            O2_FEV1_out.shape[0], O2_FEV1.shape[0], pred_ex_labels.shape[0]
+        "** Inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date recorded' **\nData has now {} entries and {} IDs (initially {} & {} in O2_FEV1, {} in pred_ex_labels)".format(
+            O2_FEV1_out.shape[0],
+            O2_FEV1_out.ID.nunique(),
+            O2_FEV1.shape[0],
+            O2_FEV1.ID.nunique(),
+            pred_ex_labels.shape[0],
         )
     )
     return O2_FEV1_out
