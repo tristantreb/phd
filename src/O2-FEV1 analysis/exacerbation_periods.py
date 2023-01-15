@@ -15,20 +15,22 @@ one_day = timedelta(days=1)
 
 # Merge exacerbation labels from the predictive classifier to O2_FEV1
 def merge_pred_ex_labels_to(O2_FEV1, pred_ex_labels):
-    print("Merging exacerbated labels into O2_FEV1")
-    O2_FEV1 = O2_FEV1.merge(
+    O2_FEV1_out = O2_FEV1.merge(
         pred_ex_labels["Is Exacerbated"],
         how="inner",
         on=["ID", "Date recorded"],
         validate="1:1",
     )
-    tmp = O2_FEV1.shape[0]
     print(
-        "Dropped {} O2_FEV1 entries with NaN exacerbation label. {} entries remain.".format(
-            tmp - O2_FEV1.shape[0], O2_FEV1.shape[0]
+        "** Inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date recorded' **\nData has now {} entries and {} IDs (initially {} & {} in O2_FEV1, {} in pred_ex_labels)".format(
+            O2_FEV1_out.shape[0],
+            len(O2_FEV1_out.ID.unique()),
+            O2_FEV1.shape[0],
+            len(O2_FEV1.ID.unique()),
+            pred_ex_labels.shape[0],
         )
     )
-    return O2_FEV1
+    return O2_FEV1_out
 
 
 # Method 1 using the predictive classifier
