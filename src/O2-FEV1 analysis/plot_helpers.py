@@ -1,4 +1,4 @@
-from math import ceil # math.ceil converts to int, np.ceil returns float
+from math import ceil  # math.ceil converts to int, np.ceil returns float
 
 import pandas as pd
 import plotly.express as px
@@ -77,8 +77,11 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         col=1,
     )
     # Define the number of bins for the distribution plots
-    bins_width = 0.2  # Liters
-    bins_n = ceil((max(x_stable) - min(x_stable)) / bins_width)
+    bins_n_stable = 40
+    # Bin width should be 1/15 of the span of the stable data
+    bins_width = (max(x_stable) - min(x_stable)) / bins_n_stable
+    # Bins number for the exacerabted data
+    bins_n_ex = ceil((max(x_exacerbated) - min(x_exacerbated)) / bins_width)
 
     # Add displot for x
     fig.add_trace(
@@ -86,8 +89,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
             x=x_stable,
             histnorm="probability",
             # name="Stable",
-            # add bins
-            nbinsx=bins_n,
+            nbinsx=bins_n_stable,
             marker=dict(color=stable_color_distplot),
         ),
         row=1,
@@ -97,7 +99,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
         go.Histogram(
             x=x_exacerbated,
             histnorm="probability",
-            nbinsx=bins_n,
+            nbinsx=bins_n_ex,
             # name="Exacerbated",
             marker=dict(color=ex_color_distplot),
         ),
