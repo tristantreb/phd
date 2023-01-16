@@ -58,6 +58,7 @@ def load():
     # List of columns to keep
     tmp_columns = df.columns
     columns_to_keep = [
+        "Patient_ID",
         "SmartCareID",
         "Recording Type",
         "Date/Time recorded",
