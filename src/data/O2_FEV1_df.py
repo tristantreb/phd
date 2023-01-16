@@ -57,7 +57,7 @@ def create():
 def extract_measure(measurements_in, label):
     # Could also filter by Recording Type
     measurements_out = measurements_in[measurements_in[label].notnull()][
-        ["ID", "Date recorded", label]
+        ["ID", "Patient_ID", "Date recorded", label]
     ]
     print("{} has {} measurements".format(label, measurements_out.shape[0]))
     return measurements_out
