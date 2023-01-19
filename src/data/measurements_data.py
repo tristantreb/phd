@@ -42,9 +42,6 @@ def load_id_map(with_correction=True):
         {"Patient_ID": str, "Study_ID": str, "SmartCareID": str}
     )
 
-    # Replace SmartCareID with ID
-    df_id_map.rename(columns={"SmartCareID": "ID"}, inplace=True)
-
     # Correct SmartCare IDs
     if with_correction:
         df_id_map = _correct_patient_id(df_id_map, "101", "0HeWh64M_zc5U5l2xqzAs4")
@@ -52,6 +49,9 @@ def load_id_map(with_correction=True):
         df_id_map = _correct_patient_id(df_id_map, "232", "-TKpptiCA5cASNKU0VSmx4")
         df_id_map = _correct_patient_id(df_id_map, "169", "-Cujq-NEcld_Keu_W1-Nw5")
         df_id_map = _correct_patient_id(df_id_map, "38", "-Q0Wf614z94DSTy6nXjyw7")
+
+    # Replace SmartCareID with ID
+    df_id_map.rename(columns={"SmartCareID": "ID"}, inplace=True)
 
     return df_id_map
 
@@ -62,7 +62,7 @@ def _correct_patient_id(df, id, true_patient_id):
             id, df.Patient_ID[df.SmartCareID == id].values, true_patient_id
         )
     )
-    df.loc[df["ID"] == id, "Patient_ID"] = true_patient_id
+    df.loc[df["SmartCareID"] == id, "Patient_ID"] = true_patient_id
     return df
 
 
