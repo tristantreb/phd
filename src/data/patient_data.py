@@ -1,5 +1,5 @@
+import biology
 import pandas as pd
-from biology import *
 from dateutil.relativedelta import relativedelta
 
 datadir = "../../../../SmartCareData/"
@@ -64,12 +64,9 @@ def load(use_calc_age=True, use_calc_predicted_fev1=True):
             axis=1,
         )
     if use_calc_predicted_fev1:
-        print("Replace Predicted FEV1 by the calculated version")
-        df["Predicted FEV1"] = df.apply(
-            lambda row: calc_predicted_fev1(row.Height, row.Age, row.Sex), axis=1
-        )
-        print("Drop FEV1 Set As")
-        df = df.drop(columns=["FEV1 Set As"])
+        print("Drop FEV1 Set As and Predicted FEV1")
+        df = df.drop(columns=["FEV1 Set As", "Predicted FEV1"])
+        df = _compute_predicted_fev1(df)
 
     # Apply data sanity checks
     print("\n* Applying data sanity checks *")
@@ -162,3 +159,20 @@ def _get_years_decimal_delta(start_date, end_date):
         relativedelta(end_date, start_date).years
         + relativedelta(end_date, start_date).months / 12
     )
+
+
+def _compute_predicted_fev1(df):
+    """
+    Compute Predicted FEV1
+    Checks that Predicted FEV1 is always in the range 2-5.5 L
+    """
+    print("Compute Calculated Predicted FEV1")
+    df["Predicted FEV1"] = df.apply(
+        lambda x: biology.calc_predicted_fev1(x.Height, x.Age, x.Sex), axis=1
+    )
+    # Assert type is float
+    assert df["Predicted FEV1"].dtype == float
+    # Assert Predicted FEV1 is always in the range 2-5.5
+    assert df["Predicted FEV1"].min() >= 2
+    assert df["Predicted FEV1"].max() <= 5.5
+    return df
