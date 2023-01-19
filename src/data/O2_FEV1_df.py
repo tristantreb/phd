@@ -26,6 +26,8 @@ def create():
     # Merge O2 with FEV1
     df_O2_FEV1 = pd.merge(df_O2, df_FEV1, on=["ID", "Date recorded"], how="outer")
     n_na = df_O2_FEV1.isna().sum().sum()
+    
+    # Dropping all NaNs, because the df contains only O2 and FEV1 measurements
     df_O2_FEV1.dropna(inplace=True)
     print(
         "Merged O2 and FEV1 into {} entries (initially {}, removed {} NaN)".format(
