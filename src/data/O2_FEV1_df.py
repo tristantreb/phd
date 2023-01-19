@@ -54,10 +54,15 @@ def create():
 
 # Function to extract one column from the data
 # TODO: check that there's only one measurement per day
-def extract_measure(measurements_in, label):
+def extract_measure(measurements_in, label, with_patient_id=False):
     # Could also filter by Recording Type
-    measurements_out = measurements_in[measurements_in[label].notnull()][
-        ["ID", "Patient_ID", "Date recorded", label]
-    ]
+    if with_patient_id:
+        measurements_out = measurements_in[measurements_in[label].notnull()][
+            ["User ID", "Date recorded", label]
+        ]
+    else:
+        measurements_out = measurements_in[measurements_in[label].notnull()][
+            ["ID", "Date recorded", label]
+        ]
     print("{} has {} measurements".format(label, measurements_out.shape[0]))
     return measurements_out
