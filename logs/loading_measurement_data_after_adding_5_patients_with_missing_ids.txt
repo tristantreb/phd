@@ -1,0 +1,83 @@
+** Loading measurements data **
+/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/O2-FEV1 analysis/../data/measurements_data.py:98: DtypeWarning: Columns (14) have mixed types. Specify dtype option on import or set low_memory=False.
+  df = pd.read_csv(datadir + "mydata.csv")
+
+* Dropping unnecessary columns from measurements data *
+Columns filtered ['User ID', 'UserName', 'Recording Type', 'Date/Time recorded', 'FEV 1', 'Predicted FEV', 'FEV 1 %', 'Weight in Kg', 'O2 Saturation', 'Pulse (BPM)', 'Rating', 'Temp (deg C)', 'Activity - Steps', 'Activity - Points']
+Dropping columns {'Sputum sample taken?', 'Calories', 'FEV 10'}
+
+* Applying data sanity checks *
+O2 Saturation sanity check
+IDs with O2 Saturation outside 70-100 % range: 
+          UserName  O2 Saturation
+50403     Kings001          127.0
+49087     Kings005          127.0
+53923     Kings007           48.0
+46706  Papworth001          127.0
+46119  Papworth002          127.0
+46782  Papworth010          104.0
+47102  Papworth010          103.0
+52484  Papworth027          127.0
+53781  Papworth028          127.0
+55379  Papworth028          127.0
+49622   leeds01222          127.0
+47510   leeds01320          127.0
+Removing 12 rows with O2 Saturation outside 70-100 % range
+
+* Looking for duplicates *
+Found 4649 duplicates, saving them in DataFiles/SmartCare/duplicates.xlsx
+Removing 4649 duplicated entries
+
+Loaded measurements data with 125180 entries (initially 129841, removed 4661)
+Correct ID 101's Patient_ID from ['0HeWh64M_zc5U512xqzAs4'] to 0HeWh64M_zc5U5l2xqzAs4
+Correct ID 125's Patient_ID from ['1au5biSTt0bNWgfl0Wltr5'] to 1au5biSTt0bNWgfI0WItr5
+Correct ID 232's Patient_ID from ['TKpptiCA5cASNKU0VSmx4'] to -TKpptiCA5cASNKU0VSmx4
+Correct ID 169's Patient_ID from ['Cujq-NEcld_Keu_W1-Nw5'] to -Cujq-NEcld_Keu_W1-Nw5
+Correct ID 38's Patient_ID from ['Q0Wf614z94DSTy6nXjyw7'] to -Q0Wf614z94DSTy6nXjyw7
+
+* Merging measurements data with ID map to retrieve SmartCare ID *
+List User IDs that have no SmartCare ID
+['username davetest, user id o0egatM37za2ZZ2jfs3AJ5'
+ 'username Ryan007, user id 31KnMK5Z4A6OKErB1C5-i6'
+ 'username PapBen, user id GyK_hmIGxVaT7chwlGDio7'
+ 'username scguest, user id ci0iszS3ov6G2U-dKDiAE4'
+ 'username PapworthSummer, user id 9YevbyBS8VdwRL3RRUGY86'
+ 'username Texas, user id MB0_-sqQBxhrKyfoOxUaF4'
+ 'username EmemTest, user id 9MKCpOe_FO_LcU9C0oCPJ4']
+
+124985 entries left after merge (initial 125180, removed 195)
+
+** Loading patient data **
+/Applications/anaconda3/envs/phd/lib/python3.10/site-packages/openpyxl/worksheet/_read_only.py:79: UserWarning: Unknown extension is not supported and will be removed
+  for idx, row in parser.parse():
+/Applications/anaconda3/envs/phd/lib/python3.10/site-packages/openpyxl/worksheet/_read_only.py:79: UserWarning: Unknown extension is not supported and will be removed
+  for idx, row in parser.parse():
+
+* Dropping unnecessary columns from patient data *
+Columns filtered: ['ID', 'Study Date', 'DOB', 'Age', 'Sex', 'Height', 'Weight', 'Predicted FEV1', 'FEV1 Set As']
+Columns dropped: {'Sputum Samples', 'Freezer Required', 'Age 18 Years', 'Telemetric Measures', 'Genetic Testing', 'CFQR Quest Comp', 'Informed Consent', 'Date Last PE Start', 'Unable Informed Consent', 'Pulmonary Exacerbation', 'GP Letter Sent', 'Date Last PE Stop', 'Remote Monitoring App User ID', 'Study Number', 'Study Email', 'Transplant Recipients', 'Date Consent Obtained', 'Less Exacerbation', 'Unable Sputum Samples', 'Hospital', 'Comments', 'Inconvenience Payment'}
+
+* Correcting patient data *
+ID 60: Corrected height 60 from 1.63 to 163.0
+ID 66: Corrected height for ID 66 from 1.62 to 162.0
+Replace Age by calculate age
+Replace Predicted FEV1 by the calculated version
+Drop FEV1 Set As
+
+* Applying data sanity checks *
+Loaded patient data with 147 entries (147 initially)
+
+** Loading antibiotics data **
+
+* Dropping unnecessary columns from antibiotics data *
+Columns filetered: ['ID', 'Antibiotic Name', 'Route', "Home IV's'", 'Start Date', 'Stop Date']
+Columns dropped: {'Hospital', 'Antibiotic ID', 'Study Number'}
+
+** Creating DataFrame for O2 FEV1 analysis **
+O2 Saturation has 14011 measurements
+FEV1 has 9937 measurements
+Merged O2 and FEV1 into 9527 entries (initially 14421, removed 4894 NaN)
+Asserting that there's only one measurement per ID per day
+
+Created df_O2_FEV1 with 9527 entries (initially 14421, removed 4894)
+UsageError: Line magic function `%%capture` not found.
