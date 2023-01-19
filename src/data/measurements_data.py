@@ -1,3 +1,4 @@
+import biology
 import pandas as pd
 
 datadir = "../../../../SmartCareData/"
@@ -107,7 +108,7 @@ def load_measurements_without_smartcare_id():
         "Recording Type",
         "Date/Time recorded",
         "FEV 1",
-        "Predicted FEV",  # What is this?
+        # "Predicted FEV",  # We use the calc version
         "FEV 1 %",  # Is this FEV 1 / Predicted FEV?
         "Weight in Kg",
         "O2 Saturation",
@@ -140,7 +141,7 @@ def load_measurements_without_smartcare_id():
             "UserName": str,
             "Recording Type": str,
             "FEV1": float,
-            "Predicted FEV": float,
+            # "Predicted FEV": float,
             "FEV1 %": float,
             "Weight (kg)": float,
             "O2 Saturation": float,
@@ -163,7 +164,6 @@ def load_measurements_without_smartcare_id():
     # Apply data sanity checks
     print("\n* Applying data sanity checks *")
     df.apply(_fev1_sanity_check, axis=1)
-    # df["Predicted FEV"] = df.apply(_predicted_fev_sanity_check, axis=1)
     df = _O2_saturation_sanity_check(df)
 
     # Look for duplicates
@@ -198,12 +198,6 @@ def _fev1_sanity_check(row):
             )
         )
     return -1
-
-
-# def _predicted_fev_sanity_check(row):
-#     if row["Predicted FEV"] < 1 or row["Predicted FEV"] > 5.5:
-#         print("Warning - ID {} has Predicted FEV ({}) outside 1-5.5 L range".format(row.ID, row["Predicted FEV"]))
-#     return -1
 
 
 def _O2_saturation_sanity_check(df):

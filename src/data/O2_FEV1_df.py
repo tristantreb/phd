@@ -1,4 +1,5 @@
 import antibiotics_data
+import biology
 import measurements_data
 import pandas as pd
 import patient_data
@@ -41,6 +42,9 @@ def create():
     # Merge O2_FEV1 with patient data
     df_O2_FEV1 = pd.merge(df_O2_FEV1, df_patient, on="ID", how="left")
 
+    # Compute Predicted FEV1 %
+    df_O2_FEV1 = _compute_predicted_fev1_perct(df_O2_FEV1)
+
     # # Merge O2_FEV1 with antibiotics data
     # df_O2_FEV1 = pd.merge(df_O2_FEV1, df_antibiotics, on="ID", how="outer")
 
@@ -66,3 +70,16 @@ def extract_measure(measurements_in, label, with_patient_id=False):
         ]
     print("{} has {} measurements".format(label, measurements_out.shape[0]))
     return measurements_out
+
+
+def _compute_predicted_fev1_perct(df):
+    """
+    Compute FEV1 % Predicted = FEV1 / Predicted FEV1 * 100
+    Predicted FEV1 should never be 0
+    """
+    df["FEV1 % Predicted"] = df.apply(
+        lambda x: x["FEV1"] / x["Predicted FEV1"] * 100, axis=1
+    )
+    # Assert type is float
+    assert df["FEV1 % Predicted"].dtype == float
+    return df
