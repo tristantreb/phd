@@ -1,5 +1,5 @@
-import biology
 import pandas as pd
+import sanity_checks
 
 datadir = "../../../../SmartCareData/"
 
@@ -9,7 +9,7 @@ def load():
     n_initial_entries = df.shape[0]
 
     df_id_map = load_id_map()
-    df = get_smartcare_id(df, df_id_map)
+    df = merge_with_id_mapping(df, df_id_map)
 
     # Drop columns "User ID" and "UserName" as they are not needed
     df.drop(columns=["User ID", "UserName", "Study_ID"], inplace=True)
@@ -35,6 +35,8 @@ def load_id_map(with_correction=True):
     # The SmartCare ID is the identifier used in the SmartCare clinical data
     # The Patient_ID is the identifier used in the measurements data
     # The Study_ID is the identifier used in ??? - No idea I've never needed it
+
+    print("\n** Loading ID map **")
 
     df_id_map = pd.read_excel(datadir + "patientidnew.xlsx")
 
@@ -67,7 +69,7 @@ def _correct_patient_id(df, id, true_patient_id):
     return df
 
 
-def get_smartcare_id(
+def merge_with_id_mapping(
     df_measurements, df_id_map, left_merge_on="User ID", right_merge_on="Patient_ID"
 ):
     # Merge
@@ -109,14 +111,14 @@ def load_measurements_without_smartcare_id():
         "Date/Time recorded",
         "FEV 1",
         # "Predicted FEV",  # We use the calc version
-        "FEV 1 %",  # Is this FEV 1 / Predicted FEV?
+        # "FEV 1 %",  # Is this FEV 1 / Predicted FEV? Compare this to our calculated version of Predicted FEV1 %
         "Weight in Kg",
         "O2 Saturation",
         "Pulse (BPM)",
         "Rating",  # What is this?
         "Temp (deg C)",
-        "Activity - Steps",
-        "Activity - Points",
+        # "Activity - Steps",
+        # "Activity - Points",
     ]
     df = df[columns_to_keep]
     print("\n* Dropping unnecessary columns from measurements data *")
@@ -124,15 +126,18 @@ def load_measurements_without_smartcare_id():
     print("Dropping columns {}".format(set(tmp_columns) - set(columns_to_keep)))
 
     # Rename columns
+    print("\n* Renaming columns *")
+    rename_dic = {
+        "Date/Time recorded": "Date recorded",
+        "FEV 1": "FEV1",
+        # "FEV 1 %": "FEV1 %",
+        "Weight in Kg": "Weight (kg)",
+    }
     df.rename(
-        columns={
-            "Date/Time recorded": "Date recorded",
-            "FEV 1": "FEV1",
-            "FEV 1 %": "FEV1 %",
-            "Weight in Kg": "Weight (kg)",
-        },
+        columns=rename_dic,
         inplace=True,
     )
+    print("Renamed columns {}".format(rename_dic))
 
     # Enforce data types
     df = df.astype(
@@ -141,15 +146,14 @@ def load_measurements_without_smartcare_id():
             "UserName": str,
             "Recording Type": str,
             "FEV1": float,
-            # "Predicted FEV": float,
-            "FEV1 %": float,
+            # "FEV1 %": float,
             "Weight (kg)": float,
             "O2 Saturation": float,
             "Pulse (BPM)": int,
             "Rating": int,
             "Temp (deg C)": float,
-            "Activity - Steps": int,
-            "Activity - Points": int,
+            # "Activity - Steps": int,
+            # "Activity - Points": int,
         },
         # This allows to ignore errors when casting. We added this because you can't cast a NaN to int
         errors="ignore",
@@ -157,14 +161,26 @@ def load_measurements_without_smartcare_id():
     # Cast datetime to date
     df["Date recorded"] = pd.to_datetime(df["Date recorded"]).dt.date
 
-    # Correct erroneous data
-    # print("\n* Correcting measurements data *")
-    # df = _correct_measurements_data(df)
-
     # Apply data sanity checks
     print("\n* Applying data sanity checks *")
+
+    print("\nFEV1")
     df.apply(_fev1_sanity_check, axis=1)
+
+    print("\nWeight (kg)")
+    df = _correct_weight(df)
+    df.apply(lambda x: sanity_checks.weight(x["Weight (kg)"], x["UserName"]), axis=1)
+
+    print("\nPulse (BPM)")
+    df = _correct_pulse(df)
+    df.apply(_pulse_sanity_check, axis=1)
+
+    print("\nO2 Saturation")
     df = _O2_saturation_sanity_check(df)
+
+    print("\nTemp (deg C)")
+    df = _correct_temp(df)
+    df.apply(_temp_sanity_check, axis=1)
 
     # Look for duplicates
     print("\n* Looking for duplicates *")
@@ -193,15 +209,115 @@ def load_measurements_without_smartcare_id():
 def _fev1_sanity_check(row):
     if row.FEV1 < 0.1 or row.FEV1 > 5.5:
         print(
-            "Warning - UserName {} has FEV1 ({}) outside 0.1-5.5 L range".format(
-                row.UserName, row.FEV1
+            "Warning - UserName {} has FEV1 ({}) outside 0.1-5.5 L range {}".format(
+                row.UserName, row.FEV1, row["Date recorded"]
+            )
+        )
+    return -1
+
+
+def _correct_weight(df):
+    # Warning - ID PapworthSummer has Weight (28.9375) outside 30-122 kg range
+    # Warning - ID PapworthSummer has Weight (29.200000000000003) outside 30-122 kg range
+    # Warning - ID EmemTest has Weight (14.9625) outside 30-122 kg range
+    # Warning - ID FPH0011 has Weight (7.8) outside 30-122 kg range
+    # PapworthSummer, EmemTest and FPH0011 are test users that are not in the id mapping file.
+    # They'd be removed with merge_with_id_mapping(), so we can ignore them here.
+
+    # Warning - ID Papworth033 has Weight (6.0) outside 30-122 kg range
+    # Warning - ID Papworth033 has Weight (6.0) outside 30-122 kg range
+    # This is SmartCare ID 134, which has a weight of 61 kg in the clinical data.
+    # Let's remove those 2 entries
+    df = _remove_recording(df, "Papworth033", "Weight (kg)", 6.0)
+
+    # Warning - ID Kings013 has Weight (0.55) outside 30-122 kg range
+    # This is SmartCare ID 63, which has a weight of 54.3 kg in the clinical data.
+    # Let's remove this entry
+    df = _remove_recording(df, "Kings013", "Weight (kg)", 0.55)
+
+    # Warning - ID Papworth017 has Weight (8.262500000000001) outside 30-122 kg range
+    # This is SmartCare ID 102, which has a wieght of 57.8 kg in the clinical data.
+    # Let's remove this entry
+    df = _remove_recording(df, "Papworth017", "Weight (kg)", 8.262500000000001)
+
+    # Warning - ID leeds01730 has Weight (1056.0) outside 30-122 kg range
+    # This is SmartCare ID 70, which has a weight of 105.2 kg in the clinical data.
+    # Let's remove this entry
+    df = _remove_recording(df, "leeds01730", "Weight (kg)", 1056.0)
+
+    # Warning - ID Papworth019 has Weight (20.0) outside 30-122 kg range
+    # This is SmartCare ID 113, which has a weight of 50.4 kg in the clinical data.
+    # Let's remove this entry
+    df = _remove_recording(df, "Papworth019", "Weight (kg)", 20.0)
+    return df
+
+
+def _remove_recording(df, username, column, value):
+    idx = df[(df["UserName"] == username) & (df[column] == value)].index
+    print(
+        "Dropping {} entries with {} = {} for user {}".format(
+            idx.shape[0], column, value, username
+        )
+    )
+    df.drop(idx, inplace=True)
+    return df
+
+
+def _correct_pulse(df):
+    # For some reason, there are some entries with Pulse (BPM) == 511, we'll remove them
+    # Drop idx where Pusle (BPM) is equal to 511
+    idx = df[df["Pulse (BPM)"] == 511].index
+    print("Dropping {} entries with Pulse (BPM) == 511)".format(idx.shape[0]))
+    print(df.loc[idx, ["Pulse (BPM)", "UserName"]])
+    df.drop(idx, inplace=True)
+
+    # Warning - UserName leeds01670 has Pulse (30.0) outside 40-200 range
+    # This recording is clearly an outlier, all other recordings for this user are above 80 BPM
+    # Let's remove this entry
+    df = _remove_recording(df, "leeds01670", "Pulse (BPM)", 30.0)
+
+    return df
+
+
+def _correct_temp(df):
+    # Drop idx where Temp (deg C) is below 15
+    idx = df[df["Temp (deg C)"] < 15].index
+    print("Dropping {} entries with Temp (deg C) < 15".format(idx.shape[0]))
+    # Print all temp values and usernames
+    print(df.loc[idx, ["Temp (deg C)", "UserName"]])
+    df.drop(idx, inplace=True)
+
+    # Drop idx where Temp (deg C) is above 60
+    idx = df[df["Temp (deg C)"] > 60].index
+    print("Dropping {} entries with Temp (deg C) > 60".format(idx.shape[0]))
+    print(df.loc[idx, ["Temp (deg C)", "UserName"]])
+    df.drop(idx, inplace=True)
+    return df
+
+
+# Pusle (BPM) should be in range 40-200
+def _pulse_sanity_check(row):
+    if row["Pulse (BPM)"] < 40 or row["Pulse (BPM)"] > 200:
+        print(
+            "Warning - UserName {} has Pulse ({}) outside 40-200 range".format(
+                row.UserName, row["Pulse (BPM)"]
+            )
+        )
+    return -1
+
+
+# Temperature should be in range 35-40
+def _temp_sanity_check(row):
+    if row["Temp (deg C)"] < 34 or row["Temp (deg C)"] > 40:
+        print(
+            "Warning - UserName {} has Temp ({}) outside 35-40 range".format(
+                row.UserName, row["Temp (deg C)"]
             )
         )
     return -1
 
 
 def _O2_saturation_sanity_check(df):
-    print("O2 Saturation sanity check")
     # Find all rows where O2 Saturation is outside 70-100 % range
     idx = df[(df["O2 Saturation"] < 70) | (df["O2 Saturation"] > 100)].index
     # Print unique IDs with number of rows with O2 Saturation outside 70-100 % range
@@ -211,6 +327,8 @@ def _O2_saturation_sanity_check(df):
         )
     )
     # Remove rows with O2 Saturation outside 70-100 % range
-    print("Removing {} rows with O2 Saturation outside 70-100 % range".format(len(idx)))
+    print(
+        "Dropping {} entries with O2 Saturation outside 70-100 % range".format(len(idx))
+    )
     df.drop(idx, inplace=True)
     return df
