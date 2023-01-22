@@ -1,5 +1,6 @@
 import biology
 import pandas as pd
+import sanity_checks
 from dateutil.relativedelta import relativedelta
 
 datadir = "../../../../SmartCareData/"
@@ -73,7 +74,7 @@ def load(use_calc_age=True, use_calc_predicted_fev1=True):
     df.apply(_age_sanity_check, axis=1)
     df.apply(_sex_sanity_check, axis=1)
     df.apply(_height_sanity_check, axis=1)
-    df.apply(_weight_sanity_check, axis=1)
+    df.apply(lambda x: sanity_checks.weight(x.Weight, x.ID), axis=1)
     df.apply(_predicted_fev1_sanity_check, axis=1)
 
     print(
@@ -104,15 +105,6 @@ def _height_sanity_check(row):
         row.Height >= 120 and row.Height <= 220
     ), "Warning - ID {} has Height ({}) outside 120-220cm range".format(
         row.ID, row.Height
-    )
-    return -1
-
-
-def _weight_sanity_check(row):
-    assert (
-        row.Weight >= 30 and row.Weight <= 120
-    ), "Warning - ID {} has Weight ({}) outside 30-120kg range".format(
-        row.ID, row.Weight
     )
     return -1
 
