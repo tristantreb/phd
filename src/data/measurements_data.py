@@ -165,6 +165,7 @@ def load_measurements_without_smartcare_id():
     print("\n* Applying data sanity checks *")
 
     print("\nFEV1")
+    df = _correct_fev1(df)
     df.apply(_fev1_sanity_check, axis=1)
 
     print("\nWeight (kg)")
@@ -203,6 +204,14 @@ def load_measurements_without_smartcare_id():
             df.shape[0], n_initial_entries, n_initial_entries - df.shape[0]
         )
     )
+    return df
+
+
+def _correct_fev1(df):
+    # ID 54 has a series of FEV1 values < 2, no values for 6 months, then a value of 3.5
+    # This 3.45 value is possible, but it'll give more noise than meaning to our model - especially until we introduce time
+    # Let's remove it
+    df = _remove_recording(df, "Kings004", "FEV1", 3.45)
     return df
 
 
