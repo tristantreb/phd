@@ -22,7 +22,7 @@ class beliefPropagation:
         return dist
 
     @staticmethod
-    def factor_message_up(incoming_message, cpt_B_A):
+    def factor_message_up(incoming_message, cpt_B_A):   
         """
         The factor mode message is the product of all received messages on the other edges, multiplied by the conditional probability distribution for the factor and summed over all variables except the one being sent to
         :param incoming_message: stochastic vector from A
