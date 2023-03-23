@@ -134,6 +134,7 @@ def calc_pgmpy_cpt(parentA: variableNode, parentB: variableNode, C: variableNode
             # Get the max possible range of for C=parentA*parentB
             C_range = np.array([a_low * b_low, a_up * b_up])
 
+            total = 0
             for c in range(len(C.bins) - 1):
                 # Take a bin in C
                 C_low = C.bins[c]
@@ -148,8 +149,11 @@ def calc_pgmpy_cpt(parentA: variableNode, parentB: variableNode, C: variableNode
                     val, abserr = integrate.quad(
                         p_fev1, C_low, C_up, args=(a_low, a_up, b_low, b_up)
                     )
-                    cpt[c, 2 * i + j] = round(val, 3)
+                    total += val
+                    cpt[c, 2 * i + j] = val
                 else:
                     # The intersection is empty
                     cpt[c, 2 * i + j] = 0
+            assert abs(total - 1) < 0.00001, f"The sum of the probabilities should be 1, U({a_low}, {a_up}), B({b_low}, {b_up})]"
+
     return cpt
