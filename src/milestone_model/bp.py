@@ -117,43 +117,69 @@ def calc_cpt(parentA: variableNode, parentB: variableNode, C: variableNode):
 
 
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
-def calc_pgmpy_cpt(parentA: variableNode, parentB: variableNode, C: variableNode):
+def calc_pgmpy_cpt(
+    parentA: variableNode, parentB: variableNode, C: variableNode, debug=False
+):
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
-    cpt = np.empty((len(C.bins) - 1, (len(parentB.bins) - 1) * (len(parentA.bins) - 1)))
+    nbinsA = len(parentA.bins) - 1
+    nbinsB = len(parentB.bins) - 1
+    nbinsC = len(C.bins) - 1
+    cpt = np.empty((nbinsC, nbinsA * nbinsB))
+    print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
 
-    for i in range(len(parentB.bins) - 1):
+    # Set error tolerance
+    tol = 1e-6
+    for i in range(nbinsB):
+        # Initialize the index of the current bin in the cpt
+        cpt_index = i * (nbinsA - 1)
+        if debug:
+            print("cpt index", cpt_index)
+
         # Take a bin in parentA
         b_low = parentB.bins[i]
         b_up = parentB.bins[i + 1]
 
-        for j in range(len(parentA.bins) - 1):
+        for j in range(nbinsA):
             # Take a bin in parentB
             a_low = parentA.bins[j]
             a_up = parentA.bins[j + 1]
 
             # Get the max possible range of for C=parentA*parentB
-            C_range = np.array([a_low * b_low, a_up * b_up])
+            C_min = a_low * b_low
+            C_max = a_up * b_up
 
             total = 0
-            for c in range(len(C.bins) - 1):
+            abserr = -1
+            for c in range(nbinsC):
                 # Take a bin in C
                 C_low = C.bins[c]
                 C_up = C.bins[c + 1]
-
                 # Get the inner intersection of C_range and [C_low, C_up]
                 # Compute P(C | parentA, parentB)
-                if (C_range[0] >= C_low and C_range[0] < C_up) or (
-                    C_range[1] > C_low and C_range[1] <= C_up
+                if (
+                    (C_min - C_low < tol and C_max - C_low > -tol)
+                    or (C_min - C_up < tol and C_max - C_up > -tol)
+                    or ((C_min - C_low >= -tol) and (C_max - C_up <= tol))
                 ):
                     # The intersection is not empty
                     val, abserr = integrate.quad(
                         p_fev1, C_low, C_up, args=(a_low, a_up, b_low, b_up)
                     )
                     total += val
-                    cpt[c, 2 * i + j] = val
+                    cpt[c, cpt_index + i + j] = val
+                    if debug:
+                        print(
+                            f"idx {c, cpt_index + i + j}, {cpt_index} + {i} + {j}, C_low {C_low}, C_up {C_up}, val {val}, C_min {C_min}, C_max {C_max}"
+                        )
                 else:
                     # The intersection is empty
-                    cpt[c, 2 * i + j] = 0
-            assert abs(total - 1) < 0.00001, f"The sum of the probabilities should be 1, U({a_low}, {a_up}), B({b_low}, {b_up})]"
+                    cpt[c, cpt_index + i + j] = 0
+                    if debug:
+                        print(f"idx {c, cpt_index + i + j} is empty")
+            if debug:
+                print(f"P(C|U,B) = {cpt[:, cpt_index + i + j]}")
+            assert (
+                abs(total - 1) < tol
+            ), f"The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, cpt_index + i + j]}\n With C range {C_range}\n For the C bins: {C.bins}\n Abserr = {abserr}"
 
     return cpt
