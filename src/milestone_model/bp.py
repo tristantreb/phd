@@ -78,45 +78,76 @@ class variableNode:
         return [[self.bin_width / (self.b - self.a)] for _ in range(len(self.bins) - 1)]
 
 
+
+
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
-def calc_cpt(parentA: variableNode, parentB: variableNode, C: variableNode):
-    cpt = np.nan((len(parentA.bins) - 1, len(parentB.bins) - 1, len(C.bins) - 1))
+# Creates a 3D array from 3 variables 
+def calc_cpt(
+    parentA: variableNode, parentB: variableNode, C: variableNode, debug=False
+):
+    # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
+    nbinsA = len(parentA.bins) - 1
+    nbinsB = len(parentB.bins) - 1
+    nbinsC = len(C.bins) - 1
+    cpt = np.empty((nbinsC, nbinsA, nbinsB))
+    print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
 
-    for i in range(len(parentA.bins) - 1):
-        # Take a bin in  parentA
-        a_low = parentA.bins[i]
-        a_up = parentA.bins[i + 1]
+    # Set error tolerance
+    tol = 1e-6
+    for i in range(nbinsA):
+        # Take a bin in parentA
+        b_low = parentA.bins[i]
+        b_up = parentA.bins[i + 1]
 
-        for j in range(len(parentB.bins) - 1):
-            # Take a bin in  parentB
-            b_low = parentB.bins[j]
-            b_up = parentB.bins[j + 1]
+        for j in range(nbinsB):
+            # Take a bin in parentB
+            a_low = parentB.bins[j]
+            a_up = parentB.bins[j + 1]
 
             # Get the max possible range of for C=parentA*parentB
-            C_range = np.array([a_low * b_low, a_up * b_up])
+            C_min = a_low * b_low
+            C_max = a_up * b_up
 
-            for k in range(len(C.bins) - 1):
-                # Take a bin in  C
-                C_low = C.bins[k]
-                C_up = C.bins[k + 1]
-
+            total = 0
+            abserr = -1
+            for c in range(nbinsC):
+                # Take a bin in C
+                C_low = C.bins[c]
+                C_up = C.bins[c + 1]
                 # Get the inner intersection of C_range and [C_low, C_up]
                 # Compute P(C | parentA, parentB)
-                if (C_range[0] >= C_low and C_range[0] < C_up) or (
-                    C_range[1] > C_low and C_range[1] <= C_up
+                if (
+                    (C_min - C_low < tol and C_max - C_low > -tol)
+                    or (C_min - C_up < tol and C_max - C_up > -tol)
+                    or ((C_min - C_low >= -tol) and (C_max - C_up <= tol))
                 ):
                     # The intersection is not empty
                     val, abserr = integrate.quad(
                         p_fev1, C_low, C_up, args=(a_low, a_up, b_low, b_up)
                     )
-                    cpt[i, j, k] = val
+                    total += val
+                    cpt[c, i, j] = val
+                    if debug:
+                        print(
+                            f"idx {c, i, j}, C_low {C_low}, C_up {C_up}, val {val}, C_min {C_min}, C_max {C_max}"
+                        )
                 else:
                     # The intersection is empty
-                    cpt[i, j, k] = 0
+                    cpt[c, i, j] = 0
+                    if debug:
+                        print(f"idx {c, i, j} is empty")
+            if debug:
+                print(f"P(C|U,B) = {cpt[:, i, j]}")
+            assert (
+                abs(total - 1) < tol
+            ), f"The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, i, j]}\n With C range {C_min, C_max}\n For the C bins: {C.bins}\n Abserr = {abserr}"
+
     return cpt
 
 
+
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
+# Creates a 2D array with 3 variables
 def calc_pgmpy_cpt(
     parentA: variableNode, parentB: variableNode, C: variableNode, debug=False
 ):
@@ -125,7 +156,7 @@ def calc_pgmpy_cpt(
     nbinsB = len(parentB.bins) - 1
     nbinsC = len(C.bins) - 1
     cpt = np.empty((nbinsC, nbinsA * nbinsB))
-    print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
+    print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x (A x B)) ")
 
     # Set error tolerance
     tol = 1e-6
