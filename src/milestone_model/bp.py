@@ -214,3 +214,14 @@ def calc_pgmpy_cpt(
             ), f"The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, cpt_index + i + j]}\n With C range {C_range}\n For the C bins: {C.bins}\n Abserr = {abserr}"
 
     return cpt
+
+# Given a value and an array of bins, this returns the bin that the value falls into
+def get_bin_for_value(value, bins):
+    hist, bins = np.histogram(value, bins=bins)
+    if value == bins[-1]:
+        return "not allowed"
+
+    idx = np.where(hist == 1)[0].item()
+    lower_idx = bins[idx].item()
+    upper_idx = bins[idx + 1].item()
+    return "[{}; {}[".format(lower_idx, upper_idx)
