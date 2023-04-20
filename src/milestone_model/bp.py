@@ -78,10 +78,8 @@ class variableNode:
         return [[self.bin_width / (self.b - self.a)] for _ in range(len(self.bins) - 1)]
 
 
-
-
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
-# Creates a 3D array from 3 variables 
+# Creates a 3D array from 3 variables
 def calc_cpt(
     parentA: variableNode, parentB: variableNode, C: variableNode, debug=False
 ):
@@ -143,7 +141,6 @@ def calc_cpt(
             ), f"The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, i, j]}\n With C range {C_min, C_max}\n For the C bins: {C.bins}\n Abserr = {abserr}"
 
     return cpt
-
 
 
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
@@ -211,17 +208,19 @@ def calc_pgmpy_cpt(
                 print(f"P(C|U,B) = {cpt[:, cpt_index + i + j]}")
             assert (
                 abs(total - 1) < tol
-            ), f"The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, cpt_index + i + j]}\n With C range {C_range}\n For the C bins: {C.bins}\n Abserr = {abserr}"
+            ), f"The sum of the probabilities should be 1, got {total}\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, cpt_index + i + j]}\n With C range [{C_low}; {C_up}]\n For the C bins: {C.bins}\n Integral abserr = {abserr}"
 
     return cpt
 
-# Given a value and an array of bins, this returns the bin that the value falls into
-def get_bin_for_value(value, bins):
-    hist, bins = np.histogram(value, bins=bins)
-    if value == bins[-1]:
-        return "not allowed"
 
-    idx = np.where(hist == 1)[0].item()
+# Given an observation and an array of bins, this returns the bin that the value falls into
+def get_bin_for_value(obs: float, bins: np.array, tol=1.0e-8):
+    # Center bins around value observed
+    relative_bins = bins - obs - tol
+
+    # Find the highest negative value of the bins relative to centered bins
+    idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
+
     lower_idx = bins[idx].item()
     upper_idx = bins[idx + 1].item()
-    return "[{}; {}[".format(lower_idx, upper_idx)
+    return ["[{}; {}[".format(lower_idx, upper_idx), idx]
