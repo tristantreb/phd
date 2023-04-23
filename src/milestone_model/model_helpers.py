@@ -1,6 +1,12 @@
+# Helper functions to create models for belief propagation
+
 import numpy as np
 import pandas as pd
 import scipy.integrate as integrate
+
+# Set global value for tolerance.
+# This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
+tol_global = 1e-8
 
 
 ## Discretized PDF with the sampling solution
@@ -68,20 +74,34 @@ class variableNode:
         self.a = a
         self.b = b
         self.bin_width = bin_width
-        self.bins = np.arange(a, b + bin_width, bin_width)
+        # We're adding bin_width - tol_global to include b in the array of bins so that the last bin can be computed
+        # The 1st bin is [a; self.bins[1])
+        # The nth bin is [self.bins[n]; self.bins[n+1]]
+        # The last bin is [self.bins[-2]; b)
+        self.bins = np.arange(a, b + bin_width - tol_global, bin_width)
 
     def sample(self):
         return np.random.uniform(self.a, self.b)
 
     @staticmethod
-    def marginal(self):
-        return [[self.bin_width / (self.b - self.a)] for _ in range(len(self.bins) - 1)]
+    def uniform_prior(self):
+        prior = np.array(
+            [[1 / (len(self.bins) - 1)] for _ in range(len(self.bins) - 1)]
+        )
+        assert (
+            sum(prior) - 1
+        ) < tol_global, f"Error computing uniform prior: The sum of the probabilities should be 1, got {sum(prior)}"
+        return prior
 
 
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
 # Creates a 3D array from 3 variables
 def calc_cpt(
-    parentA: variableNode, parentB: variableNode, C: variableNode, debug=False
+    parentA: variableNode,
+    parentB: variableNode,
+    C: variableNode,
+    tol=tol_global,
+    debug=False,
 ):
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
     nbinsA = len(parentA.bins) - 1
@@ -90,8 +110,6 @@ def calc_cpt(
     cpt = np.empty((nbinsC, nbinsA, nbinsB))
     print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
 
-    # Set error tolerance
-    tol = 1e-6
     for i in range(nbinsA):
         # Take a bin in parentA
         b_low = parentA.bins[i]
@@ -138,7 +156,7 @@ def calc_cpt(
                 print(f"P(C|U,B) = {cpt[:, i, j]}")
             assert (
                 abs(total - 1) < tol
-            ), f"The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, i, j]}\n With C range {C_min, C_max}\n For the C bins: {C.bins}\n Abserr = {abserr}"
+            ), f"Error calculating cpt: The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, i, j]}\n With C range {C_min, C_max}\n For the C bins: {C.bins}\n Abserr = {abserr}"
 
     return cpt
 
@@ -146,7 +164,11 @@ def calc_cpt(
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
 # Creates a 2D array with 3 variables
 def calc_pgmpy_cpt(
-    parentA: variableNode, parentB: variableNode, C: variableNode, debug=False
+    parentA: variableNode,
+    parentB: variableNode,
+    C: variableNode,
+    tol=tol_global,
+    debug=False,
 ):
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
     nbinsA = len(parentA.bins) - 1
@@ -155,8 +177,6 @@ def calc_pgmpy_cpt(
     cpt = np.empty((nbinsC, nbinsA * nbinsB))
     print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x (A x B)) ")
 
-    # Set error tolerance
-    tol = 1e-6
     for i in range(nbinsB):
         # Initialize the index of the current bin in the cpt
         cpt_index = i * (nbinsA - 1)
@@ -208,13 +228,13 @@ def calc_pgmpy_cpt(
                 print(f"P(C|U,B) = {cpt[:, cpt_index + i + j]}")
             assert (
                 abs(total - 1) < tol
-            ), f"The sum of the probabilities should be 1, got {total}\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, cpt_index + i + j]}\n With C range [{C_low}; {C_up}]\n For the C bins: {C.bins}\n Integral abserr = {abserr}"
+            ), f"The sum of the probabilities should be 1, got {total}\n Distributions: parentA ~ U({a_low}, {a_up}), parentB ~ U({b_low}, {b_up})\n P(child|parentA,parentB) = {cpt[:, cpt_index + i + j]}\n Range of the child var: [{C_low}; {C_up}]\n Bins of the child: {C.bins}\n Integral abserr = {abserr}"
 
     return cpt
 
 
 # Given an observation and an array of bins, this returns the bin that the value falls into
-def get_bin_for_value(obs: float, bins: np.array, tol=1.0e-8):
+def get_bin_for_value(obs: float, bins: np.array, tol=tol_global):
     # Center bins around value observed
     relative_bins = bins - obs - tol
 
