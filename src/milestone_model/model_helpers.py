@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 import scipy.integrate as integrate
+from scipy.stats import norm
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -69,7 +70,8 @@ def p_fev1(x, a, b, c, d):
 
 ## Variable node
 class variableNode:
-    def __init__(self, name: str, a, b, bin_width):
+    def __init__(self, name: str, a, b, bin_width, prior={"type": "uniform"}):
+        self.tol = tol_global
         self.name = name
         self.a = a
         self.b = b
@@ -78,20 +80,38 @@ class variableNode:
         # The 1st bin is [a; self.bins[1])
         # The nth bin is [self.bins[n]; self.bins[n+1]]
         # The last bin is [self.bins[-2]; b)
-        self.bins = np.arange(a, b + bin_width - tol_global, bin_width)
+        self.bins = np.arange(a, b + bin_width - self.tol, bin_width)
+        self.prior = self.set_prior(self, prior)
 
     def sample(self):
         return np.random.uniform(self.a, self.b)
 
     @staticmethod
-    def uniform_prior(self):
-        prior = np.array(
-            [[1 / (len(self.bins) - 1)] for _ in range(len(self.bins) - 1)]
-        )
+    def set_prior(self, prior: object):
+        if prior["type"] == "uniform":
+            proba = self._uniform_prior(self)
+        elif prior["type"] == "gaussian":
+            proba = self._gaussian_prior(self, prior["mu"], prior["sigma"])
+        else:
+            raise ValueError(
+                f"Prior {prior} not supported. Please use 'uniform' or 'gaussian'."
+            )
+        # TODO: update to use sum(sum(proba))
+        total_proba = sum([sum(p) for p in proba])
         assert (
-            sum(prior) - 1
-        ) < tol_global, f"Error computing uniform prior: The sum of the probabilities should be 1, got {sum(prior)}"
-        return prior
+            total_proba - 1
+        ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_proba}"
+        return proba
+
+    @staticmethod
+    def _uniform_prior(self):
+        return [[np.array(1 / (len(self.bins) - 1))] for _ in range(len(self.bins) - 1)]
+
+    @staticmethod
+    def _gaussian_prior(self, mu: float, sigma: float):
+        proba_per_bin = norm.pdf(self.bins[:-1], loc=mu, scale=sigma)
+        proba_per_bin_norm = [proba_per_bin / sum(proba_per_bin)]
+        return np.transpose(proba_per_bin_norm)
 
 
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution

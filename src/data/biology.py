@@ -1,4 +1,4 @@
-def calc_predicted_fev1(height, age, sex):
+def calc_predicted_fev1(height: int, age: int, sex: str):
     """
     Calculate predicted FEV1 according to the formula given by the lung function people at Royal Papworth Hospital
     This formula takes Age in years, Height in m and Sex
@@ -6,6 +6,10 @@ def calc_predicted_fev1(height, age, sex):
     """
 
     if sex == "Male":
-        return (height / 100) * 4.3 - age * 0.029 - 2.49
+        pred_FEV1=(height / 100) * 4.3 - age * 0.029 - 2.49
+        std_dev=0.9
+        return pred_FEV1, std_dev
     elif sex == "Female":
-        return (height / 100) * 3.95 - age * 0.025 - 2.6
+        pred_FEV1=(height / 100) * 3.95 - age * 0.025 - 2.6
+        std_dev=0.7
+        return pred_FEV1, std_dev
