@@ -25,10 +25,10 @@ set_age = 26
 set_height = 175
 set_sex = "Male"
 pred_FEV1, pred_FEV1_std = bio.calc_predicted_fev1(set_height, set_age, set_sex)
-
+pred_FEV1_std=0.4
 # healthy_FEV1_prior={"type":"uniform"}
 healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
-inference, FEV1, U, prior_u, C, prior_c = model_lung_health.build(healthy_FEV1_prior)
+inference, FEV1, U, prior_u, C, prior_c = model_lung_health.build_healthy(healthy_FEV1_prior)
 
 app.layout = html.Div(
     [
@@ -103,4 +103,4 @@ def display(fev1: float):
     return fig
 
 
-app.run_server(debug=True, port=8049, use_reloader=False)
+app.run_server(debug=True, port=8051, use_reloader=False)
