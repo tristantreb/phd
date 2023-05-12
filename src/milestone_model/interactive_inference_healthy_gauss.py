@@ -24,8 +24,9 @@ import data.biology as bio
 set_age = 26
 set_height = 175
 set_sex = "Male"
-pred_FEV1, pred_FEV1_std = bio.calc_predicted_fev1(set_height, set_age, set_sex)
-pred_FEV1_std=0.4
+FEV1 = bio.calc_predicted_fev1(set_height, set_age, set_sex)
+pred_FEV1 = FEV1["Predicted FEV1"]
+pred_FEV1_std = FEV1["std"]
 # healthy_FEV1_prior={"type":"uniform"}
 healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
 inference, FEV1, U, prior_u, C, prior_c = model_lung_health.build_healthy(healthy_FEV1_prior)
@@ -35,14 +36,18 @@ app.layout = html.Div(
         html.H2("Interactive inference on the lung's health model"),
         html.Div(f"Individual with predicted FEV1 of {pred_FEV1:.2f}L (std {pred_FEV1_std} L) given height {set_height} cm, age {set_age} years, {set_sex}"),
         dcc.Graph(id="lung-graph"),
-        html.P("FEV1:"),
-        dcc.Slider(
+        # html.P("FEV1:"),
+        html.P(" "),
+        html.Div([dcc.Slider(
             id="fev1",
             min=FEV1.bins[0],
             max=FEV1.bins[-2],
             value=3,
             marks={0: "0.2", (len(C.bins) - 1): "5.9"},
-        ),
+        )],  style= {'transform': 'scale(1.2)', 'margin-left': '90px', 'margin-right': '900px'}),
+        # style={'width':'10%', 'float':'left','marginLeft': 20, 'marginRight': 20})
+        # style={"display": "grid", "grid-template-columns": "10% 10% 10% 10% 10%"})
+        # style= {'transform': 'scale(1)', 'margin-left': '200px', 'margin-right': '200px'}),
         # dcc.Dropdown(['Gaussian', 'Uniform'], 'Uniform', id='healthy-fev1-prior'),
         # html.Div(id='output-container')
     ]
@@ -83,23 +88,38 @@ def display(fev1: float):
         ],
     )
 
+    prior_ab_values = np.flip(prior_c.values)
+    posterior_ab_values = np.flip(res_c.values)
+    AB_name = "Airway Blockage (%)"
+
     fig.add_trace(go.Bar(y=prior_u.values, x=U.bins[:-1]), row=1, col=1)
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + U.name
 
-    fig.add_trace(go.Bar(y=prior_c.values, x=C.bins[:-1]), row=1, col=3)
+    fig.add_trace(go.Bar(y=prior_ab_values, x=C.bins[:-1]), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
-    fig["layout"]["xaxis2"]["title"] = "Prior for " + C.name
+    fig["layout"]["xaxis2"]["title"] = "Prior for " + AB_name
 
     fig.add_trace(go.Bar(y=res_u.values, x=U.bins[:-1]), row=2, col=1)
     fig["data"][2]["marker"]["color"] = "blue"
     fig["layout"]["xaxis3"]["title"] = U.name
 
-    fig.add_trace(go.Bar(y=res_c.values, x=C.bins[:-1]), row=2, col=3)
+    fig.add_trace(go.Bar(y=posterior_ab_values, x=C.bins[:-1]), row=2, col=3)
     fig["data"][3]["marker"]["color"] = "green"
-    fig["layout"]["xaxis4"]["title"] = C.name
+    fig["layout"]["xaxis4"]["title"] = AB_name
 
     fig.update_layout(showlegend=False, height=600, width=1200)
+
+    # Add text box with FEV1 value
+    fig.add_annotation(
+        x=0,
+        y=-0.2,
+        text=f"FEV1 = {fev1:.2f} L",
+        showarrow=False,
+        font=dict(size=16),
+        xref="paper",
+        yref="paper",
+    )
     return fig
 
 
