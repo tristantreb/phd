@@ -160,11 +160,11 @@ def _compute_predicted_fev1(df):
     """
     print("Compute Calculated Predicted FEV1")
     df["Predicted FEV1"] = df.apply(
-        lambda x: biology.calc_predicted_fev1(x.Height, x.Age, x.Sex), axis=1
+        lambda x: biology.calc_predicted_fev1(x.Height, x.Age, x.Sex)["Predicted FEV1"], axis=1
     )
     # Assert type is float
-    assert df["Predicted FEV1"].dtype == float
+    assert df["Predicted FEV1"].dtype == float, "Predicted FEV1 is not float"
     # Assert Predicted FEV1 is always in the range 2-5.5
-    assert df["Predicted FEV1"].min() >= 2
-    assert df["Predicted FEV1"].max() <= 5.5
+    assert df["Predicted FEV1"].min() >= 2, "Predicted FEV1 is below 2"
+    assert df["Predicted FEV1"].max() <= 5.5, "Predicted FEV1 is above 5.5"
     return df
