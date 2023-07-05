@@ -1,3 +1,4 @@
+# Lunch app with "python interactive_inference_healthy_gauss.py"
 import os
 
 import model_helpers as mh
@@ -21,6 +22,7 @@ import sys
 sys.path.append("../")
 import data.biology as bio
 
+# heuristics
 set_age = 26
 set_height = 175
 set_sex = "Male"
@@ -29,22 +31,35 @@ pred_FEV1 = FEV1["Predicted FEV1"]
 pred_FEV1_std = FEV1["std"]
 # healthy_FEV1_prior={"type":"uniform"}
 healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
-inference, FEV1, U, prior_u, C, prior_c = model_lung_health.build_healthy(healthy_FEV1_prior)
+inference, FEV1, HFEV1, prior_HFEV1, Av, prior_av = model_lung_health.build_healthy(
+    healthy_FEV1_prior
+)
 
 app.layout = html.Div(
     [
         html.H2("Interactive inference on the lung's health model"),
-        html.Div(f"Individual with predicted FEV1 of {pred_FEV1:.2f}L (std {pred_FEV1_std} L) given height {set_height} cm, age {set_age} years, {set_sex}"),
+        html.Div(
+            f"Individual with predicted FEV1 of {pred_FEV1:.2f}L (std {pred_FEV1_std} L) given height {set_height} cm, age {set_age} years, {set_sex}"
+        ),
         dcc.Graph(id="lung-graph"),
         # html.P("FEV1:"),
         html.P(" "),
-        html.Div([dcc.Slider(
-            id="fev1",
-            min=FEV1.bins[0],
-            max=FEV1.bins[-2],
-            value=3,
-            marks={0: "0.2", (len(C.bins) - 1): "5.9"},
-        )],  style= {'transform': 'scale(1.2)', 'margin-left': '90px', 'margin-right': '900px'}),
+        html.Div(
+            [
+                dcc.Slider(
+                    id="fev1",
+                    min=FEV1.bins[0],
+                    max=FEV1.bins[-2],
+                    value=3,
+                    marks={0: "0.2", (len(Av.bins) - 1): "5.9"},
+                )
+            ],
+            style={
+                "transform": "scale(1.2)",
+                "margin-left": "90px",
+                "margin-right": "900px",
+            },
+        ),
         # style={'width':'10%', 'float':'left','marginLeft': 20, 'marginRight': 20})
         # style={"display": "grid", "grid-template-columns": "10% 10% 10% 10% 10%"})
         # style= {'transform': 'scale(1)', 'margin-left': '200px', 'margin-right': '200px'}),
@@ -65,10 +80,10 @@ def display(fev1: float):
     [_fev1_bin, fev1_idx] = mh.get_bin_for_value(fev1, FEV1.bins)
 
     res_u = inference.query(
-        variables=[U.name], evidence={FEV1.name: fev1_idx}, show_progress=False
+        variables=[HFEV1.name], evidence={FEV1.name: fev1_idx}, show_progress=False
     )
     res_c = inference.query(
-        variables=[C.name], evidence={FEV1.name: fev1_idx}, show_progress=False
+        variables=[Av.name], evidence={FEV1.name: fev1_idx}, show_progress=False
     )
 
     n_var_rows = 1
@@ -76,7 +91,7 @@ def display(fev1: float):
     posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
     fig = make_subplots(
-        # Prior takes 1 row, Posterior takes 2 rows
+        # Prior takes a 1x1 cell, Posterior takes a 2x2 cell
         rows=n_var_rows * 3,
         cols=5,
         specs=[
@@ -88,23 +103,24 @@ def display(fev1: float):
         ],
     )
 
-    prior_ab_values = np.flip(prior_c.values)
+    # Flip airway availability into airway blockage
+    prior_ab_values = np.flip(prior_av.values)
     posterior_ab_values = np.flip(res_c.values)
-    AB_name = "Airway Blockage (%)"
+    AB_name = "Airway Blockage"
 
-    fig.add_trace(go.Bar(y=prior_u.values, x=U.bins[:-1]), row=1, col=1)
+    fig.add_trace(go.Bar(y=prior_HFEV1.values, x=HFEV1.bins[:-1]), row=1, col=1)
     fig["data"][0]["marker"]["color"] = "blue"
-    fig["layout"]["xaxis"]["title"] = "Prior for " + U.name
+    fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
 
-    fig.add_trace(go.Bar(y=prior_ab_values, x=C.bins[:-1]), row=1, col=3)
+    fig.add_trace(go.Bar(y=prior_ab_values, x=Av.bins[:-1]), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
     fig["layout"]["xaxis2"]["title"] = "Prior for " + AB_name
 
-    fig.add_trace(go.Bar(y=res_u.values, x=U.bins[:-1]), row=2, col=1)
+    fig.add_trace(go.Bar(y=res_u.values, x=HFEV1.bins[:-1]), row=2, col=1)
     fig["data"][2]["marker"]["color"] = "blue"
-    fig["layout"]["xaxis3"]["title"] = U.name
+    fig["layout"]["xaxis3"]["title"] = HFEV1.name
 
-    fig.add_trace(go.Bar(y=posterior_ab_values, x=C.bins[:-1]), row=2, col=3)
+    fig.add_trace(go.Bar(y=posterior_ab_values, x=Av.bins[:-1]), row=2, col=3)
     fig["data"][3]["marker"]["color"] = "green"
     fig["layout"]["xaxis4"]["title"] = AB_name
 
