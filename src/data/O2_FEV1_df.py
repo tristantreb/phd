@@ -55,7 +55,7 @@ def create():
             df_O2_FEV1.shape[0], df_O2_FEV1.shape[0] + n_na, n_na
         )
     )
-    return df_O2_FEV1
+    return df_O2_FEV1    
 
 
 # Function to extract one column from the data
