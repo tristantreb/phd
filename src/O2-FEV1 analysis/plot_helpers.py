@@ -18,7 +18,7 @@ def get_stable_color(opacity=0.7):
 
 # Create O2-FEV scatter plot with displots on x and y axes
 # This is the final plot of the O2-FEV analysis
-def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
+def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
     # Set colors and point opacities
     opacity_scatter = 0.6
     opacity_distplot = 0.7
@@ -139,7 +139,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column):
     for i in range(0, len(fig.data) - 2):
         fig.data[i].showlegend = False
     # Update fig size
-    fig.update_layout(height=600, width=1400)
+    fig.update_layout(height=600, width=1400, title=title)
 
     return fig
 
