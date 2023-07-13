@@ -23,8 +23,8 @@ sys.path.append("../")
 import data.biology as bio
 
 # heuristics
-set_age = 26
-set_height = 175
+set_age = 33
+set_height = 165
 set_sex = "Male"
 FEV1 = bio.calc_predicted_fev1(set_height, set_age, set_sex)
 pred_FEV1 = FEV1["Predicted FEV1"]
@@ -82,7 +82,7 @@ def display(fev1: float):
     res_u = inference.query(
         variables=[HFEV1.name], evidence={FEV1.name: fev1_idx}, show_progress=False
     )
-    res_c = inference.query(
+    res_av = inference.query(
         variables=[Av.name], evidence={FEV1.name: fev1_idx}, show_progress=False
     )
 
@@ -105,14 +105,14 @@ def display(fev1: float):
 
     # Flip airway availability into airway blockage
     prior_ab_values = np.flip(prior_av.values)
-    posterior_ab_values = np.flip(res_c.values)
+    posterior_ab_values = np.flip(res_av.values)
     AB_name = "Airway Blockage"
 
     fig.add_trace(go.Bar(y=prior_HFEV1.values, x=HFEV1.bins[:-1]), row=1, col=1)
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
 
-    fig.add_trace(go.Bar(y=prior_ab_values, x=Av.bins[:-1]), row=1, col=3)
+    fig.add_trace(go.Bar(y=prior_ab_values, x=np.flip(1-Av.bins[:-1])), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
     fig["layout"]["xaxis2"]["title"] = "Prior for " + AB_name
 
@@ -120,7 +120,7 @@ def display(fev1: float):
     fig["data"][2]["marker"]["color"] = "blue"
     fig["layout"]["xaxis3"]["title"] = HFEV1.name
 
-    fig.add_trace(go.Bar(y=posterior_ab_values, x=Av.bins[:-1]), row=2, col=3)
+    fig.add_trace(go.Bar(y=posterior_ab_values, x=np.flip(1-Av.bins[:-1])), row=2, col=3)
     fig["data"][3]["marker"]["color"] = "green"
     fig["layout"]["xaxis4"]["title"] = AB_name
 
