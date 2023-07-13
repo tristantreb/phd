@@ -49,7 +49,7 @@ def build(healthy_FEV1_prior: object):
 # In the future we will split this variables again (for the longidutinal model)
 def build_healthy(healthy_FEV1_prior: object):
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [2,6)
-    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 2, 6, 0.1, prior=healthy_FEV1_prior)
+    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
     # It's not possible to live with 0-20% of airway availability
     Av = mh.variableNode("Airway availability", 0.2, 1, 0.05)
     FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
