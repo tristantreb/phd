@@ -6,7 +6,7 @@ datadir = "../../../../SmartCareData/"
 
 # This document contains two ways to compute exacerbation labels, which are exacerbated, not exacerbated, in recovery
 # 1. Is with the results of the predictive classifier from the work done by Damian
-# 2. Is using a rule of thumb for when the patients are in which state. We define:
+# 2. (proved less useful than 1.) Is using a rule of thumb for when the patients are in which state. We define:
 #     - Exacerbated from 1 week days before treatment start, excluding treatment start day
 #     - Not exacerbated as until 3 weeks before treatment start
 #     - Recovery: during treatment
@@ -16,7 +16,7 @@ one_day = timedelta(days=1)
 
 
 # Merge exacerbation labels from the predictive classifier to O2_FEV1
-def merge_pred_ex_labels_to(O2_FEV1, pred_ex_labels):
+def inner_merge_with(O2_FEV1, pred_ex_labels):
     O2_FEV1_out = O2_FEV1.merge(
         pred_ex_labels["Is Exacerbated"],
         how="inner",
@@ -36,7 +36,8 @@ def merge_pred_ex_labels_to(O2_FEV1, pred_ex_labels):
 
 
 # Method 1: getting the exacerbation labels inferred with the predictive classifier
-def get_pred_ex_labels():
+# Exclude no ex allows to exclude individuals dont have a measurement in an exacerbated period
+def load(exclude_no_ex=False):
     # Get exacerbation labels from the predictive classifier
     pred_ex_labels = pd.read_csv(datadir + "pmFeatureIIndex.csv")
 
@@ -47,6 +48,13 @@ def get_pred_ex_labels():
     # Data types transformation. Use datetime.date for Date recorded and string for ID
     pred_ex_labels["Date recorded"] = pd.to_datetime(pred_ex_labels["CalcDate"]).dt.date
     pred_ex_labels["ID"] = pred_ex_labels["ID"].astype(str)
+
+    if exclude_no_ex:
+        ids_ex = pred_ex_labels[pred_ex_labels["Is Exacerbated"] == True].ID.unique()
+        print(
+            f"Dropping {len(ids_ex)}/{len(pred_ex_labels.ID)} individuals that don't have a measurement in exacerbated period"
+        )
+        pred_ex_labels = pred_ex_labels[pred_ex_labels.ID.isin(ids_ex)]
 
     # Set Multi index to prepare the merge with O2_FEV1
     pred_ex_labels = pred_ex_labels.set_index(["ID", "Date recorded"])
@@ -64,12 +72,21 @@ def get_pred_ex_labels():
     return pred_ex_labels
 
 
+# Drops individuals that have no measurement in an exacerbated period
+def drop_where_no_ex(df):
+    ids_ex = df[df["Is Exacerbated"] == True].ID.unique()
+    print(
+        f"Keeping {len(ids_ex)}/{len(df.ID.unique())} individuals that have a measurement in exacerbated period"
+    )
+    return df[df.ID.isin(ids_ex)]
+
+
 # Functions to implement method 2: using rule of thumbs around treatment start/end \dates
 # to compute exacerbation labels
 def compute_ex_labels_from_heuristics(antibioticsdata, patientsdata, O2_FEV1):
     for id in O2_FEV1.ID.unique():
-        patient_antibioticsdata = get_rows_for_id(id, antibioticsdata)
-        ex_labels = get_patient_ex_labels(
+        patient_antibioticsdata = _get_rows_for_id(id, antibioticsdata)
+        ex_labels = _get_patient_ex_labels(
             patient_antibioticsdata,
             patientsdata,
             numdays_before_ab_start_is_exacerbated=7,
@@ -81,12 +98,12 @@ def compute_ex_labels_from_heuristics(antibioticsdata, patientsdata, O2_FEV1):
     return O2_FEV1
 
 
-def get_rows_for_id(id, data):
+def _get_rows_for_id(id, data):
     return data[data.ID == id].reset_index()
 
 
 # The patient status can be exacerbated, not exacerbated, in recovery
-def get_patient_ex_labels(
+def _get_patient_ex_labels(
     patient_antibioticsdata,
     patientsdata,
     numdays_before_ab_start_is_exacerbated=7,
@@ -162,6 +179,7 @@ def _get_patient_study_start(patient_antibioticsdata, patientsdata):
 
 # Patient status period definition
 # 1. The recovery period is the treatment period
+
 
 # 2. The exacerbated period is from a week before treatment start to treatment start excluded
 def _get_is_exacerbated_start(

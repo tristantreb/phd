@@ -1,0 +1,95 @@
+import pandas as pd
+
+
+# Factor function: Unblocked_FEV1(Healthy_FEV1, Lung_Damage)
+# We model Unblocked FEV1 as the 3rd highest FEV1 measurement
+# hfev1 = healthy fev1, ld = lung damage
+def compute_hfev1_ld_factor(O2_FEV1):
+    df = pd.DataFrame(
+        columns=["ID", "Unblocked FEV1 (L)", "Lung Damage (%)", "Healthy FEV1 (L)"]
+    )
+
+    for id in O2_FEV1.ID.unique():
+        # For a given patient id, filter the FEV1 measurements
+        mask = O2_FEV1["ID"] == id
+        O2_FEV1_patient = O2_FEV1[mask]
+        # Find the unblocked FEV1 (L). We assume that, over the 6 months study period, the patient has done some measurements where he was not blocked
+        # To avoid taking an outlier up, which is third highest FEV1 measurement
+        rmax = O2_FEV1_patient["FEV1"].nlargest(3).iloc[-1]
+        # Get the theoretical healthy FEV1 (L)
+        healthy_fev1 = O2_FEV1_patient["Predicted FEV1"].iloc[0]
+        # Compute the Lung damage (%)
+        lung_damage = 100 * (1 - rmax / healthy_fev1)
+        # Add the patient id, reversed max FEV1 and healthy FEV1 (L) to the dataframe
+        new_row = pd.DataFrame(
+            {
+                "ID": [id],
+                "Unblocked FEV1 (L)": [rmax],
+                "Lung Damage (%)": [lung_damage],
+                "Healthy FEV1 (L)": [healthy_fev1],
+            }
+        )
+        df = pd.concat([df, new_row])
+    return df
+
+
+# Factor function: Unblocked_O2_Sat(Healthy_O2_Sat, Lung_Damage)
+# We model Unblocked O2 Saturation as constantly set to 100%
+# ho2 = healthy o2 saturation, ld = lung damage
+def compute_ho2_ld_factor(O2_FEV1):
+    df = pd.DataFrame(
+        columns=[
+            "ID",
+            "Unblocked O2 Saturation (%)",
+            "Lung Damage (%)",
+            "Healthy O2 Saturation (%)",
+        ]
+    )
+    for id in O2_FEV1.ID.unique():
+        # For a given patient id, filter the O2 Saturation measurements
+        mask = O2_FEV1["ID"] == id
+        O2_FEV1_patient = O2_FEV1[mask]
+        # Find the unblocked O2 Saturation (%). We assume that, over the 6 months study period, the patient has done some measurements where he was not blocked
+        # To avoid taking an outlier up, which is third highest O2 Saturation measurement
+        rmax = O2_FEV1_patient["O2 Saturation"].nlargest(3).iloc[-1]
+        # Theoretical O2 saturation is 100%
+        healthy_o2_sat = 100
+        # Compute the Lung damage (%)
+        lung_damage = 100 - rmax  # 100 * (1-rmax/healthy_o2_sat)
+        # Add the patient id, reversed max O2 Saturation and healthy O2 Saturation (%) to the dataframe
+        new_row = pd.DataFrame(
+            {
+                "ID": [id],
+                "Unblocked O2 Saturation (%)": [rmax],
+                "Lung Damage (%)": [lung_damage],
+                "Healthy O2 Saturation (%)": [healthy_o2_sat],
+            }
+        )
+        df = pd.concat([df, new_row])
+    return df
+
+
+# Computes the FEV1 % Predicted during stable period (i.e. when Is Exacerbated is False)
+# Adds this column to the input df
+# Adds the avg FEV1 % Pred in stable period next to the ID to add this information to the plot
+def compute_avg_fev1_pred_stable(df):
+    # Compute avg of FEV1 % Predicted during stable period (i.e. when Is Exacerbated is False)
+    s_avg_fev1_pred_stable = (
+        df[df["Is Exacerbated"] == False]
+        .groupby(["ID"])["FEV1 % Predicted"]
+        .agg("mean")
+        .rename("Avg FEV1 % Pred in stable period")
+    )
+    # Note: Transform compute an agglomerates but returns a df of the same size. That means the agg values is repeated for each row of the group
+
+    # Merge s_avg_fev1_pred_stable with df based on ID
+    df = pd.merge(df, s_avg_fev1_pred_stable, on="ID", how="left").sort_values(
+        by=["Avg FEV1 % Pred in stable period"]
+    )
+
+    # Add a new column with the ID and the avg FEV1 % Pred in stable period
+    df["ID (avg FEV1 % Pred in stable period)"] = df.apply(
+        lambda x: f"{x.ID} ({str(round(x['Avg FEV1 % Pred in stable period'],1))}%)",
+        axis=1,
+    )
+    return df

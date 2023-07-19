@@ -6,66 +6,6 @@ from dateutil.relativedelta import relativedelta
 datadir = "../../../../SmartCareData/"
 
 
-def ids_no_ex():
-    return [
-        "101",
-        "114",
-        "121",
-        "122",
-        "124",
-        "125",
-        "126",
-        "127",
-        "128",
-        "131",
-        "134",
-        "136",
-        "142",
-        "175",
-        "180",
-        "187",
-        "197",
-        "208",
-        "209",
-        "210",
-        "213",
-        "216",
-        "223",
-        "229",
-        "236",
-        "34",
-        "40",
-        "46",
-        "52",
-        "53",
-        "54",
-        "55",
-        "57",
-        "60",
-        "61",
-        "62",
-        "63",
-        "64",
-        "65",
-        "80",
-        "81",
-        "88",
-        "93",
-        "99",
-    ]
-
-
-# Removes the entries for invididuals that did not have an exacerbation/antibiotic treatment during the study
-def drop_where_no_ex_ids(df):
-    print("Dropping individuals that did not have an exacerbation/antibiotic treatment")
-    out = df[~df.ID.isin(ids_no_ex())]
-    print(
-        "Data has now {} entries and {} ids (initially {} & {})".format(
-            out.shape[0], out.ID.nunique(), df.shape[0], df.ID.nunique()
-        )
-    )
-    return out
-
 
 def load(use_calc_age=True, use_calc_predicted_fev1=True):
     print("\n** Loading patient data **")
