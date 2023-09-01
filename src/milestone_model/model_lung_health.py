@@ -86,3 +86,32 @@ def build_healthy(healthy_FEV1_prior: object):
 
     inference = BeliefPropagation(graph)
     return inference, FEV1, HFEV1, prior_u, Av, prior_av
+
+def build_o2_sat():
+    UO2Sat = mh.variableNode("Unblocked O2 Sat (%)", 0.7, 1, 0.1)
+    LD = mh.variableNode("Lung damage (%)", 0.2, 1, 0.1)
+
+    graph = BayesianNetwork([(UO2Sat.name, LD.name)])
+
+    cpt_u_o2 = TabularCPD(
+        variable=UO2Sat.name,
+        variable_card=len(UO2Sat.bins) - 1,
+        values=[1,1],
+        evidence=[LD.name],
+        evidence_card=[len(LD.bins) - 1],
+    )
+
+    prior_ld = TabularCPD(
+        variable=LD.name,
+        variable_card=len(LD.bins) - 1,
+        values=LD.prior,
+        evidence=[],
+        evidence_card=[],
+    )
+
+    graph.add_cpds(cpt_u_o2, prior_ld)
+
+    graph.check_model()
+
+    inference = BeliefPropagation(graph)
+    return inference , UO2Sat, LD, prior_ld
