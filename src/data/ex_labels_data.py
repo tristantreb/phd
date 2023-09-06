@@ -35,8 +35,8 @@ def inner_merge_with(O2_FEV1, pred_ex_labels):
     return O2_FEV1_out
 
 
-# Method 1: getting the exacerbation labels inferred with the predictive classifier
-# Exclude no ex allows to exclude individuals dont have a measurement in an exacerbated period
+# METHOD 1: getting the exacerbation labels inferred with the predictive classifier
+# Exclude no ex allows to exclude individuals don't have a measurement in an exacerbated period
 def load(exclude_no_ex=False):
     # Get exacerbation labels from the predictive classifier
     pred_ex_labels = pd.read_csv(datadir + "pmFeatureIIndex.csv")
@@ -58,6 +58,9 @@ def load(exclude_no_ex=False):
 
     # Set Multi index to prepare the merge with O2_FEV1
     pred_ex_labels = pred_ex_labels.set_index(["ID", "Date recorded"])
+
+    # Removing NaN values in Is Exacerbated
+    pred_ex_labels = pred_ex_labels[~pred_ex_labels["Is Exacerbated"].isna()]
 
     # Record the number of rows
     print(
@@ -81,7 +84,7 @@ def drop_where_no_ex(df):
     return df[df.ID.isin(ids_ex)]
 
 
-# Functions to implement method 2: using rule of thumbs around treatment start/end \dates
+# METHOD 2: using rule of thumbs around treatment start/end \dates
 # to compute exacerbation labels
 def compute_ex_labels_from_heuristics(antibioticsdata, patientsdata, O2_FEV1):
     for id in O2_FEV1.ID.unique():
