@@ -151,15 +151,21 @@ def set_x_y_vars(
     is_smoothed_fev,
     is_smoothed_o2,
     is_normalised,
+    exclude_no_ex_ids,
 ):
-    predictive_classifier = "from APE pred" if with_predicted_labels else ""
+    # Characterising exacerbation labels data
+    predictive_classifier = "using the pred. class." if with_predicted_labels else ""
+    excluded_no_ex_ids = (
+        ", excluding IDs with no ex labels" if exclude_no_ex_ids else ""
+    )
+
     smoothed_fev = " smoothed" if is_smoothed_fev else ""
     smoothed_o2 = " smoothed" if is_smoothed_o2 else ""
     predicted = " % Predicted" if with_predicted_fev1 else ""
     normalised = " norm" if is_normalised else ""
 
     ex_column = "Is Exacerbated" if with_predicted_labels else "Exacerbation Labels"
-    prefix = "{}{}".format(predictive_classifier, normalised)
+    prefix = "{}{}".format(predictive_classifier, excluded_no_ex_ids)
     # y = 'O2 Saturation{}'.format(smoothed)
     y = "O2 Saturation{}{}".format(smoothed_o2, normalised)
     x = "FEV1{}{}{}".format(predicted, smoothed_fev, normalised)
