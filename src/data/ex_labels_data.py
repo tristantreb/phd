@@ -52,7 +52,7 @@ def load(exclude_no_ex=False):
     if exclude_no_ex:
         ids_ex = pred_ex_labels[pred_ex_labels["Is Exacerbated"] == True].ID.unique()
         print(
-            f"Dropping {len(ids_ex)}/{len(pred_ex_labels.ID)} individuals that don't have a measurement in exacerbated period"
+            f"Keeping {len(ids_ex)}/{len(pred_ex_labels.ID.unique())} individuals that have a measurement during an exacerbated period (Is Exacerbated == true at least once)"
         )
         pred_ex_labels = pred_ex_labels[pred_ex_labels.ID.isin(ids_ex)]
 
