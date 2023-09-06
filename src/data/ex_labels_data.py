@@ -110,11 +110,10 @@ def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
         df.loc[
             df.ID == id, "Exacerbation State"
         ] = _overwrite_when_in_transition_period(
-            df_for_ID["Is Exacerbated"].astype(int),
-            df_for_ID["Exacerbation Start"],
+            df_for_ID,
             n_days_before,
             n_days_after,
-        ).to_numpy()
+        )
     print(f"Finally:\n{df['Exacerbation State'].value_counts()}")
     return df
 
@@ -126,20 +125,32 @@ def _get_ex_start_dates(row):
         return False
 
 
-# is_ex must contain only 0 and 1s
-# Overwrites is_ex to 0.5 when measurement is in transition period
-def _overwrite_when_in_transition_period(
-    is_ex: pd.Series, ex_start: pd.Series, n_days_before, n_days_after
-):
+# Creates ex_state Series from Is Exacerbated series, with only 0 and 1s
+# Overwrites ex_state to 0.5 when measurement is in transition period
+def _overwrite_when_in_transition_period(df_for_ID, n_days_before, n_days_after):
+    ex_state = df_for_ID["Is Exacerbated"].astype(int).copy()
+
     # Get indices where ex_start is True
-    get_start_idx = np.where(ex_start == True)[0]
+    get_start_idx = np.where(df_for_ID["Exacerbation Start"] == True)[0]
 
     # Overwrite the values in ex_start to mark them as transition period
     for idx in get_start_idx:
-        from_idx = max(0, idx - n_days_before)
-        to_idx = min(len(ex_start), idx + n_days_after + 1)
-        is_ex.iloc[from_idx:to_idx] = 0.5
-    return is_ex
+        # Get the date for this idx
+        ex_start_date = df_for_ID["Date recorded"][idx]
+        # Create a date range around this date
+        date_range = pd.date_range(
+            start=ex_start_date - timedelta(days=n_days_before),
+            end=ex_start_date + timedelta(days=n_days_after),
+            freq="D",
+        )
+
+        # Get the indices of df_for_ID that fall in this date range
+        date_range_mask = (
+            df_for_ID["Date recorded"].astype("datetime64[ns]").isin(date_range)
+        )
+
+        ex_state[date_range_mask] = 0.5
+    return ex_state.to_numpy()
 
 
 # *** UNUSED SINCE WE NOW HAVE THE RESULTS FROM DAMIAN'S PREDICTIVE CLASSIFIER ***
