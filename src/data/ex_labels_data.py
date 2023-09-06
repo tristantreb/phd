@@ -74,8 +74,6 @@ def load(exclude_no_ex=False):
     print(f"Excluding {sum(is_ex_nan)} NaN entry")
     pred_ex_labels = pred_ex_labels[~is_ex_nan]
 
-    pred_ex_labels = pred_ex_labels[~pred_ex_labels["Is Exacerbated"].isna()]
-
     print(
         "Finally: {} entries ({} True, {} False)".format(
             pred_ex_labels.shape[0],
@@ -94,45 +92,54 @@ However, it's not a binary variable, you don't become exacerbated from one day t
 """
 
 
-def _mark_ex_transition_period(df):
+def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
+    print("** Marking transition period around exacerbation start **")
+    print(f"Initially:\n{df['Is Exacerbated'].value_counts()}")
+
+    df = df.sort_values(by=["ID", "Date recorded"]).reset_index(drop=True)
+
     df["Exacerbation State"] = np.nan
 
     for id in df.ID.unique():
         df_for_ID = df[df.ID == id].copy().reset_index(drop=True)
         df_for_ID["Is Exacerbated Prev"] = df_for_ID["Is Exacerbated"].shift(1)
-        df_for_ID["Exacerbation State"] = df_for_ID.apply(
-            lambda x: _get_ex_start_date(x), axis=1
+        df_for_ID["Exacerbation Start"] = df_for_ID.apply(
+            lambda x: _get_ex_start_dates(x), axis=1
         )
 
         df.loc[
             df.ID == id, "Exacerbation State"
         ] = _overwrite_when_in_transition_period(
-            df_for_ID["Exacerbation State"]
+            df_for_ID["Is Exacerbated"].astype(int),
+            df_for_ID["Exacerbation Start"],
+            n_days_before,
+            n_days_after,
         ).to_numpy()
+    print(f"Finally:\n{df['Exacerbation State'].value_counts()}")
     return df
 
 
-def _get_ex_start_date(row):
+def _get_ex_start_dates(row):
     if row["Is Exacerbated"] == True and row["Is Exacerbated Prev"] == False:
-        return "start"
-    # Can higlight the end of an exacerbation period
-    # elif row["Is Exacerbated"] == False and row["Is Exacerbated Prev"] == True:
-    #     return "end"
+        return True
     else:
-        return row["Is Exacerbated"]
+        return False
 
 
+# is_ex must contain only 0 and 1s
+# Overwrites is_ex to 0.5 when measurement is in transition period
 def _overwrite_when_in_transition_period(
-    ex_state: pd.Series, n_days_before=2, n_days_after=2
+    is_ex: pd.Series, ex_start: pd.Series, n_days_before, n_days_after
 ):
-    ex_state_new = ex_state.copy()
-    # Get indices where ex_state is "start"
-    get_start_idx = np.where(ex_state == "start")[0]
+    # Get indices where ex_start is True
+    get_start_idx = np.where(ex_start == True)[0]
+
+    # Overwrite the values in ex_start to mark them as transition period
     for idx in get_start_idx:
         from_idx = max(0, idx - n_days_before)
-        to_idx = min(len(ex_state), idx + n_days_after + 1)
-        ex_state_new.iloc[from_idx:to_idx] = "transition"
-    return ex_state_new
+        to_idx = min(len(ex_start), idx + n_days_after + 1)
+        is_ex.iloc[from_idx:to_idx] = 0.5
+    return is_ex
 
 
 # *** UNUSED SINCE WE NOW HAVE THE RESULTS FROM DAMIAN'S PREDICTIVE CLASSIFIER ***
