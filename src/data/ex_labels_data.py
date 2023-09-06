@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import numpy as np
 import pandas as pd
 
 datadir = "../../../../SmartCareData/"
@@ -17,6 +18,9 @@ one_day = timedelta(days=1)
 
 # Merge exacerbation labels from the predictive classifier to O2_FEV1
 def inner_merge_with(O2_FEV1, pred_ex_labels):
+    # Set Multi index to prepare the merge with O2_FEV1
+    pred_ex_labels = pred_ex_labels.set_index(["ID", "Date recorded"])
+
     O2_FEV1_out = O2_FEV1.merge(
         pred_ex_labels["Is Exacerbated"],
         how="inner",
@@ -38,6 +42,7 @@ def inner_merge_with(O2_FEV1, pred_ex_labels):
 # METHOD 1: getting the exacerbation labels inferred with the predictive classifier
 # Exclude no ex allows to exclude individuals don't have a measurement in an exacerbated period
 def load(exclude_no_ex=False):
+    print("** Loading exacerbation labels from the predictive classifier **")
     # Get exacerbation labels from the predictive classifier
     pred_ex_labels = pd.read_csv(datadir + "pmFeatureIIndex.csv")
 
@@ -49,6 +54,14 @@ def load(exclude_no_ex=False):
     pred_ex_labels["Date recorded"] = pd.to_datetime(pred_ex_labels["CalcDate"]).dt.date
     pred_ex_labels["ID"] = pred_ex_labels["ID"].astype(str)
 
+    print(
+        "Initially: {} entries ({} True, {} False)".format(
+            pred_ex_labels.shape[0],
+            pred_ex_labels[pred_ex_labels["Is Exacerbated"] == True].shape[0],
+            pred_ex_labels[pred_ex_labels["Is Exacerbated"] == False].shape[0],
+        )
+    )
+
     if exclude_no_ex:
         ids_ex = pred_ex_labels[pred_ex_labels["Is Exacerbated"] == True].ID.unique()
         print(
@@ -56,34 +69,73 @@ def load(exclude_no_ex=False):
         )
         pred_ex_labels = pred_ex_labels[pred_ex_labels.ID.isin(ids_ex)]
 
-    # Set Multi index to prepare the merge with O2_FEV1
-    pred_ex_labels = pred_ex_labels.set_index(["ID", "Date recorded"])
-
     # Removing NaN values in Is Exacerbated
+    is_ex_nan = pred_ex_labels["Is Exacerbated"].isna()
+    print(f"Excluding {sum(is_ex_nan)} NaN entry")
+    pred_ex_labels = pred_ex_labels[~is_ex_nan]
+
     pred_ex_labels = pred_ex_labels[~pred_ex_labels["Is Exacerbated"].isna()]
 
-    # Record the number of rows
     print(
-        "Exacerbated labels data from the predictive classifier has {} entries ({} exacerbated, {} not "
-        "exacerbated measurements, {} NaN)".format(
+        "Finally: {} entries ({} True, {} False)".format(
             pred_ex_labels.shape[0],
             pred_ex_labels[pred_ex_labels["Is Exacerbated"] == True].shape[0],
             pred_ex_labels[pred_ex_labels["Is Exacerbated"] == False].shape[0],
-            pred_ex_labels[pred_ex_labels["Is Exacerbated"].isna()].shape[0],
         )
     )
+
     return pred_ex_labels
 
 
-# Drops individuals that have no measurement in an exacerbated period
-def drop_where_no_ex(df):
-    ids_ex = df[df["Is Exacerbated"] == True].ID.unique()
-    print(
-        f"Keeping {len(ids_ex)}/{len(df.ID.unique())} individuals that have a measurement in exacerbated period"
-    )
-    return df[df.ID.isin(ids_ex)]
+"""
+This function provides more conservative ex labels by marking the days before and after an exacerbation start as in "transition"
+We are using a model that marks exacerbated periods as 1, and non-exacerbated periods as 0. 
+However, it's not a binary variable, you don't become exacerbated from one day to another.
+"""
 
 
+def _mark_ex_transition_period(df):
+    df["Exacerbation State"] = np.nan
+
+    for id in df.ID.unique():
+        df_for_ID = df[df.ID == id].copy().reset_index(drop=True)
+        df_for_ID["Is Exacerbated Prev"] = df_for_ID["Is Exacerbated"].shift(1)
+        df_for_ID["Exacerbation State"] = df_for_ID.apply(
+            lambda x: _get_ex_start_date(x), axis=1
+        )
+
+        df.loc[
+            df.ID == id, "Exacerbation State"
+        ] = _overwrite_when_in_transition_period(
+            df_for_ID["Exacerbation State"]
+        ).to_numpy()
+    return df
+
+
+def _get_ex_start_date(row):
+    if row["Is Exacerbated"] == True and row["Is Exacerbated Prev"] == False:
+        return "start"
+    # Can higlight the end of an exacerbation period
+    # elif row["Is Exacerbated"] == False and row["Is Exacerbated Prev"] == True:
+    #     return "end"
+    else:
+        return row["Is Exacerbated"]
+
+
+def _overwrite_when_in_transition_period(
+    ex_state: pd.Series, n_days_before=2, n_days_after=2
+):
+    ex_state_new = ex_state.copy()
+    # Get indices where ex_state is "start"
+    get_start_idx = np.where(ex_state == "start")[0]
+    for idx in get_start_idx:
+        from_idx = max(0, idx - n_days_before)
+        to_idx = min(len(ex_state), idx + n_days_after + 1)
+        ex_state_new.iloc[from_idx:to_idx] = "transition"
+    return ex_state_new
+
+
+# *** UNUSED SINCE WE NOW HAVE THE RESULTS FROM DAMIAN'S PREDICTIVE CLASSIFIER ***
 # METHOD 2: using rule of thumbs around treatment start/end \dates
 # to compute exacerbation labels
 def compute_ex_labels_from_heuristics(antibioticsdata, patientsdata, O2_FEV1):
