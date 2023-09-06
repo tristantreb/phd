@@ -17,7 +17,11 @@ one_day = timedelta(days=1)
 
 
 # Merge exacerbation labels from the predictive classifier to O2_FEV1
-def inner_merge_with(O2_FEV1, pred_ex_labels):
+def inner_merge_with(O2_FEV1, pred_ex_labels, exclude_no_ex=True):
+    print(
+        "\n** Inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date recorded' **"
+    )
+
     # Set Multi index to prepare the merge with O2_FEV1
     pred_ex_labels = pred_ex_labels.set_index(["ID", "Date recorded"])
 
@@ -27,8 +31,9 @@ def inner_merge_with(O2_FEV1, pred_ex_labels):
         on=["ID", "Date recorded"],
         validate="1:1",
     )
+
     print(
-        "** Inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date recorded' **\nData has now {} entries and {} IDs (initially {} & {} in O2_FEV1, {} in pred_ex_labels)".format(
+        "Data has now {} entries and {} IDs (initially {} & {} in O2_FEV1, {} in pred_ex_labels)".format(
             O2_FEV1_out.shape[0],
             O2_FEV1_out.ID.nunique(),
             O2_FEV1.shape[0],
@@ -36,13 +41,25 @@ def inner_merge_with(O2_FEV1, pred_ex_labels):
             pred_ex_labels.shape[0],
         )
     )
+    if exclude_no_ex:
+        ids_ex = O2_FEV1_out[O2_FEV1_out["Is Exacerbated"] == True].ID.unique()
+        print(
+            f"Keeping {len(ids_ex)}/{len(O2_FEV1_out.ID.unique())} individuals that have one or more measurements during an exacerbated period (Is Exacerbated == True at least once)"
+        )
+        O2_FEV1_out = O2_FEV1_out[O2_FEV1_out.ID.isin(ids_ex)]
+
+    print(
+        "Data has now {} entries and {} IDs".format(
+            O2_FEV1_out.shape[0],
+            O2_FEV1_out.ID.nunique(),
+        )
+    )
     return O2_FEV1_out
 
 
 # METHOD 1: getting the exacerbation labels inferred with the predictive classifier
-# Exclude no ex allows to exclude individuals don't have a measurement in an exacerbated period
-def load(exclude_no_ex=False):
-    print("** Loading exacerbation labels from the predictive classifier **")
+def load():
+    print("\n** Loading exacerbation labels from the predictive classifier **")
     # Get exacerbation labels from the predictive classifier
     pred_ex_labels = pd.read_csv(datadir + "pmFeatureIIndex.csv")
 
@@ -61,13 +78,6 @@ def load(exclude_no_ex=False):
             pred_ex_labels[pred_ex_labels["Is Exacerbated"] == False].shape[0],
         )
     )
-
-    if exclude_no_ex:
-        ids_ex = pred_ex_labels[pred_ex_labels["Is Exacerbated"] == True].ID.unique()
-        print(
-            f"Keeping {len(ids_ex)}/{len(pred_ex_labels.ID.unique())} individuals that have a measurement during an exacerbated period (Is Exacerbated == true at least once)"
-        )
-        pred_ex_labels = pred_ex_labels[pred_ex_labels.ID.isin(ids_ex)]
 
     # Removing NaN values in Is Exacerbated
     is_ex_nan = pred_ex_labels["Is Exacerbated"].isna()
@@ -93,7 +103,7 @@ However, it's not a binary variable, you don't become exacerbated from one day t
 
 
 def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
-    print("** Marking transition period around exacerbation start **")
+    print("\n** Marking transition period around exacerbation start **")
     print(f"Initially:\n{df['Is Exacerbated'].value_counts()}")
 
     df = df.sort_values(by=["ID", "Date recorded"]).reset_index(drop=True)
