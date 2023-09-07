@@ -17,6 +17,11 @@ def get_stable_color(opacity=0.7):
     return "rgba(000,114,178,{})".format(opacity)
 
 
+# Define color for measurements done in transition period
+def get_transition_color(opacity=0.7):
+    return "rgba(128,128,178,{})".format(opacity)
+
+
 # Create O2-FEV scatter plot with displots on x and y axes
 # This is the final plot of the O2-FEV analysis
 def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
@@ -24,7 +29,7 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
     opacity_scatter = 0.6
     opacity_distplot = 0.7
     # Put transition color to grey
-    transition_color = "rgba(128,128,128,0.2)"
+    transition_color = get_transition_color(0.2)
     ex_color_scatter = get_ex_color(opacity_scatter)
     stable_color_scatter = get_stable_color(opacity_scatter)
     ex_color_distplot = get_ex_color(opacity_distplot)
