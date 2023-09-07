@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -73,6 +74,9 @@ def compute_ho2_ld_factor(O2_FEV1):
 # Adds this column to the input df
 # Adds the avg FEV1 % Pred in stable period next to the ID to add this information to the plot
 def compute_avg_fev1_pred_stable(df):
+    if "Avg FEV1 % Pred in stable period" in df.columns:
+        return df
+
     # Compute avg of FEV1 % Predicted during stable period (i.e. when Is Exacerbated is False)
     s_avg_fev1_pred_stable = (
         df[df["Is Exacerbated"] == False]
@@ -93,3 +97,18 @@ def compute_avg_fev1_pred_stable(df):
         axis=1,
     )
     return df
+
+
+def get_mean_diff(df, var, ex_col):
+    """
+    Compute mean of O2 Saturation in Ex and Stable periods based on Exacerbation State
+    Compute mean difference between the two
+    Return the mean of the mean differences
+    """
+    for id in df.ID.unique():
+        mean_diff = []
+        df_for_ID = df[df.ID == id].copy().reset_index(drop=True)
+        mean_ex = df_for_ID[df_for_ID[ex_col] == 1][var].mean()
+        mean_stable = df_for_ID[df_for_ID[ex_col] == 0][var].mean()
+        mean_diff.append(mean_stable - mean_ex)
+    return np.mean(mean_diff)
