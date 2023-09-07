@@ -1,5 +1,6 @@
 from math import ceil  # math.ceil converts to int, np.ceil returns float
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -22,6 +23,8 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
     # Set colors and point opacities
     opacity_scatter = 0.6
     opacity_distplot = 0.7
+    # Put transition color to grey
+    transition_color = "rgba(128,128,128,0.2)"
     ex_color_scatter = get_ex_color(opacity_scatter)
     stable_color_scatter = get_stable_color(opacity_scatter)
     ex_color_distplot = get_ex_color(opacity_distplot)
@@ -44,6 +47,9 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
     x_stable = O2_FEV1[x][O2_FEV1[ex_column] == False]
     y_exacerbated = O2_FEV1[y][O2_FEV1[ex_column] == True]
     y_stable = O2_FEV1[y][O2_FEV1[ex_column] == False]
+    if ex_column == "Exacerbation State":
+        x_transition = O2_FEV1[x][O2_FEV1["Exacerbation State"] == 0.5]
+        y_transition = O2_FEV1[y][O2_FEV1["Exacerbation State"] == 0.5]
 
     # Add scatter plot
     fig.add_trace(
@@ -76,20 +82,42 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
         row=2,
         col=1,
     )
-    # Define the number of bins for the distribution plots
-    bins_n_stable = 40
-    # Bin width should be 1/15 of the span of the stable data
-    bins_width = (max(x_stable) - min(x_stable)) / bins_n_stable
-    # Bins number for the exacerabted data
-    bins_n_ex = ceil((max(x_exacerbated) - min(x_exacerbated)) / bins_width)
+    if ex_column == "Exacerbation State":
+        fig.add_trace(
+            go.Scatter(
+                x=x_transition,
+                y=y_transition,
+                mode="markers",
+                # name="Exacerbated",
+                marker=dict(
+                    size=5,
+                    color=transition_color,
+                    line=dict(width=0.2, color="DarkSlateGrey"),
+                ),
+            ),
+            row=2,
+            col=1,
+        )
+
+    # # Define the number of bins for the distribution plots
+    # bins_n_stable = 40
+    # # Bin width should be 1/15 of the span of the stable data
+    # bins_width = (max(x_stable) - min(x_stable)) / bins_n_stable
+    # # Bins number for the exacerabted data
+    # bins_n_ex = ceil((max(x_exacerbated) - min(x_exacerbated)) / bins_width)
 
     # Add displot for x
+    if np.mean(x_stable) > 4.5:
+        x_bins = dict(start=15, end=110, size=5)
+    else:
+        x_bins = dict(start=0.4, end=4.5, size=0.2)
+
     fig.add_trace(
         go.Histogram(
             x=x_stable,
             histnorm="probability",
-            # name="Stable",
-            nbinsx=bins_n_stable,
+            # nbinsx=bins_n_stable,
+            xbins=x_bins,
             marker=dict(color=stable_color_distplot),
         ),
         row=1,
@@ -99,13 +127,25 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
         go.Histogram(
             x=x_exacerbated,
             histnorm="probability",
-            nbinsx=bins_n_ex,
-            # name="Exacerbated",
+            # nbinsx=bins_n_stable,
+            xbins=x_bins,
             marker=dict(color=ex_color_distplot),
         ),
         row=1,
         col=1,
     )
+    if ex_column == "Exacerbation State":
+        fig.add_trace(
+            go.Histogram(
+                x=x_transition,
+                histnorm="probability",
+                xbins=x_bins,
+                # nbinsx=bins_n_ex,
+                marker=dict(color=transition_color),
+            ),
+            row=1,
+            col=1,
+        )
     # Add displot for y
     fig.add_trace(
         go.Histogram(
@@ -130,16 +170,32 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
         row=2,
         col=2,
     )
+    if ex_column == "Exacerbation State":
+        fig.add_trace(
+            go.Histogram(
+                y=y_transition,
+                histnorm="probability",
+                # Number of bins automatically set is good enough because O2 saturation is a dicsrete variable with a small values span
+                # nbinsy=nbins,
+                name="Transition ({} points)".format(len(x_transition)),
+                marker=dict(color=transition_color),
+            ),
+            row=2,
+            col=2,
+        )
+
     fig.update_layout(barmode="overlay")
     # Set x axis title to x, and range to min max of O2_FEV1[x]
     fig.update_xaxes(title_text=x, row=2, col=1)
     # Set y axis title to y
     fig.update_yaxes(title_text=y, row=2, col=1)
+
+    rm_legend = 3 if ex_column == "Exacerbation State" else 2
     # Remove duplicated legends
-    for i in range(0, len(fig.data) - 2):
+    for i in range(0, len(fig.data) - rm_legend):
         fig.data[i].showlegend = False
     # Update fig size
-    fig.update_layout(height=600, width=1400, title=title)
+    fig.update_layout(height=600, width=1300, title=title)
 
     return fig
 
