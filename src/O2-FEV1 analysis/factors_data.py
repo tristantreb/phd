@@ -105,10 +105,10 @@ def get_mean_diff(df, var, ex_col):
     Compute mean difference between the two
     Return the mean of the mean differences
     """
+    mean_diff = np.array([])
     for id in df.ID.unique():
-        mean_diff = []
         df_for_ID = df[df.ID == id].copy().reset_index(drop=True)
         mean_ex = df_for_ID[df_for_ID[ex_col] == 1][var].mean()
         mean_stable = df_for_ID[df_for_ID[ex_col] == 0][var].mean()
-        mean_diff.append(mean_stable - mean_ex)
-    return np.mean(mean_diff)
+        mean_diff = np.append(mean_diff, mean_stable - mean_ex)
+    return np.nanmean(mean_diff)
