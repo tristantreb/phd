@@ -26,7 +26,7 @@ def create():
     # Merge O2 with FEV1
     df_O2_FEV1 = pd.merge(df_O2, df_FEV1, on=["ID", "Date recorded"], how="outer")
     n_na = df_O2_FEV1.isna().sum().sum()
-    
+
     # Dropping all NaNs, because the df contains only O2 and FEV1 measurements
     df_O2_FEV1.dropna(inplace=True)
     print(
@@ -50,12 +50,15 @@ def create():
     # # Merge O2_FEV1 with antibiotics data
     # df_O2_FEV1 = pd.merge(df_O2_FEV1, df_antibiotics, on="ID", how="outer")
 
+    # Sort by ID and Date recorded
+    df_O2_FEV1.sort_values(["ID", "Date recorded"], inplace=True)
+
     print(
         "\nCreated df_O2_FEV1 with {} entries (initially {}, removed {})".format(
             df_O2_FEV1.shape[0], df_O2_FEV1.shape[0] + n_na, n_na
         )
     )
-    return df_O2_FEV1    
+    return df_O2_FEV1
 
 
 # Function to extract one column from the data
