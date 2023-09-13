@@ -81,10 +81,19 @@ class variableNode:
         # The nth bin is [self.bins[n]; self.bins[n+1]]
         # The last bin is [self.bins[-2]; b)
         self.bins = np.arange(a, b + bin_width - self.tol, bin_width)
+        self.bins_str = self.get_bins_as_string(self)
         self.prior = self.set_prior(self, prior)
 
     def sample(self):
         return np.random.uniform(self.a, self.b)
+
+    @staticmethod
+    def get_bins_as_string(self):
+        # Format the bins as string, with 1 decimal
+        return [
+            "[{:.1f}; {:.1f})".format(self.bins[i], self.bins[i + 1])
+            for i in range(len(self.bins) - 1)
+        ]
 
     @staticmethod
     def set_prior(self, prior: object):
@@ -263,4 +272,4 @@ def get_bin_for_value(obs: float, bins: np.array, tol=tol_global):
 
     lower_idx = bins[idx].item()
     upper_idx = bins[idx + 1].item()
-    return ["[{}; {}[".format(lower_idx, upper_idx), idx]
+    return ["[{}; {})".format(lower_idx, upper_idx), idx]
