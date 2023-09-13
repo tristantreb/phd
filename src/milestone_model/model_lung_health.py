@@ -1,3 +1,4 @@
+import numpy as np
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
@@ -87,6 +88,7 @@ def build_healthy(healthy_FEV1_prior: object):
     inference = BeliefPropagation(graph)
     return inference, FEV1, HFEV1, prior_u, Av, prior_av
 
+
 def build_o2_sat():
     UO2Sat = mh.variableNode("Unblocked O2 Sat (%)", 0.7, 1, 0.1)
     LD = mh.variableNode("Lung damage (%)", 0.2, 1, 0.1)
@@ -96,7 +98,7 @@ def build_o2_sat():
     cpt_u_o2 = TabularCPD(
         variable=UO2Sat.name,
         variable_card=len(UO2Sat.bins) - 1,
-        values=[1,1],
+        values=[1, 1],
         evidence=[LD.name],
         evidence_card=[len(LD.bins) - 1],
     )
@@ -114,4 +116,29 @@ def build_o2_sat():
     graph.check_model()
 
     inference = BeliefPropagation(graph)
-    return inference , UO2Sat, LD, prior_ld
+    return inference, UO2Sat, LD, prior_ld
+
+
+def infer(
+    inference_model: BeliefPropagation,
+    variables: tuple[mh.variableNode],
+    evidences: tuple[tuple[mh.variableNode, float]],
+):
+    """
+    Runs an inference query against a given PGMPY inference model, variables, evidences
+    :param inference_model: The inference model to use
+    :param variables: The variables to query
+    :param evidences: The evidences to use
+
+    :return: The result of the inference
+    """
+    var_names = [var.name for var in variables]
+
+    evidences_binned = dict()
+    for [evidence_var, value] in evidences:
+        [_bin, bin_idx] = mh.get_bin_for_value(value, evidence_var.bins)
+        evidences_binned.update({evidence_var.name: bin_idx})
+
+    return inference_model.query(
+        variables=var_names, evidence=evidences_binned, show_progress=False
+    )

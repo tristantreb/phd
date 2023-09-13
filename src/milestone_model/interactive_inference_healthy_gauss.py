@@ -79,12 +79,8 @@ def display(fev1: float):
 
     [_fev1_bin, fev1_idx] = mh.get_bin_for_value(fev1, FEV1.bins)
 
-    res_u = inference.query(
-        variables=[HFEV1.name], evidence={FEV1.name: fev1_idx}, show_progress=False
-    )
-    res_av = inference.query(
-        variables=[Av.name], evidence={FEV1.name: fev1_idx}, show_progress=False
-    )
+    res_u = model_lung_health.infer(inference, [HFEV1], [[FEV1, fev1]])
+    res_av = model_lung_health.infer(inference, [Av], [[FEV1, fev1]])
 
     n_var_rows = 1
     prior = {"type": "bar"}
@@ -112,7 +108,7 @@ def display(fev1: float):
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
 
-    fig.add_trace(go.Bar(y=prior_ab_values, x=np.flip(1-Av.bins[:-1])), row=1, col=3)
+    fig.add_trace(go.Bar(y=prior_ab_values, x=np.flip(1 - Av.bins[:-1])), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
     fig["layout"]["xaxis2"]["title"] = "Prior for " + AB_name
 
@@ -120,7 +116,9 @@ def display(fev1: float):
     fig["data"][2]["marker"]["color"] = "blue"
     fig["layout"]["xaxis3"]["title"] = HFEV1.name
 
-    fig.add_trace(go.Bar(y=posterior_ab_values, x=np.flip(1-Av.bins[:-1])), row=2, col=3)
+    fig.add_trace(
+        go.Bar(y=posterior_ab_values, x=np.flip(1 - Av.bins[:-1])), row=2, col=3
+    )
     fig["data"][3]["marker"]["color"] = "green"
     fig["layout"]["xaxis4"]["title"] = AB_name
 
