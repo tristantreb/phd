@@ -70,13 +70,19 @@ def PDF_X_x_Y(z, a, b, c, d):
         return PDF_X_x_Y(z, c, d, a, b)
 
 
-def PDF_X_x_1_minus_Y(z, a, b, c, d):
+def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
     """
     Let X~U(a,b) and Y~U(c,d) independent.
     This function is the closed form PDF for Z = X * (1-Y)
     It returns f_Z(z)
+
+    Input ordering matters!!
     """
-    return PDF_X_x_Y(z, 1 - b, 1 - a, c, d)
+    if 1 - y_b < 0 or 1 - y_b > 1:
+        raise ValueError(f"y_b should be between 0 and 1, got {y_b}")
+    if 1 - y_a < 0 or 1 - y_a > 1:
+        raise ValueError(f"y_a should be between 0 and 1, got {y_a}")
+    return PDF_X_x_Y(z, x_a, x_b, 1 - y_b, 1 - y_a)
 
 
 ## Variable node
@@ -210,6 +216,9 @@ def calc_pgmpy_cpt(
     tol=tol_global,
     debug=False,
 ):
+    """
+    Function specific to parentA = X, parentB = 1-Y, C = X*(1-Y)
+    """
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
     nbinsA = len(parentA.bins) - 1
     nbinsB = len(parentB.bins) - 1
@@ -233,8 +242,8 @@ def calc_pgmpy_cpt(
             a_up = parentA.bins[j + 1]
 
             # Get the max possible range of for C=parentA*parentB
-            C_min = a_low * b_low
-            C_max = a_up * b_up
+            C_min = a_low * (1 - b_up)
+            C_max = a_up * (1 - b_low)
 
             total = 0
             abserr = -1
@@ -268,7 +277,7 @@ def calc_pgmpy_cpt(
                 print(f"P(C|U,B) = {cpt[:, cpt_index + i + j]}")
             assert (
                 abs(total - 1) < tol
-            ), f"The sum of the probabilities should be 1, got {total}\n Distributions: parentA ~ U({a_low}, {a_up}), parentB ~ U({b_low}, {b_up})\n P(child|parentA,parentB) = {cpt[:, cpt_index + i + j]}\n Bins of the child: {C.bins}\n Integral abserr = {abserr}"
+            ), f"The sum of the probabilities should be 1, got {total}\nDistributions: parentA ~ U({a_low}, {a_up}), parentB ~ U({b_low}, {b_up})\nChild range = [{C_min}; {C_max})\nP(child|parentA, parentB) = {cpt[:, cpt_index + i + j]}\n Bins of the child: {C.bins}\n Integral abserr = {abserr}"
 
     return cpt
 

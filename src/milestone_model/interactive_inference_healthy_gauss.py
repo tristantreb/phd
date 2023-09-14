@@ -31,7 +31,7 @@ pred_FEV1 = FEV1["Predicted FEV1"]
 pred_FEV1_std = FEV1["std"]
 # healthy_FEV1_prior={"type":"uniform"}
 healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
-inference, FEV1, HFEV1, prior_HFEV1, Av, prior_av = model_lung_health.build_healthy(
+inference, FEV1, HFEV1, prior_HFEV1, AB, prior_ab = model_lung_health.build_healthy(
     healthy_FEV1_prior
 )
 
@@ -51,7 +51,7 @@ app.layout = html.Div(
                     min=FEV1.bins[0],
                     max=FEV1.bins[-2],
                     value=3,
-                    marks={0: "0.2", (len(Av.bins) - 1): "5.9"},
+                    marks={0: "0.2", (len(AB.bins) - 1): "5.9"},
                 )
             ],
             style={
@@ -80,7 +80,7 @@ def display(fev1: float):
     [_fev1_bin, fev1_idx] = mh.get_bin_for_value(fev1, FEV1.bins)
 
     res_u = model_lung_health.infer(inference, [HFEV1], [[FEV1, fev1]])
-    res_av = model_lung_health.infer(inference, [Av], [[FEV1, fev1]])
+    res_ab = model_lung_health.infer(inference, [AB], [[FEV1, fev1]])
 
     n_var_rows = 1
     prior = {"type": "bar"}
@@ -99,28 +99,21 @@ def display(fev1: float):
         ],
     )
 
-    # Flip airway availability into airway blockage
-    prior_ab_values = np.flip(prior_av.values)
-    posterior_ab_values = np.flip(res_av.values)
-    AB_name = "Airway Blockage"
-
     fig.add_trace(go.Bar(y=prior_HFEV1.values, x=HFEV1.bins[:-1]), row=1, col=1)
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
 
-    fig.add_trace(go.Bar(y=prior_ab_values, x=np.flip(1 - Av.bins[:-1])), row=1, col=3)
+    fig.add_trace(go.Bar(y=prior_ab.values, x=AB.bins[:-1]), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
-    fig["layout"]["xaxis2"]["title"] = "Prior for " + AB_name
+    fig["layout"]["xaxis2"]["title"] = "Prior for " + AB.name
 
     fig.add_trace(go.Bar(y=res_u.values, x=HFEV1.bins[:-1]), row=2, col=1)
     fig["data"][2]["marker"]["color"] = "blue"
     fig["layout"]["xaxis3"]["title"] = HFEV1.name
 
-    fig.add_trace(
-        go.Bar(y=posterior_ab_values, x=np.flip(1 - Av.bins[:-1])), row=2, col=3
-    )
+    fig.add_trace(go.Bar(y=res_ab.values, x=AB.bins[:-1]), row=2, col=3)
     fig["data"][3]["marker"]["color"] = "green"
-    fig["layout"]["xaxis4"]["title"] = AB_name
+    fig["layout"]["xaxis4"]["title"] = AB.name
 
     fig.update_layout(showlegend=False, height=600, width=1200)
 
