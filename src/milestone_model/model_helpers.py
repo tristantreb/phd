@@ -106,9 +106,9 @@ class variableNode:
 
     @staticmethod
     def get_bins_as_string(self):
-        # Format the bins as string, with 1 decimal
+        n_decimals = len(str(self.bins[1]).split(".")[1])
         return [
-            "[{:.1f}; {:.1f})".format(self.bins[i], self.bins[i + 1])
+            f"[{round(self.bins[i], n_decimals)}; {round(self.bins[i+1], n_decimals)})"
             for i in range(len(self.bins) - 1)
         ]
 
