@@ -37,35 +37,46 @@ def get_fev1(unblocked_fev1, small_airway_blockage):
 
 
 # We can generate a sample of FEV1 values and put the results in a dataframe
-def generate_fev1_sample(u1, u2, s1, s2, n=10000):
-    df = get_fev1(get_unblocked_fev1(u1, u2), get_small_airway_blockage(s1, s2))
+def generate_fev1_sample(u1, u2, b1, b2, n=10000):
+    df = get_fev1(get_unblocked_fev1(u1, u2), get_small_airway_blockage(b1, b2))
     for _ in range(n):
         df = pd.concat(
             [
                 df,
-                get_fev1(get_unblocked_fev1(u1, u2), get_small_airway_blockage(s1, s2)),
+                get_fev1(get_unblocked_fev1(u1, u2), get_small_airway_blockage(b1, b2)),
             ]
         )
     return df
 
 
-## Closed form solution of the PDF
-# Let X~U(a,b) and Y~U(c,d) independent.
-# This gives the PDF of Z = X*Y
-def p_fev1(x, a, b, c, d):
+def PDF_X_x_Y(z, a, b, c, d):
+    """
+    Let X~U(a,b) and Y~U(c,d) independent.
+    This function is the closed form solution of the PDF of Z = X*Y
+    It returns f_Z(z)
+    """
     norm = (b - a) * (d - c)
     if a * d <= c * b:
-        if x > a * c and x < a * d:
-            return np.log(x / (a * c)) / norm
-        elif x >= a * d and x <= c * b:
+        if z > a * c and z < a * d:
+            return np.log(z / (a * c)) / norm
+        elif z >= a * d and z <= c * b:
             return np.log(d / c) / norm
-        elif x > c * b and x < b * d:
-            return np.log(d * b / x) / norm
+        elif z > c * b and z < b * d:
+            return np.log(d * b / z) / norm
         else:
             return 0
     else:
         # exchange X and Y
-        return p_fev1(x, c, d, a, b)
+        return PDF_X_x_Y(z, c, d, a, b)
+
+
+def PDF_X_x_1_minus_Y(z, a, b, c, d):
+    """
+    Let X~U(a,b) and Y~U(c,d) independent.
+    This function is the closed form PDF for Z = X * (1-Y)
+    It returns f_Z(z)
+    """
+    return PDF_X_x_Y(z, 1 - b, 1 - a, c, d)
 
 
 ## Variable node
@@ -168,7 +179,7 @@ def calc_cpt(
                 ):
                     # The intersection is not empty
                     val, abserr = integrate.quad(
-                        p_fev1, C_low, C_up, args=(a_low, a_up, b_low, b_up)
+                        PDF_X_x_1_minus_Y, C_low, C_up, args=(a_low, a_up, b_low, b_up)
                     )
                     total += val
                     cpt[c, i, j] = val
@@ -240,7 +251,7 @@ def calc_pgmpy_cpt(
                 ):
                     # The intersection is not empty
                     val, abserr = integrate.quad(
-                        p_fev1, C_low, C_up, args=(a_low, a_up, b_low, b_up)
+                        PDF_X_x_1_minus_Y, C_low, C_up, args=(a_low, a_up, b_low, b_up)
                     )
                     total += val
                     cpt[c, cpt_index + i + j] = val
@@ -257,7 +268,7 @@ def calc_pgmpy_cpt(
                 print(f"P(C|U,B) = {cpt[:, cpt_index + i + j]}")
             assert (
                 abs(total - 1) < tol
-            ), f"The sum of the probabilities should be 1, got {total}\n Distributions: parentA ~ U({a_low}, {a_up}), parentB ~ U({b_low}, {b_up})\n P(child|parentA,parentB) = {cpt[:, cpt_index + i + j]}\n Range of the child var: [{C_low}; {C_up}]\n Bins of the child: {C.bins}\n Integral abserr = {abserr}"
+            ), f"The sum of the probabilities should be 1, got {total}\n Distributions: parentA ~ U({a_low}, {a_up}), parentB ~ U({b_low}, {b_up})\n P(child|parentA,parentB) = {cpt[:, cpt_index + i + j]}\n Bins of the child: {C.bins}\n Integral abserr = {abserr}"
 
     return cpt
 
