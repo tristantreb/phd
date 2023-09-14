@@ -1,9 +1,35 @@
+import sys
+
+sys.path.append("../../")
+sys.path.append("../data/")
+
+import biology as bio
 import numpy as np
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
 import model_helpers as mh
+
+
+def set_fev1_prior(type, *args):
+    """
+    type: "uniform" or "gaussian"
+    args: if type == "uniform", no args
+    args: if type == "gaussian", height (cm), age (yr), "Male" or "Female"
+    """
+    if type == "uniform":
+        return {"type": "uniform"}
+    elif type == "gaussian":
+        set_height = args[0]
+        set_age = args[1]
+        set_sex = args[2]
+        FEV1 = bio.calc_predicted_fev1(set_height, set_age, set_sex)
+        pred_FEV1 = FEV1["Predicted FEV1"]
+        pred_FEV1_std = FEV1["std"]
+        return {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
+    else:
+        raise ValueError("Invalid type (should be uniform or gaussian)")
 
 
 def build(healthy_FEV1_prior: object):
@@ -49,6 +75,7 @@ def build(healthy_FEV1_prior: object):
 # This is done to simplify the model and to make it more intuitive
 # In the future we will split this variables again (for the longidutinal model)
 def build_healthy(healthy_FEV1_prior: object):
+    print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [2,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
     # It's not possible to live with >80% of airway blockage
