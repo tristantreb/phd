@@ -31,9 +31,14 @@ pred_FEV1 = FEV1["Predicted FEV1"]
 pred_FEV1_std = FEV1["std"]
 # healthy_FEV1_prior={"type":"uniform"}
 healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
-inference, FEV1, HFEV1, prior_HFEV1, AB, prior_ab = model_lung_health.build_healthy(
-    healthy_FEV1_prior
-)
+(
+    inference,
+    FEV1,
+    HFEV1,
+    prior_HFEV1,
+    AB,
+    prior_ab,
+) = model_lung_health.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
 
 app.layout = html.Div(
     [
