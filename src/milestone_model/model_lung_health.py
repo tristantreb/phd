@@ -12,7 +12,22 @@ from pgmpy.models import BayesianNetwork
 import model_helpers as mh
 
 
-def set_fev1_prior(type, *args):
+def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
+    """
+    The high bound for lung damage is set to the 3rd max value of the FEV1
+    """
+    robust_max = np.sort(fev1)[-3]
+    LD_high = robust_max / (pred_FEV1 - pred_FEV1_std)
+    # Round to the nearest 0.05
+    LD_high = round(LD_high * 20) / 20
+    return {
+        "type": "uniform + gaussian tail",
+        "constant": LD_high,
+        "sigma": pred_FEV1_std,
+    }
+
+
+def set_HFEV1_prior(type, *args):
     """
     type: "uniform" or "gaussian"
     args: if type == "uniform", no args
@@ -32,13 +47,15 @@ def set_fev1_prior(type, *args):
         raise ValueError("Invalid type (should be uniform or gaussian)")
 
 
-def build_full_FEV1_side(HFEV1_prior: object):
+def build_full_FEV1_side(HFEV1_prior: object, LD_prior):
     """
     HFEV1
     LD
     UFEV1 = HFEV1 * (1 - LD)
     SAB
     FEV1 = UFEV1 * (1 - SAB)
+
+    -> FEV1 = HFEV1 * (1 - LD) * (1 - SAB) -> can't solve because two unknowns
     """
 
     HFEV1_low = 1
@@ -50,7 +67,7 @@ def build_full_FEV1_side(HFEV1_prior: object):
     LD_low = 0
     LD_high = 0.8
     # It's not possible to live with >80% of global airway blockage (LD + SAB)
-    LD = mh.variableNode("Lung Damage (%)", LD_low, LD_high, 0.05)
+    LD = mh.variableNode("Lung Damage (%)", LD_low, LD_high, 0.05, prior=LD_prior)
 
     UFEV1_low = HFEV1_low * (1 - LD_high)  # 0.2
     UFEV1_high = HFEV1_high * (1 - LD_low)  # 6
@@ -62,7 +79,7 @@ def build_full_FEV1_side(HFEV1_prior: object):
     SAB = mh.variableNode("Small Airway Blockage (%)", SAB_low, SAB_high, 0.05)
 
     # Min observed to 0.4 in our data. Putting 0.1 for now
-    FEV1_low = UFEV1_low * (1 - SAB_high)  # 0.04
+    FEV1_low = min(0.1, UFEV1_low * (1 - SAB_high))  # 0.04
     FEV1_high = UFEV1_high * (1 - SAB_low)  # 6
     FEV1 = mh.variableNode("FEV1 (L)", FEV1_low, FEV1_high, 0.1)
 
@@ -127,6 +144,11 @@ def build_full_FEV1_side(HFEV1_prior: object):
 # This is done to simplify the model and to make it more intuitive
 # In the future we will split this variables again (for the longidutinal model)
 def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
+    """
+    HFEV1
+    AB
+    FEV1 = HFEV1 * (1 - AB)
+    """
     print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [2,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
