@@ -106,9 +106,8 @@ class variableNode:
 
     @staticmethod
     def get_bins_as_string(self):
-        n_decimals = len(str(self.bins[1]).split(".")[1])
         return [
-            f"[{round(self.bins[i], n_decimals)}; {round(self.bins[i+1], n_decimals)})"
+            f"[{round(self.bins[i], 2)}; {round(self.bins[i+1], 2)})"
             for i in range(len(self.bins) - 1)
         ]
 
@@ -118,6 +117,10 @@ class variableNode:
             proba = self._uniform_prior(self)
         elif prior["type"] == "gaussian":
             proba = self._gaussian_prior(self, prior["mu"], prior["sigma"])
+        elif prior["type"] == "uniform + gaussian tail":
+            proba = self._uniform_prior_with_gaussian_tail(
+                self, prior["constant"], prior["sigma"]
+            )
         else:
             raise ValueError(
                 f"Prior {prior} not supported. Please use 'uniform' or 'gaussian'."
@@ -131,13 +134,36 @@ class variableNode:
 
     @staticmethod
     def _uniform_prior(self):
+        print("Defining uniform prior")
         return [[np.array(1 / (len(self.bins) - 1))] for _ in range(len(self.bins) - 1)]
 
     @staticmethod
     def _gaussian_prior(self, mu: float, sigma: float):
+        print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
         proba_per_bin = norm.pdf(self.bins[:-1], loc=mu, scale=sigma)
         proba_per_bin_norm = [proba_per_bin / sum(proba_per_bin)]
         return np.transpose(proba_per_bin_norm)
+
+    @staticmethod
+    def _uniform_prior_with_gaussian_tail(self, constant: float, sigma: float):
+        u_prior = self._uniform_prior(self)
+        g_prior = self._gaussian_prior(self, constant, sigma)
+
+        # Get the index of the bin that contains the constant
+        idx = np.where(self.bins <= constant, self.bins, -np.inf).argmax()
+        print(
+            f"Defining uniform prior until {round(self.bins[idx]+self.bin_width,2)} L, then gaussian tail up to {self.bins[-1]} L"
+        )
+
+        # Use the uniform prior for indices <= idx, else use the gaussian prior
+        u_prior_norm = u_prior[:idx] / sum(np.array(u_prior[:idx]))
+        g_prior_norm = g_prior[idx:] / sum(np.array(g_prior[idx:]))
+
+        proba = np.concatenate([u_prior_norm, g_prior_norm], axis=0)
+
+        # Renormalise
+        proba = proba / sum(proba)
+        return proba
 
 
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
