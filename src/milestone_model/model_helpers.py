@@ -134,7 +134,7 @@ class variableNode:
 
     @staticmethod
     def _uniform_prior(self):
-        print("Defining uniform prior")
+        # print("Defining uniform prior")
         return [[np.array(1 / (len(self.bins) - 1))] for _ in range(len(self.bins) - 1)]
 
     @staticmethod
@@ -180,7 +180,7 @@ def calc_cpt(
     nbinsB = len(parentB.bins) - 1
     nbinsC = len(C.bins) - 1
     cpt = np.empty((nbinsC, nbinsA, nbinsB))
-    print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
+    # print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
 
     for i in range(nbinsA):
         # Take a bin in parentA
@@ -235,75 +235,75 @@ def calc_cpt(
 
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
 # Creates a 2D array with 3 variables
-def calc_pgmpy_cpt(
-    parentA: variableNode,
-    parentB: variableNode,
-    C: variableNode,
+def calc_pgmpy_cpt_X_x_1_minus_Y(
+    X: variableNode,
+    Y: variableNode,
+    Z: variableNode,
     tol=tol_global,
     debug=False,
 ):
     """
-    Function specific to parentA = X, parentB = 1-Y, C = X*(1-Y)
+    Function specific to X = X, Y = 1-Y, C = X*(1-Y)
     """
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
-    nbinsA = len(parentA.bins) - 1
-    nbinsB = len(parentB.bins) - 1
-    nbinsC = len(C.bins) - 1
-    cpt = np.empty((nbinsC, nbinsA * nbinsB))
-    print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x (A x B)) ")
+    nbinsX = len(X.bins) - 1
+    nbinsY = len(Y.bins) - 1
+    nbinsZ = len(Z.bins) - 1
+    cpt = np.empty((nbinsZ, nbinsX * nbinsY))
+    # print(f"calculating cpt of shape {nbinsZ} x {nbinsX} x {nbinsY} (C x (A x B)) ")
 
-    for i in range(nbinsB):
+    for i in range(nbinsY):
         # Initialize the index of the current bin in the cpt
-        cpt_index = i * (nbinsA - 1)
+        cpt_index = i * (nbinsX - 1)
         if debug:
             print("cpt index", cpt_index)
 
-        # Take a bin in parentA
-        b_low = parentB.bins[i]
-        b_up = parentB.bins[i + 1]
+        # Take a bin in X
+        b_low = Y.bins[i]
+        b_up = Y.bins[i + 1]
 
-        for j in range(nbinsA):
-            # Take a bin in parentB
-            a_low = parentA.bins[j]
-            a_up = parentA.bins[j + 1]
+        for j in range(nbinsX):
+            # Take a bin in Y
+            a_low = X.bins[j]
+            a_up = X.bins[j + 1]
 
-            # Get the max possible range of for C=parentA*parentB
-            C_min = a_low * (1 - b_up)
-            C_max = a_up * (1 - b_low)
+            # Get the max possible range of for C=X*Y
+            Z_min = a_low * (1 - b_up)
+            Z_max = a_up * (1 - b_low)
 
             total = 0
             abserr = -1
-            for c in range(nbinsC):
+            for z in range(nbinsZ):
                 # Take a bin in C
-                C_low = C.bins[c]
-                C_up = C.bins[c + 1]
-                # Get the inner intersection of C_range and [C_low, C_up]
-                # Compute P(C | parentA, parentB)
+                Z_low = Z.bins[z]
+                Z_up = Z.bins[z + 1]
+                # Get the inner intersection of Z_range and [Z_low, Z_up]
+                # Compute P(C | X, Y)
                 if (
-                    (C_min - C_low < tol and C_max - C_low > -tol)
-                    or (C_min - C_up < tol and C_max - C_up > -tol)
-                    or ((C_min - C_low >= -tol) and (C_max - C_up <= tol))
+                    (Z_min - Z_low < tol and Z_max - Z_low > -tol)
+                    or (Z_min - Z_up < tol and Z_max - Z_up > -tol)
+                    or ((Z_min - Z_low >= -tol) and (Z_max - Z_up <= tol))
                 ):
                     # The intersection is not empty
                     val, abserr = integrate.quad(
-                        PDF_X_x_1_minus_Y, C_low, C_up, args=(a_low, a_up, b_low, b_up)
+                        PDF_X_x_1_minus_Y, Z_low, Z_up, args=(a_low, a_up, b_low, b_up)
                     )
                     total += val
-                    cpt[c, cpt_index + i + j] = val
+                    cpt[z, cpt_index + i + j] = val
                     if debug:
                         print(
-                            f"idx {c, cpt_index + i + j}, {cpt_index} + {i} + {j}, C_low {C_low}, C_up {C_up}, val {val}, C_min {C_min}, C_max {C_max}"
+                            f"idx {z, cpt_index + i + j}, {cpt_index} + {i} + {j}, Z_low {Z_low}, Z_up {Z_up}, val {val}, Z_min {Z_min}, Z_max {Z_max}"
                         )
                 else:
                     # The intersection is empty
-                    cpt[c, cpt_index + i + j] = 0
+                    cpt[z, cpt_index + i + j] = 0
                     if debug:
-                        print(f"idx {c, cpt_index + i + j} is empty")
+                        print(f"idx {z, cpt_index + i + j} is empty")
             if debug:
-                print(f"P(C|U,B) = {cpt[:, cpt_index + i + j]}")
+                print(f"P(Z|U,B) = {cpt[:, cpt_index + i + j]}")
             assert (
                 abs(total - 1) < tol
-            ), f"The sum of the probabilities should be 1, got {total}\nDistributions: parentA ~ U({a_low}, {a_up}), parentB ~ U({b_low}, {b_up})\nChild range = [{C_min}; {C_max})\nP(child|parentA, parentB) = {cpt[:, cpt_index + i + j]}\n Bins of the child: {C.bins}\n Integral abserr = {abserr}"
+            ), f"The sum of the probabilities should be 1, got {total}\nDistributions: X ~ U({a_low}, {a_up}), Y ~ U({b_low}, {b_up})\nChild range = [{Z_min}; {Z_max})\nP(child|X, Y) = {cpt[:, cpt_index + i + j]}\n Bins of the child: {Z.bins}\n Integral abserr = {abserr}"
 
     return cpt
 
