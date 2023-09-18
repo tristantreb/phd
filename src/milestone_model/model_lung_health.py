@@ -47,7 +47,11 @@ def set_HFEV1_prior(type, *args):
         raise ValueError("Invalid type (should be uniform or gaussian)")
 
 
-def build_full_FEV1_side(HFEV1_prior: object, LD_prior):
+def build_full_FEV1_side(
+    HFEV1_prior={"type": "uniform"},
+    SAB_prior={"type": "uniform"},
+    LD_prior={"type": "uniform"},
+):
     """
     HFEV1
     LD
@@ -64,34 +68,6 @@ def build_full_FEV1_side(HFEV1_prior: object, LD_prior):
         "Healthy FEV1 (L)", HFEV1_low, HFEV1_high, 0.1, prior=HFEV1_prior
     )
 
-    LD_low = 0
-    LD_high = 0.8
-    # It's not possible to live with >80% of global airway blockage (LD + SAB)
-    LD = mh.variableNode("Lung Damage (%)", LD_low, LD_high, 0.05, prior=LD_prior)
-
-    UFEV1_low = HFEV1_low * (1 - LD_high)  # 0.2
-    UFEV1_high = HFEV1_high * (1 - LD_low)  # 6
-    UFEV1 = mh.variableNode("Unblocked FEV1 (L)", UFEV1_low, UFEV1_high, 0.1)
-
-    # It's not possible to live with >80% of global airway blockage (LD + SAB)
-    SAB_low = 0
-    SAB_high = 0.8
-    SAB = mh.variableNode("Small Airway Blockage (%)", SAB_low, SAB_high, 0.05)
-
-    # Min observed to 0.4 in our data. Putting 0.1 for now
-    FEV1_low = min(0.1, UFEV1_low * (1 - SAB_high))  # 0.04
-    FEV1_high = UFEV1_high * (1 - SAB_low)  # 6
-    FEV1 = mh.variableNode("FEV1 (L)", FEV1_low, FEV1_high, 0.1)
-
-    graph = BayesianNetwork(
-        [
-            (HFEV1.name, UFEV1.name),
-            (LD.name, UFEV1.name),
-            (UFEV1.name, FEV1.name),
-            (SAB.name, FEV1.name),
-        ]
-    )
-
     prior_HFEV1 = TabularCPD(
         variable=HFEV1.name,
         variable_card=len(HFEV1.bins) - 1,
@@ -99,6 +75,11 @@ def build_full_FEV1_side(HFEV1_prior: object, LD_prior):
         evidence=[],
         evidence_card=[],
     )
+
+    LD_low = 0
+    LD_high = 0.8
+    # It's not possible to live with >80% of global airway blockage (LD + SAB)
+    LD = mh.variableNode("Lung Damage (%)", LD_low, LD_high, 0.05, prior=LD_prior)
 
     prior_LD = TabularCPD(
         variable=LD.name,
@@ -108,12 +89,27 @@ def build_full_FEV1_side(HFEV1_prior: object, LD_prior):
         evidence_card=[],
     )
 
+    UFEV1_low = HFEV1_low * (1 - LD_high)  # 0.2
+    UFEV1_high = HFEV1_high * (1 - LD_low)  # 6
+    UFEV1 = mh.variableNode("Unblocked FEV1 (L)", UFEV1_low, UFEV1_high, 0.1)
+
     cpt_UFEV1 = TabularCPD(
         variable=UFEV1.name,
         variable_card=len(UFEV1.bins) - 1,
         values=mh.calc_pgmpy_cpt(HFEV1, LD, UFEV1),
         evidence=[LD.name, HFEV1.name],
         evidence_card=[len(LD.bins) - 1, len(HFEV1.bins) - 1],
+    )
+
+    # It's not possible to live with >80% of global airway blockage (LD + SAB)
+    SAB_low = 0
+    SAB_high = 0.8
+    SAB = mh.variableNode(
+        "Small Airway Blockage (%)",
+        SAB_low,
+        SAB_high,
+        0.05,
+        prior=SAB_prior,
     )
 
     prior_SAB = TabularCPD(
@@ -124,6 +120,11 @@ def build_full_FEV1_side(HFEV1_prior: object, LD_prior):
         evidence_card=[],
     )
 
+    # Min observed to 0.4 in our data. Putting 0.1 for now
+    FEV1_low = min(0.1, UFEV1_low * (1 - SAB_high))  # 0.04
+    FEV1_high = UFEV1_high * (1 - SAB_low)  # 6
+    FEV1 = mh.variableNode("FEV1 (L)", FEV1_low, FEV1_high, 0.1)
+
     cpt_FEV1 = TabularCPD(
         variable=FEV1.name,
         variable_card=len(FEV1.bins) - 1,
@@ -132,11 +133,20 @@ def build_full_FEV1_side(HFEV1_prior: object, LD_prior):
         evidence_card=[len(SAB.bins) - 1, len(UFEV1.bins) - 1],
     )
 
-    graph.add_cpds(prior_HFEV1, prior_LD, cpt_UFEV1, prior_SAB, cpt_FEV1)
+    model = BayesianNetwork(
+        [
+            (HFEV1.name, UFEV1.name),
+            (LD.name, UFEV1.name),
+            (UFEV1.name, FEV1.name),
+            (SAB.name, FEV1.name),
+        ]
+    )
 
-    graph.check_model()
+    model.add_cpds(prior_HFEV1, prior_LD, cpt_UFEV1, prior_SAB, cpt_FEV1)
 
-    inference = BeliefPropagation(graph)
+    model.check_model()
+
+    inference = BeliefPropagation(model)
     return inference, HFEV1, prior_HFEV1, LD, prior_LD, UFEV1, SAB, prior_SAB, FEV1
 
 
@@ -224,6 +234,7 @@ def infer(
     inference_model: BeliefPropagation,
     variables: tuple[mh.variableNode],
     evidences: tuple[tuple[mh.variableNode, float]],
+    joint=True,
 ):
     """
     Runs an inference query against a given PGMPY inference model, variables, evidences
@@ -241,5 +252,5 @@ def infer(
         evidences_binned.update({evidence_var.name: bin_idx})
 
     return inference_model.query(
-        variables=var_names, evidence=evidences_binned, show_progress=False
+        variables=var_names, evidence=evidences_binned, show_progress=False, joint=joint
     )
