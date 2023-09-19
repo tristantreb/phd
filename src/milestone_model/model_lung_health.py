@@ -229,6 +229,7 @@ def build_o2_sat():
     inference = BeliefPropagation(graph)
     return inference, UO2Sat, LD, prior_ld
 
+
 def build_longitudinal_FEV1_side(
     n,
     HFEV1_prior={"type": "uniform"},
@@ -289,10 +290,14 @@ def build_longitudinal_FEV1_side(
     )
 
     # One variable per time point.
+    SAB_list = []
+    FEV1_list = []
     SAB_FEV1_pairs_list = []
     UFEV1_FEV1_pairs_list = []
     SAB_priors = []
     FEV1_cpts = []
+
+    # TODO: improve efficiency by creating sharing one variable node and simply changing the name
     for i in range(n):
         # It's not possible to live with >80% of global airway blockage (LD + SAB)
         SAB_low = 0
@@ -326,6 +331,8 @@ def build_longitudinal_FEV1_side(
             evidence_card=[len(SAB_i.bins) - 1, len(UFEV1.bins) - 1],
         )
 
+        SAB_list.append(SAB_i)
+        FEV1_list.append(FEV1_i)
         SAB_FEV1_pairs_list.append((SAB_i.name, FEV1_i.name))
         UFEV1_FEV1_pairs_list.append((UFEV1.name, FEV1_i.name))
         SAB_priors.append(prior_SAB_i)
@@ -346,15 +353,16 @@ def build_longitudinal_FEV1_side(
 
     inference = BeliefPropagation(model)
     return (
+        model,
         inference,
         HFEV1,
         prior_HFEV1,
         LD,
         prior_LD,
         UFEV1,
-        SAB_i,
+        SAB_list,
         prior_SAB_i,
-        FEV1_i,
+        FEV1_list,
     )
 
 
@@ -379,6 +387,8 @@ def infer(
         [_bin, bin_idx] = mh.get_bin_for_value(value, evidence_var.bins)
         evidences_binned.update({evidence_var.name: bin_idx})
 
-    return inference_model.query(
+    query = inference_model.query(
         variables=var_names, evidence=evidences_binned, show_progress=False, joint=joint
     )
+
+    return query
