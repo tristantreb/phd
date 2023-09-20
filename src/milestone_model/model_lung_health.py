@@ -10,6 +10,7 @@ from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
 import model_helpers as mh
+import time
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -387,8 +388,10 @@ def infer(
         [_bin, bin_idx] = mh.get_bin_for_value(value, evidence_var.bins)
         evidences_binned.update({evidence_var.name: bin_idx})
 
+    tic = time.time()
     query = inference_model.query(
-        variables=var_names, evidence=evidences_binned, show_progress=False, joint=joint
+        variables=var_names, evidence=evidences_binned, show_progress=True, joint=joint
     )
+    print(f"Query took {time.time() - tic}s")
 
     return query
