@@ -42,11 +42,7 @@ def inner_merge_with(O2_FEV1, pred_ex_labels, exclude_no_ex=True):
         )
     )
     if exclude_no_ex:
-        ids_ex = O2_FEV1_out[O2_FEV1_out["Is Exacerbated"] == True].ID.unique()
-        print(
-            f"Keeping {len(ids_ex)}/{len(O2_FEV1_out.ID.unique())} individuals that have one or more measurements during an exacerbated period (Is Exacerbated == True at least once)"
-        )
-        O2_FEV1_out = O2_FEV1_out[O2_FEV1_out.ID.isin(ids_ex)]
+        O2_FEV1_out = exclude_IDs_where_no_ex_labels(O2_FEV1_out)
 
     print(
         "Data has now {} entries and {} IDs".format(
@@ -55,6 +51,23 @@ def inner_merge_with(O2_FEV1, pred_ex_labels, exclude_no_ex=True):
         )
     )
     return O2_FEV1_out
+
+
+def exclude_IDs_where_no_ex_labels(O2_FEV1):
+    """
+    Returns a df excluding IDs that don't have any True exacerbation labels
+    """
+    print("\nExcluding all datapoints for IDs that have no exacerbated labels")
+    ids_ex = O2_FEV1[O2_FEV1["Is Exacerbated"] == True].ID.unique()
+    # Compute amount of exacerbated labels True removed
+    n_ex_removed = (O2_FEV1[~O2_FEV1.ID.isin(ids_ex)]["Is Exacerbated"] == True).sum()
+    n_stable_removed = (
+        O2_FEV1[~O2_FEV1.ID.isin(ids_ex)]["Is Exacerbated"] == False
+    ).sum()
+    print(
+        f"Removed {len(O2_FEV1.ID.unique()) - len(ids_ex)} IDs, {n_stable_removed} stable labels (initially {len(O2_FEV1.ID.unique())} IDs and {O2_FEV1.shape[0]} labels)"
+    )
+    return O2_FEV1[O2_FEV1.ID.isin(ids_ex)]
 
 
 # METHOD 1: getting the exacerbation labels inferred with the predictive classifier
@@ -95,16 +108,20 @@ def load():
     return pred_ex_labels
 
 
-"""
-This function provides more conservative ex labels by marking the days before and after an exacerbation start as in "transition"
-We are using a model that marks exacerbated periods as 1, and non-exacerbated periods as 0. 
-However, it's not a binary variable, you don't become exacerbated from one day to another.
-"""
-
-
 def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
-    print("\n** Marking transition period around exacerbation start **")
-    print(f"Initially:\n{df['Is Exacerbated'].value_counts()}")
+    """
+    This function provides more conservative ex labels by marking the days before and after an exacerbation start as in "transition"
+    We are using a model that marks exacerbated periods as 1, and non-exacerbated periods as 0.
+    However, it's not a binary variable, you don't become exacerbated from one day to another.
+
+    N days after includes the day of exacerbation start
+    Hence, if n_days_before = 2 and n_days_after = 2, the transition period is 4 days long
+    """
+    print(
+        f"\n** Marking ({n_days_before}, {n_days_after}) transition window around exacerbation start **"
+    )
+    df_value_counts_is_ex = df["Is Exacerbated"].value_counts()
+    print(f"Initially:\n{df_value_counts_is_ex}")
 
     df = df.sort_values(by=["ID", "Date recorded"]).reset_index(drop=True)
 
@@ -124,7 +141,12 @@ def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
             n_days_before,
             n_days_after,
         )
-    print(f"Finally:\n{df['Exacerbation State'].value_counts()}")
+    df_value_counts_ex_state = df["Exacerbation State"].value_counts()
+
+    print(
+        f"{df_value_counts_ex_state[0.5]} measurements marked within the transition period ({df_value_counts_is_ex[True]-df_value_counts_ex_state[1]} stable, {df_value_counts_is_ex[False]-df_value_counts_ex_state[0]} exacerbated)"
+    )
+    print(f"Finally:\n{df_value_counts_ex_state}")
     return df
 
 
@@ -135,9 +157,14 @@ def _get_ex_start_dates(row):
         return False
 
 
-# Creates ex_state Series from Is Exacerbated series, with only 0 and 1s
-# Overwrites ex_state to 0.5 when measurement is in transition period
 def _overwrite_when_in_transition_period(df_for_ID, n_days_before, n_days_after):
+    """
+    Creates ex_state Series from Is Exacerbated series, with only 0 and 1s
+    Overwrites ex_state to 0.5 when measurement is in transition period
+
+    N days after includes the day of exacerbation start
+    Hence, if n_days_before = 2 and n_days_after = 2, the transition period is 4 days long
+    """
     ex_state = df_for_ID["Is Exacerbated"].astype(int).copy()
 
     # Get indices where ex_start is True
@@ -150,7 +177,7 @@ def _overwrite_when_in_transition_period(df_for_ID, n_days_before, n_days_after)
         # Create a date range around this date
         date_range = pd.date_range(
             start=ex_start_date - timedelta(days=n_days_before),
-            end=ex_start_date + timedelta(days=n_days_after),
+            end=ex_start_date + timedelta(days=n_days_after - 1),
             freq="D",
         )
 
