@@ -70,30 +70,35 @@ def compute_ho2_ld_factor(O2_FEV1):
     return df
 
 
-# Computes the FEV1 % Predicted during stable period (i.e. when Is Exacerbated is False)
-# Adds this column to the input df
-# Adds the avg FEV1 % Pred in stable period next to the ID to add this information to the plot
-def compute_avg_fev1_pred_stable(df):
-    if "Avg FEV1 % Pred in stable period" in df.columns:
+def compute_avg_lung_func_stable(df, fev1_col="FEV1 % Predicted"):
+    """
+    1- Computes the FEV1 % Predicted during stable period (i.e. when Is Exacerbated is False)
+    2- Adds this column to the input df
+    3- Adds the avg FEV1 % Pred in stable period next to the ID to add this information to the plot
+
+    Generalised to other measures of lung function (e.g. FEV1 L)
+    """
+    if f"Avg {fev1_col} in stable period" in df.columns:
         return df
 
     # Compute avg of FEV1 % Predicted during stable period (i.e. when Is Exacerbated is False)
     s_avg_fev1_pred_stable = (
         df[df["Is Exacerbated"] == False]
-        .groupby(["ID"])["FEV1 % Predicted"]
+        .groupby(["ID"])[fev1_col]
         .agg("mean")
-        .rename("Avg FEV1 % Pred in stable period")
+        .rename(f"Avg {fev1_col} in stable period")
     )
     # Note: Transform compute an agglomerates but returns a df of the same size. That means the agg values is repeated for each row of the group
 
     # Merge s_avg_fev1_pred_stable with df based on ID
     df = pd.merge(df, s_avg_fev1_pred_stable, on="ID", how="left").sort_values(
-        by=["Avg FEV1 % Pred in stable period"]
+        by=[f"Avg {fev1_col} in stable period"]
     )
 
+    unit = "%" if fev1_col == "FEV1 % Predicted" else "L"
     # Add a new column with the ID and the avg FEV1 % Pred in stable period
-    df["ID (avg FEV1 % Pred in stable period)"] = df.apply(
-        lambda x: f"{x.ID} ({str(round(x['Avg FEV1 % Pred in stable period'],1))}%)",
+    df[f"ID (avg {fev1_col} in stable period)"] = df.apply(
+        lambda x: f"{x.ID} ({str(round(x[f'Avg {fev1_col} in stable period'],1))}{unit})",
         axis=1,
     )
     return df
