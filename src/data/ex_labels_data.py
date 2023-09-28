@@ -71,6 +71,25 @@ def exclude_IDs_where_no_ex_labels(O2_FEV1):
     return O2_FEV1[O2_FEV1.ID.isin(ids_ex)]
 
 
+def at_least_n_datapoints(df, n=10):
+    """
+    Returns a df excluding IDs that have less than 30 stable or exacerbated datapoints
+    Used to have a meaningful mean for an individual
+    """
+    print("\nExcluding IDs that have less than {n} stable or exacerbated datapoints")
+    ids_removed = []
+    for id in df.ID.unique():
+        df_for_ID = df[df.ID == id].copy().reset_index(drop=True)
+        if df_for_ID[df_for_ID["Is Exacerbated"] == True].shape[0] < n:
+            ids_removed.append(id)
+        elif df_for_ID[df_for_ID["Is Exacerbated"] == False].shape[0] < n:
+            ids_removed.append(id)
+    print(
+        f"Removed {len(ids_removed)}/{len(df.ID.unique())} IDs with too few data (<{n} ex or stable measurements)"
+    )
+    return df[~df.ID.isin(ids_removed)]
+
+
 # METHOD 1: getting the exacerbation labels inferred with the predictive classifier
 def load():
     print("\n** Loading exacerbation labels from the predictive classifier **")
