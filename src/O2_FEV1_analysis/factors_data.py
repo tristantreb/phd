@@ -101,13 +101,17 @@ def compute_avg_fev1_pred_stable(df):
 
 def get_avg_diff_of_means(df, var, ex_col):
     """
-    Compute mean of O2 Saturation in Ex and Stable periods based on Exacerbation State
-    Compute mean difference between the two
-    Return the average difference of the means
+    1 - Compute mean of O2 Saturation in Ex and Stable periods based on ex_col.
+    2 - Compute mean difference between the two.
+    3 - Return the average difference of the means.
     """
     avg_diff_of_means = np.array([])
     for id in df.ID.unique():
         df_for_ID = df[df.ID == id].copy().reset_index(drop=True)
+
+        # If it has more than 30 datapoints
+        if df_for_ID.shape[0] < 30:
+            continue
         mean_ex = df_for_ID[df_for_ID[ex_col] == 1][var].mean()
         mean_stable = df_for_ID[df_for_ID[ex_col] == 0][var].mean()
         avg_diff_of_means = np.append(avg_diff_of_means, mean_stable - mean_ex)
