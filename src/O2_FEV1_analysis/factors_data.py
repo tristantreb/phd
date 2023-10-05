@@ -75,6 +75,7 @@ def compute_avg_lung_func_stable(df, fev1_col="FEV1 % Predicted"):
     1- Computes the FEV1 % Predicted during stable period (i.e. when Is Exacerbated is False)
     2- Adds this column to the input df
     3- Adds the avg FEV1 % Pred in stable period next to the ID to add this information to the plot
+    4- Order by avg FEV1 % Pred in stable period
 
     Generalised to other measures of lung function (e.g. FEV1 L)
     """
