@@ -76,13 +76,13 @@ def at_least_n_datapoints(df, n=10):
     Returns a df excluding IDs that have less than 30 stable or exacerbated datapoints
     Used to have a meaningful mean for an individual
     """
-    print("\nExcluding IDs that have less than {n} stable or exacerbated datapoints")
+    print(f"\nExcluding IDs that have less than {n} stable or exacerbated datapoints")
     ids_removed = []
     for id in df.ID.unique():
         df_for_ID = df[df.ID == id].copy().reset_index(drop=True)
-        if df_for_ID[df_for_ID["Is Exacerbated"] == True].shape[0] < n:
+        if df_for_ID[df_for_ID["Exacerbation State"] == 1].shape[0] < n:
             ids_removed.append(id)
-        elif df_for_ID[df_for_ID["Is Exacerbated"] == False].shape[0] < n:
+        elif df_for_ID[df_for_ID["Exacerbation State"] == 0].shape[0] < n:
             ids_removed.append(id)
     print(
         f"Removed {len(ids_removed)}/{len(df.ID.unique())} IDs with too few data (<{n} ex or stable measurements)"
