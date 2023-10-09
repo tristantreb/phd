@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+PATH_LMS_EQ_LOOKUP_TABLES = (
+    "../../../../DataFiles/PredictedFEV1/FromGLI/GLI_LMS_equations_lookuptables.xls"
+)
 
 def calc_predicted_fev1(height: int, age: int, sex: str):
     """
@@ -42,7 +45,7 @@ def load_LMS_spline_vals(age: int, sex: str):
         raise ValueError(f"Sex {sex} not in Male/Female")
 
     df = pd.read_excel(
-        "../../../../DataFiles/GLI_LMS_equations_lookuptables.xls",
+        PATH_LMS_EQ_LOOKUP_TABLES,
         sheet_name=sheet_name,
         header=1,
         usecols="B:E",
@@ -62,7 +65,7 @@ def load_LMS_coeffs(sex: str):
         raise ValueError(f"Sex {sex} not in Male/Female")
 
     df = pd.read_excel(
-        "../../../../DataFiles/GLI_LMS_equations_lookuptables.xls",
+        PATH_LMS_EQ_LOOKUP_TABLES,
         sheet_name=sheet_name,
         header=2,
         usecols="G:I, K, L, N, O",
