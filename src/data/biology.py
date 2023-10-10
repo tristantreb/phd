@@ -5,6 +5,7 @@ PATH_LMS_EQ_LOOKUP_TABLES = (
     "../../../../DataFiles/PredictedFEV1/FromGLI/GLI_LMS_equations_lookuptables.xls"
 )
 
+
 def calc_predicted_fev1(height: int, age: int, sex: str):
     """
     Calculate predicted FEV1 according to the formula given by the lung function people at Royal Papworth Hospital
@@ -32,11 +33,25 @@ def calc_LMS_predicted_FEV1(spline_vals, coeffs, height: int, age: int, sex: str
     )
 
     # S =  exp(p0 + p1*ln(Age) + p2*AfrAm + p3*NEAsia + p4*SEAsia + Sspline)
+    S = np.exp(
+        coeffs["S"]["Intercept"]
+        + coeffs["S"]["Age"] * np.log(age)
+        + spline_vals["Sspline"]
+    )
 
-    return {"Predicted FEV1": M, "std": 0.4}
+    L = coeffs["L"]["Intercept"] + coeffs["L"]["Age"] * np.log(age)
+
+    # Get lower limit of normal (5th percentile)
+    LLN = np.exp(np.log(1 - 1.645 * L * S) / L + np.log(M))
+
+    return {"Predicted FEV1": M, "std": S, "LLN": LLN}
 
 
 def load_LMS_spline_vals(age: int, sex: str):
+    """
+    Get the spline values for the M and S curves from the lookup table
+    We ignore the Lspline column as it is always 0 for males or females
+    """
     if sex == "Male":
         sheet_name = "FEV1 males"
     elif sex == "Female":
@@ -50,13 +65,15 @@ def load_LMS_spline_vals(age: int, sex: str):
         header=1,
         usecols="B:E",
     )
-    Lspline = df[df.age == age].Lspline.values[0]
     Mspline = df[df.age == age].Mspline.values[0]
     Sspline = df[df.age == age].Sspline.values[0]
-    return {"Lspline": Lspline, "Mspline": Mspline, "Sspline": Sspline}
+    return {"Mspline": Mspline, "Sspline": Sspline}
 
 
 def load_LMS_coeffs(sex: str):
+    """
+    Get the coefficients for the L, M and S curves from the lookup table
+    """
     if sex == "Male":
         sheet_name = "FEV1 males"
     elif sex == "Female":
@@ -79,5 +96,6 @@ def load_LMS_coeffs(sex: str):
             "Height": df.loc["Height", "M_val"],
             "Age": df.loc["Age", "M_val"],
         },
-        "S": {"Intercept": df.loc["Intercept", "S_val"], "age": df.loc["Age", "S_val"]},
+        "S": {"Intercept": df.loc["Intercept", "S_val"], "Age": df.loc["Age", "S_val"]},
+        "L": {"Intercept": df.loc["Intercept", "L_val"], "Age": df.loc["Age", "L_val"]},
     }
