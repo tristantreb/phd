@@ -2,10 +2,13 @@ import numpy as np
 import pandas as pd
 
 
-# Factor function: Unblocked_FEV1(Healthy_FEV1, Lung_Damage)
-# We model Unblocked FEV1 as the 3rd highest FEV1 measurement
-# hfev1 = healthy fev1, ld = lung damage
+
 def compute_hfev1_ld_factor(O2_FEV1):
+    """
+    Factor function: Unblocked_FEV1(Healthy_FEV1, Lung_Damage)
+    We model Unblocked FEV1 as the 3rd highest FEV1 measurement
+    hfev1 = healthy fev1, ld = lung damage
+    """
     df = pd.DataFrame(
         columns=["ID", "Unblocked FEV1 (L)", "Lung Damage (%)", "Healthy FEV1 (L)"]
     )
