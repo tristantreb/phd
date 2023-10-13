@@ -6,7 +6,6 @@ from dateutil.relativedelta import relativedelta
 datadir = "../../../../SmartCareData/"
 
 
-
 def load(use_calc_age=True, use_calc_predicted_fev1=True):
     print("\n** Loading patient data **")
     df = pd.read_excel(
@@ -159,9 +158,20 @@ def _compute_predicted_fev1(df):
     Compute Predicted FEV1
     Checks that Predicted FEV1 is always in the range 2-5.5 L
     """
-    print("Compute Calculated Predicted FEV1")
+    # print("Compute Calculated Predicted FEV1")
+    # df["Predicted FEV1"] = df.apply(
+    #     lambda x: biology.calc_predicted_fev1(x.Height, x.Age, x.Sex)["Predicted FEV1"],
+    #     axis=1,
+    # )
+    print("Compute Calculated Predicted FEV1 using GLI reference equations")
     df["Predicted FEV1"] = df.apply(
-        lambda x: biology.calc_predicted_fev1(x.Height, x.Age, x.Sex)["Predicted FEV1"],
+        lambda x: biology.calc_LMS_predicted_FEV1(
+            biology.load_LMS_spline_vals(x.Age, x.Sex),
+            biology.load_LMS_coeffs(x.Sex),
+            x.Height,
+            x.Age,
+            x.Sex,
+        )["Predicted FEV1"],
         axis=1,
     )
     # Assert type is float

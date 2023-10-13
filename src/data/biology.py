@@ -24,6 +24,11 @@ def calc_predicted_fev1(height: int, age: int, sex: str):
 
 
 def calc_LMS_predicted_FEV1(spline_vals, coeffs, height: int, age: int, sex: str):
+    """
+    Implemented from the GLI reference equations.
+    Equations: https://www.ers-education.org/lr/show-details/?idP=138978
+    Paper: https://www.ersnet.org/science-and-research/ongoing-clinical-research-collaborations/the-global-lung-function-initiative/gli-tools/
+    """
     # M = exp(a0 + a1*ln(Height) + a2*ln(Age) + a3*AfrAm + a4*NEAsia + a5*SEAsia + Mspline)
     M = np.exp(
         coeffs["M"]["Intercept"]
