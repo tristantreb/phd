@@ -44,7 +44,7 @@ def create():
     # Merge O2_FEV1 with patient data
     df_O2_FEV1 = pd.merge(df_O2_FEV1, df_patient, on="ID", how="left")
 
-    # Compute Predicted FEV1 %
+    # Compute FEV1 % Predicted
     df_O2_FEV1 = _compute_predicted_fev1_perct(df_O2_FEV1)
 
     # # Merge O2_FEV1 with antibiotics data
