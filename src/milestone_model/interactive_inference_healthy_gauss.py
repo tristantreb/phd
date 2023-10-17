@@ -24,7 +24,7 @@ import data.biology as bio
 
 # heuristics
 set_age = 33
-set_height = 165
+set_height = 180
 set_sex = "Male"
 FEV1 = bio.calc_predicted_fev1(set_height, set_age, set_sex)
 pred_FEV1 = FEV1["Predicted FEV1"]
