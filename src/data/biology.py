@@ -6,6 +6,21 @@ import pandas as pd
 # )
 
 
+def calc_predicted_SpO2(SpO2: float, sex: str):
+    """
+    Literature provides evidence that healthy SpO2 levels are lower in males than females.
+    We introduce a predicted value for SpO2:
+    - Female: 98.3% (1.3%)
+    - Male: 96.9% (1.7%)
+    """
+    if sex == "Female":
+        return SpO2 / 98.3 * 100
+    elif sex == "Male":
+        return SpO2 / 96.9 * 100
+    else:
+        raise ValueError("Sex '{sex}' not in 'Female' or 'Male'")
+
+
 def calc_predicted_fev1(height: int, age: int, sex: str):
     """
     Calculate predicted FEV1 according to the formula given by the lung function people at Royal Papworth Hospital
