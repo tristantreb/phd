@@ -16,7 +16,7 @@ def create():
     df_patient = patient_data.load()
 
     # Load antibiotics data, cast datetime to date
-    df_antibiotics = antibiotics_data.load()
+    # df_antibiotics = antibiotics_data.load()
 
     print("\n** Creating DataFrame for O2 FEV1 analysis **")
     # Extract O2 and FEV1 measurements
