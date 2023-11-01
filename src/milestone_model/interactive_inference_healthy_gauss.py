@@ -22,78 +22,106 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
 
-app.layout = html.Div(
+# TODO
+# - dbc input type number does return None if not number or outside authorised range
+# - dbc input type number returns a string, not a number (have to convert it)
+
+app.layout = dbc.Container(
     [
-        html.H2(
-            "Interactive inference on the lung's health model",
-            style={"textAlign": "center"},
-        ),
-        html.Br(),
-        html.Div(
-            f"Individual clinical profile:"
-        ),
+        html.H2("Lung Health's Diagnostic Tool", style={"textAlign": "center"}),
         html.Div(
             [
-                html.P("Sex"),
-                dbc.Select(
-                    id="sex-select",
-                    options=[
-                        {"label": "Male", "value": "Male"},
-                        {"label": "Female", "value": "Female"},
-                    ],
-                    value="Male"
+                html.H4("Individual's clinical profile:"),
+                dbc.InputGroup(
+                    [
+                        dbc.InputGroupText("Sex"),
+                        dbc.Select(
+                            id="sex-select",
+                            options=[
+                                {"label": "Male", "value": "Male"},
+                                {"label": "Female", "value": "Female"},
+                            ],
+                            value="Male",
+                        ),
+                    ]
                 ),
-                html.P("Age (years))"),
-                dbc.Input(type="number, min=0, max=100", value=30, id="age-input"),
-                html.P("Height (cm)"),
-                dbc.Input(type="number, min=0, max=300", value=175, id="height-input"),
+                dbc.InputGroup(
+                    [
+                        dbc.InputGroupText("Age (years)"),
+                        dbc.Input(
+                            type="number",
+                            min=0,
+                            max=100,
+                            value=30,
+                            id="age-input",
+                            debounce=True,
+                        ),
+                    ]
+                ),
+                dbc.InputGroup(
+                    [
+                        dbc.InputGroupText("Height (cm)"),
+                        dbc.Input(
+                            type="number",
+                            min=0,
+                            max=300,
+                            value=175,
+                            id="height-input",
+                            debounce=True,
+                        ),
+                    ]
+                ),
             ],
+            style={"width": "300px"},
         ),
-        dcc.Graph(id="lung-graph"),
+        dcc.Loading(id="graph-loader", type="default", children=[dcc.Graph(id="lung-graph")]),
         html.Div(
-            [
-                dcc.Slider(
-                    id="FEV1-slider",
-                    min=0,
-                    max=6,
-                    # min=FEV1.bins[0],
-                    # max=FEV1.bins[-2],
-                    value=3,
-                    # marks={0: "0.2", (len(AB.bins) - 1): "5.9"},
-                )
-            ],
-            style={
-                "transform": "scale(1.2)",
-                "margin-left": "90px",
-                "margin-right": "900px",
-            },
+            dbc.Form(
+                [
+                    dbc.Label("FEV1 observed:"),
+                    dcc.Slider(
+                        id="FEV1-slider",
+                        min=0,
+                        max=6,
+                        step=0.1,
+                        value=3,
+                        marks={
+                            1: "1 L",
+                            2: "2 L",
+                            3: "3 L",
+                            4: "4 L",
+                            5: "5 L",
+                        },
+                        tooltip={"always_visible": True, "placement": "bottom"},
+                    ),
+                ],
+                style={"margin-left": "90px", "margin-right": "900px"},
+            ),
         ),
-        dcc.Store(id="model", storage_type="memory"),
-        dcc.Store(id="FEV1-node", storage_type="memory"),
-        dcc.Store(id="HFEV1-node", storage_type="memory"),
-        dcc.Store(id="prior-HFEV1", storage_type="memory"),
-        dcc.Store(id="AB-node", storage_type="memory"),
-        dcc.Store(id="prior-AB", storage_type="memory"),
-    ]
+    ],
+    fluid=True,
 )
 
-# @app.callback(
-#     Output("FEV1-slider"),
-#     [Input("FEV1", )]
-# )
 
 @app.callback(
-    Output("model", "data"),
-    Output("FEV1-node", "data"),
-    Output("HFEV1-node", "data"),
-    Output("prior-HFEV1", "data"),
-    Output("AB-node", "data"),
-    Output("prior-AB", "data"),
+    Output("lung-graph", "figure"),
+    Output("FEV1-slider", "min"),
+    Output("FEV1-slider", "max"),
+    # Variables
     Input("sex-select", "value"),
     Input("age-input", "value"),
     Input("height-input", "value"),
+    # Evidences
+    Input("FEV1-slider", "value"),
 )
-def update_model(sex: str, age: int, height: int):
+def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
+    # MODEL
+    print(
+        f"Model inputs: sex: {sex}, age: {age}, height: {height}, FEV1_obs: {FEV1_obs}"
+    )
+    # Convert to int
+    height = int(height)
+    age = int(age)
     pred_FEV1, pred_FEV1_std = list(
         map(bio.calc_predicted_fev1(height, age, sex).get, ["Predicted FEV1", "std"])
     )
@@ -107,22 +135,9 @@ def update_model(sex: str, age: int, height: int):
         AB,
         prior_AB,
     ) = model_lung_health.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
-    return model, FEV1, HFEV1, prior_HFEV1, AB, prior_AB
 
-@app.callback(
-    Output("lung-graph", "figure"),
-    # Variables
-    Input("model", "data"),
-    Input("HFEV1-node", "data"),
-    Input("prior-HFEV1", "data"),
-    Input("AB-node", "data"),
-    Input("prior-AB", "data"),
-    Input("FEV1-node", "data"),
-    # Evidences
-    Input("FEV1-slider", "value"),
-)
-def update_inference(model, HFEV1, prior_HFEV1, FEV1, AB, prior_AB, FEV1_obs: float):
-    print("user input: FEV1 set to", FEV1_obs)
+    # INFERENCE
+    print("Inference user input: FEV1 set to", FEV1_obs)
 
     [_fev1_bin, fev1_idx] = mh.get_bin_for_value(FEV1_obs, FEV1.bins)
 
@@ -164,17 +179,7 @@ def update_inference(model, HFEV1, prior_HFEV1, FEV1, AB, prior_AB, FEV1_obs: fl
 
     fig.update_layout(showlegend=False, height=600, width=1200)
 
-    # Add text box with FEV1 value
-    fig.add_annotation(
-        x=0,
-        y=-0.2,
-        text=f"FEV1 = {FEV1_obs:.2f} L",
-        showarrow=False,
-        font=dict(size=16),
-        xref="paper",
-        yref="paper",
-    )
-    return fig
+    return fig, FEV1.bins[0], FEV1.bins[-2]
 
 
 app.run_server(debug=True, port=8051, use_reloader=False)
