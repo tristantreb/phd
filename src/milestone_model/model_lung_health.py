@@ -167,7 +167,7 @@ def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
     AB = mh.variableNode("Airway Degradation", 0, 0.8, 0.05)
     FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
 
-    graph = BayesianNetwork([(HFEV1.name, FEV1.name), (AB.name, FEV1.name)])
+    model = BayesianNetwork([(HFEV1.name, FEV1.name), (AB.name, FEV1.name)])
 
     cpt_fev1 = TabularCPD(
         variable=FEV1.name,
@@ -193,11 +193,11 @@ def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
         evidence_card=[],
     )
 
-    graph.add_cpds(cpt_fev1, prior_ab, prior_u)
+    model.add_cpds(cpt_fev1, prior_ab, prior_u)
 
-    graph.check_model()
+    model.check_model()
 
-    inference = BeliefPropagation(graph)
+    inference = BeliefPropagation(model)
     return inference, FEV1, HFEV1, prior_u, AB, prior_ab
 
 
