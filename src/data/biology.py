@@ -27,7 +27,6 @@ def calc_predicted_fev1(height: int, age: int, sex: str):
     This formula takes Age in years, Height in m and Sex
     Input Height is in cm, hence the /100
     """
-
     if sex == "Male":
         pred_FEV1 = (height / 100) * 4.3 - age * 0.029 - 2.49
         std_dev = 0.4
