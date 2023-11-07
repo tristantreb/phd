@@ -84,7 +84,7 @@ def build_O2_FEV1_df():
     """
     Merges patients and measurement dataframes
     Computes base variables Predicted FEV1, FEV1 % Predicted
-    Computes additional variables: Predicted SpO2, Avg FEV1 % Predicted, Avg Predicted FEV1
+    Computes additional variables: Healthy O2 Saturation, Avg FEV1 % Predicted, Avg Predicted FEV1
     """
     df_patients = load_patients()
     df_meas = load_measurements()
@@ -141,9 +141,8 @@ def build_O2_FEV1_df():
         axis=1,
     )
 
-    # Compute calc predicted SpO2
-    df["Predicted SpO2"] = df.apply(
-        lambda x: bio.calc_predicted_SpO2(x["O2 Saturation"], x.Sex), axis=1
+    df["Healthy O2 Saturation"] = df.apply(
+        lambda x: bio.calc_predicted_O2_saturation(x["O2 Saturation"], x.Sex)["Healthy O2 Saturation"], axis=1
     )
 
     return df

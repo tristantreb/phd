@@ -6,17 +6,25 @@ import pandas as pd
 # )
 
 
-def calc_predicted_SpO2(SpO2: float, sex: str):
+def calc_predicted_O2_saturation(SpO2: float, sex: str, height: int):
     """
-    Literature provides evidence that healthy SpO2 levels are lower in males than females.
-    We introduce a predicted value for SpO2:
-    - Female: 98.3% (1.3%)
-    - Male: 96.9% (1.7%)
+    Healthy/predicted O2 Saturation = a + b*isMale + c*Height
+    Fit done in breate_O2_modelling.ipynb
     """
+    a = 98.04948738170349
+    b = -0.5937158858259677
+    c = -0.008367002391796437
+    std = 1.0877
     if sex == "Female":
-        return SpO2 / 98.3 * 100
+        return {
+            "Healthy O2 Saturation": a + c * height,
+            "std": std,
+        }
     elif sex == "Male":
-        return SpO2 / 96.9 * 100
+        return {
+            "Healthy O2 Saturatoin": a + b + c * height,
+            "std": std,
+        }
     else:
         raise ValueError("Sex '{sex}' not in 'Female' or 'Male'")
 
