@@ -30,6 +30,16 @@ def load():
     return df
 
 
+def _correct_patient_id(df, id, true_patient_id):
+    print(
+        "Correct ID {}'s Patient_ID from {} to {}".format(
+            id, df.Patient_ID[df.SmartCareID == id].values, true_patient_id
+        )
+    )
+    df.loc[df["SmartCareID"] == id, "Patient_ID"] = true_patient_id
+    return df
+
+
 def load_id_map(with_correction=True):
     # The ID map files links each SmartCareID to a Patient_ID and a Study_ID
     # The SmartCare ID is the identifier used in the SmartCare clinical data
@@ -57,16 +67,6 @@ def load_id_map(with_correction=True):
     df_id_map.rename(columns={"SmartCareID": "ID"}, inplace=True)
 
     return df_id_map
-
-
-def _correct_patient_id(df, id, true_patient_id):
-    print(
-        "Correct ID {}'s Patient_ID from {} to {}".format(
-            id, df.Patient_ID[df.SmartCareID == id].values, true_patient_id
-        )
-    )
-    df.loc[df["SmartCareID"] == id, "Patient_ID"] = true_patient_id
-    return df
 
 
 def merge_with_id_mapping(
@@ -166,7 +166,7 @@ def load_measurements_without_smartcare_id():
 
     print("\nFEV1")
     df = _correct_fev1(df)
-    df.apply(_fev1_sanity_check, axis=1)
+    df.apply(lambda x: sanity_checks.fev1(x.FEV1, x["UserName"]), axis=1)
 
     print("\nWeight (kg)")
     df = _correct_weight(df)
@@ -174,14 +174,19 @@ def load_measurements_without_smartcare_id():
 
     print("\nPulse (BPM)")
     df = _correct_pulse(df)
-    df.apply(_pulse_sanity_check, axis=1)
+    df.apply(lambda x: sanity_checks.pusle(x["Pusle (BPM)"], x["UserName"]), axis=1)
 
     print("\nO2 Saturation")
-    df = _O2_saturation_sanity_check(df)
+    df = _correct_O2_saturation(df)
+    df.apply(
+        lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x["UserName"]), axis=1
+    )
 
     print("\nTemp (deg C)")
     df = _correct_temp(df)
-    df.apply(_temp_sanity_check, axis=1)
+    df.apply(
+        lambda x: sanity_checks.temperature(x["Temp (deg C)"], x["UserName"]), axis=1
+    )
 
     # Look for duplicates
     print("\n* Looking for duplicates *")
@@ -207,6 +212,17 @@ def load_measurements_without_smartcare_id():
     return df
 
 
+def _remove_recording(df, username, column, value):
+    idx = df[(df["UserName"] == username) & (df[column] == value)].index
+    print(
+        "Dropping {} entries with {} = {} for user {}".format(
+            idx.shape[0], column, value, username
+        )
+    )
+    df.drop(idx, inplace=True)
+    return df
+
+
 def _correct_fev1(df):
     # ID 54 has a series of FEV1 values < 2, no values for 6 months, then a value of 3.5
     # This 3.45 value is possible, but it'll give more noise than meaning to our model - especially until we introduce time
@@ -215,14 +231,20 @@ def _correct_fev1(df):
     return df
 
 
-def _fev1_sanity_check(row):
-    if row.FEV1 < 0.1 or row.FEV1 > 5.5:
-        print(
-            "Warning - UserName {} has FEV1 ({}) outside 0.1-5.5 L range {}".format(
-                row.UserName, row.FEV1, row["Date recorded"]
-            )
+def _correct_O2_saturation(df):
+    # Find all rows where O2 Saturation is outside 70-100 % range
+    idx = df[(df["O2 Saturation"] < 70) | (df["O2 Saturation"] > 100)].index
+    # Print unique IDs with number of rows with O2 Saturation outside 70-100 % range
+    print(
+        "IDs with O2 Saturation outside 70-100 % range: \n{}".format(
+            df.loc[idx, ["UserName", "O2 Saturation"]].sort_values("UserName")
         )
-    return -1
+    )
+    # Remove rows with O2 Saturation outside 70-100 % range
+    print(
+        "Dropping {} entries with O2 Saturation outside 70-100 % range".format(len(idx))
+    )
+    return df.drop(idx, inplace=False)
 
 
 def _correct_weight(df):
@@ -261,17 +283,6 @@ def _correct_weight(df):
     return df
 
 
-def _remove_recording(df, username, column, value):
-    idx = df[(df["UserName"] == username) & (df[column] == value)].index
-    print(
-        "Dropping {} entries with {} = {} for user {}".format(
-            idx.shape[0], column, value, username
-        )
-    )
-    df.drop(idx, inplace=True)
-    return df
-
-
 def _correct_pulse(df):
     # For some reason, there are some entries with Pulse (BPM) == 511, we'll remove them
     # Drop idx where Pusle (BPM) is equal to 511
@@ -300,44 +311,5 @@ def _correct_temp(df):
     idx = df[df["Temp (deg C)"] > 60].index
     print("Dropping {} entries with Temp (deg C) > 60".format(idx.shape[0]))
     print(df.loc[idx, ["Temp (deg C)", "UserName"]])
-    df.drop(idx, inplace=True)
-    return df
-
-
-# Pusle (BPM) should be in range 40-200
-def _pulse_sanity_check(row):
-    if row["Pulse (BPM)"] < 40 or row["Pulse (BPM)"] > 200:
-        print(
-            "Warning - UserName {} has Pulse ({}) outside 40-200 range".format(
-                row.UserName, row["Pulse (BPM)"]
-            )
-        )
-    return -1
-
-
-# Temperature should be in range 35-40
-def _temp_sanity_check(row):
-    if row["Temp (deg C)"] < 34 or row["Temp (deg C)"] > 40:
-        print(
-            "Warning - UserName {} has Temp ({}) outside 35-40 range".format(
-                row.UserName, row["Temp (deg C)"]
-            )
-        )
-    return -1
-
-
-def _O2_saturation_sanity_check(df):
-    # Find all rows where O2 Saturation is outside 70-100 % range
-    idx = df[(df["O2 Saturation"] < 70) | (df["O2 Saturation"] > 100)].index
-    # Print unique IDs with number of rows with O2 Saturation outside 70-100 % range
-    print(
-        "IDs with O2 Saturation outside 70-100 % range: \n{}".format(
-            df.loc[idx, ["UserName", "O2 Saturation"]].sort_values("UserName")
-        )
-    )
-    # Remove rows with O2 Saturation outside 70-100 % range
-    print(
-        "Dropping {} entries with O2 Saturation outside 70-100 % range".format(len(idx))
-    )
     df.drop(idx, inplace=True)
     return df
