@@ -57,7 +57,7 @@ def load_measurements():
         df_raw, "FEV", "FEV1Recording", type=float, new_col_name="FEV1"
     )
     df_fev1 = _correct_fev1(df_fev1)
-    sanity_checks.same_day_measurements(df_fev1, "FEV1")
+    sanity_checks.same_day_measurements(df_fev1)
     df_fev1.apply(lambda x: sanity_checks.fev1(x["FEV1"], x.ID), axis=1)
 
     df_o2_sat = _get_measure_from_raw_df(
@@ -68,7 +68,7 @@ def load_measurements():
         type=float,
         new_col_name="O2 Saturation",
     )
-    sanity_checks.same_day_measurements(df_o2_sat, "O2 Saturation")
+    sanity_checks.same_day_measurements(df_o2_sat)
     df_o2_sat.apply(
         lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x.ID), axis=1
     )
@@ -157,6 +157,11 @@ def build_O2_FEV1_df():
         axis=1,
     )
 
+    df_patients["Healthy O2 Saturation"] = df_patients.apply(
+        lambda x: bio.calc_healthy_O2_saturation(x.Sex, x.Height)["mean"],
+        axis=1,
+    )
+
     df = df_meas.merge(df_patients, on="ID", how="left")
 
     df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
@@ -164,11 +169,8 @@ def build_O2_FEV1_df():
         lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1
     )
 
-    df["Healthy O2 Saturation"] = df.apply(
-        lambda x: bio.calc_healthy_O2_saturation(x["O2 Saturation"], x.Sex, x.Height)[
-            "mean"
-        ],
-        axis=1,
+    df["O2 Saturation % Healthy"] = (
+        df["O2 Saturation"] / df["Healthy O2 Saturation"] * 100
     )
 
     print(f"Built data structure with {df.ID.nunique()} IDs and {len(df)} entries")
