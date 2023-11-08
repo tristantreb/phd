@@ -3,6 +3,7 @@ import biology
 import measurements_data
 import pandas as pd
 import patient_data
+import sanity_checks
 
 datadir = "../../../../SmartCareData/"
 
@@ -24,7 +25,7 @@ def create():
     df_FEV1 = extract_measure(df_measurements, "FEV1")
 
     # Merge O2 with FEV1
-    df_O2_FEV1 = pd.merge(df_O2, df_FEV1, on=["ID", "Date recorded"], how="outer")
+    df_O2_FEV1 = pd.merge(df_O2, df_FEV1, on=["ID", "Date Recorded"], how="outer")
     n_na = df_O2_FEV1.isna().sum().sum()
 
     # Dropping all NaNs, because the df contains only O2 and FEV1 measurements
@@ -38,7 +39,7 @@ def create():
     # Assert that there's only one set of measurements per ID per day
     print("Asserting that there's only one measurement per ID per day")
     assert (
-        df_O2_FEV1.groupby(["ID", "Date recorded"]).size().max() == 1
+        df_O2_FEV1.groupby(["ID", "Date Recorded"]).size().max() == 1
     ), "There's more than one measurement per day for some patients"
 
     # Merge O2_FEV1 with patient data
@@ -50,8 +51,8 @@ def create():
     # # Merge O2_FEV1 with antibiotics data
     # df_O2_FEV1 = pd.merge(df_O2_FEV1, df_antibiotics, on="ID", how="outer")
 
-    # Sort by ID and Date recorded
-    df_O2_FEV1.sort_values(["ID", "Date recorded"], inplace=True)
+    # Sort by ID and Date Recorded
+    df_O2_FEV1.sort_values(["ID", "Date Recorded"], inplace=True)
 
     print(
         "\nCreated df_O2_FEV1 with {} entries (initially {}, removed {})".format(
@@ -67,11 +68,11 @@ def extract_measure(measurements_in, label, with_patient_id=False):
     # Could also filter by Recording Type
     if with_patient_id:
         measurements_out = measurements_in[measurements_in[label].notnull()][
-            ["User ID", "Date recorded", label]
+            ["User ID", "Date Recorded", label]
         ]
     else:
         measurements_out = measurements_in[measurements_in[label].notnull()][
-            ["ID", "Date recorded", label]
+            ["ID", "Date Recorded", label]
         ]
     print("{} has {} measurements".format(label, measurements_out.shape[0]))
     return measurements_out
@@ -86,5 +87,5 @@ def _compute_predicted_fev1_perct(df):
         lambda x: x["FEV1"] / x["Predicted FEV1"] * 100, axis=1
     )
     # Assert type is float
-    assert df["FEV1 % Predicted"].dtype == float
+    df.apply(lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1)
     return df
