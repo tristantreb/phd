@@ -19,6 +19,11 @@ def load_patients():
     df.ID = df.ID.astype(str)
 
     sanity_checks.data_types(df)
+    sanity_checks.must_not_have_nan(df)
+    print(
+        "The 4 NaN values belong to IDs ('322', '338', '344', '348') whose height are missing.\nHowever, we don't correct for them as we don't have any measurement corresponding to those IDs for now."
+    )
+
     df.apply(lambda x: sanity_checks.age(x.Age, x.ID), axis=1)
     df.apply(lambda x: sanity_checks.sex(x.Sex, x.ID), axis=1)
     df.apply(lambda x: sanity_checks.height(x.Height, x.ID), axis=1)
@@ -33,47 +38,86 @@ def load_measurements():
     Only loads FEV1 and O2 Saturation measurements
     """
     print("\n*** Loading measurements data ***")
-    df = pd.read_excel(
-        "../../../../DataFiles/BR/PredModInputData.xlsx",
-        sheet_name="BRphysdata",
-        usecols="A, E, G, H , J",
+    df_raw = (
+        pd.read_excel(
+            "../../../../DataFiles/BR/PredModInputData.xlsx",
+            sheet_name="BRphysdata",
+            usecols="A, E, G, H , J",
+        )
+        .rename(columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"})
+        .astype({"ID": str, "DateTime Recorded": "datetime64[ns]"})
     )
 
-    df = df.drop(["RecordingType"], axis=1)
-    df.rename(
-        columns={
-            "FEV": "FEV1",
-            "O2Saturation": "O2 Saturation",
-            "SmartCareID": "ID",
-            "Date_TimeRecorded": "DateTime Recorded",
-        },
-        inplace=True,
+    df_raw["Date Recorded"] = df_raw["DateTime Recorded"].dt.date
+
+    # Drop DateTime Recorded column
+    df_raw.drop(columns=["DateTime Recorded"], inplace=True)
+
+    df_fev1 = get_measure_from_raw_df(
+        df_raw, "FEV", "FEV1Recording", type=float, new_col_name="FEV1"
     )
-    df = df.astype(
-        {
-            "ID": str,
-            "FEV1": float,
-            "DateTime Recorded": "datetime64[ns]",
-        }
+    df_fev1 = _correct_fev1(df_fev1)
+    sanity_checks.same_day_measurements(df_fev1, "FEV1")
+    df_fev1.apply(lambda x: sanity_checks.fev1(x["FEV1"], x.ID), axis=1)
+
+    df_o2_sat = get_measure_from_raw_df(
+        df_raw,
+        "O2Saturation",
+        "O2SaturationRecording",
+        # TODO: Why can O2 Saturation be a float?
+        type=float,
+        new_col_name="O2 Saturation",
     )
-    df["Date Recorded"] = df["DateTime Recorded"].dt.date
+    sanity_checks.same_day_measurements(df_o2_sat, "O2 Saturation")
+    df_o2_sat.apply(
+        lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x.ID), axis=1
+    )
 
-    df = _correct_o2_saturation(df)
-    sanity_checks.data_types(df)
+    df_meas = pd.merge(df_fev1, df_o2_sat, on=["ID", "Date Recorded"], how="outer")
 
-    # Apply sanity checks on O2 Saturation and FEV1
-    # df.apply(lambda x: sanity_checks.fev1(x["FEV1"], x.ID), axis=1)
-    # df.apply(lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x.ID), axis=1)
+    sanity_checks.data_types(df_meas)
 
+    print("Number of IDs: ", df_meas.ID.nunique())
+    print("Number of rows: ", len(df_meas))
+    print(f"Number of FEV1 recordings: {len(df_fev1)}")
+    print(f"Number of O2 Saturation recordings: {len(df_o2_sat)}")
+    return df_meas
+
+
+def get_measure_from_raw_df(
+    df, col_name, recording_type, type=False, new_col_name=False
+):
+    df = df[df.RecordingType == recording_type]
+    df = df[["ID", "Date Recorded", col_name]]
+    if type:
+        df = df.astype({col_name: type})
+    if new_col_name:
+        df.rename(columns={col_name: new_col_name}, inplace=True)
     return df
 
 
-def _correct_o2_saturation(df):
+def _remove_recording(df, id, column, value):
     """
-    Corrects O2 Saturation values
+    Removes a recording from a dataframe
     """
-    # Round all values to the integer
-    df["O2 Saturation"] = df["O2 Saturation"].round().astype(int)
+    idx = df[(df.ID == id) & (df[column] == value)].index
+    print(
+        "Dropping {} entries with {} = {} for ID {}".format(
+            idx.shape[0], column, value, id
+        )
+    )
+    df.drop(idx, inplace=True)
+    return df
+
+
+def _correct_fev1(df):
+    """
+    Corrects FEV1 values
+    """
+    # Warning - ID 330 has FEV1 (6.0) outside 0.1-5.5 L range
+    # Corresponds to 24y, Female, 153.5cm -> predicted FEV1: 2.9
+    # Let's remove this entry
+    df = _remove_recording(df, "330", "FEV1", 6.0)
     return df
 
 
