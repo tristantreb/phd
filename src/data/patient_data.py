@@ -71,11 +71,11 @@ def load(use_calc_age=True, use_calc_predicted_fev1=True):
 
     # Apply data sanity checks
     print("\n* Applying data sanity checks *")
-    df.apply(_age_sanity_check, axis=1)
-    df.apply(_sex_sanity_check, axis=1)
-    df.apply(_height_sanity_check, axis=1)
+    df.apply(lambda x: sanity_checks.age(x.Age, x.ID), axis=1)
+    df.apply(lambda x: sanity_checks.sex(x.Sex, x.ID), axis=1)
+    df.apply(lambda x: sanity_checks.height(x.Height, x.ID), axis=1)
     df.apply(lambda x: sanity_checks.weight(x.Weight, x.ID), axis=1)
-    df.apply(_predicted_fev1_sanity_check, axis=1)
+    df.apply(lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID), axis=1)
 
     print(
         "Loaded patient data with {} entries ({} initially)".format(
@@ -83,40 +83,6 @@ def load(use_calc_age=True, use_calc_predicted_fev1=True):
         )
     )
     return df
-
-
-def _age_sanity_check(row):
-    assert (
-        row.Age >= 18 and row.Age <= 70
-    ), "Warning - ID {} has Age ({}) outside 18-70 range".format(row.ID, row.Age)
-    return -1
-
-
-def _sex_sanity_check(row):
-    assert row.Sex in [
-        "Male",
-        "Female",
-    ], "Sex ({}) is not 'Male' neither 'Female'".format(row.ID, row.Sex)
-    return -1
-
-
-def _height_sanity_check(row):
-    assert (
-        row.Height >= 120 and row.Height <= 220
-    ), "Warning - ID {} has Height ({}) outside 120-220cm range".format(
-        row.ID, row.Height
-    )
-    return -1
-
-
-def _predicted_fev1_sanity_check(row):
-    if row["Predicted FEV1"] >= 5 or row["Predicted FEV1"] <= 2:
-        print(
-            "Warning - ID {} has Predicted FEV1 ({}) outside 2-5L range".format(
-                row.ID, row["Predicted FEV1"]
-            )
-        )
-    return -1
 
 
 def _correct_df(df):
@@ -171,7 +137,7 @@ def _compute_predicted_fev1(df):
             x.Height,
             x.Age,
             x.Sex,
-        )["Predicted FEV1"],
+        )["mean"],
         axis=1,
     )
     # Assert type is float

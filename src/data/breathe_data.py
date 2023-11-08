@@ -1,21 +1,30 @@
 import biology as bio
 import numpy as np
 import pandas as pd
+import sanity_checks
 
 
 def load_patients():
-    print("*** Loading patients data ***")
-    df_patients = pd.read_excel(
+    """
+    Loads Breathe patient data from the excel file and returns a dataframe
+    Columns loaded: ID, Age, Sex, Height
+    """
+    print("\n*** Loading patients data ***")
+    df = pd.read_excel(
         "../../../../DataFiles/BR/PredModInputData.xlsx",
         sheet_name="brPatient",
         usecols="A, J, K, L",
     )
     # Set ID as string
-    df_patients["ID"] = df_patients["ID"].astype(str)
+    df.ID = df.ID.astype(str)
 
-    # Print number of patients loaded
-    print("Number of IDs: ", len(df_patients))
-    return df_patients
+    sanity_checks.data_types(df)
+    df.apply(lambda x: sanity_checks.age(x.Age, x.ID), axis=1)
+    df.apply(lambda x: sanity_checks.sex(x.Sex, x.ID), axis=1)
+    df.apply(lambda x: sanity_checks.height(x.Height, x.ID), axis=1)
+
+    print(f"Loaded {len(df)} individuals")
+    return df
 
 
 def load_measurements():
@@ -23,31 +32,60 @@ def load_measurements():
     Loads the Breathe data from the excel file and returns a dataframe
     Only loads FEV1 and O2 Saturation measurements
     """
-    print("*** Loading measurements data ***")
-    df_meas = pd.read_excel(
+    print("\n*** Loading measurements data ***")
+    df = pd.read_excel(
         "../../../../DataFiles/BR/PredModInputData.xlsx",
         sheet_name="BRphysdata",
         usecols="A, E, G, H , J",
     )
 
-    # Set SmartCareID as type string
-    df_meas["SmartCareID"] = df_meas["SmartCareID"].astype(str)
-    # Rename FEV to FEV1
-    df_meas.rename(
-        columns={"FEV": "FEV1", "O2Saturation": "O2 Saturation"}, inplace=True
+    df = df.drop(["RecordingType"], axis=1)
+    df.rename(
+        columns={
+            "FEV": "FEV1",
+            "O2Saturation": "O2 Saturation",
+            "SmartCareID": "ID",
+            "Date_TimeRecorded": "DateTime Recorded",
+        },
+        inplace=True,
     )
+    df = df.astype(
+        {
+            "ID": str,
+            "FEV1": float,
+            "DateTime Recorded": "datetime64[ns]",
+        }
+    )
+    df["Date Recorded"] = df["DateTime Recorded"].dt.date
 
-    # Drop rows where Recording Type is not "FEV1Recording", or "O2 SaturationRecording"
-    df_meas = df_meas[
-        df_meas["RecordingType"].isin(["FEV1Recording", "O2SaturationRecording"])
-    ]
+    df = _correct_o2_saturation(df)
+    sanity_checks.data_types(df)
 
-    # Replace 0.00 with NaN
-    df_meas = df_meas.replace(0.00, np.nan)
-    # Create Date Recorded column and drop time from Date/Time Recorded column
-    df_meas["DateRecorded"] = df_meas["Date_TimeRecorded"].dt.date
-    # Drop Date_TimeRecorded column and RecordingType column
-    df_meas = df_meas.drop(["Date_TimeRecorded", "RecordingType"], axis=1)
+    # Apply sanity checks on O2 Saturation and FEV1
+    # df.apply(lambda x: sanity_checks.fev1(x["FEV1"], x.ID), axis=1)
+    # df.apply(lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x.ID), axis=1)
+
+    return df
+
+
+def _correct_o2_saturation(df):
+    """
+    Corrects O2 Saturation values
+    """
+    # Round all values to the integer
+    df["O2 Saturation"] = df["O2 Saturation"].round().astype(int)
+    return df
+
+
+def build_O2_FEV1_df():
+    """
+    Merges patients and measurement dataframes
+    Computes base variables Predicted FEV1, FEV1 % Predicted
+    Computes additional variables: Healthy O2 Saturation, Avg FEV1 % Predicted, Avg Predicted FEV1
+    """
+    print("\n*** Building O2 Saturation and FEV1 dataframe ***")
+    df_patients = load_patients()
+    df_meas = load_measurements()
 
     # Merge rows with same SmartCareId and DateRecorded, taking the non NaN value
     ## Define custom aggregation function
@@ -59,6 +97,7 @@ def load_measurements():
             )
         if len(non_nan_values) == 0:
             return np.nan
+        print(f"non_nan_values: {non_nan_values}")
         return non_nan_values.iloc[0]
 
     df_meas = df_meas.groupby(["SmartCareID", "DateRecorded"])[
@@ -66,9 +105,9 @@ def load_measurements():
     ].agg(custom_aggregation)
 
     # Count rows where FEV and O2 Saturation are NaN together
-    print("FEV1 and SpO2 NaN together: ", df_meas.isna().all(axis=1).sum())
+    print("FEV1 and O2 Saturation NaN together: ", df_meas.isna().all(axis=1).sum())
     # Count and print rows where either FEV or O2 Saturation is NaN
-    print("FEV1 or SpO2 is NaN: ", df_meas.isna().any(axis=1).sum())
+    print("FEV1 or O2 Saturation is NaN: ", df_meas.isna().any(axis=1).sum())
     # Print number of rows
     print("Number of rows: ", len(df_meas))
     # Drop rows with nan values
@@ -77,26 +116,17 @@ def load_measurements():
     # Count number of rows
     print("Number of rows: ", len(df_meas))
 
-    return df_meas
-
-
-def build_O2_FEV1_df():
-    """
-    Merges patients and measurement dataframes
-    Computes base variables Predicted FEV1, FEV1 % Predicted
-    Computes additional variables: Healthy O2 Saturation, Avg FEV1 % Predicted, Avg Predicted FEV1
-    """
-    df_patients = load_patients()
-    df_meas = load_measurements()
-
     # Merge patient and measurement dataframes on SmartCareID and ID
     df = df_meas.merge(df_patients, right_on="ID", left_on="SmartCareID", how="left")
 
     # Print number of IDs
-    print("Number of IDs: ", len(df_patients))
+    print(
+        "Number of IDs, datapoints after merging patient and measurement data: ",
+        df.ID.nunique(),
+        len(df),
+    )
 
     # Compute predicted FEV1 using calc_predicted FEV1 in the biology module
-    # df["Predicted FEV1"] = df.apply(lambda row: bio.calc_predicted_fev1(row.Height, row.Age, row.Sex)["Predicted FEV1"], axis=1)
     df["Predicted FEV1"] = df.apply(
         lambda x: bio.calc_LMS_predicted_FEV1(
             bio.load_LMS_spline_vals(x.Age, x.Sex),
@@ -104,22 +134,11 @@ def build_O2_FEV1_df():
             x.Height,
             x.Age,
             x.Sex,
-        )["Predicted FEV1"],
+        )["mean"],
         axis=1,
     )
     # Compute FEV1 % Predicted
     df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
-
-    # Remove when there's less than 10 O2 Saturation measurements
-    tmp_shape = df.shape[0]
-    tmp_ids = df.groupby("ID").size()
-    df = df.groupby("ID").filter(lambda x: len(x) >= 10)
-    print(
-        f"Removed {tmp_shape - df.shape[0]}/{tmp_shape} rows, {tmp_ids.shape[0] - df.groupby('ID').size().shape[0]}/{tmp_ids.shape[0]} patients"
-    )
-
-    # Remove values below 85 - concerns one individual (ID 111)
-    df = df[df["O2 Saturation"] >= 85]
 
     # Compute avg FEV1 % Predicted per individual
     def compute_avg(df, col_name, unit):
@@ -142,7 +161,10 @@ def build_O2_FEV1_df():
     )
 
     df["Healthy O2 Saturation"] = df.apply(
-        lambda x: bio.calc_predicted_O2_saturation(x["O2 Saturation"], x.Sex)["Healthy O2 Saturation"], axis=1
+        lambda x: bio.calc_healthy_O2_saturation(x["O2 Saturation"], x.Sex, x.Height)[
+            "mean"
+        ],
+        axis=1,
     )
 
     return df

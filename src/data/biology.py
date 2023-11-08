@@ -6,7 +6,7 @@ import pandas as pd
 # )
 
 
-def calc_predicted_O2_saturation(SpO2: float, sex: str, height: int):
+def calc_healthy_O2_saturation(O2_saturation: float, sex: str, height: int):
     """
     Healthy/predicted O2 Saturation = a + b*isMale + c*Height
     Fit done in breate_O2_modelling.ipynb
@@ -17,12 +17,12 @@ def calc_predicted_O2_saturation(SpO2: float, sex: str, height: int):
     std = 1.0877
     if sex == "Female":
         return {
-            "Healthy O2 Saturation": a + c * height,
+            "mean": a + c * height,
             "std": std,
         }
     elif sex == "Male":
         return {
-            "Healthy O2 Saturatoin": a + b + c * height,
+            "mean": a + b + c * height,
             "std": std,
         }
     else:
@@ -71,7 +71,7 @@ def calc_LMS_predicted_FEV1(spline_vals, coeffs, height: int, age: int, sex: str
     # Get lower limit of normal (5th percentile)
     LLN = np.exp(np.log(1 - 1.645 * L * S) / L + np.log(M))
 
-    return {"Predicted FEV1": M, "std": S, "LLN": LLN}
+    return {"mean": M, "std": S, "LLN": LLN}
 
 
 def load_LMS_spline_vals(age: int, sex: str):
