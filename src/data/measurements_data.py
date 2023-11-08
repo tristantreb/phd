@@ -199,33 +199,31 @@ def _remove_recording(df, username, column, value):
     return df
 
 
-# Assuming that I was given the data already post processed
-# Need to check more closely the same day duplicates
-# def _correct_date_recorded(df, col_name):
-#     """
-#     If the recording was made before 2am, we'll assume it was made the previous day
-#     TODO: what if FEV1 is recorded at 1:59 and O2 Saturation at 2:01? This will become an issue
-#     """
-#     print("* Correcting measurements done before 2am *")
-#     tmp_date_time = df["DateTime Recorded"].copy()
-#     df["Date Recorded"], df["DateTime Recorded"] = zip(
-#         *df.apply(
-#             lambda x: (x["Date Recorded"], x["DateTime Recorded"])
-#             if x["DateTime Recorded"].hour >= 2
-#             else (
-#                 x["Date Recorded"] - pd.Timedelta(days=1),
-#                 x["DateTime Recorded"] - pd.Timedelta(days=1),
-#             ),
-#             axis=1,
-#         )
-#     )
-#     # Create new df with the corrected entries
-#     df_corrected = df[tmp_date_time != df["DateTime Recorded"]].copy()
-#     # Save the corrected entries in an excel file
-#     df_corrected.to_excel(
-#         smartcare_data_dir + f"{col_name} corrected dates.xlsx",
-#     )
-#     return df
+def _correct_date_recorded(df, col_name):
+    """
+    If the recording was made before 2am, we'll assume it was made the previous day
+    TODO: what if FEV1 is recorded at 1:59 and O2 Saturation at 2:01? This will become an issue
+    """
+    print("* Correcting measurements done before 2am *")
+    tmp_date_time = df["DateTime Recorded"].copy()
+    df["Date Recorded"], df["DateTime Recorded"] = zip(
+        *df.apply(
+            lambda x: (x["Date Recorded"], x["DateTime Recorded"])
+            if x["DateTime Recorded"].hour >= 2
+            else (
+                x["Date Recorded"] - pd.Timedelta(days=1),
+                x["DateTime Recorded"] - pd.Timedelta(days=1),
+            ),
+            axis=1,
+        )
+    )
+    # Create new df with the corrected entries
+    df_corrected = df[tmp_date_time != df["DateTime Recorded"]].copy()
+    # Save the corrected entries in an excel file
+    df_corrected.to_excel(
+        smartcare_data_dir + f"{col_name} corrected dates.xlsx",
+    )
+    return df
 
 
 def _correct_same_day_duplicates(df, col_name):
@@ -234,7 +232,7 @@ def _correct_same_day_duplicates(df, col_name):
     TODO: Need to check more closely for prev day, next day measurements
     """
     print("* Analysing same day duplicates *")
-    # df = _correct_date_recorded(df, "FEV1")
+    df = _correct_date_recorded(df, "FEV1")
     df = df.sort_values(["UserName", "DateTime Recorded"]).reset_index(drop=True)
     df["Removed"] = df.duplicated(subset=["UserName", "Date Recorded"], keep="last")
     df["Removed shifted"] = df["Removed"].shift(1)
