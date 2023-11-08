@@ -6,23 +6,27 @@ import pandas as pd
 # )
 
 
-def calc_healthy_O2_saturation(O2_saturation: float, sex: str, height: int):
+def calc_healthy_O2_saturation(
+    O2_saturation: float, sex: str, height: int
+):
     """
-    Healthy/predicted O2 Saturation = a + b*isMale + c*Height
+    Healthy/predicted O2 Saturation = a + b*isMale + c*(Height-avg_height)
     Fit done in breate_O2_modelling.ipynb
     """
     a = 98.04948738170349
     b = -0.5937158858259677
     c = -0.008367002391796437
+    avg_height=166
+
     std = 1.0877
     if sex == "Female":
         return {
-            "mean": a + c * height,
+            "mean": a + c * (height - avg_height),
             "std": std,
         }
     elif sex == "Male":
         return {
-            "mean": a + b + c * height,
+            "mean": a + b + c * (height - avg_height),
             "std": std,
         }
     else:
