@@ -129,15 +129,15 @@ def data_types(df):
                 raise ValueError(f"Unexpected column {col} in dataframe")
 
 
-def same_day_measurements(df, col_name):
+def same_day_measurements(df, id_col_name="ID"):
     def check(df):
         if len(df) > 1:
             print(
-                f"Warning - {len(df)} measurements recorded on {df['Date Recorded']} for ID {df.ID}"
+                f"Warning - {len(df)} measurements recorded on {df['Date Recorded'].values[0]} for ID {df[id_col_name].values[0]}"
             )
         return -1
 
-    df.groupby(["ID", "Date Recorded"]).apply(check)
+    df.groupby([id_col_name, "Date Recorded"]).apply(check)
 
     return -1
 
