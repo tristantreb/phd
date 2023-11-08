@@ -67,6 +67,7 @@ def age(value, id):
         print(f"Warning for ID {id}: Age should be in 18-70 years, got {value}")
     return -1
 
+
 def height(value, id):
     """
     Height should be in 120-220 cm
@@ -74,6 +75,7 @@ def height(value, id):
     if value < 120 or value > 220:
         print(f"Warning for ID {id}: Height should be in 120-220 cm, got {value}")
     return -1
+
 
 def predicted_fev1(value, id):
     """
@@ -89,19 +91,53 @@ def data_types(df):
         match col:
             case "ID" | "Sex" | "Date Recorded":
                 if df[col].dtype != np.dtype("O"):
-                  print("Warning - Expected {col} to be of type object, got {df[col].dtype}"")
+                    print(
+                        "Warning - Expected {col} to be of type object, got {df[col].dtype}"
+                    )
             case "Height" | "FEV1":
                 if df[col].dtype != np.dtype("float64"):
-                  print(f"Warning - Expected {col} to be of type float64, got {df[col].dtype}")
+                    print(
+                        f"Warning - Expected {col} to be of type float64, got {df[col].dtype}"
+                    )
             case "Age":
                 if df[col].dtype != np.dtype("int64"):
-                  print(f"Warning - Expected {col} to be of type int64, got {df[col].dtype}")
+                    print(
+                        f"Warning - Expected {col} to be of type int64, got {df[col].dtype}"
+                    )
             case "DateTime Recorded":
                 if df[col].dtype != np.dtype("datetime64[ns]"):
-                  print(f"Warning - Expected {col} to be of type datetime64[ns], got {df[col].dtype}")
+                    print(
+                        f"Warning - Expected {col} to be of type datetime64[ns], got {df[col].dtype}"
+                    )
             case "O2 Saturation":
                 # TODO: Choose int or float
-                if df[col].dtype != np.dtype("int64") and df[col].dtype != np.dtype("float64"):
-                  print(f"Warning - Expected {col} to be of type int or float, got {df[col].dtype}")
+                if df[col].dtype != np.dtype("int64") and df[col].dtype != np.dtype(
+                    "float64"
+                ):
+                    print(
+                        f"Warning - Expected {col} to be of type int or float, got {df[col].dtype}"
+                    )
             case _:
                 raise ValueError(f"Unexpected column {col} in dataframe")
+
+
+def same_day_measurements(df, col_name):
+    def check(df):
+        if len(df) > 1:
+            print(
+                f"Warning - {len(df)} measurements recorded on {df['Date Recorded']} for ID {df.ID}"
+            )
+        return -1
+
+    df.groupby(["ID", "Date Recorded"]).apply(check)
+
+    return -1
+
+
+def must_not_have_nan(df):
+    """
+    Checks for NaN values in dataframe
+    """
+    if df.isna().sum().sum():
+        print("Warning - NaN values in dataframe")
+    return -1
