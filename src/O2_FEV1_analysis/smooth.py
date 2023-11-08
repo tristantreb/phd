@@ -3,9 +3,9 @@ import pandas as pd
 
 
 # Smooth the requested columns of O2-FEV1 with smooth_func
-def smooth(O2_FEV1, var_list, mode="mean"):
+def smooth(O2_FEV1, var_list, mode="max"):
     # Sort O2_FEV1 by ID and Date Recorded
-    O2_FEV1 = O2_FEV1.sort_values(by=["ID", "Date recorded"])
+    O2_FEV1 = O2_FEV1.sort_values(by=["ID", "Date Recorded"])
 
     for var in var_list:
         O2_FEV1["{} smoothed".format(var)] = 0.0
