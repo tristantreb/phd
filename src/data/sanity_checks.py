@@ -130,6 +130,7 @@ def data_types(df):
 
 
 def same_day_measurements(df, id_col_name="ID"):
+    print("* Checking for same day measurements *")
     def check(df):
         if len(df) > 1:
             print(

@@ -6,8 +6,7 @@ import pandas as pd
 # )
 
 
-def calc_healthy_O2_saturation(
-    O2_saturation: float, sex: str, height: int
+def calc_healthy_O2_saturation(sex: str, height: int
 ):
     """
     Healthy/predicted O2 Saturation = a + b*isMale + c*(Height-avg_height)
