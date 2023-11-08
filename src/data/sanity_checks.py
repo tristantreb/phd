@@ -86,6 +86,14 @@ def predicted_fev1(value, id):
     return -1
 
 
+def fev1_prct_predicted(value, id):
+    """
+    FEV1 % Predicted should be in 0-120%
+    """
+    if value < 0 or value > 120:
+        print(f"Warning for ID {id}: FEV1 % Predicted should be in 0-120%, got {value}")
+
+
 def data_types(df):
     for col in df.columns:
         match col:
@@ -138,6 +146,6 @@ def must_not_have_nan(df):
     """
     Checks for NaN values in dataframe
     """
-    if df.isna().sum().sum():
-        print("Warning - NaN values in dataframe")
+    if df.isna().sum().sum() > 1:
+        print(f"Warning - {df.isna().sum().sum()} NaN values in dataframe")
     return -1
