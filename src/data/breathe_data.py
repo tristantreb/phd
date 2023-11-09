@@ -1,6 +1,7 @@
-import biology as bio
+import healthy_o2_sat
 import numpy as np
 import pandas as pd
+import pred_fev1
 import sanity_checks
 
 
@@ -145,33 +146,13 @@ def build_O2_FEV1_df():
     print(f"Dropped {tmp_len - len(df_meas)} entries with NaN FEV1")
     print(f"{len(df_meas)} entries remain")
 
-    # Compute predicted FEV1 using calc_predicted FEV1 in the biology module
-    df_patients["Predicted FEV1"] = df_patients.apply(
-        lambda x: bio.calc_LMS_predicted_FEV1(
-            bio.load_LMS_spline_vals(x.Age, x.Sex),
-            bio.load_LMS_coeffs(x.Sex),
-            x.Height,
-            x.Age,
-            x.Sex,
-        )["mean"],
-        axis=1,
-    )
-
-    df_patients["Healthy O2 Saturation"] = df_patients.apply(
-        lambda x: bio.calc_healthy_O2_saturation(x.Sex, x.Height)["mean"],
-        axis=1,
-    )
+    df_patients = pred_fev1.calc_predicted_FEV1_LMS_df(df_patients)
+    df_patients = healthy_o2_sat.calc_healthy_O2_saturation_df(df_patients)
 
     df = df_meas.merge(df_patients, on="ID", how="left")
 
-    df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
-    df.apply(
-        lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1
-    )
-
-    df["O2 Saturation % Healthy"] = (
-        df["O2 Saturation"] / df["Healthy O2 Saturation"] * 100
-    )
+    df = pred_fev1.calc_FEV1_prct_predicted_df(df)
+    df = healthy_o2_sat.calc_O2_sat_prct_healthy_df(df)
 
     print(f"Built data structure with {df.ID.nunique()} IDs and {len(df)} entries")
 

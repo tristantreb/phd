@@ -1,23 +1,14 @@
-import antibiotics_data
-import biology
 import measurements_data
 import pandas as pd
 import patient_data
-import sanity_checks
+import pred_fev1
 
 datadir = "../../../../SmartCareData/"
 
 
 def create():
-    # Load measurements data
     df_measurements = measurements_data.load()
-
-    # Load clinical data
-    # Patient data
     df_patient = patient_data.load()
-
-    # Load antibiotics data, cast datetime to date
-    # df_antibiotics = antibiotics_data.load()
 
     print("\n** Creating DataFrame for O2 FEV1 analysis **")
     # Extract O2 and FEV1 measurements
@@ -44,15 +35,10 @@ def create():
 
     # Merge O2_FEV1 with patient data
     df_O2_FEV1 = pd.merge(df_O2_FEV1, df_patient, on="ID", how="left")
+    df_O2_FEV1.sort_values(["ID", "Date Recorded"], inplace=True)
 
     # Compute FEV1 % Predicted
-    df_O2_FEV1 = _compute_predicted_fev1_perct(df_O2_FEV1)
-
-    # # Merge O2_FEV1 with antibiotics data
-    # df_O2_FEV1 = pd.merge(df_O2_FEV1, df_antibiotics, on="ID", how="outer")
-
-    # Sort by ID and Date Recorded
-    df_O2_FEV1.sort_values(["ID", "Date Recorded"], inplace=True)
+    df_O2_FEV1 = pred_fev1.calc_FEV1_prct_predicted_df(df_O2_FEV1)
 
     print(
         "\nCreated df_O2_FEV1 with {} entries (initially {}, removed {})".format(
@@ -76,16 +62,3 @@ def extract_measure(measurements_in, label, with_patient_id=False):
         ]
     print("{} has {} measurements".format(label, measurements_out.shape[0]))
     return measurements_out
-
-
-def _compute_predicted_fev1_perct(df):
-    """
-    Compute FEV1 % Predicted = FEV1 / Predicted FEV1 * 100
-    Predicted FEV1 should never be 0
-    """
-    df["FEV1 % Predicted"] = df.apply(
-        lambda x: x["FEV1"] / x["Predicted FEV1"] * 100, axis=1
-    )
-    # Assert type is float
-    df.apply(lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1)
-    return df

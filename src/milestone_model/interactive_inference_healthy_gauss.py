@@ -12,7 +12,7 @@ from dash import Dash, Input, Output, dcc, html
 from plotly.subplots import make_subplots
 
 sys.path.append("../")
-import data.biology as bio
+import pred_fev1
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -74,7 +74,9 @@ app.layout = dbc.Container(
             ],
             style={"width": "300px"},
         ),
-        dcc.Loading(id="graph-loader", type="default", children=[dcc.Graph(id="lung-graph")]),
+        dcc.Loading(
+            id="graph-loader", type="default", children=[dcc.Graph(id="lung-graph")]
+        ),
         html.Div(
             dbc.Form(
                 [
@@ -123,7 +125,10 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
     height = int(height)
     age = int(age)
     pred_FEV1, pred_FEV1_std = list(
-        map(bio.calc_predicted_fev1(height, age, sex).get, ["Predicted FEV1", "std"])
+        map(
+            pred_fev1.calc_predicted_FEV1_linear(height, age, sex).get,
+            ["Predicted FEV1", "std"],
+        )
     )
     # healthy_FEV1_prior={"type":"uniform"}
     healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}

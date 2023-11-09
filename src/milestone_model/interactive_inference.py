@@ -19,12 +19,14 @@ app = Dash(__name__)
 import sys
 
 sys.path.append("../")
-import data.biology as bio
+import pred_fev1
 
 set_age = 26
 set_height = 175
 set_sex = "Male"
-pred_FEV1, pred_FEV1_std = bio.calc_predicted_fev1(set_height, set_age, set_sex)
+pred_FEV1, pred_FEV1_std = pred_fev1.calc_predicted_FEV1_linear(
+    set_height, set_age, set_sex
+)
 
 # healthy_FEV1_prior={"type":"uniform"}
 healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
@@ -33,7 +35,9 @@ inference, FEV1, U, prior_u, C, prior_c = model_lung_health.build(healthy_FEV1_p
 app.layout = html.Div(
     [
         html.H2("Interactive inference on the lung's health model"),
-        html.Div(f"Individual with predicted FEV1 of {pred_FEV1:.2f}L (std {pred_FEV1_std} L) given height {set_height} cm, age {set_age} years, {set_sex}"),
+        html.Div(
+            f"Individual with predicted FEV1 of {pred_FEV1:.2f}L (std {pred_FEV1_std} L) given height {set_height} cm, age {set_age} years, {set_sex}"
+        ),
         dcc.Graph(id="lung-graph"),
         html.P("FEV1:"),
         dcc.Slider(
