@@ -1,38 +1,19 @@
 import numpy as np
-import pandas as pd
-
-# PATH_LMS_EQ_LOOKUP_TABLES = (
-#     "../../../../DataFiles/PredictedFEV1/FromGLI/GLI_LMS_equations_lookuptables.xls"
-# )
+import sanity_checks
 
 
-def calc_healthy_O2_saturation(sex: str, height: int
-):
+def calc_FEV1_prct_predicted_df(df):
     """
-    Healthy/predicted O2 Saturation = a + b*isMale + c*(Height-avg_height)
-    Fit done in breate_O2_modelling.ipynb
+    Returns input DataFrame with FEV1 % Predicted as a new column, after sanity check
     """
-    a = 98.04948738170349
-    b = -0.5937158858259677
-    c = -0.008367002391796437
-    avg_height=166
-
-    std = 1.0877
-    if sex == "Female":
-        return {
-            "mean": a + c * (height - avg_height),
-            "std": std,
-        }
-    elif sex == "Male":
-        return {
-            "mean": a + b + c * (height - avg_height),
-            "std": std,
-        }
-    else:
-        raise ValueError("Sex '{sex}' not in 'Female' or 'Male'")
+    df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
+    df.apply(
+        lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1
+    )
+    return df
 
 
-def calc_predicted_fev1(height: int, age: int, sex: str):
+def calc_predicted_FEV1_linear(height: int, age: int, sex: str):
     """
     Calculate predicted FEV1 according to the formula given by the lung function people at Royal Papworth Hospital
     This formula takes Age in years, Height in m and Sex
@@ -48,7 +29,25 @@ def calc_predicted_fev1(height: int, age: int, sex: str):
         return {"Predicted FEV1": pred_FEV1, "std": std_dev}
 
 
-def calc_LMS_predicted_FEV1(spline_vals, coeffs, height: int, age: int, sex: str):
+def calc_predicted_FEV1_LMS_df(df):
+    """
+    Returns a Series with Predicted FEV1 from a DataFrame with Sex, Height, Age
+    """
+    df["Predicted FEV1"] = df.apply(
+        lambda x: calc_predicted_FEV1_LMS(
+            load_LMS_spline_vals(x.Age, x.Sex),
+            load_LMS_coeffs(x.Sex),
+            x.Height,
+            x.Age,
+            x.Sex,
+        )["mean"],
+        axis=1,
+    )
+    df.apply(lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID), axis=1)
+    return df
+
+
+def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str):
     """
     Implemented from the GLI reference equations.
     Equations: https://www.ers-education.org/lr/show-details/?idP=138978
@@ -85,13 +84,10 @@ def load_LMS_spline_vals(age: int, sex: str):
     # Initially done reading from the lookup table directly.
     # 10x performance improve after hardcoding the values
     # (Breathe complementary study on O2 saturation took >14' to run on 200+ patients, then 1.2')
-    if sex == "Male":
-        return _get_male_spline_vals(age)
-    elif sex == "Female":
-        return _get_female_spline_vals(age)
-    else:
-        raise ValueError(f"Sex {sex} not in Male/Female")
 
+    # PATH_LMS_EQ_LOOKUP_TABLES = (
+    #     "../../../../DataFiles/PredictedFEV1/FromGLI/GLI_LMS_equations_lookuptables.xls"
+    # )
     # df = pd.read_excel(
     #     PATH_LMS_EQ_LOOKUP_TABLES,
     #     sheet_name=sheet_name,
@@ -100,6 +96,13 @@ def load_LMS_spline_vals(age: int, sex: str):
     # )
     # Mspline = df[df.age == age].Mspline.values[0]
     # Sspline = df[df.age == age].Sspline.values[0]
+
+    if sex == "Male":
+        return _get_male_spline_vals(age)
+    elif sex == "Female":
+        return _get_female_spline_vals(age)
+    else:
+        raise ValueError(f"Sex {sex} not in Male/Female")
 
 
 def _get_male_spline_vals(age: int):
@@ -316,6 +319,9 @@ def load_LMS_coeffs(sex: str):
     # 10x performance improve after hardcoding the values
     # (Breathe complementary study on O2 saturation took >14' to run on 200+ patients, then 1.2')
 
+    # PATH_LMS_EQ_LOOKUP_TABLES = (
+    #     "../../../../DataFiles/PredictedFEV1/FromGLI/GLI_LMS_equations_lookuptables.xls"
+    # )
     # df = pd.read_excel(
     #     PATH_LMS_EQ_LOOKUP_TABLES,
     #     sheet_name=sheet_name,

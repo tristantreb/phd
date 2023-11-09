@@ -3,14 +3,14 @@ import sys
 sys.path.append("../../")
 sys.path.append("../data/")
 
-import biology as bio
+import time
+
+import model_helpers as mh
 import numpy as np
+import pred_fev1
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
-
-import model_helpers as mh
-import time
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -40,7 +40,7 @@ def set_HFEV1_prior(type, *args):
         set_height = args[0]
         set_age = args[1]
         set_sex = args[2]
-        FEV1 = bio.calc_predicted_fev1(set_height, set_age, set_sex)
+        FEV1 = pred_fev1.calc_predicted_FEV1_linear(set_height, set_age, set_sex)
         pred_FEV1 = FEV1["Predicted FEV1"]
         pred_FEV1_std = FEV1["std"]
         return {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}

@@ -1,5 +1,5 @@
-import biology
 import pandas as pd
+import pred_fev1
 import sanity_checks
 from dateutil.relativedelta import relativedelta
 
@@ -126,14 +126,14 @@ def _compute_predicted_fev1(df):
     """
     # print("Compute Calculated Predicted FEV1")
     # df["Predicted FEV1"] = df.apply(
-    #     lambda x: biology.calc_predicted_fev1(x.Height, x.Age, x.Sex)["Predicted FEV1"],
+    #     lambda x: biology.calc_predicted_FEV1_linear(x.Height, x.Age, x.Sex)["Predicted FEV1"],
     #     axis=1,
     # )
     print("Compute Calculated Predicted FEV1 using GLI reference equations")
     df["Predicted FEV1"] = df.apply(
-        lambda x: biology.calc_LMS_predicted_FEV1(
-            biology.load_LMS_spline_vals(x.Age, x.Sex),
-            biology.load_LMS_coeffs(x.Sex),
+        lambda x: pred_fev1.calc_predicted_FEV1_LMS(
+            pred_fev1.load_LMS_spline_vals(x.Age, x.Sex),
+            pred_fev1.load_LMS_coeffs(x.Sex),
             x.Height,
             x.Age,
             x.Sex,
