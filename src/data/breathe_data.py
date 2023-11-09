@@ -147,7 +147,7 @@ def build_O2_FEV1_df():
     print(f"{len(df_meas)} entries remain")
 
     df_patients = pred_fev1.calc_predicted_FEV1_LMS_df(df_patients)
-    df_patients = healthy_o2_sat.calc_healthy_O2_saturation_df(df_patients)
+    df_patients = healthy_o2_sat.calc_healthy_O2_sat_df(df_patients)
 
     df = df_meas.merge(df_patients, on="ID", how="left")
 

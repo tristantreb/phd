@@ -3,10 +3,10 @@ def calc_healthy_O2_sat(sex: str, height: int):
     Healthy/predicted O2 Saturation = a + b*isMale + c*(Height-avg_height)
     """
     # Results from fit done in breate_healthy_O2_modelling.ipynb
-    a = 98.04948738170349
-    b = -0.5937158858259677
-    c = -0.008367002391796437
-    avg_height = 166
+    a = 98.06752062527138
+    b = -0.7384058258246333
+    c = -0.012547943971150761
+    avg_height = 164.77914110429447
 
     std = 1.0877
     if sex == "Female":
