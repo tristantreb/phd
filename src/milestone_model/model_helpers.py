@@ -7,7 +7,8 @@ from scipy.stats import norm
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
-tol_global = 1e-8
+tol_global = 1e-6
+# Switch from 1e-8 to 1e-6 to because got 0.9999999885510139 sum of probabilities for a model with AW
 
 
 ## Discretized PDF with the sampling solution
