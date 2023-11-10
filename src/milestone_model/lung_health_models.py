@@ -243,7 +243,7 @@ def build_HFEV1_AR_FEV1_model(healthy_FEV1_prior: object):
     print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
-    AR = mh.variableNode("Airway Resistance", 0, 1, 0.05)
+    AR = mh.variableNode("Airway Resistance", 0, 0.9, 0.01)
     FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
 
     model = BayesianNetwork([(HFEV1.name, FEV1.name), (AR.name, FEV1.name)])
@@ -420,6 +420,7 @@ def infer(
     inference_model: BeliefPropagation,
     variables: tuple[mh.variableNode],
     evidences: tuple[tuple[mh.variableNode, float]],
+    show_progress=True,
     joint=True,
 ):
     """
@@ -439,8 +440,11 @@ def infer(
 
     tic = time.time()
     query = inference_model.query(
-        variables=var_names, evidence=evidences_binned, show_progress=True, joint=joint
+        variables=var_names,
+        evidence=evidences_binned,
+        show_progress=show_progress,
+        joint=joint,
     )
-    print(f"Query took {time.time() - tic}s")
+    # print(f"Query took {time.time() - tic}s")
 
     return query
