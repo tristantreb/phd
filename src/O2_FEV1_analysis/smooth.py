@@ -26,11 +26,14 @@ def smooth_vector(vector, mode):
     """
     Applies a moving max/mean of size 3 on the input vector
     """
-    print(vector)
     # Copy the vector
     smoothed_vector = vector.copy()
     # Get the vector length
     n = len(vector)
+    if n == 1:
+        return vector[0]
+    if n == 2:
+        return eval("np." + mode)([vector[0], vector[1]])
     # For i going from 1 to vector length
     for i in range(0, n - 1):
         # If i == 0, set the value to the max between the current value and the next two values

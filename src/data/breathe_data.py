@@ -1,5 +1,5 @@
+import effort_corrected_fev1
 import healthy_o2_sat
-import numpy as np
 import pandas as pd
 import pred_fev1
 import sanity_checks
@@ -145,6 +145,8 @@ def build_O2_FEV1_df():
     df_meas = df_meas.dropna(subset=["FEV1"])
     print(f"Dropped {tmp_len - len(df_meas)} entries with NaN FEV1")
     print(f"{len(df_meas)} entries remain")
+
+    df_meas = effort_corrected_fev1.calc_with_smoothed_max(df_meas)
 
     df_patients = pred_fev1.calc_predicted_FEV1_LMS_df(df_patients)
     df_patients = healthy_o2_sat.calc_healthy_O2_sat_df(df_patients)

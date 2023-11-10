@@ -151,11 +151,12 @@ def build_full_FEV1_side(
     return inference, HFEV1, prior_HFEV1, LD, prior_LD, UFEV1, SAB, prior_SAB, FEV1
 
 
-# In this model the small airway blockage and the lung damage are merge into one airway blockage variable
-# This is done to simplify the model and to make it more intuitive
-# In the future we will split this variables again (for the longidutinal model)
 def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
     """
+    In this model the small airway blockage and the lung damage are merge into one airway blockage variable
+    This is done to simplify the model and to make it more intuitive
+    In the future we will split this variables again (for the longidutinal model)
+
     HFEV1
     AB
     FEV1 = HFEV1 * (1 - AB)
@@ -229,6 +230,54 @@ def build_o2_sat():
 
     inference = BeliefPropagation(graph)
     return inference, UO2Sat, LD, prior_ld
+
+
+def build_HFEV1_AR_FEV1_model(healthy_FEV1_prior: object):
+    """
+    This is a point in time model with
+    FEV1 = HFEV1 * (1-AR)
+
+    AR is Airway Resistance
+    The model is the same build_HFEV1_AB_FEV1(), with Airway Blockage renamed to Airway Resistance.
+    """
+    print("*** Building lung model with HFEV1 and AB ***")
+    # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
+    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
+    AR = mh.variableNode("Airway Resistance", 0, 1, 0.05)
+    FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
+
+    model = BayesianNetwork([(HFEV1.name, FEV1.name), (AR.name, FEV1.name)])
+
+    cpt_fev1 = TabularCPD(
+        variable=FEV1.name,
+        variable_card=len(FEV1.bins) - 1,
+        values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, FEV1),
+        evidence=[AR.name, HFEV1.name],
+        evidence_card=[len(AR.bins) - 1, len(HFEV1.bins) - 1],
+    )
+
+    prior_ar = TabularCPD(
+        variable=AR.name,
+        variable_card=len(AR.bins) - 1,
+        values=AR.prior,
+        evidence=[],
+        evidence_card=[],
+    )
+
+    prior_u = TabularCPD(
+        variable=HFEV1.name,
+        variable_card=len(HFEV1.bins) - 1,
+        values=HFEV1.prior,
+        evidence=[],
+        evidence_card=[],
+    )
+
+    model.add_cpds(cpt_fev1, prior_ar, prior_u)
+
+    model.check_model()
+
+    model = BeliefPropagation(model)
+    return model, FEV1, HFEV1, prior_u, AR, prior_ar
 
 
 def build_longitudinal_FEV1_side(

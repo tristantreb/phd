@@ -6,6 +6,11 @@ def calc_FEV1_prct_predicted_df(df):
     """
     Returns input DataFrame with FEV1 % Predicted as a new column, after sanity check
     """
+    df["ecFEV1 % Predicted"] = df["ecFEV1"] / df["Predicted FEV1"] * 100
+    df.apply(
+        lambda x: sanity_checks.fev1_prct_predicted(x["ecFEV1 % Predicted"], x.ID),
+        axis=1,
+    )
     df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
     df.apply(
         lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1
