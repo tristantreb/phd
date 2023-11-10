@@ -4,7 +4,7 @@ import sys
 
 import dash_bootstrap_components as dbc
 import model_helpers as mh
-import model_lung_health
+import src.milestone_model.lung_health_models as lung_health_models
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -139,15 +139,13 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
         prior_HFEV1,
         AB,
         prior_AB,
-    ) = model_lung_health.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
+    ) = lung_health_models.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
 
     # INFERENCE
     print("Inference user input: FEV1 set to", FEV1_obs)
 
-    [_fev1_bin, fev1_idx] = mh.get_bin_for_value(FEV1_obs, FEV1.bins)
-
-    res_u = model_lung_health.infer(model, [HFEV1], [[FEV1, FEV1_obs]])
-    res_ab = model_lung_health.infer(model, [AB], [[FEV1, FEV1_obs]])
+    res_u = lung_health_models.infer(model, [HFEV1], [[FEV1, FEV1_obs]])
+    res_ab = lung_health_models.infer(model, [AB], [[FEV1, FEV1_obs]])
 
     n_var_rows = 1
     prior = {"type": "bar"}

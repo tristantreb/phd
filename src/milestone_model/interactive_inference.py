@@ -1,7 +1,7 @@
 import os
 
 import model_helpers as mh
-import model_lung_health
+import src.milestone_model.lung_health_models as lung_health_models
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -30,7 +30,7 @@ pred_FEV1, pred_FEV1_std = pred_fev1.calc_predicted_FEV1_linear(
 
 # healthy_FEV1_prior={"type":"uniform"}
 healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
-inference, FEV1, U, prior_u, C, prior_c = model_lung_health.build(healthy_FEV1_prior)
+inference, FEV1, U, prior_u, C, prior_c = lung_health_models.build(healthy_FEV1_prior)
 
 app.layout = html.Div(
     [
