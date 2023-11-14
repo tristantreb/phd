@@ -248,7 +248,7 @@ def build_FEV1_O2_point_in_time_model(
     AR = mh.variableNode("Airway Resistance", 0, 0.9, 0.01)
     FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
     HO2Sat = mh.variableNode(
-        "Healthy O2 Sat (%)", 0.7, 1, 0.01, prior=healthy_O2_sat_prior
+        "Healthy O2 Sat (%)", 0.8, 1, 0.01, prior=healthy_O2_sat_prior
     )
     O2SatFFA = mh.variableNode("O2 Sat if fully functional alveoli (%)", 0.7, 1, 0.01)
 
