@@ -234,8 +234,6 @@ def calc_cpt(
     return cpt
 
 
-## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
-# Creates a 2D array with 3 variables
 def calc_pgmpy_cpt_X_x_1_minus_Y(
     X: variableNode,
     Y: variableNode,
@@ -244,7 +242,9 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
     debug=False,
 ):
     """
-    Function specific to X = X, Y = 1-Y, C = X*(1-Y)
+    Function specific to Z = X*(1-Y)
+    P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
+    Creates a 2D array with 3 variables
     """
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
     nbinsX = len(X.bins) - 1
@@ -253,20 +253,20 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
     cpt = np.empty((nbinsZ, nbinsX * nbinsY))
     # print(f"calculating cpt of shape {nbinsZ} x {nbinsX} x {nbinsY} (C x (A x B)) ")
 
-    for i in range(nbinsY):
+    for i in range(nbinsX):
         # Initialize the index of the current bin in the cpt
-        cpt_index = i * (nbinsX - 1)
+        cpt_index = i * (nbinsY - 1)
         if debug:
             print("cpt index", cpt_index)
 
         # Take a bin in X
-        b_low = Y.bins[i]
-        b_up = Y.bins[i + 1]
+        a_low = X.bins[i]
+        a_up = X.bins[i + 1]
 
-        for j in range(nbinsX):
+        for j in range(nbinsY):
             # Take a bin in Y
-            a_low = X.bins[j]
-            a_up = X.bins[j + 1]
+            b_low = Y.bins[j]
+            b_up = Y.bins[j + 1]
 
             # Get the max possible range of for C=X*Y
             Z_min = a_low * (1 - b_up)
@@ -320,3 +320,67 @@ def get_bin_for_value(obs: float, bins: np.array, tol=tol_global):
     lower_idx = bins[idx].item()
     upper_idx = bins[idx + 1].item()
     return ["[{}; {})".format(lower_idx, upper_idx), idx]
+
+
+def calc_drop_probability_2d(i, j, bin_width, drop):
+    """
+    Returns the probability of
+
+    TODO: Return the whole vector of values
+
+    Works if the two variables have the same bin width
+
+    d/w: size of the drop in terms of bin units
+    d/w = alpha, beta
+    Alpha: amount of bin units shift to the left
+    Beta: further unit to unit shift to the left
+    i: input bin index
+    j: output bin index
+    j-i: amount of units downstream
+    """
+    # Assert bin_width and drop are positive
+    assert bin_width > 0, f"bin_width should be positive, got {bin_width}"
+    assert drop > 0, f"drop should be positive, got {drop}"
+    # Assert i and j are integers greater or equal to 0
+    assert i >= 0, f"i should be greater or equal to 0, got {i}"
+    assert j >= 0, f"j should be greater or equal to 0, got {j}"
+
+    drop_size = drop / bin_width
+    alpha = int(drop_size)
+    beta = drop_size - alpha
+
+    if i > j:
+        return 0
+    elif alpha == j - i:
+        return 1 - beta
+    elif alpha == j - (i - 1):
+        return beta
+    else:
+        return 0
+
+
+def calc_drop_probability_2d(rows, j, bin_width, drop):
+    """
+    Returns a vector giving the probability at each row given the amount of drop
+
+    TODO: Return the whole vector of values
+
+    Each row bin and each col bin must have the same bin width
+
+    d/w: size of the drop in terms of bin units
+    d/w = alpha, beta
+    Alpha: amount of bin units shift to the left
+    Beta: further unit to unit shift to the left
+    """
+    # Assert bin_width and drop are positive
+    assert bin_width > 0, f"bin_width should be positive, got {bin_width}"
+    assert drop > 0, f"drop should be positive, got {drop}"
+
+    drop_size = drop / bin_width
+    alpha = int(drop_size)
+    beta = drop_size - alpha
+
+    p = np.zeros(rows)
+    p[alpha] = 1 - beta
+    p[alpha + 1] = beta
+    return p

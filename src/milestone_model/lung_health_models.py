@@ -174,8 +174,8 @@ def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
         variable=FEV1.name,
         variable_card=len(FEV1.bins) - 1,
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AB, FEV1),
-        evidence=[AB.name, HFEV1.name],
-        evidence_card=[len(AB.bins) - 1, len(HFEV1.bins) - 1],
+        evidence=[HFEV1.name, AB.name],
+        evidence_card=[len(HFEV1.bins) - 1, len(AB.bins) - 1],
     )
 
     prior_ab = TabularCPD(
@@ -232,7 +232,9 @@ def build_o2_sat():
     return inference, UO2Sat, LD, prior_ld
 
 
-def build_HFEV1_AR_FEV1_model(healthy_FEV1_prior: object):
+def build_FEV1_O2_point_in_time_model(
+    healthy_FEV1_prior: object, healthy_O2_sat_prior: object
+):
     """
     This is a point in time model with
     FEV1 = HFEV1 * (1-AR)
@@ -245,17 +247,27 @@ def build_HFEV1_AR_FEV1_model(healthy_FEV1_prior: object):
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
     AR = mh.variableNode("Airway Resistance", 0, 0.9, 0.01)
     FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
+    HO2Sat = mh.variableNode(
+        "Healthy O2 Sat (%)", 0.7, 1, 0.01, prior=healthy_O2_sat_prior
+    )
+    O2SatFFA = mh.variableNode("O2 Sat if fully functional alveoli (%)", 0.7, 1, 0.01)
 
     model = BayesianNetwork([(HFEV1.name, FEV1.name), (AR.name, FEV1.name)])
 
-    cpt_fev1 = TabularCPD(
-        variable=FEV1.name,
-        variable_card=len(FEV1.bins) - 1,
-        values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, FEV1),
-        evidence=[AR.name, HFEV1.name],
-        evidence_card=[len(AR.bins) - 1, len(HFEV1.bins) - 1],
+    prior_hfev1 = TabularCPD(
+        variable=HFEV1.name,
+        variable_card=len(HFEV1.bins) - 1,
+        values=HFEV1.prior,
+        evidence=[],
+        evidence_card=[],
     )
-
+    prior_ho2sat = TabularCPD(
+        variable=HO2Sat.name,
+        variable_card=len(HO2Sat.bins) - 1,
+        values=HO2Sat.prior,
+        evidence=[],
+        evidence_card=[],
+    )
     prior_ar = TabularCPD(
         variable=AR.name,
         variable_card=len(AR.bins) - 1,
@@ -263,21 +275,27 @@ def build_HFEV1_AR_FEV1_model(healthy_FEV1_prior: object):
         evidence=[],
         evidence_card=[],
     )
-
-    prior_u = TabularCPD(
-        variable=HFEV1.name,
-        variable_card=len(HFEV1.bins) - 1,
-        values=HFEV1.prior,
-        evidence=[],
-        evidence_card=[],
+    cpt_fev1 = TabularCPD(
+        variable=FEV1.name,
+        variable_card=len(FEV1.bins) - 1,
+        values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, FEV1),
+        evidence=[HFEV1.name, AR.name],
+        evidence_card=[len(HFEV1.bins) - 1, len(AR.bins) - 1],
     )
+    # cpt_o2_sat_ffa = TabularCPD(
+    #     variable=O2SatFFA.name,
+    #     variable_card=len(O2SatFFA.bins) - 1,
+    #     values=O2SatFFA.prior,
+    #     evidence=[AR.name, HO2Sat.name],
+    #     evidence_card=[len(AR.bins) - 1, len(HO2Sat.bins) - 1],
+    # )
 
-    model.add_cpds(cpt_fev1, prior_ar, prior_u)
+    model.add_cpds(cpt_fev1, prior_ar, prior_hfev1)
+    # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, cpt_o2_sat_ffa)
 
     model.check_model()
 
-    model = BeliefPropagation(model)
-    return model, FEV1, HFEV1, prior_u, AR, prior_ar
+    return model, HFEV1, prior_hfev1, FEV1, HO2Sat, prior_ho2sat, O2SatFFA, AR, prior_ar
 
 
 def build_longitudinal_FEV1_side(
@@ -417,7 +435,7 @@ def build_longitudinal_FEV1_side(
 
 
 def infer(
-    inference_model: BeliefPropagation,
+    inference_alg: BeliefPropagation,
     variables: tuple[mh.variableNode],
     evidences: tuple[tuple[mh.variableNode, float]],
     show_progress=True,
@@ -425,7 +443,7 @@ def infer(
 ):
     """
     Runs an inference query against a given PGMPY inference model, variables, evidences
-    :param inference_model: The inference model to use
+    :param inference_alg: The inference algorithm to use
     :param variables: The variables to query
     :param evidences: The evidences to use
 
@@ -439,7 +457,7 @@ def infer(
         evidences_binned.update({evidence_var.name: bin_idx})
 
     tic = time.time()
-    query = inference_model.query(
+    query = inference_alg.query(
         variables=var_names,
         evidence=evidences_binned,
         show_progress=show_progress,

@@ -3,8 +3,8 @@ import os
 import sys
 
 import dash_bootstrap_components as dbc
+import lung_health_models
 import model_helpers as mh
-import src.milestone_model.lung_health_models as lung_health_models
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
