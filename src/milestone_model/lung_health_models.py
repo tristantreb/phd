@@ -245,7 +245,7 @@ def build_FEV1_O2_point_in_time_model(
     print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
-    AR = mh.variableNode("Airway Resistance", 0, 0.9, 0.01)
+    AR = mh.variableNode("Airway Resistance", 0, 0.8, 0.01)
     FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
     HO2Sat = mh.variableNode(
         "Healthy O2 Sat (%)", 0.8, 1, 0.01, prior=healthy_O2_sat_prior
