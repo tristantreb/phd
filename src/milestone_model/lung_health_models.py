@@ -246,13 +246,13 @@ def build_FEV1_O2_point_in_time_model(
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
     AR = mh.variableNode("Airway Resistance", 0, 0.8, 0.01)
-    FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
+    ecFEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
     HO2Sat = mh.variableNode(
         "Healthy O2 Sat (%)", 0.8, 1, 0.01, prior=healthy_O2_sat_prior
     )
     O2SatFFA = mh.variableNode("O2 Sat if fully functional alveoli (%)", 0.7, 1, 0.01)
 
-    model = BayesianNetwork([(HFEV1.name, FEV1.name), (AR.name, FEV1.name)])
+    model = BayesianNetwork([(HFEV1.name, ecFEV1.name), (AR.name, ecFEV1.name)])
 
     prior_hfev1 = TabularCPD(
         variable=HFEV1.name,
@@ -276,9 +276,9 @@ def build_FEV1_O2_point_in_time_model(
         evidence_card=[],
     )
     cpt_fev1 = TabularCPD(
-        variable=FEV1.name,
-        variable_card=len(FEV1.bins) - 1,
-        values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, FEV1),
+        variable=ecFEV1.name,
+        variable_card=len(ecFEV1.bins) - 1,
+        values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1),
         evidence=[HFEV1.name, AR.name],
         evidence_card=[len(HFEV1.bins) - 1, len(AR.bins) - 1],
     )
@@ -295,7 +295,7 @@ def build_FEV1_O2_point_in_time_model(
 
     model.check_model()
 
-    return model, HFEV1, prior_hfev1, FEV1, HO2Sat, prior_ho2sat, O2SatFFA, AR, prior_ar
+    return model, HFEV1, prior_hfev1, ecFEV1, HO2Sat, prior_ho2sat, O2SatFFA, AR, prior_ar
 
 
 def build_longitudinal_FEV1_side(
