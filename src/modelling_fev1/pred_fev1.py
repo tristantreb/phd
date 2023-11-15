@@ -1,5 +1,6 @@
 import numpy as np
-import sanity_checks
+
+import src.data.sanity_checks as sanity_checks
 
 
 def calc_FEV1_prct_predicted_df(df):

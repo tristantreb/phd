@@ -1,8 +1,9 @@
-import effort_corrected_fev1
-import healthy_o2_sat
 import pandas as pd
-import pred_fev1
-import sanity_checks
+
+import src.data.sanity_checks as sanity_checks
+import src.modelling_fev1.effort_corrected_fev1 as effort_corrected_fev1
+import src.modelling_fev1.pred_fev1 as pred_fev1
+import src.modelling_o2.healthy_o2_sat as healthy_o2_sat
 
 
 def load_patients():

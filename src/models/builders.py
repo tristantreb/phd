@@ -1,16 +1,8 @@
-import sys
-
-sys.path.append("../../")
-sys.path.append("../data/")
-
-import time
-
-import model_helpers as mh
 import numpy as np
-import pred_fev1
 from pgmpy.factors.discrete import TabularCPD
-from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
+
+import src.modelling_fev1.pred_fev1 as pred_fev1
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -295,7 +287,17 @@ def build_FEV1_O2_point_in_time_model(
 
     model.check_model()
 
-    return model, HFEV1, prior_hfev1, ecFEV1, HO2Sat, prior_ho2sat, O2SatFFA, AR, prior_ar
+    return (
+        model,
+        HFEV1,
+        prior_hfev1,
+        ecFEV1,
+        HO2Sat,
+        prior_ho2sat,
+        O2SatFFA,
+        AR,
+        prior_ar,
+    )
 
 
 def build_longitudinal_FEV1_side(
@@ -432,37 +434,3 @@ def build_longitudinal_FEV1_side(
         prior_SAB_i,
         FEV1_list,
     )
-
-
-def infer(
-    inference_alg: BeliefPropagation,
-    variables: tuple[mh.variableNode],
-    evidences: tuple[tuple[mh.variableNode, float]],
-    show_progress=True,
-    joint=True,
-):
-    """
-    Runs an inference query against a given PGMPY inference model, variables, evidences
-    :param inference_alg: The inference algorithm to use
-    :param variables: The variables to query
-    :param evidences: The evidences to use
-
-    :return: The result of the inference
-    """
-    var_names = [var.name for var in variables]
-
-    evidences_binned = dict()
-    for [evidence_var, value] in evidences:
-        [_bin, bin_idx] = mh.get_bin_for_value(value, evidence_var.bins)
-        evidences_binned.update({evidence_var.name: bin_idx})
-
-    tic = time.time()
-    query = inference_alg.query(
-        variables=var_names,
-        evidence=evidences_binned,
-        show_progress=show_progress,
-        joint=joint,
-    )
-    # print(f"Query took {time.time() - tic}s")
-
-    return query

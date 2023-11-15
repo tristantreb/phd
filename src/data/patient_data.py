@@ -1,7 +1,8 @@
 import pandas as pd
-import pred_fev1
-import sanity_checks
 from dateutil.relativedelta import relativedelta
+
+import src.data.sanity_checks
+import src.modelling_fev1.pred_fev1 as pred_fev1
 
 datadir = "../../../../SmartCareData/"
 

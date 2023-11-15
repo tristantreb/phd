@@ -1,18 +1,16 @@
 # Lunch app with "python interactive_inference_healthy_gauss.py"
 import os
-import sys
 
 import dash_bootstrap_components as dbc
-import lung_health_models
-import model_helpers as mh
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, dcc, html
 from plotly.subplots import make_subplots
 
-sys.path.append("../")
-import pred_fev1
+import src.modelling_fev1.pred_fev1 as pred_fev1
+import src.models.builders as builders
+import src.models.helpers as mh
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -139,13 +137,13 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
         prior_HFEV1,
         AB,
         prior_AB,
-    ) = lung_health_models.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
+    ) = builders.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
 
     # INFERENCE
     print("Inference user input: FEV1 set to", FEV1_obs)
 
-    res_u = lung_health_models.infer(model, [HFEV1], [[FEV1, FEV1_obs]])
-    res_ab = lung_health_models.infer(model, [AB], [[FEV1, FEV1_obs]])
+    res_u = builders.infer(model, [HFEV1], [[FEV1, FEV1_obs]])
+    res_ab = builders.infer(model, [AB], [[FEV1, FEV1_obs]])
 
     n_var_rows = 1
     prior = {"type": "bar"}
