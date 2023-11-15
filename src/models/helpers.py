@@ -7,7 +7,7 @@ from scipy.stats import norm
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
-tol_global = 1e-6
+TOL_GLOBAL = 1e-6
 # Switch from 1e-8 to 1e-6 to because got 0.9999999885510139 sum of probabilities for a model with AW
 
 
@@ -89,12 +89,12 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
 ## Variable node
 class variableNode:
     def __init__(self, name: str, a, b, bin_width, prior={"type": "uniform"}):
-        self.tol = tol_global
+        self.tol = TOL_GLOBAL
         self.name = name
         self.a = a
         self.b = b
         self.bin_width = bin_width
-        # We're adding bin_width - tol_global to include b in the array of bins so that the last bin can be computed
+        # We're adding bin_width - TOL_GLOBAL to include b in the array of bins so that the last bin can be computed
         # The 1st bin is [a; self.bins[1])
         # The nth bin is [self.bins[n]; self.bins[n+1]]
         # The last bin is [self.bins[-2]; b)
@@ -173,7 +173,7 @@ def calc_cpt(
     parentA: variableNode,
     parentB: variableNode,
     C: variableNode,
-    tol=tol_global,
+    tol=TOL_GLOBAL,
     debug=False,
 ):
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
@@ -238,7 +238,7 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
     X: variableNode,
     Y: variableNode,
     Z: variableNode,
-    tol=tol_global,
+    tol=TOL_GLOBAL,
     debug=False,
 ):
     """
@@ -310,7 +310,7 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
 
 
 # Given an observation and an array of bins, this returns the bin that the value falls into
-def get_bin_for_value(obs: float, bins: np.array, tol=tol_global):
+def get_bin_for_value(obs: float, bins: np.array, tol=TOL_GLOBAL):
     # Center bins around value observed
     relative_bins = bins - obs - tol
 

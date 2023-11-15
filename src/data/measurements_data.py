@@ -1,5 +1,6 @@
 import pandas as pd
-import sanity_checks
+
+import src.data.sanity_checks
 
 smartcare_data_dir = "../../../../SmartCareData/"
 

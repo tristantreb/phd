@@ -1,7 +1,8 @@
-import measurements_data
 import pandas as pd
-import patient_data
-import pred_fev1
+
+import src.data.measurements_data as measurements_data
+import src.data.patient_data as patient_data
+import src.modelling_fev1.pred_fev1 as pred_fev1
 
 datadir = "../../../../SmartCareData/"
 

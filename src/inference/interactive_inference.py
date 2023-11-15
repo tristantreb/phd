@@ -1,12 +1,14 @@
 import os
 
-import model_helpers as mh
-import src.milestone_model.lung_health_models as lung_health_models
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, dcc, html
 from plotly.subplots import make_subplots
+
+import src.modelling_fev1.pred_fev1 as pred_fev1
+import src.models.builders as lung_health_models
+import src.models.helpers as mh
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -16,10 +18,6 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 app = Dash(__name__)
 
-import sys
-
-sys.path.append("../")
-import pred_fev1
 
 set_age = 26
 set_height = 175

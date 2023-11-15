@@ -1,8 +1,6 @@
-import sys
-
-sys.path.append("../O2_FEV1_analysis")
 import numpy as np
-import smooth
+
+import src.o2_fev1_analysis.smooth as smooth
 
 
 def calc_with_smoothed_max(df):
