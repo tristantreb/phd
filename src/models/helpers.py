@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 import scipy.integrate as integrate
-from scipy.stats import norm
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.

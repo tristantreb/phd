@@ -53,6 +53,12 @@ def calc_predicted_FEV1_LMS_df(df):
     return df
 
 
+def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str):
+    return calc_predicted_FEV1_LMS(
+        load_LMS_spline_vals(age, sex), load_LMS_coeffs(sex), height, age, sex
+    )
+
+
 def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str):
     """
     Implemented from the GLI reference equations.
@@ -79,7 +85,21 @@ def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str
     # Get lower limit of normal (5th percentile)
     LLN = np.exp(np.log(1 - 1.645 * L * S) / L + np.log(M))
 
-    return {"mean": M, "std": S, "LLN": LLN}
+    # The Z-score of a value indicates how far from the mean is that value, in units of standard deviation.
+    # In the LMS model, percentile_value(zscore) = exp(ln(1 - z-score *L*S)/L +ln(M))
+    # Hence, the standard deviation is: percentile_value(zscore)
+    n_std = 1
+    sigma_up = np.exp(np.log(1 + n_std * L * S) / L + np.log(M)) - M
+    sigma_down = M - np.exp(np.log(1 - n_std * L * S) / L + np.log(M))
+
+    return {
+        "mean": M,
+        "sigma_up": sigma_up,
+        "sigma_down": sigma_down,
+        "LLN": LLN,
+        "L": L,
+        "S": S,
+    }
 
 
 def load_LMS_spline_vals(age: int, sex: str):
