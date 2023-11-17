@@ -1,8 +1,10 @@
 import numpy as np
 from pgmpy.factors.discrete import TabularCPD
+from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
 import src.modelling_fev1.pred_fev1 as pred_fev1
+import src.models.helpers as mh
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -63,7 +65,7 @@ def build_full_FEV1_side(
 
     prior_HFEV1 = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins) - 1,
+        variable_card=len(HFEV1.bins),
         values=HFEV1.prior,
         evidence=[],
         evidence_card=[],
@@ -76,7 +78,7 @@ def build_full_FEV1_side(
 
     prior_LD = TabularCPD(
         variable=LD.name,
-        variable_card=len(LD.bins) - 1,
+        variable_card=len(LD.bins),
         values=LD.prior,
         evidence=[],
         evidence_card=[],
@@ -88,10 +90,10 @@ def build_full_FEV1_side(
 
     cpt_UFEV1 = TabularCPD(
         variable=UFEV1.name,
-        variable_card=len(UFEV1.bins) - 1,
+        variable_card=len(UFEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, LD, UFEV1),
         evidence=[LD.name, HFEV1.name],
-        evidence_card=[len(LD.bins) - 1, len(HFEV1.bins) - 1],
+        evidence_card=[len(LD.bins), len(HFEV1.bins)],
     )
 
     # It's not possible to live with >80% of global airway blockage (LD + SAB)
@@ -107,7 +109,7 @@ def build_full_FEV1_side(
 
     prior_SAB = TabularCPD(
         variable=SAB.name,
-        variable_card=len(SAB.bins) - 1,
+        variable_card=len(SAB.bins),
         values=SAB.prior,
         evidence=[],
         evidence_card=[],
@@ -120,10 +122,10 @@ def build_full_FEV1_side(
 
     cpt_FEV1 = TabularCPD(
         variable=FEV1.name,
-        variable_card=len(FEV1.bins) - 1,
+        variable_card=len(FEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(UFEV1, SAB, FEV1),
         evidence=[SAB.name, UFEV1.name],
-        evidence_card=[len(SAB.bins) - 1, len(UFEV1.bins) - 1],
+        evidence_card=[len(SAB.bins), len(UFEV1.bins)],
     )
 
     model = BayesianNetwork(
@@ -143,7 +145,7 @@ def build_full_FEV1_side(
     return inference, HFEV1, prior_HFEV1, LD, prior_LD, UFEV1, SAB, prior_SAB, FEV1
 
 
-def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
+def build_HFEV1_AB_FEV1(HFEV1_prior: object):
     """
     In this model the small airway blockage and the lung damage are merge into one airway blockage variable
     This is done to simplify the model and to make it more intuitive
@@ -155,24 +157,24 @@ def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
     """
     print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
-    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
+    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, HFEV1_prior)
     # It's not possible to live with >80% of airway blockage
-    AB = mh.variableNode("Airway Degradation", 0, 0.8, 0.05)
-    FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
+    AB = mh.variableNode("Airway Degradation", 0, 0.8, 0.05, prior={"type": "uniform"})
+    FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1, None)
 
     model = BayesianNetwork([(HFEV1.name, FEV1.name), (AB.name, FEV1.name)])
 
     cpt_fev1 = TabularCPD(
         variable=FEV1.name,
-        variable_card=len(FEV1.bins) - 1,
+        variable_card=len(FEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AB, FEV1),
         evidence=[HFEV1.name, AB.name],
-        evidence_card=[len(HFEV1.bins) - 1, len(AB.bins) - 1],
+        evidence_card=[len(HFEV1.bins), len(AB.bins)],
     )
 
     prior_ab = TabularCPD(
         variable=AB.name,
-        variable_card=len(AB.bins) - 1,
+        variable_card=len(AB.bins),
         values=AB.prior,
         evidence=[],
         evidence_card=[],
@@ -180,7 +182,7 @@ def build_HFEV1_AB_FEV1(healthy_FEV1_prior: object):
 
     prior_u = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins) - 1,
+        variable_card=len(HFEV1.bins),
         values=HFEV1.prior,
         evidence=[],
         evidence_card=[],
@@ -202,15 +204,15 @@ def build_o2_sat():
 
     cpt_u_o2 = TabularCPD(
         variable=UO2Sat.name,
-        variable_card=len(UO2Sat.bins) - 1,
+        variable_card=len(UO2Sat.bins),
         values=[1, 1],
         evidence=[LD.name],
-        evidence_card=[len(LD.bins) - 1],
+        evidence_card=[len(LD.bins)],
     )
 
     prior_ld = TabularCPD(
         variable=LD.name,
-        variable_card=len(LD.bins) - 1,
+        variable_card=len(LD.bins),
         values=LD.prior,
         evidence=[],
         evidence_card=[],
@@ -248,38 +250,38 @@ def build_FEV1_O2_point_in_time_model(
 
     prior_hfev1 = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins) - 1,
+        variable_card=len(HFEV1.bins),
         values=HFEV1.prior,
         evidence=[],
         evidence_card=[],
     )
     prior_ho2sat = TabularCPD(
         variable=HO2Sat.name,
-        variable_card=len(HO2Sat.bins) - 1,
+        variable_card=len(HO2Sat.bins),
         values=HO2Sat.prior,
         evidence=[],
         evidence_card=[],
     )
     prior_ar = TabularCPD(
         variable=AR.name,
-        variable_card=len(AR.bins) - 1,
+        variable_card=len(AR.bins),
         values=AR.prior,
         evidence=[],
         evidence_card=[],
     )
     cpt_fev1 = TabularCPD(
         variable=ecFEV1.name,
-        variable_card=len(ecFEV1.bins) - 1,
+        variable_card=len(ecFEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1),
         evidence=[HFEV1.name, AR.name],
-        evidence_card=[len(HFEV1.bins) - 1, len(AR.bins) - 1],
+        evidence_card=[len(HFEV1.bins), len(AR.bins)],
     )
     # cpt_o2_sat_ffa = TabularCPD(
     #     variable=O2SatFFA.name,
-    #     variable_card=len(O2SatFFA.bins) - 1,
+    #     variable_card=len(O2SatFFA.bins),
     #     values=O2SatFFA.prior,
     #     evidence=[AR.name, HO2Sat.name],
-    #     evidence_card=[len(AR.bins) - 1, len(HO2Sat.bins) - 1],
+    #     evidence_card=[len(AR.bins), len(HO2Sat.bins)],
     # )
 
     model.add_cpds(cpt_fev1, prior_ar, prior_hfev1)
@@ -328,7 +330,7 @@ def build_longitudinal_FEV1_side(
 
     prior_HFEV1 = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins) - 1,
+        variable_card=len(HFEV1.bins),
         values=HFEV1.prior,
         evidence=[],
         evidence_card=[],
@@ -341,7 +343,7 @@ def build_longitudinal_FEV1_side(
 
     prior_LD = TabularCPD(
         variable=LD.name,
-        variable_card=len(LD.bins) - 1,
+        variable_card=len(LD.bins),
         values=LD.prior,
         evidence=[],
         evidence_card=[],
@@ -353,10 +355,10 @@ def build_longitudinal_FEV1_side(
 
     cpt_UFEV1 = TabularCPD(
         variable=UFEV1.name,
-        variable_card=len(UFEV1.bins) - 1,
+        variable_card=len(UFEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, LD, UFEV1),
         evidence=[LD.name, HFEV1.name],
-        evidence_card=[len(LD.bins) - 1, len(HFEV1.bins) - 1],
+        evidence_card=[len(LD.bins), len(HFEV1.bins)],
     )
 
     # One variable per time point.
@@ -382,7 +384,7 @@ def build_longitudinal_FEV1_side(
 
         prior_SAB_i = TabularCPD(
             variable=SAB_i.name,
-            variable_card=len(SAB_i.bins) - 1,
+            variable_card=len(SAB_i.bins),
             values=SAB_i.prior,
             evidence=[],
             evidence_card=[],
@@ -395,10 +397,10 @@ def build_longitudinal_FEV1_side(
 
         cpt_FEV1 = TabularCPD(
             variable=FEV1_i.name,
-            variable_card=len(FEV1_i.bins) - 1,
+            variable_card=len(FEV1_i.bins),
             values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(UFEV1, SAB_i, FEV1_i),
             evidence=[SAB_i.name, UFEV1.name],
-            evidence_card=[len(SAB_i.bins) - 1, len(UFEV1.bins) - 1],
+            evidence_card=[len(SAB_i.bins), len(UFEV1.bins)],
         )
 
         SAB_list.append(SAB_i)

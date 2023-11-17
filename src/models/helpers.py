@@ -3,6 +3,9 @@
 import numpy as np
 import pandas as pd
 import scipy.integrate as integrate
+from scipy.stats import norm
+
+import src.modelling_fev1.pred_fev1 as pred_fev1
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -87,60 +90,72 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
 
 ## Variable node
 class variableNode:
-    def __init__(self, name: str, a, b, bin_width, prior={"type": "uniform"}):
+    def __init__(self, name: str, a, b, bin_width, prior):
         self.tol = TOL_GLOBAL
         self.name = name
         self.a = a
         self.b = b
         self.bin_width = bin_width
-        # We're adding bin_width - TOL_GLOBAL to include b in the array of bins so that the last bin can be computed
+        # Since we define the bin by its lower bound, the last bin is [self.bins[-1]; b), b should be excluded from the array of bins
         # The 1st bin is [a; self.bins[1])
         # The nth bin is [self.bins[n]; self.bins[n+1]]
-        # The last bin is [self.bins[-2]; b)
-        self.bins = np.arange(a, b + bin_width - self.tol, bin_width)
-        self.bins_str = self.get_bins_as_string(self)
+        # The last bin is [self.bins[-1]; b)
+        # We're b - TOL_GLOBAL allows to exclude b from the array of bins
+        # self.bins = np.arange(a, b + bin_width - self.tol, bin_width)
+        self.bins = np.arange(a, b - self.tol, bin_width)
+        self.bins_arr = np.array(
+            list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
+        )
+        self.bins_str = list(
+            map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
+        )
         self.prior = self.set_prior(self, prior)
 
     def sample(self):
         return np.random.uniform(self.a, self.b)
 
     @staticmethod
-    def get_bins_as_string(self):
-        return [
-            f"[{round(self.bins[i], 2)}; {round(self.bins[i+1], 2)})"
-            for i in range(len(self.bins) - 1)
-        ]
-
-    @staticmethod
-    def set_prior(self, prior: object):
-        if prior["type"] == "uniform":
-            proba = self._uniform_prior(self)
+    def set_prior(self, prior):
+        """
+        The prior of node variable is a 2D array of shape (len(bins), 1), so that: sum(P(nodeVariable)) = 1
+        That is because in PGMPY, a prior is essentially a CPT with only one parent state
+        """
+        # Node variable specific priors
+        if self.name == "Healthy FEV1 (L)":
+            height = prior["height"]
+            age = prior["age"]
+            sex = prior["sex"]
+            p = pred_fev1.calc_hfev1_prior(self.bins, height, age, sex)
+        # Child variables have no prior
+        elif prior == None:
+            return None
+        # General priors
+        elif prior["type"] == "uniform":
+            p = self._uniform_prior(self)
         elif prior["type"] == "gaussian":
-            proba = self._gaussian_prior(self, prior["mu"], prior["sigma"])
+            p = self._gaussian_prior(self, prior["mu"], prior["sigma"])
         elif prior["type"] == "uniform + gaussian tail":
-            proba = self._uniform_prior_with_gaussian_tail(
+            p = self._uniform_prior_with_gaussian_tail(
                 self, prior["constant"], prior["sigma"]
             )
-        else:
-            raise ValueError(
-                f"Prior {prior} not supported. Please use 'uniform' or 'gaussian'."
-            )
-        # TODO: update to use sum(sum(proba))
-        total_proba = sum([sum(p) for p in proba])
+
+        # TODO: update to use sum(sum(p))
+        total_p = sum(sum(p))
         assert (
-            total_proba - 1
-        ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_proba}"
-        return proba
+            total_p - 1
+        ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_p}"
+        return p
 
     @staticmethod
     def _uniform_prior(self):
-        # print("Defining uniform prior")
-        return [[np.array(1 / (len(self.bins) - 1))] for _ in range(len(self.bins) - 1)]
+        return np.array([1 / len(self.bins)] * len(self.bins)).reshape(
+            len(self.bins), 1
+        )
 
     @staticmethod
     def _gaussian_prior(self, mu: float, sigma: float):
         print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
-        proba_per_bin = norm.pdf(self.bins[:-1], loc=mu, scale=sigma)
+        proba_per_bin = norm.pdf(self.bins, loc=mu, scale=sigma)
         proba_per_bin_norm = [proba_per_bin / sum(proba_per_bin)]
         return np.transpose(proba_per_bin_norm)
 
@@ -176,9 +191,9 @@ def calc_cpt(
     debug=False,
 ):
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
-    nbinsA = len(parentA.bins) - 1
-    nbinsB = len(parentB.bins) - 1
-    nbinsC = len(C.bins) - 1
+    nbinsA = len(parentA.bins)
+    nbinsB = len(parentB.bins)
+    nbinsC = len(C.bins)
     cpt = np.empty((nbinsC, nbinsA, nbinsB))
     # print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
 
@@ -246,9 +261,9 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
     Creates a 2D array with 3 variables
     """
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
-    nbinsX = len(X.bins) - 1
-    nbinsY = len(Y.bins) - 1
-    nbinsZ = len(Z.bins) - 1
+    nbinsX = len(X.bins)
+    nbinsY = len(Y.bins)
+    nbinsZ = len(Z.bins)
     cpt = np.empty((nbinsZ, nbinsX * nbinsY))
     # print(f"calculating cpt of shape {nbinsZ} x {nbinsX} x {nbinsY} (C x (A x B)) ")
 
@@ -259,13 +274,11 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
             print("cpt index", cpt_index)
 
         # Take a bin in X
-        a_low = X.bins[i]
-        a_up = X.bins[i + 1]
+        (a_low, a_up) = X.bins_arr[i]
 
         for j in range(nbinsY):
             # Take a bin in Y
-            b_low = Y.bins[j]
-            b_up = Y.bins[j + 1]
+            (b_low, b_up) = Y.bins_arr[j]
 
             # Get the max possible range of for C=X*Y
             Z_min = a_low * (1 - b_up)
@@ -275,8 +288,7 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
             abserr = -1
             for z in range(nbinsZ):
                 # Take a bin in C
-                Z_low = Z.bins[z]
-                Z_up = Z.bins[z + 1]
+                (Z_low, Z_up) = Z.bins_arr[z]
                 # Get the inner intersection of Z_range and [Z_low, Z_up]
                 # Compute P(C | X, Y)
                 if (

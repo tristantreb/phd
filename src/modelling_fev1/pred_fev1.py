@@ -1,6 +1,32 @@
 import numpy as np
+from scipy.stats import norm
 
 import src.data.sanity_checks as sanity_checks
+
+
+def calc_hfev1_prior(hfev1_bins, height, age, sex):
+    """
+    Computes the prior fo Healthy FEV1 given its bins
+    This model uses the inversed LMS percentile curve function to compute the zscores of each bin given an input array of HFEV1/predictedFEV1 bin values
+    """
+    # Compute the predicted FEV1 for the individual
+    pred_fev1_arr = calc_predicted_FEV1_LMS_straight(height, age, sex)
+    S = pred_fev1_arr["S"]
+    M = pred_fev1_arr["mean"]
+    L = pred_fev1_arr["L"]
+
+    # Define inverse LMS percentile curve function
+    def inverse_lms_pred_fev1(pred_fev1_arr, S, M, L):
+        return (np.exp(L * np.log(pred_fev1_arr / M)) - 1) / (S * L)
+
+    # Compute zscores for each bin
+    zscores = inverse_lms_pred_fev1(hfev1_bins, S, M, L)
+
+    # Get probabilities for each bin
+    p = norm.pdf(zscores)
+    p = p / p.sum()
+
+    return p.reshape(len(hfev1_bins), 1)
 
 
 def calc_FEV1_prct_predicted_df(df):

@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 from dash import Dash, Input, Output, dcc, html
 from plotly.subplots import make_subplots
 
+import src.inference.helpers as ih
 import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.models.builders as builders
 import src.models.helpers as mh
@@ -119,17 +120,10 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
     print(
         f"Model inputs: sex: {sex}, age: {age}, height: {height}, FEV1_obs: {FEV1_obs}"
     )
-    # Convert to int
+    # TODO: why not int by default?
     height = int(height)
     age = int(age)
-    pred_FEV1, pred_FEV1_std = list(
-        map(
-            pred_fev1.calc_predicted_FEV1_linear(height, age, sex).get,
-            ["Predicted FEV1", "std"],
-        )
-    )
-    # healthy_FEV1_prior={"type":"uniform"}
-    healthy_FEV1_prior = {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
+    healthy_FEV1_prior = {"height": height, "age": age, "sex": sex}
     (
         model,
         FEV1,
@@ -142,8 +136,8 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
     # INFERENCE
     print("Inference user input: FEV1 set to", FEV1_obs)
 
-    res_u = builders.infer(model, [HFEV1], [[FEV1, FEV1_obs]])
-    res_ab = builders.infer(model, [AB], [[FEV1, FEV1_obs]])
+    res_u = ih.infer(model, [HFEV1], [[FEV1, FEV1_obs]])
+    res_ab = ih.infer(model, [AB], [[FEV1, FEV1_obs]])
 
     n_var_rows = 1
     prior = {"type": "bar"}
@@ -162,19 +156,19 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
         ],
     )
 
-    fig.add_trace(go.Bar(y=prior_HFEV1.values, x=HFEV1.bins[:-1]), row=1, col=1)
+    fig.add_trace(go.Bar(y=prior_HFEV1.values, x=HFEV1.bins), row=1, col=1)
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
 
-    fig.add_trace(go.Bar(y=prior_AB.values, x=AB.bins[:-1]), row=1, col=3)
+    fig.add_trace(go.Bar(y=prior_AB.values, x=AB.bins), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
     fig["layout"]["xaxis2"]["title"] = "Prior for " + AB.name
 
-    fig.add_trace(go.Bar(y=res_u.values, x=HFEV1.bins[:-1]), row=2, col=1)
+    fig.add_trace(go.Bar(y=res_u.values, x=HFEV1.bins), row=2, col=1)
     fig["data"][2]["marker"]["color"] = "blue"
     fig["layout"]["xaxis3"]["title"] = HFEV1.name
 
-    fig.add_trace(go.Bar(y=res_ab.values, x=AB.bins[:-1]), row=2, col=3)
+    fig.add_trace(go.Bar(y=res_ab.values, x=AB.bins), row=2, col=3)
     fig["data"][3]["marker"]["color"] = "green"
     fig["layout"]["xaxis4"]["title"] = AB.name
 

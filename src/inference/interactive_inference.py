@@ -43,7 +43,7 @@ app.layout = html.Div(
             min=FEV1.bins[0],
             max=FEV1.bins[-2],
             value=3,
-            marks={0: "0.2", (len(C.bins) - 1): "5.9"},
+            marks={0: "0.2", (len(C.bins)): "5.9"},
         ),
         # dcc.Dropdown(['Gaussian', 'Uniform'], 'Uniform', id='healthy-fev1-prior'),
         # html.Div(id='output-container')
@@ -85,19 +85,19 @@ def display(fev1: float):
         ],
     )
 
-    fig.add_trace(go.Bar(y=prior_u.values, x=U.bins[:-1]), row=1, col=1)
+    fig.add_trace(go.Bar(y=prior_u.values, x=U.bins), row=1, col=1)
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + U.name
 
-    fig.add_trace(go.Bar(y=prior_c.values, x=C.bins[:-1]), row=1, col=3)
+    fig.add_trace(go.Bar(y=prior_c.values, x=C.bins), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
     fig["layout"]["xaxis2"]["title"] = "Prior for " + C.name
 
-    fig.add_trace(go.Bar(y=res_u.values, x=U.bins[:-1]), row=2, col=1)
+    fig.add_trace(go.Bar(y=res_u.values, x=U.bins), row=2, col=1)
     fig["data"][2]["marker"]["color"] = "blue"
     fig["layout"]["xaxis3"]["title"] = U.name
 
-    fig.add_trace(go.Bar(y=res_c.values, x=C.bins[:-1]), row=2, col=3)
+    fig.add_trace(go.Bar(y=res_c.values, x=C.bins), row=2, col=3)
     fig["data"][3]["marker"]["color"] = "green"
     fig["layout"]["xaxis4"]["title"] = C.name
 
