@@ -11,12 +11,12 @@ def calc_healthy_O2_sat(sex: str, height: int):
     std = 1.0304
     if sex == "Female":
         return {
-            "mean": a + c * (height - avg_height),
+            "M": a + c * (height - avg_height),
             "std": std,
         }
     elif sex == "Male":
         return {
-            "mean": a + b + c * (height - avg_height),
+            "M": a + b + c * (height - avg_height),
             "std": std,
         }
     else:
@@ -28,7 +28,7 @@ def calc_healthy_O2_sat_df(df):
     Returns input DataFrame with added column Healthy O2 Saturation, given Height and Sex
     """
     df["Healthy O2 Saturation"] = df.apply(
-        lambda x: calc_healthy_O2_sat(x.Sex, x.Height)["mean"],
+        lambda x: calc_healthy_O2_sat(x.Sex, x.Height)["M"],
         axis=1,
     )
 
