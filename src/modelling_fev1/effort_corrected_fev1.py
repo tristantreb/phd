@@ -3,17 +3,21 @@ import numpy as np
 import src.o2_fev1_analysis.smooth as smooth
 
 
-def calc_with_smoothed_max(df):
+def calc_with_smoothed_max_df(df):
     """
     Returns input df with Effort Corrected FEV1
     """
-    df.sort_values(by=["ID", "Date Recorded"], inplace=True)
+    # Create a copy of the DataFrame to avoid SettingWithCopyWarning
+    df = df.sort_values(by=["ID", "Date Recorded"]).copy()
 
+    # Initialize the new column with NaN values
     df["ecFEV1"] = np.nan
 
-    # For each each ID in df
+    # For each unique ID in df
     for id in df.ID.unique():
-        # Create mask for this ID
+        # Create a mask for this ID
         mask = df.ID == id
-        df["ecFEV1"][mask] = smooth.smooth_vector(df.FEV1[mask].to_numpy(), "max")
+        # Use loc to avoid SettingWithCopyWarning and assign the smoothed values
+        df.loc[mask, "ecFEV1"] = smooth.smooth_vector(df.loc[mask, "FEV1"].to_numpy(), "max")
+
     return df

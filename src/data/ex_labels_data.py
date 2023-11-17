@@ -19,16 +19,16 @@ one_day = timedelta(days=1)
 # Merge exacerbation labels from the predictive classifier to O2_FEV1
 def inner_merge_with(O2_FEV1, pred_ex_labels, exclude_no_ex=True):
     print(
-        "\n** Inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date recorded' **"
+        "\n** Inner merge of O2_FEV1 and exacerbated labels on 'ID' and 'Date Recorded' **"
     )
 
     # Set Multi index to prepare the merge with O2_FEV1
-    pred_ex_labels = pred_ex_labels.set_index(["ID", "Date recorded"])
+    pred_ex_labels = pred_ex_labels.set_index(["ID", "Date Recorded"])
 
     O2_FEV1_out = O2_FEV1.merge(
         pred_ex_labels["Is Exacerbated"],
         how="inner",
-        on=["ID", "Date recorded"],
+        on=["ID", "Date Recorded"],
         validate="1:1",
     )
 
@@ -100,8 +100,8 @@ def load():
         datadir + "pmExABxElLabels.csv", dtype=bool
     )
 
-    # Data types transformation. Use datetime.date for Date recorded and string for ID
-    pred_ex_labels["Date recorded"] = pd.to_datetime(pred_ex_labels["CalcDate"]).dt.date
+    # Data types transformation. Use datetime.date for Date Recorded and string for ID
+    pred_ex_labels["Date Recorded"] = pd.to_datetime(pred_ex_labels["CalcDate"]).dt.date
     pred_ex_labels["ID"] = pred_ex_labels["ID"].astype(str)
 
     print(
@@ -143,7 +143,7 @@ def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
     df_value_counts_is_ex = df["Is Exacerbated"].value_counts()
     print(f"Initially:\n{df_value_counts_is_ex}")
 
-    df = df.sort_values(by=["ID", "Date recorded"]).reset_index(drop=True)
+    df = df.sort_values(by=["ID", "Date Recorded"]).reset_index(drop=True)
 
     df["Exacerbation State"] = np.nan
 
@@ -198,7 +198,7 @@ def _overwrite_when_in_transition_period(df_for_ID, n_days_before, n_days_after)
     # Overwrite the values in ex_start to mark them as transition period
     for idx in get_start_idx:
         # Get the date for this idx
-        ex_start_date = df_for_ID["Date recorded"][idx]
+        ex_start_date = df_for_ID["Date Recorded"][idx]
         # Create a date range around this date
         date_range = pd.date_range(
             start=ex_start_date - timedelta(days=n_days_before),
@@ -208,7 +208,7 @@ def _overwrite_when_in_transition_period(df_for_ID, n_days_before, n_days_after)
 
         # Get the indices of df_for_ID that fall in this date range
         date_range_mask = (
-            df_for_ID["Date recorded"].astype("datetime64[ns]").isin(date_range)
+            df_for_ID["Date Recorded"].astype("datetime64[ns]").isin(date_range)
         )
 
         ex_state[date_range_mask] = 0.5
@@ -227,7 +227,7 @@ def compute_ex_labels_from_heuristics(antibioticsdata, patientsdata, O2_FEV1):
             numdays_before_ab_start_is_exacerbated=7,
             numdays_before_ab_start_not_exacerbated=21,
         )
-        O2_FEV1["Exacerbation Labels"] = O2_FEV1["Date recorded"].apply(
+        O2_FEV1["Exacerbation Labels"] = O2_FEV1["Date Recorded"].apply(
             lambda x: add_measurement_exacerbation_label(x, ex_labels)
         )
     return O2_FEV1
