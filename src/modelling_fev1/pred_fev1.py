@@ -81,8 +81,8 @@ def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str):
     )
 
 
-def get_lms_pred_fev1_for_zscore(zscore, M, S, L):
-    return np.exp(np.log(1 + zscore * L * S) / L + np.log(M))
+def get_lms_pred_fev1_for_zscore(zscore_arr, M, S, L):
+    return np.exp(np.log(1 + zscore_arr * L * S) / L + np.log(M))
 
 
 def get_inverse_lms_pred_fev1_for_zscore(pred_fev1_arr, S, M, L):
@@ -92,6 +92,7 @@ def get_inverse_lms_pred_fev1_for_zscore(pred_fev1_arr, S, M, L):
 def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str):
     """
     Implemented from the GLI reference equations.
+    The GLI's model a location (M), scale (S), shape (L) model to predicted FEV1 given a Z-Score​
     Equations: https://www.ers-education.org/lr/show-details/?idP=138978
     Paper: https://www.ersnet.org/science-and-research/ongoing-clinical-research-collaborations/the-global-lung-function-initiative/gli-tools/
     """
