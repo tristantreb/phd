@@ -128,9 +128,7 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
         model,
         FEV1,
         HFEV1,
-        prior_HFEV1,
         AB,
-        prior_AB,
     ) = builders.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
 
     # INFERENCE
@@ -156,11 +154,11 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
         ],
     )
 
-    fig.add_trace(go.Bar(y=prior_HFEV1.values, x=HFEV1.bins), row=1, col=1)
+    fig.add_trace(go.Bar(y=HFEV1.prior[:,0], x=HFEV1.bins), row=1, col=1)
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
 
-    fig.add_trace(go.Bar(y=prior_AB.values, x=AB.bins), row=1, col=3)
+    fig.add_trace(go.Bar(y=AB.prior[:,0].values, x=AB.bins), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
     fig["layout"]["xaxis2"]["title"] = "Prior for " + AB.name
 
@@ -174,7 +172,7 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
 
     fig.update_layout(showlegend=False, height=600, width=1200)
 
-    return fig, FEV1.bins[0], FEV1.bins[-2]
+    return fig, FEV1.a, FEV1.b
 
 
 app.run_server(debug=True, port=8051, use_reloader=False)

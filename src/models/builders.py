@@ -22,30 +22,10 @@ def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
     }
 
 
-def set_HFEV1_prior(type, *args):
-    """
-    type: "uniform" or "gaussian"
-    args: if type == "uniform", no args
-    args: if type == "gaussian", height (cm), age (yr), "Male" or "Female"
-    """
-    if type == "uniform":
-        return {"type": "uniform"}
-    elif type == "gaussian":
-        set_height = args[0]
-        set_age = args[1]
-        set_sex = args[2]
-        FEV1 = pred_fev1.calc_predicted_FEV1_linear(set_height, set_age, set_sex)
-        pred_FEV1 = FEV1["Predicted FEV1"]
-        pred_FEV1_std = FEV1["std"]
-        return {"type": "gaussian", "mu": pred_FEV1, "sigma": pred_FEV1_std}
-    else:
-        raise ValueError("Invalid type (should be uniform or gaussian)")
-
-
 def build_full_FEV1_side(
-    HFEV1_prior={"type": "uniform"},
-    SAB_prior={"type": "uniform"},
-    LD_prior={"type": "uniform"},
+    HFEV1_prior,
+    SAB_prior,
+    LD_prior,
 ):
     """
     HFEV1
@@ -141,8 +121,8 @@ def build_full_FEV1_side(
 
     model.check_model()
 
-    inference = BeliefPropagation(model)
-    return inference, HFEV1, prior_HFEV1, LD, prior_LD, UFEV1, SAB, prior_SAB, FEV1
+    inf_alg = BeliefPropagation(model)
+    return model, inf_alg, HFEV1, LD, UFEV1, SAB, FEV1
 
 
 def build_HFEV1_AB_FEV1(HFEV1_prior: object):
@@ -192,43 +172,10 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
 
     model.check_model()
 
-    inference = BeliefPropagation(model)
-    return inference, FEV1, HFEV1, prior_u, AB, prior_ab
+    return model, FEV1, HFEV1, AB
 
 
-def build_o2_sat():
-    UO2Sat = mh.variableNode("Unblocked O2 Sat (%)", 0.7, 1, 0.1)
-    LD = mh.variableNode("Lung damage (%)", 0.2, 1, 0.1)
-
-    graph = BayesianNetwork([(UO2Sat.name, LD.name)])
-
-    cpt_u_o2 = TabularCPD(
-        variable=UO2Sat.name,
-        variable_card=len(UO2Sat.bins),
-        values=[1, 1],
-        evidence=[LD.name],
-        evidence_card=[len(LD.bins)],
-    )
-
-    prior_ld = TabularCPD(
-        variable=LD.name,
-        variable_card=len(LD.bins),
-        values=LD.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-
-    graph.add_cpds(cpt_u_o2, prior_ld)
-
-    graph.check_model()
-
-    inference = BeliefPropagation(graph)
-    return inference, UO2Sat, LD, prior_ld
-
-
-def build_FEV1_O2_point_in_time_model(
-    healthy_FEV1_prior: object, healthy_O2_sat_prior: object
-):
+def build_FEV1_O2_point_in_time_model(HFEV1_prior, HO2Sat_prior):
     """
     This is a point in time model with
     FEV1 = HFEV1 * (1-AR)
@@ -238,13 +185,11 @@ def build_FEV1_O2_point_in_time_model(
     """
     print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
-    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=healthy_FEV1_prior)
-    AR = mh.variableNode("Airway Resistance", 0, 0.8, 0.01)
-    ecFEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1)
-    HO2Sat = mh.variableNode(
-        "Healthy O2 Sat (%)", 0.8, 1, 0.01, prior=healthy_O2_sat_prior
-    )
-    O2SatFFA = mh.variableNode("O2 Sat if fully functional alveoli (%)", 0.7, 1, 0.01)
+    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=HFEV1_prior)
+    AR = mh.variableNode("Airway Resistance", 0, 0.8, 0.01, prior={"type": "uniform"})
+    ecFEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1, prior=None)
+    HO2Sat = mh.variableNode("Healthy O2 Sat (%)", 0.8, 1, 0.01, prior=HO2Sat_prior)
+    O2SatFFA = mh.variableNode("O2 Sat if fully functional alveoli (%)", 0.7, 1, 0.01, prior=None)
 
     model = BayesianNetwork([(HFEV1.name, ecFEV1.name), (AR.name, ecFEV1.name)])
 
@@ -288,18 +233,8 @@ def build_FEV1_O2_point_in_time_model(
     # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, cpt_o2_sat_ffa)
 
     model.check_model()
-
-    return (
-        model,
-        HFEV1,
-        prior_hfev1,
-        ecFEV1,
-        HO2Sat,
-        prior_ho2sat,
-        O2SatFFA,
-        AR,
-        prior_ar,
-    )
+    inf_alg = BeliefPropagation(model)
+    return (model, inf_alg, HFEV1, ecFEV1, HO2Sat, O2SatFFA, AR)
 
 
 def build_longitudinal_FEV1_side(
@@ -423,16 +358,13 @@ def build_longitudinal_FEV1_side(
 
     model.check_model()
 
-    inference = BeliefPropagation(model)
+    inf_alg = BeliefPropagation(model)
     return (
         model,
-        inference,
+        inf_alg,
         HFEV1,
-        prior_HFEV1,
         LD,
-        prior_LD,
         UFEV1,
         SAB_list,
-        prior_SAB_i,
         FEV1_list,
     )
