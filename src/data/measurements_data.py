@@ -1,6 +1,6 @@
 import pandas as pd
 
-import src.data.sanity_checks
+import src.data.sanity_checks as sanity_checks
 
 smartcare_data_dir = "../../../../SmartCareData/"
 
@@ -100,7 +100,7 @@ def merge_with_id_mapping(
 def load_measurements_without_smartcare_id():
     print("\n** Loading measurements data **")
     df_raw = (
-        pd.read_csv(smartcare_data_dir + "mydata.csv")
+        pd.read_csv(smartcare_data_dir + "mydata.csv", low_memory=False)
         .rename(columns={"Date/Time recorded": "DateTime Recorded"})
         .astype({"DateTime Recorded": "datetime64[ns]"})
     )
@@ -238,7 +238,7 @@ def _correct_same_day_duplicates(df, col_name):
     df["Removed"] = df.duplicated(subset=["UserName", "Date Recorded"], keep="last")
     df["Removed shifted"] = df["Removed"].shift(1)
     # First shifted measurement is NaN, we'll set it to False as it's always kept
-    df["Removed shifted"].iloc[0] = False
+    df.loc[0, "Removed shifted"] = False
     # Duplicate are either
     # Entries markes as removed
     # Or the "last" entry of a series of duplicates that was kept, indicated by the [False, True] pattern

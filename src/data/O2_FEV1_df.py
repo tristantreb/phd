@@ -1,7 +1,8 @@
 import pandas as pd
 
 import src.data.measurements_data as measurements_data
-import src.data.patient_data as patient_data
+import src.data.patients_data as patients_data
+import src.modelling_fev1.effort_corrected_fev1 as ecfev1
 import src.modelling_fev1.pred_fev1 as pred_fev1
 
 datadir = "../../../../SmartCareData/"
@@ -9,7 +10,7 @@ datadir = "../../../../SmartCareData/"
 
 def create():
     df_measurements = measurements_data.load()
-    df_patient = patient_data.load()
+    df_patient = patients_data.load()
 
     print("\n** Creating DataFrame for O2 FEV1 analysis **")
     # Extract O2 and FEV1 measurements
@@ -37,6 +38,9 @@ def create():
     # Merge O2_FEV1 with patient data
     df_O2_FEV1 = pd.merge(df_O2_FEV1, df_patient, on="ID", how="left")
     df_O2_FEV1.sort_values(["ID", "Date Recorded"], inplace=True)
+
+    # Compute effort corrected FEV1
+    df_O2_FEV1 = ecfev1.calc_with_smoothed_max_df(df_O2_FEV1)
 
     # Compute FEV1 % Predicted
     df_O2_FEV1 = pred_fev1.calc_FEV1_prct_predicted_df(df_O2_FEV1)

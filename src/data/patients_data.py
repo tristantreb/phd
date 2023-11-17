@@ -90,7 +90,7 @@ def _correct_df(df):
     print("\n* Correcting patient data *")
     # ID 60, convert height from m to cm
     tmp = df.loc[df.ID == "60", "Height"]
-    df.Height.loc[df.ID == "60"] = tmp * 100
+    df.loc[df.ID == "60", "Height"] = tmp * 100
 
     # Print data correction for ID 60
     print(
