@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 
-
 def compute_hfev1_ld_factor(O2_FEV1):
     """
     Factor function: Unblocked_FEV1(Healthy_FEV1, Lung_Damage)

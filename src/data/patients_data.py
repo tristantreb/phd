@@ -138,7 +138,7 @@ def _compute_predicted_fev1(df):
             x.Height,
             x.Age,
             x.Sex,
-        )["mean"],
+        )["M"],
         axis=1,
     )
     # Assert type is float

@@ -12,15 +12,11 @@ def calc_hfev1_prior(hfev1_bins, height, age, sex):
     # Compute the predicted FEV1 for the individual
     pred_fev1_arr = calc_predicted_FEV1_LMS_straight(height, age, sex)
     S = pred_fev1_arr["S"]
-    M = pred_fev1_arr["mean"]
+    M = pred_fev1_arr["M"]
     L = pred_fev1_arr["L"]
 
-    # Define inverse LMS percentile curve function
-    def inverse_lms_pred_fev1(pred_fev1_arr, S, M, L):
-        return (np.exp(L * np.log(pred_fev1_arr / M)) - 1) / (S * L)
-
     # Compute zscores for each bin
-    zscores = inverse_lms_pred_fev1(hfev1_bins, S, M, L)
+    zscores = get_inverse_lms_pred_fev1_for_zscore(hfev1_bins, S, M, L)
 
     # Get probabilities for each bin
     p = norm.pdf(zscores)
@@ -72,7 +68,7 @@ def calc_predicted_FEV1_LMS_df(df):
             x.Height,
             x.Age,
             x.Sex,
-        )["mean"],
+        )["M"],
         axis=1,
     )
     df.apply(lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID), axis=1)
@@ -83,6 +79,14 @@ def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str):
     return calc_predicted_FEV1_LMS(
         load_LMS_spline_vals(age, sex), load_LMS_coeffs(sex), height, age, sex
     )
+
+
+def get_lms_pred_fev1_for_zscore(zscore, M, S, L):
+    return np.exp(np.log(1 + zscore * L * S) / L + np.log(M))
+
+
+def get_inverse_lms_pred_fev1_for_zscore(pred_fev1_arr, S, M, L):
+    return (np.exp(L * np.log(pred_fev1_arr / M)) - 1) / (S * L)
 
 
 def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str):
@@ -109,17 +113,17 @@ def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str
     L = coeffs["L"]["Intercept"] + coeffs["L"]["Age"] * np.log(age)
 
     # Get lower limit of normal (5th percentile)
-    LLN = np.exp(np.log(1 - 1.645 * L * S) / L + np.log(M))
+    LLN = get_lms_pred_fev1_for_zscore(-1.645, M, S, L)
 
     # The Z-score of a value indicates how far from the mean is that value, in units of standard deviation.
     # In the LMS model, percentile_value(zscore) = exp(ln(1 - z-score *L*S)/L +ln(M))
     # Hence, the standard deviation is: percentile_value(zscore)
     n_std = 1
-    sigma_up = np.exp(np.log(1 + n_std * L * S) / L + np.log(M)) - M
-    sigma_down = M - np.exp(np.log(1 - n_std * L * S) / L + np.log(M))
+    sigma_up = get_lms_pred_fev1_for_zscore(n_std, M, S, L) - M
+    sigma_down = M - get_lms_pred_fev1_for_zscore(-n_std, M, S, L)
 
     return {
-        "mean": M,
+        "M": M,
         "sigma_up": sigma_up,
         "sigma_down": sigma_down,
         "LLN": LLN,
