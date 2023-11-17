@@ -120,15 +120,15 @@ class variableNode:
         The prior of node variable is a 2D array of shape (len(bins), 1), so that: sum(P(nodeVariable)) = 1
         That is because in PGMPY, a prior is essentially a CPT with only one parent state
         """
+        # Child variables have no prior
+        if prior == None:
+            return None
         # Node variable specific priors
-        if self.name == "Healthy FEV1 (L)":
+        elif self.name == "Healthy FEV1 (L)" and prior["type"] == "default":
             height = prior["height"]
             age = prior["age"]
             sex = prior["sex"]
             p = pred_fev1.calc_hfev1_prior(self.bins, height, age, sex)
-        # Child variables have no prior
-        elif prior == None:
-            return None
         # General priors
         elif prior["type"] == "uniform":
             p = self._uniform_prior(self)

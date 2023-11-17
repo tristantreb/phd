@@ -40,8 +40,8 @@ app.layout = html.Div(
         html.P("FEV1:"),
         dcc.Slider(
             id="fev1",
-            min=FEV1.bins[0],
-            max=FEV1.bins[-2],
+            min=FEV1.a,
+            max=FEV1.b,
             value=3,
             marks={0: "0.2", (len(C.bins)): "5.9"},
         ),
