@@ -172,7 +172,9 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
 
     model.check_model()
 
-    return model, FEV1, HFEV1, AB
+    inf_alg = BeliefPropagation(model)
+
+    return model, inf_alg, FEV1, HFEV1, AB
 
 
 def build_FEV1_O2_point_in_time_model(HFEV1_prior, HO2Sat_prior):

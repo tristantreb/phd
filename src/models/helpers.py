@@ -319,15 +319,3 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
 
     return cpt
 
-
-# Given an observation and an array of bins, this returns the bin that the value falls into
-def get_bin_for_value(obs: float, bins: np.array, tol=TOL_GLOBAL):
-    # Center bins around value observed
-    relative_bins = bins - obs - tol
-
-    # Find the highest negative value of the bins relative to centered bins
-    idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
-
-    lower_idx = bins[idx].item()
-    upper_idx = bins[idx + 1].item()
-    return ["[{}; {})".format(lower_idx, upper_idx), idx]

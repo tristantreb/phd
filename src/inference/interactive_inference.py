@@ -9,6 +9,7 @@ from plotly.subplots import make_subplots
 import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.models.builders as lung_health_models
 import src.models.helpers as mh
+import src.inference.helpers as ih
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -59,7 +60,7 @@ app.layout = html.Div(
 def display(fev1: float):
     print("user input: FEV1 set to", fev1)
 
-    [_fev1_bin, fev1_idx] = mh.get_bin_for_value(fev1, FEV1.bins)
+    [_fev1_bin, fev1_idx] = ih.get_bin_for_value(fev1, FEV1)
 
     res_u = inference.query(
         variables=[U.name], evidence={FEV1.name: fev1_idx}, show_progress=False
