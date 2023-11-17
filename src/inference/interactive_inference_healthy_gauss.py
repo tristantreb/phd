@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 
 import src.inference.helpers as ih
 import src.modelling_fev1.pred_fev1 as pred_fev1
-import src.models.builders as builders
+import src.models.builders as mb
 import src.models.helpers as mh
 
 """
@@ -123,19 +123,20 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
     # TODO: why not int by default?
     height = int(height)
     age = int(age)
-    healthy_FEV1_prior = {"height": height, "age": age, "sex": sex}
+    healthy_FEV1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
     (
         model,
+        inf_alg,
         FEV1,
         HFEV1,
         AB,
-    ) = builders.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
+    ) = mb.build_HFEV1_AB_FEV1(healthy_FEV1_prior)
 
     # INFERENCE
     print("Inference user input: FEV1 set to", FEV1_obs)
 
-    res_u = ih.infer(model, [HFEV1], [[FEV1, FEV1_obs]])
-    res_ab = ih.infer(model, [AB], [[FEV1, FEV1_obs]])
+    res_u = ih.infer(inf_alg, [HFEV1], [[FEV1, FEV1_obs]])
+    res_ab = ih.infer(inf_alg, [AB], [[FEV1, FEV1_obs]])
 
     n_var_rows = 1
     prior = {"type": "bar"}
@@ -158,7 +159,7 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
     fig["data"][0]["marker"]["color"] = "blue"
     fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
 
-    fig.add_trace(go.Bar(y=AB.prior[:,0].values, x=AB.bins), row=1, col=3)
+    fig.add_trace(go.Bar(y=AB.prior[:,0], x=AB.bins), row=1, col=3)
     fig["data"][1]["marker"]["color"] = "green"
     fig["layout"]["xaxis2"]["title"] = "Prior for " + AB.name
 
