@@ -177,7 +177,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
     return model, inf_alg, FEV1, HFEV1, AB
 
 
-def build_FEV1_O2_point_in_time_model(HFEV1_prior, HO2Sat_prior):
+def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     """
     This is a point in time model with
     FEV1 = HFEV1 * (1-AR)
@@ -187,11 +187,15 @@ def build_FEV1_O2_point_in_time_model(HFEV1_prior, HO2Sat_prior):
     """
     print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
-    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=HFEV1_prior)
+    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=hfev1_prior)
     AR = mh.variableNode("Airway Resistance", 0, 0.8, 0.01, prior={"type": "uniform"})
     ecFEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1, prior=None)
-    HO2Sat = mh.variableNode("Healthy O2 Sat (%)", 0.8, 1, 0.01, prior=HO2Sat_prior)
-    O2SatFFA = mh.variableNode("O2 Sat if fully functional alveoli (%)", 0.7, 1, 0.01, prior=None)
+    HO2Sat = mh.variableNode(
+        "Healthy O2 Saturation (%)", 80, 100, 1, prior=ho2sat_prior
+    )
+    O2SatFFA = mh.variableNode(
+        "O2 Sat if fully functional alveoli (%)", 70, 100, 1, prior=None
+    )
 
     model = BayesianNetwork([(HFEV1.name, ecFEV1.name), (AR.name, ecFEV1.name)])
 

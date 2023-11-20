@@ -1,4 +1,4 @@
-def calc_healthy_O2_sat(sex: str, height: int):
+def calc_healthy_O2_sat(height: int, sex: str):
     """
     Healthy/predicted O2 Saturation = a + b*isMale + c*(Height-avg_height)
     """
@@ -11,13 +11,13 @@ def calc_healthy_O2_sat(sex: str, height: int):
     std = 1.0304
     if sex == "Female":
         return {
-            "M": a + c * (height - avg_height),
+            "mean": a + c * (height - avg_height),
             "std": std,
         }
     elif sex == "Male":
         return {
-            "M": a + b + c * (height - avg_height),
-            "std": std,
+            "mean": a + b + c * (height - avg_height),
+            "sigma": std,
         }
     else:
         raise ValueError("Sex '{sex}' not in 'Female' or 'Male'")
@@ -28,7 +28,7 @@ def calc_healthy_O2_sat_df(df):
     Returns input DataFrame with added column Healthy O2 Saturation, given Height and Sex
     """
     df["Healthy O2 Saturation"] = df.apply(
-        lambda x: calc_healthy_O2_sat(x.Sex, x.Height)["M"],
+        lambda x: calc_healthy_O2_sat(x.Height, x.Sex)["mean"],
         axis=1,
     )
 

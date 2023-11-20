@@ -6,6 +6,7 @@ import scipy.integrate as integrate
 from scipy.stats import norm
 
 import src.modelling_fev1.pred_fev1 as pred_fev1
+import src.modelling_o2.healthy_o2_sat as healthy_o2_sat
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -124,11 +125,18 @@ class variableNode:
         if prior == None:
             return None
         # Node variable specific priors
-        elif self.name == "Healthy FEV1 (L)" and prior["type"] == "default":
-            height = prior["height"]
-            age = prior["age"]
-            sex = prior["sex"]
-            p = pred_fev1.calc_hfev1_prior(self.bins, height, age, sex)
+        elif prior["type"] == "default":
+            if self.name == "Healthy FEV1 (L)":
+                height = prior["height"]
+                age = prior["age"]
+                sex = prior["sex"]
+                p = pred_fev1.calc_hfev1_prior(self.bins, height, age, sex)
+            elif self.name == "Healthy O2 Saturation (%)":
+                height = prior["height"]
+                sex = prior["sex"]
+                params = healthy_o2_sat.calc_healthy_O2_sat(height, sex)
+                print(params)
+                p = self._gaussian_prior(self, params["mean"], params["sigma"])
         # General priors
         elif prior["type"] == "uniform":
             p = self._uniform_prior(self)
@@ -138,6 +146,8 @@ class variableNode:
             p = self._uniform_prior_with_gaussian_tail(
                 self, prior["constant"], prior["sigma"]
             )
+        else:
+            raise ValueError(f"Prior for {self.name} not recognized")
 
         # TODO: update to use sum(sum(p))
         total_p = sum(sum(p))
@@ -156,6 +166,7 @@ class variableNode:
     def _gaussian_prior(self, mu: float, sigma: float):
         print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
         proba_per_bin = norm.pdf(self.bins, loc=mu, scale=sigma)
+        print(proba_per_bin)
         proba_per_bin_norm = [proba_per_bin / sum(proba_per_bin)]
         return np.transpose(proba_per_bin_norm)
 
@@ -318,4 +329,3 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
             ), f"The sum of the probabilities should be 1, got {total}\nDistributions: X ~ U({a_low}, {a_up}), Y ~ U({b_low}, {b_up})\nChild range = [{Z_min}; {Z_max})\nP(child|X, Y) = {cpt[:, cpt_index + i + j]}\n Bins of the child: {Z.bins}\n Integral abserr = {abserr}"
 
     return cpt
-
