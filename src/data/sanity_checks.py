@@ -102,7 +102,7 @@ def data_types(df):
                     print(
                         "Warning - Expected {col} to be of type object, got {df[col].dtype}"
                     )
-            case "Height" | "FEV1":
+            case "Height" | "FEV1" | "ecFEV1" | "Predicted FEV1" | "FEV1 % Predicted" | "ecFEV1 % Predicted" | "Healthy O2 Saturation" | "O2 Saturation % Healthy":
                 if df[col].dtype != np.dtype("float64"):
                     print(
                         f"Warning - Expected {col} to be of type float64, got {df[col].dtype}"

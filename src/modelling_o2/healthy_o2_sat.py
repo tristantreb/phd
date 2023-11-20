@@ -12,7 +12,7 @@ def calc_healthy_O2_sat(height: int, sex: str):
     if sex == "Female":
         return {
             "mean": a + c * (height - avg_height),
-            "std": std,
+            "sigma": std,
         }
     elif sex == "Male":
         return {

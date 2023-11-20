@@ -185,7 +185,7 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     AR is Airway Resistance
     The model is the same build_HFEV1_AB_FEV1(), with Airway Blockage renamed to Airway Resistance.
     """
-    print("*** Building lung model with HFEV1 and AB ***")
+    print("*** Building FEV1 and O2 point in time model ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=hfev1_prior)
     AR = mh.variableNode("Airway Resistance", 0, 0.8, 0.01, prior={"type": "uniform"})

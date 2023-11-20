@@ -149,7 +149,6 @@ class variableNode:
         else:
             raise ValueError(f"Prior for {self.name} not recognized")
 
-        # TODO: update to use sum(sum(p))
         total_p = sum(sum(p))
         assert (
             total_p - 1
@@ -165,10 +164,9 @@ class variableNode:
     @staticmethod
     def _gaussian_prior(self, mu: float, sigma: float):
         print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
-        proba_per_bin = norm.pdf(self.bins, loc=mu, scale=sigma)
-        print(proba_per_bin)
-        proba_per_bin_norm = [proba_per_bin / sum(proba_per_bin)]
-        return np.transpose(proba_per_bin_norm)
+        p_arr = norm.pdf(self.bins, loc=mu, scale=sigma)
+        p_arr_norm = [p_arr / sum(p_arr)]
+        return np.transpose(p_arr_norm)
 
     @staticmethod
     def _uniform_prior_with_gaussian_tail(self, constant: float, sigma: float):
@@ -185,11 +183,11 @@ class variableNode:
         u_prior_norm = u_prior[:idx] / sum(np.array(u_prior[:idx]))
         g_prior_norm = g_prior[idx:] / sum(np.array(g_prior[idx:]))
 
-        proba = np.concatenate([u_prior_norm, g_prior_norm], axis=0)
+        p_arr = np.concatenate([u_prior_norm, g_prior_norm], axis=0)
 
         # Renormalise
-        proba = proba / sum(proba)
-        return proba
+        p_arr = p_arr / sum(p_arr)
+        return p_arr
 
 
 ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
