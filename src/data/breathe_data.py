@@ -3,7 +3,7 @@ import pandas as pd
 import src.data.sanity_checks as sanity_checks
 import src.modelling_fev1.effort_corrected_fev1 as effort_corrected_fev1
 import src.modelling_fev1.pred_fev1 as pred_fev1
-import src.modelling_o2.healthy_o2_sat as healthy_o2_sat
+import src.modelling_o2.ho2sat as ho2sat
 
 
 def load_patients():
@@ -150,12 +150,12 @@ def build_O2_FEV1_df():
     df_meas = effort_corrected_fev1.calc_with_smoothed_max_df(df_meas)
 
     df_patients = pred_fev1.calc_predicted_FEV1_LMS_df(df_patients)
-    df_patients = healthy_o2_sat.calc_healthy_O2_sat_df(df_patients)
+    df_patients = ho2sat.calc_healthy_O2_sat_df(df_patients)
 
     df = df_meas.merge(df_patients, on="ID", how="left")
 
     df = pred_fev1.calc_FEV1_prct_predicted_df(df)
-    df = healthy_o2_sat.calc_O2_sat_prct_healthy_df(df)
+    df = ho2sat.calc_O2_sat_prct_healthy_df(df)
 
     print(f"Built data structure with {df.ID.nunique()} IDs and {len(df)} entries")
 

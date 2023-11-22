@@ -6,7 +6,7 @@ import scipy.integrate as integrate
 from scipy.stats import norm
 
 import src.modelling_fev1.pred_fev1 as pred_fev1
-import src.modelling_o2.healthy_o2_sat as healthy_o2_sat
+import src.modelling_o2.ho2sat as ho2sat
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -83,8 +83,10 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
     Input ordering matters!!
     """
     if 1 - y_b < 0 or 1 - y_b > 1:
+        # if 1 - y_b < 0 or 1 - y_b > 1:
         raise ValueError(f"y_b should be between 0 and 1, got {y_b}")
     if 1 - y_a < 0 or 1 - y_a > 1:
+        # if 1 - y_a < 0 or 1 - y_a > 1:
         raise ValueError(f"y_a should be between 0 and 1, got {y_a}")
     return PDF_X_x_Y(z, x_a, x_b, 1 - y_b, 1 - y_a)
 
@@ -134,8 +136,7 @@ class variableNode:
             elif self.name == "Healthy O2 Saturation (%)":
                 height = prior["height"]
                 sex = prior["sex"]
-                params = healthy_o2_sat.calc_healthy_O2_sat(height, sex)
-                print(params)
+                params = ho2sat.calc_healthy_O2_sat(height, sex)
                 p = self._gaussian_prior(self, params["mean"], params["sigma"])
         # General priors
         elif prior["type"] == "uniform":
@@ -190,71 +191,71 @@ class variableNode:
         return p_arr
 
 
-## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
-# Creates a 3D array from 3 variables
-def calc_cpt(
-    parentA: variableNode,
-    parentB: variableNode,
-    C: variableNode,
-    tol=TOL_GLOBAL,
-    debug=False,
-):
-    # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
-    nbinsA = len(parentA.bins)
-    nbinsB = len(parentB.bins)
-    nbinsC = len(C.bins)
-    cpt = np.empty((nbinsC, nbinsA, nbinsB))
-    # print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
+# ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
+# # Creates a 3D array from 3 variables
+# def calc_cpt(
+#     parentA: variableNode,
+#     parentB: variableNode,
+#     C: variableNode,
+#     tol=TOL_GLOBAL,
+#     debug=False,
+# ):
+#     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
+#     nbinsA = len(parentA.bins)
+#     nbinsB = len(parentB.bins)
+#     nbinsC = len(C.bins)
+#     cpt = np.empty((nbinsC, nbinsA, nbinsB))
+#     # print(f"calculating cpt of shape {nbinsC} x {nbinsA} x {nbinsB} (C x A x B) ")
 
-    for i in range(nbinsA):
-        # Take a bin in parentA
-        b_low = parentA.bins[i]
-        b_up = parentA.bins[i + 1]
+#     for i in range(nbinsA):
+#         # Take a bin in parentA
+#         b_low = parentA.bins[i]
+#         b_up = parentA.bins[i + 1]
 
-        for j in range(nbinsB):
-            # Take a bin in parentB
-            a_low = parentB.bins[j]
-            a_up = parentB.bins[j + 1]
+#         for j in range(nbinsB):
+#             # Take a bin in parentB
+#             a_low = parentB.bins[j]
+#             a_up = parentB.bins[j + 1]
 
-            # Get the max possible range of for C=parentA*parentB
-            C_min = a_low * b_low
-            C_max = a_up * b_up
+#             # Get the max possible range of for C=parentA*parentB
+#             C_min = a_low * b_low
+#             C_max = a_up * b_up
 
-            total = 0
-            abserr = -1
-            for c in range(nbinsC):
-                # Take a bin in C
-                C_low = C.bins[c]
-                C_up = C.bins[c + 1]
-                # Get the inner intersection of C_range and [C_low, C_up]
-                # Compute P(C | parentA, parentB)
-                if (
-                    (C_min - C_low < tol and C_max - C_low > -tol)
-                    or (C_min - C_up < tol and C_max - C_up > -tol)
-                    or ((C_min - C_low >= -tol) and (C_max - C_up <= tol))
-                ):
-                    # The intersection is not empty
-                    val, abserr = integrate.quad(
-                        PDF_X_x_1_minus_Y, C_low, C_up, args=(a_low, a_up, b_low, b_up)
-                    )
-                    total += val
-                    cpt[c, i, j] = val
-                    if debug:
-                        print(
-                            f"idx {c, i, j}, C_low {C_low}, C_up {C_up}, val {val}, C_min {C_min}, C_max {C_max}"
-                        )
-                else:
-                    # The intersection is empty
-                    cpt[c, i, j] = 0
-                    if debug:
-                        print(f"idx {c, i, j} is empty")
-            if debug:
-                print(f"P(C|U,B) = {cpt[:, i, j]}")
-            assert (
-                abs(total - 1) < tol
-            ), f"Error calculating cpt: The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, i, j]}\n With C range {C_min, C_max}\n For the C bins: {C.bins}\n Abserr = {abserr}"
+#             total = 0
+#             abserr = -1
+#             for c in range(nbinsC):
+#                 # Take a bin in C
+#                 C_low = C.bins[c]
+#                 C_up = C.bins[c + 1]
+#                 # Get the inner intersection of C_range and [C_low, C_up]
+#                 # Compute P(C | parentA, parentB)
+#                 if (
+#                     (C_min - C_low < tol and C_max - C_low > -tol)
+#                     or (C_min - C_up < tol and C_max - C_up > -tol)
+#                     or ((C_min - C_low >= -tol) and (C_max - C_up <= tol))
+#                 ):
+#                     # The intersection is not empty
+#                     val, abserr = integrate.quad(
+#                         PDF_X_x_1_minus_Y, C_low, C_up, args=(a_low, a_up, b_low, b_up)
+#                     )
+#                     total += val
+#                     cpt[c, i, j] = val
+#                     if debug:
+#                         print(
+#                             f"idx {c, i, j}, C_low {C_low}, C_up {C_up}, val {val}, C_min {C_min}, C_max {C_max}"
+#                         )
+#                 else:
+#                     # The intersection is empty
+#                     cpt[c, i, j] = 0
+#                     if debug:
+#                         print(f"idx {c, i, j} is empty")
+#             if debug:
+#                 print(f"P(C|U,B) = {cpt[:, i, j]}")
+#             assert (
+#                 abs(total - 1) < tol
+#             ), f"Error calculating cpt: The sum of the probabilities should be 1\n Distributions: U({a_low}, {a_up}), B({b_low}, {b_up})\n P(C|U,B) = {cpt[:, i, j]}\n With C range {C_min, C_max}\n For the C bins: {C.bins}\n Abserr = {abserr}"
 
-    return cpt
+#     return cpt
 
 
 def calc_pgmpy_cpt_X_x_1_minus_Y(
@@ -287,7 +288,7 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
 
         for j in range(nbinsY):
             # Take a bin in Y
-            (b_low, b_up) = Y.bins_arr[j]
+            (b_low, b_up) = Y.bins_arr[j] / 100
 
             # Get the max possible range of for C=X*Y
             Z_min = a_low * (1 - b_up)
@@ -324,6 +325,6 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
                 print(f"P(Z|U,B) = {cpt[:, cpt_index + i + j]}")
             assert (
                 abs(total - 1) < tol
-            ), f"The sum of the probabilities should be 1, got {total}\nDistributions: X ~ U({a_low}, {a_up}), Y ~ U({b_low}, {b_up})\nChild range = [{Z_min}; {Z_max})\nP(child|X, Y) = {cpt[:, cpt_index + i + j]}\n Bins of the child: {Z.bins}\n Integral abserr = {abserr}"
+            ), f"The sum of the probabilities should be 1, got {total}\nDistributions: {X.name} ~ U({a_low}, {a_up}), {Y.name} ~ U({b_low}, {b_up})\nRange over the child bins = [{Z_min}; {Z_max})\nP({Z.name}|{X.name}, {Y.name}) = {cpt[:, cpt_index + i + j]}\n {Z.name} bins: {Z.bins}\n Integral abserr = {abserr}"
 
     return cpt
