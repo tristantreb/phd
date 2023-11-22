@@ -4,6 +4,7 @@ from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
 import src.modelling_fev1.pred_fev1 as pred_fev1
+import src.modelling_o2.o2satffa_factor as o2satffa_factor
 import src.models.helpers as mh
 
 
@@ -188,16 +189,23 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     print("*** Building FEV1 and O2 point in time model ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=hfev1_prior)
-    AR = mh.variableNode("Airway Resistance", 0, 0.8, 0.01, prior={"type": "uniform"})
-    ecFEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1, prior=None)
+    AR = mh.variableNode("Airway Resistance (%)", 0, 80, 1, prior={"type": "uniform"})
+    ecFEV1 = mh.variableNode("FEV1 (L)", 0, 6, 0.1, prior=None)
     HO2Sat = mh.variableNode(
         "Healthy O2 Saturation (%)", 80, 100, 1, prior=ho2sat_prior
     )
     O2SatFFA = mh.variableNode(
-        "O2 Sat if fully functional alveoli (%)", 70, 100, 1, prior=None
+        "O2 Sat if fully functional alveoli (%)", 60, 100, 1, prior=None
     )
 
-    model = BayesianNetwork([(HFEV1.name, ecFEV1.name), (AR.name, ecFEV1.name)])
+    model = BayesianNetwork(
+        [
+            (HFEV1.name, ecFEV1.name),
+            (AR.name, ecFEV1.name),
+            (HO2Sat.name, O2SatFFA.name),
+            (AR.name, O2SatFFA.name),
+        ]
+    )
 
     prior_hfev1 = TabularCPD(
         variable=HFEV1.name,
@@ -227,16 +235,18 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
         evidence=[HFEV1.name, AR.name],
         evidence_card=[len(HFEV1.bins), len(AR.bins)],
     )
-    # cpt_o2_sat_ffa = TabularCPD(
-    #     variable=O2SatFFA.name,
-    #     variable_card=len(O2SatFFA.bins),
-    #     values=O2SatFFA.prior,
-    #     evidence=[AR.name, HO2Sat.name],
-    #     evidence_card=[len(AR.bins), len(HO2Sat.bins)],
-    # )
+    cpt_o2_sat_ffa = TabularCPD(
+        variable=O2SatFFA.name,
+        variable_card=len(O2SatFFA.bins),
+        values=o2satffa_factor.calc_cpt_O2SatFFA_HO2Sat_AR(
+            O2SatFFA, HO2Sat, AR, debug=False
+        ),
+        evidence=[HO2Sat.name, AR.name],
+        evidence_card=[len(HO2Sat.bins), len(AR.bins)],
+    )
 
-    model.add_cpds(cpt_fev1, prior_ar, prior_hfev1)
-    # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, cpt_o2_sat_ffa)
+    # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1)
+    model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2_sat_ffa)
 
     model.check_model()
     inf_alg = BeliefPropagation(model)

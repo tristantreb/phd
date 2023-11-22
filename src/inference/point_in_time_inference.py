@@ -27,7 +27,7 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
 
 app.layout = dbc.Container(
     [
-        html.H2("Lung Health's Diagnostic Tool", style={"textAlign": "center"}),
+        html.H2("Lung Health's Tool", style={"textAlign": "center"}),
         html.Div(
             [
                 html.H4("Individual's clinical profile:"),
@@ -85,7 +85,7 @@ app.layout = dbc.Container(
                         min=0,
                         max=6,
                         step=0.1,
-                        value=3,
+                        value=1,
                         marks={
                             1: "1 L",
                             2: "2 L",
@@ -144,41 +144,63 @@ def update_inference(sex: str, age: int, height: int, FEV1_obs: float):
 
     res_hfev1 = ih.infer(inf_alg, [HFEV1], [[FEV1, FEV1_obs]])
     res_ar = ih.infer(inf_alg, [AR], [[FEV1, FEV1_obs]])
+    res_ho2sat = ih.infer(inf_alg, [HO2Sat], [[FEV1, FEV1_obs]])
+    res_o2satffa = ih.infer(inf_alg, [O2SatFFA], [[FEV1, FEV1_obs]])
 
-    n_var_rows = 1
+    n_var_rows = 3
     prior = {"type": "bar"}
     posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
     fig = make_subplots(
         # Prior takes a 1x1 cell, Posterior takes a 2x2 cell
-        rows=n_var_rows * 3,
-        cols=5,
+        rows=n_var_rows * 2 + 2,
+        cols=6,
         specs=[
-            # priors
-            [prior, None, prior, None, None],
-            # posteriors
-            [posterior, None, posterior, None, None],
-            [None, None, None, None, None],
+            [prior, None, None, None, prior, None],
+            [posterior, None, None, None, posterior, None],
+            [None, None, None, None, None, None],
+            [None, None, prior, None, None, None],
+            [None, None, posterior, None, None, None],
+            [None, None, None, None, None, None],
+            [None, None, None, None, posterior, None],
+            [None, None, None, None, None, None],
+            # [None, None, None, None, None, None],
         ],
     )
 
+    # HFEV1
     fig.add_trace(go.Bar(y=HFEV1.prior[:, 0], x=HFEV1.bins), row=1, col=1)
-    fig["data"][0]["marker"]["color"] = "blue"
-    fig["layout"]["xaxis"]["title"] = "Prior for " + HFEV1.name
-
-    fig.add_trace(go.Bar(y=AR.prior[:, 0], x=AR.bins), row=1, col=3)
-    fig["data"][1]["marker"]["color"] = "green"
-    fig["layout"]["xaxis2"]["title"] = "Prior for " + AR.name
+    fig["data"][0]["marker"]["color"] = "black"
+    # fig.update_xaxes(title_text="Prior for " + HFEV1.name, row=1, col=1)
 
     fig.add_trace(go.Bar(y=res_hfev1.values, x=HFEV1.bins), row=2, col=1)
+    fig["data"][1]["marker"]["color"] = "black"
+    fig.update_xaxes(title_text=HFEV1.name, row=2, col=1)
+
+    # HO2Sat
+    fig.add_trace(go.Bar(y=HO2Sat.prior[:, 0], x=HO2Sat.bins), row=1, col=5)
     fig["data"][2]["marker"]["color"] = "blue"
-    fig["layout"]["xaxis3"]["title"] = HFEV1.name
+    # fig.update_xaxes(title_text="Prior for " + HO2Sat.name, row=1, col=5)
 
-    fig.add_trace(go.Bar(y=res_ar.values, x=AR.bins), row=2, col=3)
-    fig["data"][3]["marker"]["color"] = "green"
-    fig["layout"]["xaxis4"]["title"] = AR.name
+    fig.add_trace(go.Bar(y=res_ho2sat.values, x=HO2Sat.bins), row=2, col=5)
+    fig["data"][3]["marker"]["color"] = "blue"
+    fig.update_xaxes(title_text=HO2Sat.name, row=2, col=5)
 
-    fig.update_layout(showlegend=False, height=600, width=1200)
+    # AR
+    fig.add_trace(go.Bar(y=AR.prior[:, 0], x=AR.bins), row=4, col=3)
+    fig["data"][4]["marker"]["color"] = "green"
+    # fig.update_xaxes(title_text="Prior for " + AR.name, row=4, col=3)
+
+    fig.add_trace(go.Bar(y=res_ar.values, x=AR.bins), row=5, col=3)
+    fig["data"][5]["marker"]["color"] = "green"
+    fig.update_xaxes(title_text=AR.name, row=5, col=3)
+
+    # O2SatFFA
+    fig.add_trace(go.Bar(y=res_o2satffa.values, x=O2SatFFA.bins), row=7, col=5)
+    fig["data"][6]["marker"]["color"] = "cyan"
+    fig.update_xaxes(title_text=O2SatFFA.name, row=7, col=5)
+
+    fig.update_layout(showlegend=False, height=800, width=1400, font=dict(size=8))
 
     return fig, FEV1.a, FEV1.b
 
