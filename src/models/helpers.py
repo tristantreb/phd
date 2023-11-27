@@ -1,4 +1,5 @@
 # Helper functions to create models for belief propagation
+import json
 
 import numpy as np
 import pandas as pd
@@ -112,6 +113,7 @@ class variableNode:
         self.bins_str = list(
             map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
         )
+        # Sets prior or CPT
         self.prior = self.set_prior(self, prior)
 
     def sample(self):
@@ -328,3 +330,30 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
             ), f"The sum of the probabilities should be 1, got {total}\nDistributions: {X.name} ~ U({a_low}, {a_up}), {Y.name} ~ U({b_low}, {b_up})\nRange over the child bins = [{Z_min}; {Z_max})\nP({Z.name}|{X.name}, {Y.name}) = {cpt[:, cpt_index + i + j]}\n {Z.name} bins: {Z.bins}\n Integral abserr = {abserr}"
 
     return cpt
+
+
+def encode_node_variable(var):
+    """
+    We must encode variables to JSON format to share them between Dash's callbacks
+    """
+    var_as_dict = vars(var)
+    var_as_dict = {k: var_as_dict[k] for k in ("name", "a", "b", "bin_width", "prior")}
+    # Transform ndarray to list
+    var_as_dict["prior"] = var_as_dict["prior"].tolist()
+    return json.dumps(var_as_dict)
+
+
+def decode_node_variable(jsoned_var):
+    """
+    Decoding variables from JSON format
+    """
+    # From json to dict
+    jsoned_var = json.loads(jsoned_var)
+    name = jsoned_var["name"]
+    a = jsoned_var["a"]
+    b = jsoned_var["b"]
+    bin_width = jsoned_var["bin_width"]
+    class_var = variableNode(name, a, b, bin_width, prior=None)
+    # Transform list to ndarray
+    class_var.prior = np.array(jsoned_var["prior"])
+    return class_var
