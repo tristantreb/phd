@@ -1,5 +1,3 @@
-import time
-
 import numpy as np
 from pgmpy.inference import BeliefPropagation
 
@@ -33,7 +31,7 @@ def infer(
         [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
         evidences_binned.update({evidence_var.name: bin_idx})
 
-    tic = time.time()
+    # tic = time.time()
     query = inference_alg.query(
         variables=var_names,
         evidence=evidences_binned,
