@@ -3,18 +3,28 @@ import numpy as np
 import src.models.helpers as mh
 
 
-def drop_func(x):
+def multiplicative_drop_func(x):
+    """
+    HO2SatFFA = HO2Sat * drop_func(AR)
+    The top envelope was parametrised in 2023-11-07_breathe_O2_modelling.ipynb > fit top envelope
+    The top envelope only gives the shape, it does not give the vertical position.
+    """
+    # Params when including ID 122
+    # drop_params = np.array(
+    #     [3.89754850e01, 1.00902396e02, -2.04542149e-01, 1.57422295e-02, -4.00994278e-04]
+    # )
     drop_params = np.array(
-        [3.89754850e01, 1.00902396e02, -2.04542149e-01, 1.57422295e-02, -4.00994278e-04]
+        [3.45063159e01, 1.00856822e02, -1.04771757e-01, 4.82650316e-03, -9.88876858e-05]
     )
 
     x0 = drop_params[0]
-    y0 = 0
-    k1 = -drop_params[2]
-    k2 = -drop_params[3]
-    k3 = -drop_params[4]
+    # For small AR (<x0), there is no drop in HO2Sat, hence, the vertical position y0 should be set to 100%.
+    y0 = 100
+    k1 = drop_params[2]
+    k2 = drop_params[3]
+    k3 = drop_params[4]
 
-    return np.piecewise(
+    drop = np.piecewise(
         x,
         [x <= x0],
         [
@@ -25,6 +35,7 @@ def drop_func(x):
             + y0,
         ],
     )
+    return drop / 100
 
 
 def calc_cpt(
@@ -34,11 +45,13 @@ def calc_cpt(
     Computes the CPT for P(O2SatFFA|HO2Sat, AR)
     """
 
-    cpt = calc_cpt_X_minus_funcY(O2SatFFA, HO2Sat, AR, drop_func, debug=debug)
+    cpt = calc_cpt_X_x_funcY(
+        O2SatFFA, HO2Sat, AR, multiplicative_drop_func, debug=debug
+    )
     return cpt.reshape(len(O2SatFFA.bins), len(HO2Sat.bins) * len(AR.bins))
 
 
-def calc_cpt_X_minus_funcY(
+def calc_cpt_X_x_funcY(
     Z: mh.variableNode,
     X: mh.variableNode,
     Y: mh.variableNode,
@@ -48,9 +61,9 @@ def calc_cpt_X_minus_funcY(
 ):
     """
     Computes the CPT for P(Z|X, Y), when Z is shifted from X by a function of Y
-    Z = X - f(Y)
+    Z = X * f(Y)
     X: parent variable
-    Y: drop variable - the drop amount is given by f(Y) = X - Z
+    Y: drop variable - the drop amount is given by f(Y) = Z/X
     Z: child variable
     func: must be a monotonous continuous function that has values in Y and returns values in Z
 
@@ -83,11 +96,11 @@ def calc_cpt_X_minus_funcY(
         # Hence, we will compute the shifted bins of X and directly reallocate the probability mass to the overlapping Z bins
 
         for i in range(nbinsX):
-            shifted_X_bin_low = X.bins[i] - drop
-            shifted_X_bin_up = X.bins[i] + X.bin_width - drop
+            shifted_X_bin_low = X.bins[i] * drop
+            shifted_X_bin_up = (X.bins[i] + X.bin_width) * drop
             if debug:
                 print(
-                    f"Shifting X bin {i} from [{X.bins[i]};{X.bins[i]+X.bin_width}] to [{shifted_X_bin_low};{shifted_X_bin_up}], drop amount={drop}"
+                    f"Shifting X bin {i} from [{X.bins[i]};{X.bins[i]+X.bin_width}] to [{shifted_X_bin_low};{shifted_X_bin_up}], drop amount={drop}%"
                 )
 
             bin_contribution = get_bin_contribution_to_cpt(

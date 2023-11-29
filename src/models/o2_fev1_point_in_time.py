@@ -19,14 +19,17 @@ def build(hfev1_prior, ho2sat_prior):
 
 def calc_cpts(hfev1_prior, ho2sat_prior):
     # Build variables
+    # Setting resolution of 0.05 to avoud rounding errors for AR
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
     ecFEV1 = mh.variableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
     AR = mh.variableNode("Airway Resistance (%)", 0, 90, 2, prior={"type": "uniform"})
     HO2Sat = mh.variableNode(
         "Healthy O2 Saturation (%)", 90, 100, 1, prior=ho2sat_prior
     )
+    # Highest drop is 93% (for AR = 90%), hence the lowest O2SatFFA is 90 * 0.93 = 83.7%
     O2SatFFA = mh.variableNode(
-        "O2 Sat if fully functional alveoli (%)", 60, 100, 1, prior=None
+        "O2 Sat if fully functional alveoli (%)", 80, 100, 1, prior=None
     )
 
     # Calculate CPTs

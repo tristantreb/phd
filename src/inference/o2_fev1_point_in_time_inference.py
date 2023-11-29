@@ -8,6 +8,7 @@ from dash import Dash, Input, Output, dcc, html
 from plotly.subplots import make_subplots
 
 import src.inference.helpers as ih
+import src.modelling_o2.helpers as o2h
 import src.models.helpers as mh
 import src.models.o2_fev1_point_in_time as model
 
@@ -205,10 +206,10 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
         rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
     )
 
-    fev1_min = 0
-    fev1_max = 6
-    o2sat_min = 60
-    o2sat_max = 100
+    fev1_min = ecFEV1.a
+    fev1_max = ecFEV1.b
+    o2sat_min = 80
+    o2sat_max = 99.5
 
     # HFEV1
     fig.add_trace(go.Bar(y=HFEV1.prior[:, 0], x=HFEV1.bins), row=1, col=1)
@@ -227,11 +228,13 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     # HO2Sat
     fig.add_trace(go.Bar(y=HO2Sat.prior[:, 0], x=HO2Sat.bins), row=1, col=5)
     fig["data"][2]["marker"]["color"] = "blue"
+    o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.prior[:, 0]), 1, 5)
     fig.update_xaxes(range=[o2sat_min, o2sat_max], row=1, col=5)
     # fig.update_xaxes(title_text="Prior for " + HO2Sat.name, row=1, col=5)
 
     fig.add_trace(go.Bar(y=res_ho2sat.values, x=HO2Sat.bins), row=2, col=5)
     fig["data"][3]["marker"]["color"] = "blue"
+    o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
     fig.update_xaxes(title_text=HO2Sat.name, range=[o2sat_min, o2sat_max], row=2, col=5)
 
     # AR
@@ -246,6 +249,7 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     # O2SatFFA
     fig.add_trace(go.Bar(y=res_o2satffa.values, x=O2SatFFA.bins), row=7, col=5)
     fig["data"][6]["marker"]["color"] = "cyan"
+    o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
     fig.update_xaxes(
         title_text=O2SatFFA.name, range=[o2sat_min, o2sat_max], row=7, col=5
     )
