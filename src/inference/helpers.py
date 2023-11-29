@@ -1,4 +1,5 @@
 import numpy as np
+import plotly.graph_objects as go
 from pgmpy.inference import BeliefPropagation
 
 import src.models.helpers as mh
@@ -53,3 +54,18 @@ def get_bin_for_value(obs: float, var: mh.variableNode, tol=TOL_GLOBAL):
 
     (lower_idx, upper_idx) = var.bins_arr[idx]
     return ["[{}; {})".format(lower_idx, upper_idx), idx]
+
+
+def plot_histogram(fig, Var: mh.variableNode, p, min, max, row, col, title=True):
+    fig.add_trace(
+        go.Histogram(
+            x=Var.bins,
+            y=p,
+            histfunc="sum",  # Use 'sum' to represent pre-counted data
+            xbins=dict(start=min, end=max, size=Var.bin_width),
+        ),
+        row=row,
+        col=col,
+    )
+    fig.update_xaxes(title=Var.name if title else None, row=row, col=col)
+    return -1
