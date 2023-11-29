@@ -27,7 +27,7 @@ def drop_func(x):
     )
 
 
-def calc_cpt_O2SatFFA_HO2Sat_AR(
+def calc_cpt(
     O2SatFFA: mh.variableNode, HO2Sat: mh.variableNode, AR: mh.variableNode, debug=False
 ):
     """
