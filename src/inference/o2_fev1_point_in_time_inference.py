@@ -212,51 +212,37 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     o2sat_max = 99.5
 
     # HFEV1
-    fig.add_trace(go.Bar(y=HFEV1.prior[:, 0], x=HFEV1.bins), row=1, col=1)
+    ih.plot_histogram(fig, HFEV1, HFEV1.prior[:, 0], fev1_min, fev1_max, 1, 1, False)
     fig["data"][0]["marker"]["color"] = "black"
-    fig.update_xaxes(
-        range=[fev1_min, fev1_max],
-        row=1,
-        col=1,
-    )
-    # fig.update_xaxes(title_text="Prior for " + HFEV1.name, row=1, col=1)
 
-    fig.add_trace(go.Bar(y=res_hfev1.values, x=HFEV1.bins), row=2, col=1)
+    ih.plot_histogram(fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1)
     fig["data"][1]["marker"]["color"] = "black"
-    fig.update_xaxes(title_text=HFEV1.name, range=[fev1_min, fev1_max], row=2, col=1)
 
     # HO2Sat
-    fig.add_trace(go.Bar(y=HO2Sat.prior[:, 0], x=HO2Sat.bins), row=1, col=5)
+    ih.plot_histogram(fig, HO2Sat, HO2Sat.prior[:, 0], o2sat_min, o2sat_max, 1, 5, False)
     fig["data"][2]["marker"]["color"] = "blue"
     o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.prior[:, 0]), 1, 5)
-    fig.update_xaxes(range=[o2sat_min, o2sat_max], row=1, col=5)
-    # fig.update_xaxes(title_text="Prior for " + HO2Sat.name, row=1, col=5)
 
-    fig.add_trace(go.Bar(y=res_ho2sat.values, x=HO2Sat.bins), row=2, col=5)
+    ih.plot_histogram(fig, HO2Sat, res_ho2sat.values, o2sat_min, o2sat_max, 2, 5)
     fig["data"][3]["marker"]["color"] = "blue"
     o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
-    fig.update_xaxes(title_text=HO2Sat.name, range=[o2sat_min, o2sat_max], row=2, col=5)
 
     # AR
-    fig.add_trace(go.Bar(y=AR.prior[:, 0], x=AR.bins), row=4, col=3)
+    ih.plot_histogram(fig, AR, AR.prior[:, 0], 0, 80, 4, 3, False)
     fig["data"][4]["marker"]["color"] = "green"
-    # fig.update_xaxes(title_text="Prior for " + AR.name, row=4, col=3)
 
-    fig.add_trace(go.Bar(y=res_ar.values, x=AR.bins), row=5, col=3)
+    ih.plot_histogram(fig, AR, res_ar.values, 0, 80, 5, 3)
     fig["data"][5]["marker"]["color"] = "green"
-    fig.update_xaxes(title_text=AR.name, row=5, col=3)
 
     # O2SatFFA
-    fig.add_trace(go.Bar(y=res_o2satffa.values, x=O2SatFFA.bins), row=7, col=5)
+    ih.plot_histogram(fig, O2SatFFA, res_o2satffa.values, o2sat_min, o2sat_max, 7, 5)
     fig["data"][6]["marker"]["color"] = "cyan"
     o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
-    fig.update_xaxes(
-        title_text=O2SatFFA.name, range=[o2sat_min, o2sat_max], row=7, col=5
-    )
 
     fig.update_layout(
         showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01
     )
+    fig.update_traces(marker_line_width=0)
 
     return fig, ecFEV1.a, ecFEV1.b
 
