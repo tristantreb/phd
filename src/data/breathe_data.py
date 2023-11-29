@@ -119,6 +119,7 @@ def _correct_fev1(df):
     # Warning - ID 330 has FEV1 (6.0) outside 0.1-5.5 L range
     # Corresponds to 24y, Female, 153.5cm -> predicted FEV1: 2.9
     # Let's remove this entry
+    # UPDATE: one and only measurement for that ID
     df = _remove_recording(df, "330", "FEV1", 6.0)
     return df
 
