@@ -6,7 +6,7 @@ from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
 import src.modelling_fev1.pred_fev1 as pred_fev1
-import src.modelling_o2.o2satffa_factor as o2satffa_factor
+import src.modelling_o2.o2satffa as o2satffa
 import src.models.helpers as mh
 
 
@@ -184,12 +184,12 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     """
     This is a point in time model with
     FEV1 = HFEV1 * (1-AR)
+    O2SatFFA = HO2Sat * drop_func(AR)
 
-    AR is Airway Resistance
-    The model is the same build_HFEV1_AB_FEV1(), with Airway Blockage renamed to Airway Resistance.
+    The model is the same as build_HFEV1_AB_FEV1(), with Airway Blockage renamed to Airway Resistance.
     """
     print("*** Building FEV1 and O2 point in time model ***")
-    tic = time.time()
+
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
     HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
     AR = mh.variableNode("Airway Resistance (%)", 0, 90, 1, prior={"type": "uniform"})
@@ -259,99 +259,6 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     print(f"Time to build model: {time.time() - tic}")
     return (model, inf_alg, HFEV1, ecFEV1, AR)
     # return (model, inf_alg, HFEV1, ecFEV1, HO2Sat, O2SatFFA, AR)
-
-
-# def build_point_in_time_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA):
-def calc_point_in_time_cpts(hfev1_prior, ho2sat_prior):
-    """
-    This is a point in time model with
-    FEV1 = HFEV1 * (1-AR)
-
-    AR is Airway Resistance
-    The model is the same build_HFEV1_AB_FEV1(), with Airway Blockage renamed to Airway Resistance.
-    """
-    # Build variables
-    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, prior=hfev1_prior)
-    AR = mh.variableNode("Airway Resistance (%)", 0, 90, 2, prior={"type": "uniform"})
-    ecFEV1 = mh.variableNode("FEV1 (L)", 0, 6, 0.1, prior=None)
-
-    # Calculate CPTs
-    ecFEV1.prior = mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1)
-
-    # HO2Sat = mh.variableNode(
-    #     "Healthy O2 Saturation (%)", 90, 100, 1, prior=ho2sat_prior
-    # )
-    # O2SatFFA = mh.variableNode(
-    #     "O2 Sat if fully functional alveoli (%)", 70, 100, 1, prior=None
-    # )
-
-    return (HFEV1, ecFEV1, AR)
-    # return (HFEV1, ecFEV1, HO2Sat, O2SatFFA, AR)
-
-
-# def build_point_in_time_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA):
-def build_point_in_time_pgmpy_model(HFEV1, ecFEV1, AR):
-    """
-    This is a point in time model with
-    FEV1 = HFEV1 * (1-AR)
-
-    AR is Airway Resistance
-    The model is the same build_HFEV1_AB_FEV1(), with Airway Blockage renamed to Airway Resistance.
-    """
-
-    prior_hfev1 = TabularCPD(
-        variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
-        values=HFEV1.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    # prior_ho2sat = TabularCPD(
-    #     variable=HO2Sat.name,
-    #     variable_card=len(HO2Sat.bins),
-    #     values=HO2Sat.prior,
-    #     evidence=[],
-    #     evidence_card=[],
-    # )
-    prior_ar = TabularCPD(
-        variable=AR.name,
-        variable_card=len(AR.bins),
-        values=AR.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    cpt_fev1 = TabularCPD(
-        variable=ecFEV1.name,
-        variable_card=len(ecFEV1.bins),
-        values=ecFEV1.prior,
-        evidence=[HFEV1.name, AR.name],
-        evidence_card=[len(HFEV1.bins), len(AR.bins)],
-    )
-    # cpt_o2_sat_ffa = TabularCPD(
-    #     variable=O2SatFFA.name,
-    #     variable_card=len(O2SatFFA.bins),
-    #     values=o2satffa_factor.calc_cpt_O2SatFFA_HO2Sat_AR(
-    #         O2SatFFA, HO2Sat, AR, debug=False
-    #     ),
-    #     evidence=[HO2Sat.name, AR.name],
-    #     evidence_card=[len(HO2Sat.bins), len(AR.bins)],
-    # )
-
-    model = BayesianNetwork(
-        [
-            (HFEV1.name, ecFEV1.name),
-            (AR.name, ecFEV1.name),
-            # (HO2Sat.name, O2SatFFA.name),
-            # (AR.name, O2SatFFA.name),
-        ]
-    )
-
-    model.add_cpds(cpt_fev1, prior_ar, prior_hfev1)
-    # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2_sat_ffa)
-
-    model.check_model()
-    inf_alg = BeliefPropagation(model)
-    return (model, inf_alg)
 
 
 def build_longitudinal_FEV1_side(
