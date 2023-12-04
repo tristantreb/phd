@@ -68,6 +68,6 @@ def plot_histogram(fig, Var: mh.variableNode, p, min, max, row, col, title=True)
         col=col,
     )
     fig.update_xaxes(
-        range=[min, max], title=Var.name if title else None, row=row, col=col
+        range=[min, max], nticks=20, title=Var.name if title else None, row=row, col=col
     )
     return -1
