@@ -25,13 +25,12 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
     AR = mh.variableNode("Airway Resistance (%)", 0, 90, 2, prior={"type": "uniform"})
     HO2Sat = mh.variableNode(
-        "Healthy O2 Saturation (%)", 90, 100, 1, prior=ho2sat_prior
+        "Healthy O2 Saturation (%)", 90, 100, 0.5, prior=ho2sat_prior
     )
     # Highest drop is 93% (for AR = 90%), hence the lowest O2SatFFA is 90 * 0.93 = 83.7%
     O2SatFFA = mh.variableNode(
-        "O2 Sat if fully functional alveoli (%)", 80, 100, 1, prior=None
+        "O2 Sat if fully functional alveoli (%)", 80, 100, 0.5, prior=None
     )
-
     # Calculate CPTs
     ecFEV1.prior = mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1)
     O2SatFFA.prior = o2satffa.calc_cpt(O2SatFFA, HO2Sat, AR, debug=False)
