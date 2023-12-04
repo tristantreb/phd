@@ -134,7 +134,7 @@ class variableNode:
                 height = prior["height"]
                 age = prior["age"]
                 sex = prior["sex"]
-                p = pred_fev1.calc_hfev1_prior(self.bins, height, age, sex)
+                p = pred_fev1.calc_hfev1_prior(self.bins + self.bin_width/2, height, age, sex)
             elif self.name == "Healthy O2 Saturation (%)":
                 height = prior["height"]
                 sex = prior["sex"]
