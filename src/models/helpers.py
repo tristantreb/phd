@@ -167,7 +167,7 @@ class variableNode:
     @staticmethod
     def _gaussian_prior(self, mu: float, sigma: float):
         print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
-        p_arr = norm.pdf(self.bins, loc=mu, scale=sigma)
+        p_arr = norm.pdf(self.bins + self.bin_width/2, loc=mu, scale=sigma)
         p_arr_norm = [p_arr / sum(p_arr)]
         return np.transpose(p_arr_norm)
 
