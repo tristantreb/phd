@@ -188,7 +188,7 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
 
     # PLOT
     # Priors take 1x1 cells, posteriors take 2x2 cells
-    prior = {"type": "bar"}
+    prior = {"type": "bar", "colspan": 2}
     posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
     viz_layout = [
@@ -219,7 +219,9 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     fig["data"][1]["marker"]["color"] = "black"
 
     # HO2Sat
-    ih.plot_histogram(fig, HO2Sat, HO2Sat.prior[:, 0], o2sat_min, o2sat_max, 1, 5, False)
+    ih.plot_histogram(
+        fig, HO2Sat, HO2Sat.prior[:, 0], o2sat_min, o2sat_max, 1, 5, False
+    )
     fig["data"][2]["marker"]["color"] = "blue"
     o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.prior[:, 0]), 1, 5)
 
