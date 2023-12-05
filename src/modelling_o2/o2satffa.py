@@ -9,12 +9,8 @@ def multiplicative_drop_func(x):
     The top envelope was parametrised in 2023-11-07_breathe_O2_modelling.ipynb > fit top envelope
     The top envelope only gives the shape, it does not give the vertical position.
     """
-    # Params when including ID 122
-    # drop_params = np.array(
-    #     [3.89754850e01, 1.00902396e02, -2.04542149e-01, 1.57422295e-02, -4.00994278e-04]
-    # )
     drop_params = np.array(
-        [3.45063159e01, 1.00856822e02, -1.04771757e-01, 4.82650316e-03, -9.88876858e-05]
+        [3.29480334e01, 1.00898236e02, -7.31093563e-02, 2.97838835e-03, -7.25937093e-05]
     )
 
     x0 = drop_params[0]

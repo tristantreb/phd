@@ -67,10 +67,6 @@ def plot_histogram(fig, Var: mh.variableNode, p, min, max, row, col, title=True)
         row=row,
         col=col,
     )
-    if Var.name == "Healthy FEV1 (L)": 
-        print("p arr", p)
-        # Print y axis values from histogram traces that was just added
-        print("y", fig["data"][-1]["y"])
     fig.update_xaxes(
         range=[min, max], nticks=20, title=Var.name if title else None, row=row, col=col
     )
