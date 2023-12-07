@@ -134,7 +134,9 @@ class variableNode:
                 height = prior["height"]
                 age = prior["age"]
                 sex = prior["sex"]
-                p = pred_fev1.calc_hfev1_prior(self.bins + self.bin_width/2, height, age, sex)
+                p = pred_fev1.calc_hfev1_prior(
+                    self.bins + self.bin_width / 2, height, age, sex
+                )
             elif self.name == "Healthy O2 Saturation (%)":
                 height = prior["height"]
                 sex = prior["sex"]
@@ -167,7 +169,7 @@ class variableNode:
     @staticmethod
     def _gaussian_prior(self, mu: float, sigma: float):
         print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
-        p_arr = norm.pdf(self.bins + self.bin_width/2, loc=mu, scale=sigma)
+        p_arr = norm.pdf(self.bins + self.bin_width / 2, loc=mu, scale=sigma)
         p_arr_norm = [p_arr / sum(p_arr)]
         return np.transpose(p_arr_norm)
 
@@ -191,6 +193,18 @@ class variableNode:
         # Renormalise
         p_arr = p_arr / sum(p_arr)
         return p_arr
+
+    def get_mean(self, p):
+        """
+        Returns the distribution's mean given an array of probabilities
+        """
+        return np.multiply(p, self.bins + self.bin_width / 2).sum()
+    
+    def get_mode(self, p):
+        """
+        Returns the distribution's mode given an array of probabilities
+        """
+        return self.bins[np.argmax(p)] + self.bin_width / 2
 
 
 # ## P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
