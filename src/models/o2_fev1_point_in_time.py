@@ -25,6 +25,7 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
     AR = mh.variableNode("Airway Resistance (%)", 0, 90, 2, prior={"type": "uniform"})
 
+    # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = mh.variableNode(
         "Healthy O2 Saturation (%)", 90, 100, 0.5, prior=ho2sat_prior
     )
