@@ -209,7 +209,7 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     fev1_min = ecFEV1.a
     fev1_max = ecFEV1.b
     o2sat_min = 80
-    o2sat_max = 99.5
+    o2sat_max = 100
 
     # HFEV1
     ih.plot_histogram(fig, HFEV1, HFEV1.prior[:, 0], fev1_min, fev1_max, 1, 1, False)
@@ -230,10 +230,10 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
 
     # AR
-    ih.plot_histogram(fig, AR, AR.prior[:, 0], 0, 80, 4, 3, False)
+    ih.plot_histogram(fig, AR, AR.prior[:, 0], AR.a, AR.b, 4, 3, False)
     fig["data"][4]["marker"]["color"] = "green"
 
-    ih.plot_histogram(fig, AR, res_ar.values, 0, 80, 5, 3)
+    ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3)
     fig["data"][5]["marker"]["color"] = "green"
 
     # O2SatFFA
