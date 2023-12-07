@@ -119,7 +119,6 @@ class variableNode:
     def sample(self):
         return np.random.uniform(self.a, self.b)
 
-    @staticmethod
     def set_prior(self, prior):
         """
         The prior of node variable is a 2D array of shape (len(bins), 1), so that: sum(P(nodeVariable)) = 1
@@ -160,20 +159,17 @@ class variableNode:
         ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_p}"
         return p
 
-    @staticmethod
     def _uniform_prior(self):
         return np.array([1 / len(self.bins)] * len(self.bins)).reshape(
             len(self.bins), 1
         )
 
-    @staticmethod
     def _gaussian_prior(self, mu: float, sigma: float):
         print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
         p_arr = norm.pdf(self.bins + self.bin_width / 2, loc=mu, scale=sigma)
         p_arr_norm = [p_arr / sum(p_arr)]
         return np.transpose(p_arr_norm)
 
-    @staticmethod
     def _uniform_prior_with_gaussian_tail(self, constant: float, sigma: float):
         u_prior = self._uniform_prior(self)
         g_prior = self._gaussian_prior(self, constant, sigma)
