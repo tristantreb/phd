@@ -10,7 +10,7 @@ def multiplicative_drop_func(x):
     The top envelope only gives the shape, it does not give the vertical position.
     """
     drop_params = np.array(
-        [3.29480334e01, 1.00898236e02, -7.31093563e-02, 2.97838835e-03, -7.25937093e-05]
+        [3.50714590e01, 1.00849203e02, -1.13416141e-01, 5.74567744e-03, -1.21470421e-04]
     )
 
     x0 = drop_params[0]
