@@ -119,7 +119,6 @@ class variableNode:
     def sample(self):
         return np.random.uniform(self.a, self.b)
 
-    @classmethod
     def set_prior(self, prior):
         """
         The prior of node variable is a 2D array of shape (len(bins), 1), so that: sum(P(nodeVariable)) = 1
@@ -160,20 +159,17 @@ class variableNode:
         ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_p}"
         return p
 
-    @classmethod
     def _uniform_prior(self):
         return np.array([1 / len(self.bins)] * len(self.bins)).reshape(
             len(self.bins), 1
         )
 
-    @classmethod
     def _gaussian_prior(self, mu: float, sigma: float):
         print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
         p_arr = norm.pdf(self.bins + self.bin_width / 2, loc=mu, scale=sigma)
         p_arr_norm = [p_arr / sum(p_arr)]
         return np.transpose(p_arr_norm)
 
-    @classmethod
     def _uniform_prior_with_gaussian_tail(self, constant: float, sigma: float):
         u_prior = self._uniform_prior(self)
         g_prior = self._gaussian_prior(self, constant, sigma)
@@ -194,14 +190,12 @@ class variableNode:
         p_arr = p_arr / sum(p_arr)
         return p_arr
 
-    @classmethod
     def get_mean(self, p):
         """
         Returns the distribution's mean given an array of probabilities
         """
         return np.multiply(p, self.bins + self.bin_width / 2).sum()
 
-    @classmethod
     def get_mode(self, p):
         """
         Returns the distribution's mode given an array of probabilities
