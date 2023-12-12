@@ -11,6 +11,7 @@ import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.helpers as mh
 import src.models.o2_fev1_point_in_time as model
+import src.modelling_o2.o2sat as o2sat
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -85,27 +86,50 @@ app.layout = dbc.Container(
             ],
         ),
         html.Div(
-            dbc.Form(
-                [
-                    dbc.Label("FEV1 observed:"),
-                    dcc.Slider(
-                        id="FEV1-slider",
-                        min=0,
-                        max=6,
-                        step=0.1,
-                        value=3,
-                        marks={
-                            1: "1 L",
-                            2: "2 L",
-                            3: "3 L",
-                            4: "4 L",
-                            5: "5 L",
-                        },
-                        tooltip={"always_visible": True, "placement": "bottom"},
-                    ),
-                ],
-                style={"margin-left": "90px", "margin-right": "900px"},
-            ),
+            [
+                dbc.Form(
+                    [
+                        dbc.Label("FEV1 observed:"),
+                        dcc.Slider(
+                            id="FEV1-slider",
+                            min=0,
+                            max=6,
+                            step=0.1,
+                            value=3,
+                            marks={
+                                1: "1 L",
+                                2: "2 L",
+                                3: "3 L",
+                                4: "4 L",
+                                5: "5 L",
+                            },
+                            tooltip={"always_visible": True, "placement": "bottom"},
+                        ),
+                    ],
+                    style={"margin-left": "90px", "margin-right": "900px"},
+                ),
+                dbc.Form(
+                    [
+                        dbc.Label("O2 saturation observed:"),
+                        dcc.Slider(
+                            id="O2Sat-slider",
+                            min=80,
+                            max=100,
+                            step=1,
+                            value=98,
+                            # marks={
+                            #     1: "1 L",
+                            #     2: "2 L",
+                            #     3: "3 L",
+                            #     4: "4 L",
+                            #     5: "5 L",
+                            # },
+                            tooltip={"always_visible": True, "placement": "bottom"},
+                        ),
+                    ],
+                    style={"margin-left": "900px", "margin-right": "90px"},
+                ),
+            ]
         ),
     ],
     fluid=True,
@@ -163,8 +187,11 @@ def calc_cpts(sex: str, age: int, height: int):
     Input("O2SatFFA", "data"),
     # Evidences
     Input("FEV1-slider", "value"),
+    Input("O2Sat-slider", "value"),
 )
-def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
+def model_and_inference(
+    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float, O2Sat_obs: float
+):
     """
     Decodes inputs from JSON format, build model, runs inference, and returns a figure
     """
@@ -175,11 +202,13 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     HO2Sat = mh.decode_node_variable(HO2Sat)
     O2SatFFA = mh.decode_node_variable(O2SatFFA)
 
+    O2Sat = o2sat.add_gaussian_noise(O2Sat_obs, HO2Sat.bin_width)
+
     # Build model
     _, inf_alg = model.build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA)
 
     # INFERENCE
-    print("Inference user input: FEV1 set to", FEV1_obs)
+    print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
 
     res_hfev1 = ih.infer(inf_alg, [HFEV1], [[ecFEV1, FEV1_obs]])
     res_ar = ih.infer(inf_alg, [AR], [[ecFEV1, FEV1_obs]])
@@ -197,6 +226,9 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
         [None, None, None, None, None, None],
         [None, None, prior, None, None, None],
         [None, None, posterior, None, None, None],
+        [None, None, None, None, None, None],
+        [None, None, None, None, posterior, None],
+        [None, None, None, None, None, None],
         [None, None, None, None, None, None],
         [None, None, None, None, posterior, None],
         [None, None, None, None, None, None],
@@ -240,6 +272,10 @@ def model_and_inference(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float):
     ih.plot_histogram(fig, O2SatFFA, res_o2satffa.values, o2sat_min, o2sat_max, 7, 5)
     fig["data"][6]["marker"]["color"] = "cyan"
     o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
+
+    # O2Sat
+    ih.plot_histogram(fig, O2Sat, O2Sat.prior[:, 0], o2sat_min, o2sat_max, 10, 5, False)
+    o2h.add_o2sat_normal_range_line(fig, max(O2Sat.prior[:, 0]), 10, 5)
 
     fig.update_layout(
         showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01
