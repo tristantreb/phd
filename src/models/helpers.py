@@ -136,14 +136,16 @@ class variableNode:
                 p = pred_fev1.calc_hfev1_prior(
                     self.bins + self.bin_width / 2, height, age, sex
                 )
-            elif self.name == "Healthy O2 Saturation (%)":
+            elif self.name == "Healthy O2 saturation (%)":
                 height = prior["height"]
                 sex = prior["sex"]
                 params = ho2sat.calc_healthy_O2_sat(height, sex)
                 p = self._gaussian_prior(params["mean"], params["sigma"])
+            else:
+                raise ValueError(f"Prior for {self.name} not recognized")
         # General priors
         elif prior["type"] == "uniform":
-            p = self._uniform_prior(self)
+            p = self._uniform_prior()
         elif prior["type"] == "gaussian":
             p = self._gaussian_prior(prior["mu"], prior["sigma"])
         elif prior["type"] == "uniform + gaussian tail":
