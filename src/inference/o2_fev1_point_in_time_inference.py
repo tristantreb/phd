@@ -19,7 +19,9 @@ https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dyli
 """
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
+app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE])
+# app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
+# app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
 
 # TODO
 # - dbc input type number does return None if not number or outside authorised range
@@ -27,7 +29,7 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.UNITED])
 
 app.layout = dbc.Container(
     [
-        html.H2("Lung health of an individual", style={"textAlign": "center"}),
+        html.H2("My lung's health", style={"textAlign": "center"}),
         html.Div(
             [
                 # html.H4("Individual's clinical profile:"),
@@ -274,7 +276,7 @@ def model_and_inference(
     o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
 
     # O2Sat
-    ih.plot_histogram(fig, O2Sat, O2Sat.prior[:, 0], o2sat_min, o2sat_max, 10, 5, False)
+    ih.plot_histogram(fig, O2Sat, O2Sat.prior[:, 0], o2sat_min, o2sat_max, 10, 5)
     o2h.add_o2sat_normal_range_line(fig, max(O2Sat.prior[:, 0]), 10, 5)
 
     fig.update_layout(
