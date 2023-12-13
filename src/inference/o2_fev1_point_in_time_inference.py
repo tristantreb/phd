@@ -9,9 +9,9 @@ from plotly.subplots import make_subplots
 
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
+import src.modelling_o2.o2sat as o2sat
 import src.models.helpers as mh
 import src.models.o2_fev1_point_in_time as model
-import src.modelling_o2.o2sat as o2sat
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -204,7 +204,7 @@ def model_and_inference(
     HO2Sat = mh.decode_node_variable(HO2Sat)
     O2SatFFA = mh.decode_node_variable(O2SatFFA)
 
-    O2Sat = o2sat.add_gaussian_noise(O2Sat_obs, HO2Sat.bin_width)
+    O2Sat = o2sat.emulate_gaussian_distribution(O2Sat_obs, HO2Sat.bin_width)
 
     # Build model
     _, inf_alg = model.build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA)
