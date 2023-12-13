@@ -116,8 +116,11 @@ class variableNode:
         # Sets prior or CPT
         self.prior = self.set_prior(prior)
 
-    def sample(self):
-        return np.random.uniform(self.a, self.b)
+    def sample(self, n=1):
+        """
+        Sample n values from the variable prior's distribution
+        """
+        return np.random.Generator.choice(self.bins, n, p=self.prior.reshape(-1), shuffle=False)
 
     def set_prior(self, prior):
         """
@@ -167,7 +170,7 @@ class variableNode:
         )
 
     def _gaussian_prior(self, mu: float, sigma: float):
-        print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
+        # print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
         p_arr = norm.pdf(self.bins + self.bin_width / 2, loc=mu, scale=sigma)
         p_arr_norm = [p_arr / sum(p_arr)]
         return np.transpose(p_arr_norm)
