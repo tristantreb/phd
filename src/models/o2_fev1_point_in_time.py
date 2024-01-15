@@ -2,6 +2,7 @@ from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
+import src.modelling_o2.ia as ia
 import src.modelling_o2.o2satffa as o2satffa
 import src.models.helpers as mh
 
@@ -38,8 +39,9 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # Calculate CPTs
     ecFEV1.prior = mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1)
     O2SatFFA.prior = o2satffa.calc_cpt(O2SatFFA, HO2Sat, AR, debug=False)
+    IA.prior = ia.calc_cpt(IA, AR, debug=False)
 
-    return (HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA)
+    return (HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA)
 
 
 def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA):

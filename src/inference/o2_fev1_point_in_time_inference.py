@@ -165,6 +165,7 @@ def calc_cpts(sex: str, age: int, height: int):
         AR,
         HO2Sat,
         O2SatFFA,
+        IA
     ) = model.calc_cpts(hfev1_prior, ho2sat_prior)
 
     # Encode variables
@@ -173,8 +174,9 @@ def calc_cpts(sex: str, age: int, height: int):
     AR = mh.encode_node_variable(AR)
     HO2Sat = mh.encode_node_variable(HO2Sat)
     O2SatFFA = mh.encode_node_variable(O2SatFFA)
+    IA = mh.encode_node_variable(IA)
 
-    return HFEV1, FEV1, AR, HO2Sat, O2SatFFA
+    return HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA
 
 
 @app.callback(

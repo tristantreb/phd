@@ -105,12 +105,13 @@ class variableNode:
         # The nth bin is [self.bins[n]; self.bins[n+1]]
         # The last bin is [self.bins[-1]; b)
         # We're b - TOL_GLOBAL allows to exclude b from the array of bins
-        # self.bins = np.arange(a, b + bin_width - self.tol, bin_width)
         self.bins = np.arange(a, b - self.tol, bin_width)
-        # bins_arr contains the mid-bin value of each bin
+        self.midbins = self.bins + self.bin_width / 2
+        # bins_arr = [[a, a+bin_width], [a+bin_width, a+2*bin_width], ...
         self.bins_arr = np.array(
             list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
         )
+        # bins_str = ["[a, a+bin_width]", "[a+bin_width, a+2*bin_width]", ...
         self.bins_str = list(
             map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
         )
