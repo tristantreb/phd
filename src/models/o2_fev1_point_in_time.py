@@ -4,6 +4,7 @@ from pgmpy.models import BayesianNetwork
 
 import src.modelling_o2.ia as ia
 import src.modelling_o2.o2satffa as o2satffa
+import src.modelling_o2.unbiased_o2sat as uo2sat
 import src.models.helpers as mh
 
 
@@ -35,16 +36,26 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     O2SatFFA = mh.variableNode(
         "O2 sat if fully functional alveoli (%)", 80, 100, 0.5, prior=None
     )
-    IA = mh.variableNode("Inactive alveoli (%)", 0, 100, 1, prior=None)
+    # O2 sat can't be below 70%.
+    # If there's no airway resistance, it should still be possible to reach 70% O2 sat
+    # Hence, min IA is 30% because i
+    IA = mh.variableNode("Inactive alveoli (%)", 0, 30, 1, prior=None)
+    # In reality O2 sat can't be below 70%.
+    # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.
+    # 82.8-30 = 52.8%
+    # TODO: should we hardcode the fact that the sum of AR and IA should not be below 70% O2 Sat?
+    UO2Sat = mh.variableNode("Unbiased O2 saturation (%)", 50, 100, 0.5, prior=None)
+
     # Calculate CPTs
     ecFEV1.prior = mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1)
     O2SatFFA.prior = o2satffa.calc_cpt(O2SatFFA, HO2Sat, AR, debug=False)
     IA.prior = ia.calc_cpt(IA, AR, debug=False)
+    UO2Sat.prior = uo2sat.calc_cpt(UO2Sat, O2SatFFA, IA)
 
-    return (HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA)
+    return (HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat)
 
 
-def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA):
+def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat):
     prior_hfev1 = TabularCPD(
         variable=HFEV1.name,
         variable_card=len(HFEV1.bins),
@@ -88,6 +99,13 @@ def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA):
         evidence=[AR.name],
         evidence_card=[len(AR.bins)],
     )
+    cpt_uo2sat = TabularCPD(
+        variable=UO2Sat.name,
+        variable_card=len(UO2Sat.bins),
+        values=UO2Sat.prior,
+        evidence=[O2SatFFA.name, IA.name],
+        evidence_card=[len(O2SatFFA.bins), len(IA.bins)],
+    )
 
     model = BayesianNetwork(
         [
@@ -96,11 +114,19 @@ def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA):
             (HO2Sat.name, O2SatFFA.name),
             (AR.name, O2SatFFA.name),
             (AR.name, IA.name),
+            (O2SatFFA.name, UO2Sat.name),
+            (IA.name, UO2Sat.name),
         ]
     )
 
     model.add_cpds(
-        cpt_ecfev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2satffa, cpt_ia
+        cpt_ecfev1,
+        prior_ar,
+        prior_hfev1,
+        prior_ho2sat,
+        cpt_o2satffa,
+        cpt_ia,
+        cpt_uo2sat,
     )
 
     model.check_model()

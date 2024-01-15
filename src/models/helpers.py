@@ -286,6 +286,8 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
 ):
     """
     Function specific to Z = X*(1-Y)
+    Y bins must be given in %, not in decimals from the interval [0,1]
+
     P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
     Creates a 2D array with 3 variables
     """

@@ -9,7 +9,6 @@ from plotly.subplots import make_subplots
 
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
-import src.modelling_o2.o2sat as o2sat
 import src.models.helpers as mh
 import src.models.o2_fev1_point_in_time as model
 
@@ -86,6 +85,7 @@ app.layout = dbc.Container(
                 dcc.Store(id="HO2Sat", storage_type="session"),
                 dcc.Store(id="O2SatFFA", storage_type="session"),
                 dcc.Store(id="IA", storage_type="session"),
+                dcc.Store(id="UO2Sat", storage_type="session"),
             ],
         ),
         html.Div(
@@ -139,6 +139,7 @@ app.layout = dbc.Container(
     Output("HO2Sat", "data"),
     Output("O2SatFFA", "data"),
     Output("IA", "data"),
+    Output("UO2Sat", "data"),
     # Inputs
     Input("sex-select", "value"),
     Input("age-input", "value"),
@@ -154,7 +155,9 @@ def calc_cpts(sex: str, age: int, height: int):
         "height": height,
         "sex": sex,
     }
-    (HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA) = model.calc_cpts(hfev1_prior, ho2sat_prior)
+    (HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat) = model.calc_cpts(
+        hfev1_prior, ho2sat_prior
+    )
 
     # Encode variables
     HFEV1 = mh.encode_node_variable(HFEV1)
@@ -163,8 +166,9 @@ def calc_cpts(sex: str, age: int, height: int):
     HO2Sat = mh.encode_node_variable(HO2Sat)
     O2SatFFA = mh.encode_node_variable(O2SatFFA)
     IA = mh.encode_node_variable(IA)
+    UO2Sat = mh.encode_node_variable(UO2Sat)
 
-    return HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA
+    return HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat
 
 
 @app.callback(
@@ -178,12 +182,13 @@ def calc_cpts(sex: str, age: int, height: int):
     Input("HO2Sat", "data"),
     Input("O2SatFFA", "data"),
     Input("IA", "data"),
+    Input("UO2Sat", "data"),
     # Evidences
     Input("FEV1-slider", "value"),
     Input("O2Sat-slider", "value"),
 )
 def model_and_inference(
-    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, FEV1_obs: float, O2Sat_obs: float
+    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, FEV1_obs: float, O2Sat_obs: float
 ):
     """
     Decodes inputs from JSON format, build model, runs inference, and returns a figure
@@ -195,20 +200,24 @@ def model_and_inference(
     HO2Sat = mh.decode_node_variable(HO2Sat)
     O2SatFFA = mh.decode_node_variable(O2SatFFA)
     IA = mh.decode_node_variable(IA)
-
-    # O2Sat = o2sat.emulate_gaussian_distribution(O2Sat_obs, HO2Sat.bin_width)
+    # UO2Sat = O2Sat for the moment
+    UO2Sat = mh.decode_node_variable(UO2Sat)
 
     # Build model
-    _, inf_alg = model.build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA)
+    _, inf_alg = model.build_pgmpy_model(
+        HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat
+    )
 
     # INFERENCE
     print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
 
-    res_hfev1 = ih.infer(inf_alg, [HFEV1], [[ecFEV1, FEV1_obs]])
-    res_ar = ih.infer(inf_alg, [AR], [[ecFEV1, FEV1_obs]])
-    res_ho2sat = ih.infer(inf_alg, [HO2Sat], [[ecFEV1, FEV1_obs]])
-    res_o2satffa = ih.infer(inf_alg, [O2SatFFA], [[ecFEV1, FEV1_obs]])
-    res_ia = ih.infer(inf_alg, [IA], [[ecFEV1, FEV1_obs]])
+    res_hfev1 = ih.infer(inf_alg, [HFEV1], [[ecFEV1, FEV1_obs], [UO2Sat, O2Sat_obs]])
+    res_ar = ih.infer(inf_alg, [AR], [[ecFEV1, FEV1_obs], [UO2Sat, O2Sat_obs]])
+    res_ho2sat = ih.infer(inf_alg, [HO2Sat], [[ecFEV1, FEV1_obs], [UO2Sat, O2Sat_obs]])
+    res_o2satffa = ih.infer(
+        inf_alg, [O2SatFFA], [[ecFEV1, FEV1_obs], [UO2Sat, O2Sat_obs]]
+    )
+    res_ia = ih.infer(inf_alg, [IA], [[ecFEV1, FEV1_obs], [UO2Sat, O2Sat_obs]])
 
     # PLOT
     # Priors take 1x1 cells, posteriors take 2x2 cells
@@ -216,19 +225,19 @@ def model_and_inference(
     posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
     viz_layout = [
-        [prior, None, None, None, prior, None], #1
-        [posterior, None, None, None, posterior, None], #2
-        [None, None, None, None, None, None], #3
-        [None, None, prior, None, None, None], #4
-        [None, None, posterior, None, None, None], #5
-        [None, None, None, None, None, None], #6
-        [None, None, None, None, posterior, None], #7
-        [None, None, None, None, None, None], #8
-        [None, None, posterior, None, None, None], #9
-        [None, None, None, None, None, None], #10
-        [None, None, None, None, posterior, None], #11
-        [None, None, None, None, None, None], #12
-    ] 
+        [prior, None, None, None, prior, None],  # 1
+        [posterior, None, None, None, posterior, None],  # 2
+        [None, None, None, None, None, None],  # 3
+        [None, None, prior, None, None, None],  # 4
+        [None, None, posterior, None, None, None],  # 5
+        [None, None, None, None, None, None],  # 6
+        [None, None, None, None, posterior, None],  # 7
+        [None, None, None, None, None, None],  # 8
+        [None, None, posterior, None, None, None],  # 9
+        [None, None, None, None, None, None],  # 10
+        # [None, None, None, None, posterior, None], #11
+        # [None, None, None, None, None, None], #12
+    ]
 
     fig = make_subplots(
         rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
