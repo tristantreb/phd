@@ -12,7 +12,7 @@ def get_std_func(ar):
     return 0.000085 * ar**2 + 0.000000018 * ar**4 + 0.485
 
 
-def get_IA_proba(bins, std):
+def get_IA_proba(bins, std, debug):
     """
     Returns a probability for each possible bin in IA
 
@@ -22,13 +22,15 @@ def get_IA_proba(bins, std):
     assert np.all(bins >= 0), f"bins should be positive, got bins={bins}"
 
     # Since bins has only positive values, applying the pdf will only return the positive side of the gaussian
-    return norm.pdf(bins, loc=0, scale=std)
+    p = norm.pdf(bins, loc=0, scale=std)
+    # Normalize
+    p = p / np.sum(p)
+    if debug:
+        print(f"Proba from N(0, std), normalised: {p}")
+    return p
 
 
-def calc_cpt(
-    IA: mh.variableNode,
-    AR: mh.variableNode,
-):
+def calc_cpt(IA: mh.variableNode, AR: mh.variableNode, debug=True):
     """
     Computes the CPT for P(IA|AR)
     IA: inactive alveoli
@@ -42,10 +44,12 @@ def calc_cpt(
 
     # Create a for loop over the values of AR.bins
     for i in range(nbinsAR):
+        if debug:
+            print(f"i={i}")
         # Get the std for the current value of AR
-        std = get_std_func(AR.bins_arr[i])
+        std = get_std_func(AR.midbins[i])
         # Get the IA for the current std
-        cpt[:, i] = get_IA_proba(IA.bins_arr, std)
+        cpt[:, i] = get_IA_proba(IA.midbins, std, debug)
 
         # Raise if sum of probabilities is larger than 1
         total = np.sum(cpt[:, i])
