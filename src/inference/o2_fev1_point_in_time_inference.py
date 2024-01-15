@@ -85,6 +85,7 @@ app.layout = dbc.Container(
                 dcc.Store(id="AR", storage_type="session"),
                 dcc.Store(id="HO2Sat", storage_type="session"),
                 dcc.Store(id="O2SatFFA", storage_type="session"),
+                dcc.Store(id="IA", storage_type="session"),
             ],
         ),
         html.Div(
@@ -119,13 +120,6 @@ app.layout = dbc.Container(
                             max=100,
                             step=1,
                             value=98,
-                            # marks={
-                            #     1: "1 L",
-                            #     2: "2 L",
-                            #     3: "3 L",
-                            #     4: "4 L",
-                            #     5: "5 L",
-                            # },
                             tooltip={"always_visible": True, "placement": "bottom"},
                         ),
                     ],
@@ -144,6 +138,7 @@ app.layout = dbc.Container(
     Output("AR", "data"),
     Output("HO2Sat", "data"),
     Output("O2SatFFA", "data"),
+    Output("IA", "data"),
     # Inputs
     Input("sex-select", "value"),
     Input("age-input", "value"),
@@ -159,14 +154,7 @@ def calc_cpts(sex: str, age: int, height: int):
         "height": height,
         "sex": sex,
     }
-    (
-        HFEV1,
-        FEV1,
-        AR,
-        HO2Sat,
-        O2SatFFA,
-        IA
-    ) = model.calc_cpts(hfev1_prior, ho2sat_prior)
+    (HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA) = model.calc_cpts(hfev1_prior, ho2sat_prior)
 
     # Encode variables
     HFEV1 = mh.encode_node_variable(HFEV1)
@@ -189,12 +177,13 @@ def calc_cpts(sex: str, age: int, height: int):
     Input("AR", "data"),
     Input("HO2Sat", "data"),
     Input("O2SatFFA", "data"),
+    Input("IA", "data"),
     # Evidences
     Input("FEV1-slider", "value"),
     Input("O2Sat-slider", "value"),
 )
 def model_and_inference(
-    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, FEV1_obs: float, O2Sat_obs: float
+    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, FEV1_obs: float, O2Sat_obs: float
 ):
     """
     Decodes inputs from JSON format, build model, runs inference, and returns a figure
@@ -205,11 +194,12 @@ def model_and_inference(
     AR = mh.decode_node_variable(AR)
     HO2Sat = mh.decode_node_variable(HO2Sat)
     O2SatFFA = mh.decode_node_variable(O2SatFFA)
+    IA = mh.decode_node_variable(IA)
 
-    O2Sat = o2sat.emulate_gaussian_distribution(O2Sat_obs, HO2Sat.bin_width)
+    # O2Sat = o2sat.emulate_gaussian_distribution(O2Sat_obs, HO2Sat.bin_width)
 
     # Build model
-    _, inf_alg = model.build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA)
+    _, inf_alg = model.build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA)
 
     # INFERENCE
     print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
@@ -218,6 +208,7 @@ def model_and_inference(
     res_ar = ih.infer(inf_alg, [AR], [[ecFEV1, FEV1_obs]])
     res_ho2sat = ih.infer(inf_alg, [HO2Sat], [[ecFEV1, FEV1_obs]])
     res_o2satffa = ih.infer(inf_alg, [O2SatFFA], [[ecFEV1, FEV1_obs]])
+    res_ia = ih.infer(inf_alg, [IA], [[ecFEV1, FEV1_obs]])
 
     # PLOT
     # Priors take 1x1 cells, posteriors take 2x2 cells
@@ -225,18 +216,19 @@ def model_and_inference(
     posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
     viz_layout = [
-        [prior, None, None, None, prior, None],
-        [posterior, None, None, None, posterior, None],
-        [None, None, None, None, None, None],
-        [None, None, prior, None, None, None],
-        [None, None, posterior, None, None, None],
-        [None, None, None, None, None, None],
-        [None, None, None, None, posterior, None],
-        [None, None, None, None, None, None],
-        [None, None, None, None, None, None],
-        [None, None, None, None, posterior, None],
-        [None, None, None, None, None, None],
-    ]
+        [prior, None, None, None, prior, None], #1
+        [posterior, None, None, None, posterior, None], #2
+        [None, None, None, None, None, None], #3
+        [None, None, prior, None, None, None], #4
+        [None, None, posterior, None, None, None], #5
+        [None, None, None, None, None, None], #6
+        [None, None, None, None, posterior, None], #7
+        [None, None, None, None, None, None], #8
+        [None, None, posterior, None, None, None], #9
+        [None, None, None, None, None, None], #10
+        [None, None, None, None, posterior, None], #11
+        [None, None, None, None, None, None], #12
+    ] 
 
     fig = make_subplots(
         rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
@@ -249,10 +241,10 @@ def model_and_inference(
 
     # HFEV1
     ih.plot_histogram(fig, HFEV1, HFEV1.prior[:, 0], fev1_min, fev1_max, 1, 1, False)
-    fig["data"][0]["marker"]["color"] = "black"
+    fig["data"][0]["marker"]["color"] = "green"
 
     ih.plot_histogram(fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1)
-    fig["data"][1]["marker"]["color"] = "black"
+    fig["data"][1]["marker"]["color"] = "green"
 
     # HO2Sat
     ih.plot_histogram(
@@ -267,19 +259,23 @@ def model_and_inference(
 
     # AR
     ih.plot_histogram(fig, AR, AR.prior[:, 0], AR.a, AR.b, 4, 3, False)
-    fig["data"][4]["marker"]["color"] = "green"
+    fig["data"][4]["marker"]["color"] = "orange"
 
     ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3)
-    fig["data"][5]["marker"]["color"] = "green"
+    fig["data"][5]["marker"]["color"] = "orange"
 
     # O2SatFFA
     ih.plot_histogram(fig, O2SatFFA, res_o2satffa.values, o2sat_min, o2sat_max, 7, 5)
     fig["data"][6]["marker"]["color"] = "cyan"
     o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
 
-    # O2Sat
-    ih.plot_histogram(fig, O2Sat, O2Sat.prior[:, 0], o2sat_min, o2sat_max, 10, 5)
-    o2h.add_o2sat_normal_range_line(fig, max(O2Sat.prior[:, 0]), 10, 5)
+    # IA
+    ih.plot_histogram(fig, IA, res_ia.values, IA.a, IA.b, 9, 3)
+    fig["data"][7]["marker"]["color"] = "red"
+
+    # # O2Sat
+    # ih.plot_histogram(fig, O2Sat, O2Sat.prior[:, 0], o2sat_min, o2sat_max, 11, 5)
+    # o2h.add_o2sat_normal_range_line(fig, max(O2Sat.prior[:, 0]), 11, 5)
 
     fig.update_layout(
         showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01

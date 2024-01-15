@@ -44,7 +44,7 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     return (HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA)
 
 
-def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA):
+def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA):
     prior_hfev1 = TabularCPD(
         variable=HFEV1.name,
         variable_card=len(HFEV1.bins),
@@ -81,6 +81,13 @@ def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA):
         evidence=[HO2Sat.name, AR.name],
         evidence_card=[len(HO2Sat.bins), len(AR.bins)],
     )
+    cpt_ia = TabularCPD(
+        variable=IA.name,
+        variable_card=len(IA.bins),
+        values=IA.prior,
+        evidence=[AR.name],
+        evidence_card=[len(AR.bins)],
+    )
 
     model = BayesianNetwork(
         [
@@ -88,10 +95,13 @@ def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA):
             (AR.name, ecFEV1.name),
             (HO2Sat.name, O2SatFFA.name),
             (AR.name, O2SatFFA.name),
+            (AR.name, IA.name),
         ]
     )
 
-    model.add_cpds(cpt_ecfev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2satffa)
+    model.add_cpds(
+        cpt_ecfev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2satffa, cpt_ia
+    )
 
     model.check_model()
     inf_alg = BeliefPropagation(model)
