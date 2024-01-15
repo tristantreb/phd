@@ -34,6 +34,7 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     O2SatFFA = mh.variableNode(
         "O2 sat if fully functional alveoli (%)", 80, 100, 0.5, prior=None
     )
+    IA = mh.variableNode("Inactive alveoli (%)", 0, 100, 1, prior=None)
     # Calculate CPTs
     ecFEV1.prior = mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1)
     O2SatFFA.prior = o2satffa.calc_cpt(O2SatFFA, HO2Sat, AR, debug=False)

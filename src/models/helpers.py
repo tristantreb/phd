@@ -107,6 +107,7 @@ class variableNode:
         # We're b - TOL_GLOBAL allows to exclude b from the array of bins
         # self.bins = np.arange(a, b + bin_width - self.tol, bin_width)
         self.bins = np.arange(a, b - self.tol, bin_width)
+        # bins_arr contains the mid-bin value of each bin
         self.bins_arr = np.array(
             list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
         )
