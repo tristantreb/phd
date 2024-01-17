@@ -3,6 +3,23 @@ import numpy as np
 import src.models.helpers as mh
 
 
+def load_cpt(O2Sat: mh.variableNode, UO2Sat: mh.variableNode):
+    if (
+        O2Sat.a == 50
+        and O2Sat.b == 100
+        and UO2Sat.a == 50
+        and UO2Sat.b == 100
+        and UO2Sat.bin_width == 0.5
+    ):
+        # Load cpt from file
+        cpt = np.load("src/modelling_o2/cpt_o2sat_uo2sat.txt")
+    else:
+        raise NotImplementedError(
+            "CPT O2Sat, UO2Sat not implemented for this range of values"
+        )
+    return cpt
+
+
 def generate_o2sat_measurement(UO2Sat: mh.variableNode, std_gauss):
     real = np.random.uniform(UO2Sat.a, UO2Sat.b)
 
