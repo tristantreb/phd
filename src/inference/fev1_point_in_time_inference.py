@@ -91,58 +91,32 @@ app.layout = dbc.Container(
         ),
         html.Div(
             [
-                dbc.Row(
+                dbc.Form(
                     [
-                        dbc.Col(
-                            dbc.Form(
-                                [
-                                    dbc.Label("FEV1 observed:"),
-                                    dcc.Slider(
-                                        id="FEV1-slider",
-                                        min=0,
-                                        max=6,
-                                        step=0.1,
-                                        value=3,
-                                        marks={
-                                            1: "1 L",
-                                            2: "2 L",
-                                            3: "3 L",
-                                            4: "4 L",
-                                            5: "5 L",
-                                        },
-                                        tooltip={
-                                            "always_visible": True,
-                                            "placement": "bottom",
-                                        },
-                                    ),
-                                ],
-                                style={"margin-left": "10px", "margin-right": "300px"},
-                            )
+                        dbc.Label("FEV1 observed:"),
+                        dcc.Slider(
+                            id="FEV1-slider",
+                            min=0,
+                            max=6,
+                            step=0.1,
+                            value=3,
+                            marks={
+                                1: "1 L",
+                                2: "2 L",
+                                3: "3 L",
+                                4: "4 L",
+                                5: "5 L",
+                            },
+                            tooltip={
+                                "always_visible": True,
+                                "placement": "bottom",
+                            },
                         ),
-                        dbc.Col(
-                            dbc.Form(
-                                [
-                                    dbc.Label("O2 saturation observed:"),
-                                    dcc.Slider(
-                                        id="O2Sat-slider",
-                                        min=80,
-                                        max=100,
-                                        step=1,
-                                        value=98,
-                                        tooltip={
-                                            "always_visible": True,
-                                            "placement": "bottom",
-                                        },
-                                    ),
-                                ],
-                                style={"margin-left": "10", "margin-right": "300px"},
-                            )
-                        ),
-                    ]
+                    ],
+                    style={"margin-left": "10px", "margin-right": "300px"},
                 ),
-            ]
+            ],
         ),
-
     ],
     fluid=True,
 )
@@ -205,7 +179,6 @@ def calc_cpts(sex: str, age: int, height: int):
     Input("O2Sat", "data"),
     # Evidences
     Input("FEV1-slider", "value"),
-    Input("O2Sat-slider", "value"),
 )
 def model_and_inference(
     HFEV1,
@@ -217,7 +190,6 @@ def model_and_inference(
     UO2Sat,
     O2Sat,
     FEV1_obs: float,
-    O2Sat_obs: float,
 ):
     """
     Decodes inputs from JSON format, build model, runs inference, and returns a figure
@@ -238,16 +210,15 @@ def model_and_inference(
     )
 
     # INFERENCE
-    print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
+    print("Inference user input: FEV1 =", FEV1_obs)
 
-    res_hfev1 = ih.infer(inf_alg, [HFEV1], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_ar = ih.infer(inf_alg, [AR], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_ho2sat = ih.infer(inf_alg, [HO2Sat], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_o2satffa = ih.infer(
-        inf_alg, [O2SatFFA], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]]
-    )
-    res_ia = ih.infer(inf_alg, [IA], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_uo2sat = ih.infer(inf_alg, [UO2Sat], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
+    res_hfev1 = ih.infer(inf_alg, [HFEV1], [[ecFEV1, FEV1_obs]])
+    res_ar = ih.infer(inf_alg, [AR], [[ecFEV1, FEV1_obs]])
+    res_ho2sat = ih.infer(inf_alg, [HO2Sat], [[ecFEV1, FEV1_obs]])
+    res_o2satffa = ih.infer(inf_alg, [O2SatFFA], [[ecFEV1, FEV1_obs]])
+    res_ia = ih.infer(inf_alg, [IA], [[ecFEV1, FEV1_obs]])
+    res_uo2sat = ih.infer(inf_alg, [UO2Sat], [[ecFEV1, FEV1_obs]])
+    res_o2sat = ih.infer(inf_alg, [O2Sat], [[ecFEV1, FEV1_obs]])
 
     # PLOT
     # Priors take 1x1 cells, posteriors take 2x2 cells
@@ -268,7 +239,8 @@ def model_and_inference(
         [None, None, None, None, posterior, None],  # 11
         [None, None, None, None, None, None],  # 12
         [None, None, None, None, None, None],  # 13
-        [None, None, None, None, prior, None],  # 14
+        [None, None, None, None, posterior, None],  # 14
+        [None, None, None, None, None, None],  # 13
     ]
 
     fig = make_subplots(
@@ -320,16 +292,11 @@ def model_and_inference(
     ih.plot_histogram(fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 11, 5)
     fig["data"][8]["marker"]["color"] = "blue"
     o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 11, 5)
-    # Put the message up from O2Sat to UO2Sat to see the result from the generative o2sat noise model
-    tmp_UO2Sat = UO2Sat
-    tmp_UO2Sat.name = "Message up from O2Sat"
-    # Given o2sat_obs, get the idx of the bin in which it falls in O2Sat
-    o2sat_obs_idx = np.where(O2Sat.midbins == O2Sat_obs)[0][0]
-    ih.plot_histogram(
-        fig, tmp_UO2Sat, O2Sat.prior[o2sat_obs_idx, :], o2sat_min, o2sat_max, 14, 5
-    )
+
+    # O2Sat
+    ih.plot_histogram(fig, O2Sat, res_o2sat.values, o2sat_min, o2sat_max, 14, 5)
     fig["data"][9]["marker"]["color"] = "blue"
-    o2h.add_o2sat_normal_range_line(fig, O2Sat.prior[o2sat_obs_idx, :], 14, 5)
+    o2h.add_o2sat_normal_range_line(fig, max(res_o2sat.values), 14, 5)
 
     fig.update_layout(
         showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01
@@ -339,4 +306,4 @@ def model_and_inference(
     return fig, ecFEV1.a, ecFEV1.b
 
 
-app.run_server(debug=True, port=8051, use_reloader=False)
+app.run_server(debug=True, port=8052, use_reloader=False)
