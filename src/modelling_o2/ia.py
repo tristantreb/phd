@@ -9,7 +9,7 @@ def get_std_func(ar):
     Std of IA as a function of AR
     std = f(ar)
     """
-    return (0.000085 * ar**2 + 0.000000018 * ar**4 + 0.485) * 20
+    return 0.000085 * ar**2 + 0.000000018 * ar**4 + 0.485
 
 
 def get_IA_proba(bins, std, debug):
