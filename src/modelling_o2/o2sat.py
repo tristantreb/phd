@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 import src.models.helpers as mh
@@ -5,18 +7,27 @@ import src.models.helpers as mh
 
 def load_cpt(O2Sat: mh.variableNode, UO2Sat: mh.variableNode):
     if (
-        O2Sat.a == 50
-        and O2Sat.b == 100
+        O2Sat.a == 49.5
+        and O2Sat.b == 100.5
+        and UO2Sat.a == 50
+        and UO2Sat.b == 100
+        and UO2Sat.bin_width == 1
+    ):
+        filepath = "src/modelling_o2/cpt_o2sat_50_100_uo2sat_50_100_1.txt"
+    elif (
+        O2Sat.a == 49.5
+        and O2Sat.b == 100.5
         and UO2Sat.a == 50
         and UO2Sat.b == 100
         and UO2Sat.bin_width == 0.5
     ):
-        # Load cpt from file
-        cpt = np.load("src/modelling_o2/cpt_o2sat_uo2sat.txt")
+        filepath = "src/modelling_o2/cpt_o2sat_50_100_uo2sat_50_100_0.5.txt"
     else:
         raise NotImplementedError(
             "CPT O2Sat, UO2Sat not implemented for this range of values"
         )
+
+    cpt = np.loadtxt(os.getcwd().split("src")[0] + filepath, delimiter=",")
     return cpt
 
 
