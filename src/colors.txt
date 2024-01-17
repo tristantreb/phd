@@ -13,7 +13,10 @@ http://people.apache.org/~crossley/cud/cud.html
 #d55e00 213,094,000 vermilion
 #cc79a7 204,121,167 reddish-purple
 
-Plotly colours
+Default plotly colour sequence: 
+['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52']
+
+Plotly colours:
 aliceblue, antiquewhite, aqua, aquamarine, azure,
 beige, bisque, black, blanchedalmond, blue,
 blueviolet, brown, burlywood, cadetblue,
