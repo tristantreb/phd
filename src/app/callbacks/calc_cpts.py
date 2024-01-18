@@ -1,7 +1,7 @@
 from dash import Dash, Input, Output, dcc, html
 
 import src.models.helpers as mh
-import src.models.o2_fev1_point_in_time as model
+import src.models.point_in_time as model
 
 
 def calc_cpts_callback(app):
