@@ -25,7 +25,6 @@ def infer(
 
     :return: The result of the inference
     """
-    var_names = [var.name for var in variables]
 
     evidences_binned = dict()
     for [evidence_var, value] in evidences:
@@ -33,7 +32,7 @@ def infer(
         evidences_binned.update({evidence_var.name: bin_idx})
 
     query = inference_alg.query(
-        variables=var_names,
+        variables=list(map(lambda v: v.name, variables)),
         evidence=evidences_binned,
         show_progress=show_progress,
         joint=joint,
@@ -51,7 +50,7 @@ def get_bin_for_value(obs: float, var: mh.variableNode, tol=TOL_GLOBAL):
     idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
 
     (lower_idx, upper_idx) = var.bins_arr[idx]
-    return ["[{}; {})".format(lower_idx, upper_idx), idx]
+    return "[{}; {})".format(lower_idx, upper_idx), idx
 
 
 def plot_histogram(fig, Var: mh.variableNode, p, min, max, row, col, title=True):

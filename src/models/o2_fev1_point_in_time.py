@@ -11,6 +11,7 @@ def build(hfev1_prior, ho2sat_prior):
     This is a point in time model with:
     FEV1 = HFEV1 * (1-AR)
     O2SatFFA = HO2Sat * drop_func(AR)
+
     """
     vars = calc_cpts(hfev1_prior, ho2sat_prior)
     model, inf_alg = build_pgmpy_model(*vars)

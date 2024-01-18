@@ -1,5 +1,4 @@
 import numpy as np
-import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 import src.inference.helpers as ih
@@ -13,7 +12,6 @@ height = 175
 
 
 def calc_cpts(sex: str, age: int, height: int):
-    print("Calculating cpts")
     # TODO: why not int by default?
     height = int(height)
     age = int(age)
@@ -209,9 +207,9 @@ import re
 prof = cProfile.Profile()
 prof.run("main()")
 # prof.sort_stats('cumtime')
-prof.dump_stats("output1.prof")
+prof.dump_stats("output2.prof")
 
-stream = open("output1.txt", "w")
-stats = pstats.Stats("output.prof", stream=stream)
+stream = open("output2.txt", "w")
+stats = pstats.Stats("output2.prof", stream=stream)
 stats.sort_stats("cumtime")
 stats.print_stats()
