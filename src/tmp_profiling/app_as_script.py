@@ -12,9 +12,6 @@ age = 30
 height = 175
 
 
-
-
-
 def calc_cpts(sex: str, age: int, height: int):
     print("Calculating cpts")
     # TODO: why not int by default?
@@ -41,6 +38,7 @@ def calc_cpts(sex: str, age: int, height: int):
     O2Sat = mh.encode_node_variable(O2Sat)
 
     return HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+
 
 def model_and_inference(
     HFEV1,
@@ -75,8 +73,20 @@ def model_and_inference(
     # INFERENCE
     print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
 
-    q1 = ih.infer(inf_alg, [HFEV1, AR, HO2Sat, IA], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]], show_progress=False, joint=False)
-    q2 = ih.infer(inf_alg, [AR, O2SatFFA, UO2Sat], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]], show_progress=False, joint=False)
+    q1 = ih.infer(
+        inf_alg,
+        [HFEV1, AR, HO2Sat, IA],
+        [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
+        show_progress=False,
+        joint=False,
+    )
+    q2 = ih.infer(
+        inf_alg,
+        [AR, O2SatFFA, UO2Sat],
+        [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
+        show_progress=False,
+        joint=False,
+    )
 
     res_hfev1 = q1[HFEV1.name]
     res_ar = q1[AR.name]
@@ -174,6 +184,7 @@ def model_and_inference(
 
     return fig, ecFEV1.a, ecFEV1.b
 
+
 def main():
     HFEV1, FEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat = calc_cpts(sex, age, height)
     fig, a, b = model_and_inference(
@@ -190,6 +201,7 @@ def main():
     )
     return -1
 
+
 import cProfile
 import pstats
 import re
@@ -197,10 +209,9 @@ import re
 prof = cProfile.Profile()
 prof.run("main()")
 # prof.sort_stats('cumtime')
-prof.dump_stats('output.prof')
+prof.dump_stats("output.prof")
 
-stream = open('output.txt', 'w')
-stats = pstats.Stats('output.prof', stream=stream)
-stats.sort_stats('cumtime')
+stream = open("output.txt", "w")
+stats = pstats.Stats("output.prof", stream=stream)
+stats.sort_stats("cumtime")
 stats.print_stats()
-
