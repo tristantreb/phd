@@ -1,9 +1,7 @@
-# Lunch app with "python interactive_inference_healthy_gauss.py"
 import os
 
 import dash_bootstrap_components as dbc
 import numpy as np
-import plotly.graph_objects as go
 from dash import Dash, Input, Output, dcc, html
 from plotly.subplots import make_subplots
 
@@ -11,6 +9,9 @@ import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.helpers as mh
 import src.models.o2_fev1_point_in_time as model
+from src.app.components.fev1_slider import fev1_slider_layout
+from src.app.components.id_info import id_info_layout
+from src.app.components.o2sat_slider import O2Sat_slider_layout
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -18,9 +19,7 @@ https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dyli
 """
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE])
-# app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
-# app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
+app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE, "./assets/styles.css"])
 
 # TODO
 # - dbc input type number does return None if not number or outside authorised range
@@ -29,51 +28,7 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE])
 app.layout = dbc.Container(
     [
         html.H2("My lung's health", style={"textAlign": "center"}),
-        html.Div(
-            [
-                # html.H4("Individual's clinical profile:"),
-                dbc.InputGroup(
-                    [
-                        dbc.InputGroupText("Sex"),
-                        dbc.Select(
-                            id="sex-select",
-                            options=[
-                                {"label": "Male", "value": "Male"},
-                                {"label": "Female", "value": "Female"},
-                            ],
-                            value="Male",
-                        ),
-                    ]
-                ),
-                dbc.InputGroup(
-                    [
-                        dbc.InputGroupText("Age (years)"),
-                        dbc.Input(
-                            type="number",
-                            min=0,
-                            max=100,
-                            value=30,
-                            id="age-input",
-                            debounce=True,
-                        ),
-                    ]
-                ),
-                dbc.InputGroup(
-                    [
-                        dbc.InputGroupText("Height (cm)"),
-                        dbc.Input(
-                            type="number",
-                            min=0,
-                            max=300,
-                            value=175,
-                            id="height-input",
-                            debounce=True,
-                        ),
-                    ]
-                ),
-            ],
-            style={"width": "300px"},
-        ),
+        id_info_layout,
         dcc.Loading(
             id="graph-loader",
             type="default",
@@ -93,56 +48,12 @@ app.layout = dbc.Container(
             [
                 dbc.Row(
                     [
-                        dbc.Col(
-                            dbc.Form(
-                                [
-                                    dbc.Label("FEV1 observed:"),
-                                    dcc.Slider(
-                                        id="FEV1-slider",
-                                        min=0,
-                                        max=6,
-                                        step=0.1,
-                                        value=3,
-                                        marks={
-                                            1: "1 L",
-                                            2: "2 L",
-                                            3: "3 L",
-                                            4: "4 L",
-                                            5: "5 L",
-                                        },
-                                        tooltip={
-                                            "always_visible": True,
-                                            "placement": "bottom",
-                                        },
-                                    ),
-                                ],
-                                style={"margin-left": "10px", "margin-right": "300px"},
-                            )
-                        ),
-                        dbc.Col(
-                            dbc.Form(
-                                [
-                                    dbc.Label("O2 saturation observed:"),
-                                    dcc.Slider(
-                                        id="O2Sat-slider",
-                                        min=80,
-                                        max=100,
-                                        step=1,
-                                        value=98,
-                                        tooltip={
-                                            "always_visible": True,
-                                            "placement": "bottom",
-                                        },
-                                    ),
-                                ],
-                                style={"margin-left": "10", "margin-right": "300px"},
-                            )
-                        ),
+                        dbc.Col(fev1_slider_layout),
+                        dbc.Col(O2Sat_slider_layout),
                     ]
                 ),
             ]
         ),
-
     ],
     fluid=True,
 )
@@ -163,10 +74,11 @@ app.layout = dbc.Container(
     Input("height-input", "value"),
 )
 def calc_cpts(sex: str, age: int, height: int):
-    print("Calculating cpts")
     # TODO: why not int by default?
-    height = int(height)
-    age = int(age)
+    print(f"height: {height}")
+    print(f"age: {age}")
+    # height = int(height)
+    # age = int(age)
     hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
     ho2sat_prior = {
         "type": "default",
@@ -240,14 +152,27 @@ def model_and_inference(
     # INFERENCE
     print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
 
-    res_hfev1 = ih.infer(inf_alg, [HFEV1], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_ar = ih.infer(inf_alg, [AR], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_ho2sat = ih.infer(inf_alg, [HO2Sat], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_o2satffa = ih.infer(
-        inf_alg, [O2SatFFA], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]]
+    q1 = ih.infer(
+        inf_alg,
+        [HFEV1, AR, HO2Sat, IA],
+        [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
+        show_progress=False,
+        joint=False,
     )
-    res_ia = ih.infer(inf_alg, [IA], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
-    res_uo2sat = ih.infer(inf_alg, [UO2Sat], [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]])
+    q2 = ih.infer(
+        inf_alg,
+        [AR, O2SatFFA, UO2Sat],
+        [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
+        show_progress=False,
+        joint=False,
+    )
+
+    res_hfev1 = q1[HFEV1.name]
+    res_ar = q1[AR.name]
+    res_ho2sat = q1[HO2Sat.name]
+    res_o2satffa = q2[O2SatFFA.name]
+    res_ia = q1[IA.name]
+    res_uo2sat = q2[UO2Sat.name]
 
     # PLOT
     # Priors take 1x1 cells, posteriors take 2x2 cells
