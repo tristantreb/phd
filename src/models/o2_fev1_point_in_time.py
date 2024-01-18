@@ -47,7 +47,7 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # TODO: should we hardcode the fact that the sum of AR and IA should not be below 70% O2 Sat?
     UO2Sat = mh.variableNode("Unbiased O2 saturation (%)", 50, 100, 0.5, prior=None)
     O2Sat = mh.variableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
-
+         
     # Calculate CPTs
     ecFEV1.prior = mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1)
     O2SatFFA.prior = o2satffa.calc_cpt(O2SatFFA, HO2Sat, AR, debug=False)
