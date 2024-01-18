@@ -4,7 +4,7 @@ from plotly.subplots import make_subplots
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.helpers as mh
-import src.models.o2_fev1_point_in_time as model
+import src.models.point_in_time as model
 
 sex = "Male"
 age = 30

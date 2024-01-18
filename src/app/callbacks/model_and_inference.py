@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.helpers as mh
-import src.models.o2_fev1_point_in_time as model
+import src.models.point_in_time as model
 from src.app.callbacks.calc_cpts import calc_cpts_callback
 from src.app.components.fev1_slider import fev1_slider_layout
 from src.app.components.id_info import id_info_layout
