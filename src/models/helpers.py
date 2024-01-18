@@ -95,6 +95,13 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
 ## Variable node
 class variableNode:
     def __init__(self, name: str, a, b, bin_width, prior):
+        """
+        name: variable's name (e.g. "Healthy FEV1 (L)")
+        a: lower bound of the variable's domain
+        b: upper bound of the variable's domain
+        bin_width: width of the bins
+        prior: variable's prior distribution, possible None if it's a cpt
+        """
         self.tol = TOL_GLOBAL
         self.name = name
         self.a = a
@@ -122,7 +129,9 @@ class variableNode:
         """
         Sample n values from the variable prior's distribution
         """
-        return np.random.Generator.choice(self.bins, n, p=self.prior.reshape(-1), shuffle=False)
+        return np.random.Generator.choice(
+            self.bins, n, p=self.prior.reshape(-1), shuffle=False
+        )
 
     def set_prior(self, prior):
         """

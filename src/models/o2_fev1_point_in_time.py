@@ -2,10 +2,7 @@ from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
-import src.modelling_o2.ia as ia
-import src.modelling_o2.o2sat as o2sat
-import src.modelling_o2.o2satffa as o2satffa
-import src.modelling_o2.unbiased_o2sat as uo2sat
+import src.models.cpts.load as cptloader
 import src.models.helpers as mh
 
 
@@ -35,7 +32,7 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # Highest drop is 92% (for AR = 90%)
     # Hence the lowest O2SatFFA is 90 * 0.92 = 82.8
     O2SatFFA = mh.variableNode(
-        "O2 sat if fully functional alveoli (%)", 80, 100, 0.5, prior=None
+        "O2 saturation if fully functional alveoli (%)", 80, 100, 0.5, prior=None
     )
     # O2 sat can't be below 70%.
     # If there's no airway resistance, it should still be possible to reach 70% O2 sat
@@ -45,15 +42,15 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.
     # 82.8-30 = 52.8%
     # TODO: should we hardcode the fact that the sum of AR and IA should not be below 70% O2 Sat?
-    UO2Sat = mh.variableNode("Unbiased O2 saturation (%)", 50, 100, 0.5, prior=None)
+    UO2Sat = mh.variableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
     O2Sat = mh.variableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
-         
+
     # Calculate CPTs
-    ecFEV1.prior = mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1)
-    O2SatFFA.prior = o2satffa.calc_cpt(O2SatFFA, HO2Sat, AR, debug=False)
-    IA.prior = ia.calc_cpt(IA, AR, debug=False)
-    UO2Sat.prior = uo2sat.calc_cpt(UO2Sat, O2SatFFA, IA)
-    O2Sat.prior = o2sat.load_cpt(O2Sat, UO2Sat)
+    ecFEV1.prior = cptloader.get_cpt([ecFEV1, HFEV1, AR])
+    O2SatFFA.prior = cptloader.get_cpt([O2SatFFA, HO2Sat, AR])
+    IA.prior = cptloader.get_cpt([IA, AR])
+    UO2Sat.prior = cptloader.get_cpt([UO2Sat, O2SatFFA, IA])
+    O2Sat.prior = cptloader.get_cpt([O2Sat, UO2Sat])
 
     return (HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat)
 
