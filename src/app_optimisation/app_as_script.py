@@ -10,7 +10,6 @@ sex = "Male"
 age = 30
 height = 175
 
-
 def calc_cpts(sex: str, age: int, height: int):
     # TODO: why not int by default?
     height = int(height)
@@ -199,6 +198,7 @@ def main():
     )
     return -1
 
+main()
 
 import cProfile
 import pstats

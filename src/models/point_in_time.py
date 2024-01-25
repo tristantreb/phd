@@ -38,7 +38,7 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # O2 sat can't be below 70%.
     # If there's no airway resistance, it should still be possible to reach 70% O2 sat
     # Hence, min IA is 30% because i
-    IA = mh.variableNode("Inactive alveoli (%)", 0, 30, 1, prior=None)
+    IA = mh.variableNode("Inactive alveoli (%)", 0, 30, 1, prior={"type": "uniform"})
     # In reality O2 sat can't be below 70%.
     # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.
     # 82.8-30 = 52.8%
@@ -49,7 +49,7 @@ def calc_cpts(hfev1_prior, ho2sat_prior):
     # Calculate CPTs
     ecFEV1.prior = cptloader.get_cpt([ecFEV1, HFEV1, AR])
     O2SatFFA.prior = cptloader.get_cpt([O2SatFFA, HO2Sat, AR])
-    IA.prior = cptloader.get_cpt([IA, AR])
+    # IA.prior = cptloader.get_cpt([IA, AR])
     UO2Sat.prior = cptloader.get_cpt([UO2Sat, O2SatFFA, IA])
     O2Sat.prior = cptloader.get_cpt([O2Sat, UO2Sat])
 
@@ -97,8 +97,10 @@ def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat):
         variable=IA.name,
         variable_card=len(IA.bins),
         values=IA.prior,
-        evidence=[AR.name],
-        evidence_card=[len(AR.bins)],
+        evidence=[],
+        evidence_card=[],
+        # evidence=[AR.name],
+        # evidence_card=[len(AR.bins)],
     )
     cpt_uo2sat = TabularCPD(
         variable=UO2Sat.name,
@@ -121,7 +123,7 @@ def build_pgmpy_model(HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat):
             (AR.name, ecFEV1.name),
             (HO2Sat.name, O2SatFFA.name),
             (AR.name, O2SatFFA.name),
-            (AR.name, IA.name),
+            # (AR.name, IA.name),
             (O2SatFFA.name, UO2Sat.name),
             (IA.name, UO2Sat.name),
             (UO2Sat.name, O2Sat.name),
