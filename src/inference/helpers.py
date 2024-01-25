@@ -53,18 +53,34 @@ def get_bin_for_value(obs: float, var: mh.variableNode, tol=TOL_GLOBAL):
     return "[{}; {})".format(lower_idx, upper_idx), idx
 
 
-def plot_histogram(fig, Var: mh.variableNode, p, min, max, row, col, title=True):
+def plot_histogram(fig, Var: mh.variableNode, p, xmin, xmax, row, col, title=True):
     fig.add_trace(
         go.Histogram(
             x=Var.bins,
             y=p,
             histfunc="sum",  # Use 'sum' to represent pre-counted data
-            xbins=dict(start=min, end=max, size=Var.bin_width),
+            xbins=dict(start=xmin, end=xmax, size=Var.bin_width),
         ),
         row=row,
         col=col,
     )
     fig.update_xaxes(
-        range=[min, max], nticks=20, title=Var.name if title else None, row=row, col=col
+        range=[xmin, xmax],
+        nticks=20,
+        title=Var.name if title else None,
+        row=row,
+        col=col,
+    )
+    # Add one specific tick label on the x axis
+    # fig.update_xaxes(tickvals=[Var.get_mean(p)], row=row, col=col)
+    # Add distribution's mean as an annotation with small font size
+    fig.add_annotation(
+        x=Var.get_mean(p),
+        y=max(p) * 1.1,
+        text=f"{Var.get_mean(p):.2f}",
+        showarrow=False,
+        font=dict(size=6),
+        row=row,
+        col=col,
     )
     return -1
