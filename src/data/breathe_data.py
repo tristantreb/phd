@@ -6,7 +6,7 @@ import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.modelling_o2.ho2sat as ho2sat
 
 
-def fetch_from_excel():
+def load_from_excel():
     plotsdir = "../../../../PlotsBreathe/O2_modelling/"
     df = pd.read_excel(plotsdir + "/Breathe_O2_FEV1.xlsx")
     # ID column as type string
