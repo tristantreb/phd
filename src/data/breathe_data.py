@@ -7,8 +7,8 @@ import src.modelling_o2.ho2sat as ho2sat
 
 
 def load_from_excel():
-    plotsdir = "../../../../PlotsBreathe/O2_modelling/"
-    df = pd.read_excel(plotsdir + "/Breathe_O2_FEV1.xlsx")
+    exceldir = "../../../../ExcelFiles/"
+    df = pd.read_excel(exceldir + "/Breathe_O2_FEV1.xlsx")
     # ID column as type string
     df["ID"] = df["ID"].astype(str)
     # Date Redocrded as datetime
