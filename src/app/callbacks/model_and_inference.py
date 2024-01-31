@@ -100,6 +100,7 @@ def model_and_inference_callback(app):
             [None, None, None, None, None, None],  # 6
             [None, None, None, None, posterior, None],  # 7
             [None, None, None, None, None, None],  # 8
+            [None, None, prior, None, None, None],  # 8
             [None, None, posterior, None, None, None],  # 9
             [None, None, None, None, None, None],  # 10
             [None, None, None, None, posterior, None],  # 11
@@ -154,23 +155,25 @@ def model_and_inference_callback(app):
         o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
 
         # IA
-        ih.plot_histogram(fig, IA, res_ia.values, ia_min, ia_max, 9, 3)
+        ih.plot_histogram(fig, IA, IA.prior[:, 0], ia_min, ia_max, 9, 3, False)
         fig["data"][7]["marker"]["color"] = "crimson"
+        ih.plot_histogram(fig, IA, res_ia.values, ia_min, ia_max, 10, 3)
+        fig["data"][8]["marker"]["color"] = "crimson"
 
         # UO2Sat
-        ih.plot_histogram(fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 11, 5)
-        fig["data"][8]["marker"]["color"] = "blue"
-        o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 11, 5)
+        ih.plot_histogram(fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 12, 5)
+        fig["data"][9]["marker"]["color"] = "blue"
+        o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 12, 5)
         # Put the message up from O2Sat to UO2Sat to see the result from the generative o2sat noise model
         tmp_UO2Sat = UO2Sat
         tmp_UO2Sat.name = "Message up from O2Sat"
         # Given o2sat_obs, get the idx of the bin in which it falls in O2Sat
         o2sat_obs_idx = np.where(O2Sat.midbins == O2Sat_obs)[0][0]
         ih.plot_histogram(
-            fig, tmp_UO2Sat, O2Sat.prior[o2sat_obs_idx, :], o2sat_min, o2sat_max, 14, 5
+            fig, tmp_UO2Sat, O2Sat.prior[o2sat_obs_idx, :], o2sat_min, o2sat_max, 15, 5
         )
-        fig["data"][9]["marker"]["color"] = "blue"
-        o2h.add_o2sat_normal_range_line(fig, O2Sat.prior[o2sat_obs_idx, :], 14, 5)
+        fig["data"][10]["marker"]["color"] = "blue"
+        o2h.add_o2sat_normal_range_line(fig, O2Sat.prior[o2sat_obs_idx, :], 15, 5)
 
         fig.update_layout(
             showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01
