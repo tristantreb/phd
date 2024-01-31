@@ -3,8 +3,8 @@ import numpy as np
 import src.models.helpers as mh
 
 
-def generate_o2sat_measurement(UO2Sat: mh.variableNode, std_gauss):
-    real = np.random.uniform(UO2Sat.a, UO2Sat.b)
+def generate_o2sat_measurement(a, b, std_gauss):
+    real = np.random.uniform(a, b)
 
     # Add gaussian noise to the number with a standard deviation of std_gauss
     noisy_real = np.random.normal(real, std_gauss)
@@ -14,12 +14,59 @@ def generate_o2sat_measurement(UO2Sat: mh.variableNode, std_gauss):
     return real, noisy_real, rounded
 
 
+def generate_o2sat_distribution(
+    O2Sat_span, uo2sat_bin, repetitions, std_gauss, show_std=False
+):
+    """
+    Generates the downwards distribution, P(O2Sat | UO2Sat = uo2sat_bin)
+    O2Sat_span: upper and lower boundaries of the O2 saturation variable that constraint the sampled values
+    uo2sat_bin: upper and lower boundary of the UO2Sat bin from which to sample from
+    """
+    o2sat_arr = np.array([])
+
+    # This represents P(O2Sat | UO2Sat = [uo2sat_down, uo2sat_up[)
+    for _ in range(repetitions):
+        _, _, o2sat_obs = generate_o2sat_measurement(
+            uo2sat_bin[0], uo2sat_bin[1], std_gauss
+        )
+        # Important: o2sat can't be above 100%.
+        # Important: to avoid dealing with issues on the lower boundary we also exclude values below it
+        ## That means the 3-4 first bins (50-54%) of O2Sat will have wrong values, but it's fine because o2 sat values
+        ## below 70% are pratically impossible (smallest measurement in Breathe data is 84%)
+        ## Adding a check to reflect this comment
+        if O2Sat_span[0] > 60:
+            raise ValueError(
+                f"Can't have O2Sat's lower boundary above 60, got {O2Sat_span[0]}"
+            )
+        if o2sat_obs >= O2Sat_span[0] and o2sat_obs <= O2Sat_span[1]:
+            o2sat_arr = np.append(o2sat_arr, o2sat_obs)
+
+    if show_std:
+        print(
+            f"Std of o2sat values for UO2Sat bin {uo2sat_bin}: {round(o2sat_arr.std(), 4)}"
+        )
+
+    # o2sat_arr shall only contain integers
+    hist, bin_edges = np.histogram(
+        o2sat_arr, bins=np.arange(O2Sat_span[0], O2Sat_span[1] + 2, 1)
+    )
+
+    # Normalize the histogram if hist is not empty
+    if sum(hist) > 0:
+        hist = hist / sum(hist)
+
+    return hist, bin_edges, o2sat_arr
+
+
 def generate_underlying_uo2sat_distribution(
     UO2Sat: mh.variableNode, o2sat_obs, repetitions, std_gauss, show_std=False
 ):
+    """
+    Generates the upwards distribution, P(UO2Sat | O2Sat)
+    """
     uo2sat_arr = np.array([])
     for _ in range(repetitions):
-        real, _, rounded = generate_o2sat_measurement(UO2Sat, std_gauss)
+        real, _, rounded = generate_o2sat_measurement(UO2Sat.a, UO2Sat.b, std_gauss)
         if rounded == o2sat_obs:
             uo2sat_arr = np.append(uo2sat_arr, real)
 
