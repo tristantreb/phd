@@ -127,11 +127,24 @@ class variableNode:
 
     def sample(self, n=1):
         """
-        Sample n values from the variable prior's distribution
+        Randomly samples n values from the variable prior's distribution
         """
-        return np.random.Generator.choice(
-            self.bins, n, p=self.prior.reshape(-1), shuffle=False
-        )
+        return np.random.choice(self.bins, n, p=self.prior.reshape(-1))
+
+    def get_distribution_as_sample(self, p, p_threshold=0.01, print_sample_size=True):
+        """
+        Creates a sample of n values that reflects the distribution best
+        Controle the sample size with p_threshold
+        """
+        n_vals_per_bin_arr = p / p_threshold
+        n_vals_per_bin_arr = np.round(n_vals_per_bin_arr)
+        n_vals_per_bin_arr = n_vals_per_bin_arr.astype(int)
+
+        if print_sample_size:
+            print(f"Sampling {sum(n_vals_per_bin_arr)} values from {self.name}")
+
+        bin_vals = np.repeat(self.bins, n_vals_per_bin_arr)
+        return bin_vals
 
     def set_prior(self, prior):
         """
