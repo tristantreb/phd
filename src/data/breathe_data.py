@@ -7,12 +7,19 @@ import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.modelling_o2.ho2sat as ho2sat
 
 
-def load_from_excel():
+def load_o2_fev1_df_from_excel():
     df = pd.read_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_O2_FEV1.xlsx")
     # ID column as type string
     df["ID"] = df["ID"].astype(str)
     # Date Redocrded as datetime
     df["Date Recorded"] = df["Date Recorded"].dt.date
+    return df
+
+
+def load_patient_df_from_excel():
+    df = pd.read_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_patients.xlsx")
+    # ID column as type string
+    df["ID"] = df["ID"].astype(str)
     return df
 
 

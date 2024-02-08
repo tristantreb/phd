@@ -3,7 +3,7 @@ import pandas as pd
 import src.data.helpers as dh
 
 
-def load_from_excel():
+def load_o2_fev1_df_from_excel():
     path = dh.get_path_to_main() + "ExcelFiles/SC/SC_O2_FEV1.xlsx"
     df = pd.read_excel(path)
     # ID column as type string
