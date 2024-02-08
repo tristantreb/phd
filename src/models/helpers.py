@@ -125,11 +125,16 @@ class variableNode:
         # Sets prior or CPT
         self.prior = self.set_prior(prior)
 
-    def sample(self, n=1):
+    def sample(self, n=1, p=None):
         """
         Randomly samples n values from the variable prior's distribution
+
+        By default it uses the variable's prior, but it can also use a custom distribution p
         """
-        return np.random.choice(self.bins, n, p=self.prior.reshape(-1))
+        if p is not None:
+            return np.random.choice(self.bins, n, p=p.reshape(-1))
+        else:
+            return np.random.choice(self.bins, n, p=self.prior.reshape(-1))
 
     def get_distribution_as_sample(self, p, p_threshold=0.01, print_sample_size=True):
         """
