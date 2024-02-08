@@ -1,7 +1,7 @@
 import pandas as pd
 
-import src.data.measurements_data as measurements_data
-import src.data.patients_data as patients_data
+import src.data.smartcare_measurements as smartcare_measurements
+import src.data.smartcare_patients as smartcare_patients
 import src.modelling_fev1.effort_corrected_fev1 as ecfev1
 import src.modelling_fev1.pred_fev1 as pred_fev1
 
@@ -9,8 +9,8 @@ datadir = "../../../../SmartCareData/"
 
 
 def create():
-    df_measurements = measurements_data.load()
-    df_patient = patients_data.load()
+    df_measurements = smartcare_measurements.load()
+    df_patient = smartcare_patients.load()
 
     print("\n** Creating DataFrame for O2 FEV1 analysis **")
     # Extract O2 and FEV1 measurements

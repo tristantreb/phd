@@ -1,7 +1,6 @@
-import os
-
 import numpy as np
 
+import src.data.helpers as dh
 import src.models.helpers as mh
 
 
@@ -30,11 +29,7 @@ def get_cpt(vars: [mh.variableNode]):
     )
     filename = "_".join(filenames)
 
-    path = os.getcwd().split("src")[0] + "src/models/cpts/" + filename + ".txt"
-
-    # Check if filename exists
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"File {path} not found")
+    path = dh.get_path_to_src() + "models/cpts/" + filename + ".txt"
 
     cpt = np.loadtxt(path, delimiter=",")
     return cpt
