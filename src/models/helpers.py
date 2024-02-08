@@ -230,3 +230,30 @@ class variableNode:
         Returns the distribution's mode given an array of probabilities
         """
         return self.bins[np.argmax(p)] + self.bin_width / 2
+
+
+def encode_node_variable(var):
+    """
+    We must encode variables to JSON format to share them between Dash's callbacks
+    """
+    var_as_dict = vars(var)
+    var_as_dict = {k: var_as_dict[k] for k in ("name", "a", "b", "bin_width", "prior")}
+    # Transform ndarray to list
+    var_as_dict["prior"] = var_as_dict["prior"].tolist()
+    return json.dumps(var_as_dict)
+
+
+def decode_node_variable(jsoned_var):
+    """
+    Decoding variables from JSON format
+    """
+    # From json to dict
+    jsoned_var = json.loads(jsoned_var)
+    name = jsoned_var["name"]
+    a = jsoned_var["a"]
+    b = jsoned_var["b"]
+    bin_width = jsoned_var["bin_width"]
+    class_var = variableNode(name, a, b, bin_width, prior=None)
+    # Transform list to ndarray
+    class_var.prior = np.array(jsoned_var["prior"])
+    return class_var

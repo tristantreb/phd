@@ -3,8 +3,8 @@ import os
 import dash_bootstrap_components as dbc
 from dash import Dash, dcc, html
 
-from src.app.callbacks.calc_cpts import calc_cpts_callback
-from src.app.callbacks.model_and_inference import model_and_inference_callback
+from src.app.callbacks.build_model_and_infer import model_and_inference_callback
+from src.app.callbacks.build_variables import build_variables_callback
 from src.app.components.fev1_slider import fev1_slider_layout
 from src.app.components.id_info import id_info_layout
 from src.app.components.o2sat_slider import O2Sat_slider_layout
@@ -51,7 +51,7 @@ app.layout = dbc.Container(
 )
 
 
-calc_cpts_callback(app)
+build_variables_callback(app)
 model_and_inference_callback(app)
 
 app.run_server(debug=True, port=8051, use_reloader=False)
