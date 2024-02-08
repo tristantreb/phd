@@ -4,7 +4,7 @@ Use functions in this file to define the model's variables, their name, discreti
 Each function corresponds to a full set of variables to be plugged into a bayesian network
 """
 
-import src.models.cpts.load as cptloader
+import src.models.cpts.load_cpt as cptloader
 import src.models.helpers as mh
 
 

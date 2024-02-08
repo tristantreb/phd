@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 
@@ -33,3 +35,11 @@ def load_excel(file_path, str_cols_to_arrays=None):
 def _str_to_array(s):
     s_cleaned = s.replace("\\n", "")
     return np.fromstring(s_cleaned[1:-1], sep=" ")
+
+
+def get_path_to_src():
+    return os.getcwd().split("src")[0] + "src/"
+
+
+def get_path_to_main():
+    return os.getcwd().split("PhD")[0] + "PhD/"
