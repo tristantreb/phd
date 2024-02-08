@@ -26,6 +26,7 @@ def load_excel(file_path, str_cols_to_arrays=None):
     """
     df = pd.read_excel(file_path)
 
+    # Convert the given string columns to arrays
     if str_cols_to_arrays:
         for col in str_cols_to_arrays:
             df[col] = df[col].apply(_str_to_array)
