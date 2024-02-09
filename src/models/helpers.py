@@ -132,9 +132,9 @@ class variableNode:
         By default it uses the variable's prior, but it can also use a custom distribution p
         """
         if p is not None:
-            return np.random.choice(self.bins, n, p=p.reshape(-1))
+            return np.random.choice(self.midbins, n, p=p.reshape(-1))
         else:
-            return np.random.choice(self.bins, n, p=self.prior.reshape(-1))
+            return np.random.choice(self.midbins, n, p=self.prior.reshape(-1))
 
     def get_distribution_as_sample(self, p, p_threshold=0.01, print_sample_size=True):
         """
