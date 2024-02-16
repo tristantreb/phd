@@ -54,4 +54,4 @@ app.layout = dbc.Container(
 build_variables_callback(app)
 model_and_inference_callback(app)
 
-app.run_server(debug=True, port=8051, use_reloader=False)
+app.run_server(debug=True, port=8052, use_reloader=False)

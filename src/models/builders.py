@@ -456,3 +456,31 @@ def o2sat_fev1_point_in_time_model_cf_priors(height, age, sex, ar_prior, ia_prio
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+
+
+def o2sat_fev1_point_in_time_model_cf_ia_prior(height, age, sex):
+    """
+    Point in time model with full FEV1 and O2Sat sides
+
+    There is no factor linking AR and IA in this model
+    The priors for IA is learnt from the Breathe data
+    """
+
+    (
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+    ) = var_builders.o2sat_fev1_point_in_time_cf_ia_prior(height, age, sex)
+
+    (
+        model,
+        inf_alg,
+    ) = bayes_net_builders.fev1_o2sat_point_in_time_model(
+        HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+    )
+    return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
