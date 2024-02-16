@@ -4,6 +4,50 @@ from scipy.stats import norm
 import src.models.helpers as mh
 
 
+def get_IA_breathe_prior():
+    """
+    Prior for IA learnt on the Breathe dataset
+
+    See 2024-02-06_point_in_time_model_validation.ipynb
+    Built for the following parametrisation IA = mh.variableNode("Inactive alveoli (%)", 0, 30, 1, prior={"type": "uniform"})
+    """
+    prior = np.array(
+        [
+            5.36355675e-01,
+            2.66767859e-01,
+            1.13131207e-01,
+            4.66606260e-02,
+            1.98108665e-02,
+            8.75698488e-03,
+            4.09439933e-03,
+            2.02727345e-03,
+            1.01367484e-03,
+            5.06547100e-04,
+            2.76685880e-04,
+            1.67053401e-04,
+            1.10943203e-04,
+            8.05764823e-05,
+            5.91724343e-05,
+            4.22907658e-05,
+            3.61250560e-05,
+            3.08420975e-05,
+            1.75300246e-05,
+            9.24248083e-06,
+            1.30604702e-05,
+            1.68367810e-05,
+            1.08827456e-05,
+            3.21698274e-06,
+            4.05516399e-07,
+            2.21446540e-08,
+            4.76466662e-10,
+            1.43163804e-12,
+            0.00000000e00,
+            0.00000000e00,
+        ]
+    )
+    return prior.reshape(-1, 1)
+
+
 def get_std_func(ar):
     """
     Std of IA as a function of AR
