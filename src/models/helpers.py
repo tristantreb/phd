@@ -184,6 +184,8 @@ class variableNode:
             p = self._uniform_prior_with_gaussian_tail(
                 prior["constant"], prior["sigma"]
             )
+        elif prior["type"] == "custom":
+            p = prior["p"]
         else:
             raise ValueError(f"Prior for {self.name} not recognized")
 
@@ -235,6 +237,19 @@ class variableNode:
         Returns the distribution's mode given an array of probabilities
         """
         return self.bins[np.argmax(p)] + self.bin_width / 2
+
+    def get_bin_for_value(self, obs: float, tol=TOL_GLOBAL):
+        """
+        Given an observation and an array of bins, this returns the bin that the value falls into
+        """
+        # Center bins around value observed
+        relative_bins = self.bins - obs - tol
+
+        # Find the highest negative value of the bins relative to centered bins
+        idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
+
+        (lower_idx, upper_idx) = self.bins_arr[idx]
+        return "[{}; {})".format(lower_idx, upper_idx), idx
 
 
 def encode_node_variable(var):
