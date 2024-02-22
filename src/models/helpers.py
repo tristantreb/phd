@@ -127,14 +127,21 @@ class variableNode:
 
     def sample(self, n=1, p=None):
         """
-        Randomly samples n values from the variable prior's distribution
+        Randomly samples n bins from the variable prior's distribution
+        Then samples n values from the sampled bins
 
         By default it uses the variable's prior, but it can also use a custom distribution p
         """
         if p is not None:
-            return np.random.choice(self.midbins, n, p=p.reshape(-1))
+            midbins = np.random.choice(self.midbins, n, p=p.reshape(-1))
         else:
-            return np.random.choice(self.midbins, n, p=self.prior.reshape(-1))
+            midbins = np.random.choice(self.midbins, n, p=self.prior.reshape(-1))
+
+        def sample_from_bin(bin):
+            return np.random.uniform(bin - self.bin_width / 2, bin + self.bin_width / 2)
+
+        sample = np.array(list(map(sample_from_bin, midbins)))
+        return sample
 
     def get_distribution_as_sample(self, p, p_threshold=0.01, print_sample_size=True):
         """
