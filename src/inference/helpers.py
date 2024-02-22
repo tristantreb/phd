@@ -49,6 +49,9 @@ def infer(
 
 # Given an observation and an array of bins, this returns the bin that the value falls into
 def get_bin_for_value(obs: float, var: mh.variableNode, tol=TOL_GLOBAL):
+    """
+    Obsolete as this function has been added ot the variableNode class
+    """
     # Center bins around value observed
     relative_bins = var.bins - obs - tol
 
