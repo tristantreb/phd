@@ -101,6 +101,52 @@ def build_pgmpy_o2sat_cpt(O2Sat, UO2Sat):
     )
 
 
+def build_pgmpy_hfev1_factor_fn(HFEV1):
+    return DiscreteFactor([HFEV1.name], [len(HFEV1.bins)], HFEV1.cpt)
+
+
+def build_pgmpy_ecfev1_factor_fn(ecFEV1, HFEV1, AR):
+    return DiscreteFactor(
+        [ecFEV1.name, HFEV1.name, AR.name],
+        [len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)],
+        ecFEV1.cpt,
+    )
+
+
+def build_pgmpy_ar_factor_fn(AR):
+    return DiscreteFactor([AR.name], [len(AR.bins)], AR.cpt)
+
+
+def build_pgmpy_ho2sat_factor_fn(HO2Sat):
+    return DiscreteFactor([HO2Sat.name], [len(HO2Sat.bins)], HO2Sat.cpt)
+
+
+def build_pgmpy_o2satffa_factor_fn(O2SatFFA, HO2Sat, AR):
+    return DiscreteFactor(
+        [O2SatFFA.name, HO2Sat.name, AR.name],
+        [len(O2SatFFA.bins), len(HO2Sat.bins), len(AR.bins)],
+        O2SatFFA.cpt,
+    )
+
+
+def build_pgmpy_ia_factor_fn(IA):
+    return DiscreteFactor([IA.name], [len(IA.bins)], IA.cpt)
+
+
+def build_pgmpy_uo2sat_factor_fn(UO2Sat, O2SatFFA, IA):
+    return DiscreteFactor(
+        [UO2Sat.name, O2SatFFA.name, IA.name],
+        [len(UO2Sat.bins), len(O2SatFFA.bins), len(IA.bins)],
+        UO2Sat.cpt,
+    )
+
+
+def build_pgmpy_o2sat_factor_fn(O2Sat, UO2Sat):
+    return DiscreteFactor(
+        [O2Sat.name, UO2Sat.name], [len(O2Sat.bins), len(UO2Sat.bins)], O2Sat.cpt
+    )
+
+
 def fev1_o2sat_point_in_time_model(
     HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 ):
@@ -112,7 +158,7 @@ def fev1_o2sat_point_in_time_model(
     prior_ar = build_pgmpy_ar_prior(AR)
     prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
     cpt_o2satffa = build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR)
-    cpt_ia = build_pgmpy_ia_prior(IA)
+    prior_ia = build_pgmpy_ia_prior(IA)
     cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
     cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
 
@@ -134,7 +180,7 @@ def fev1_o2sat_point_in_time_model(
         prior_hfev1,
         prior_ho2sat,
         cpt_o2satffa,
-        cpt_ia,
+        prior_ia,
         cpt_uo2sat,
         cpt_o2sat,
     )
@@ -187,24 +233,65 @@ def fev1_o2sat_point_in_time_model_2(
 
 
 def fev1_o2sat_point_in_time_factor_graph(
-    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model=False
+    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model=True
 ):
     """
     AR and IA have no direct link in this model
     """
 
-    phi1 = DiscreteFactor(
-        [ecFEV1.name, HFEV1.name, AR.name],
-        [len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)],
-        ecFEV1.cpt.reshape(len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)),
-    )
+    prior_hfev1 = build_pgmpy_hfev1_factor_fn(HFEV1)
+    cpt_ecfev1 = build_pgmpy_ecfev1_factor_fn(ecFEV1, HFEV1, AR)
+    prior_ar = build_pgmpy_ar_factor_fn(AR)
+    prior_ho2sat = build_pgmpy_ho2sat_factor_fn(HO2Sat)
+    cpt_o2satffa = build_pgmpy_o2satffa_factor_fn(O2SatFFA, HO2Sat, AR)
+    prior_ia = build_pgmpy_ia_factor_fn(IA)
+    cpt_uo2sat = build_pgmpy_uo2sat_factor_fn(UO2Sat, O2SatFFA, IA)
+    cpt_o2sat = build_pgmpy_o2sat_factor_fn(O2Sat, UO2Sat)
 
     G = FactorGraph()
-    G.add_nodes_from([HFEV1.name, ecFEV1.name, AR.name])
-    G.add_factors(phi1)
-    G.add_edges_from([(HFEV1.name, phi1), (AR.name, phi1), (phi1, ecFEV1.name)])
+    G.add_nodes_from(
+        [
+            HFEV1.name,
+            ecFEV1.name,
+            AR.name,
+            HO2Sat.name,
+            O2SatFFA.name,
+            IA.name,
+            UO2Sat.name,
+            O2Sat.name,
+        ]
+    )
+    G.add_factors(
+        prior_hfev1,
+        cpt_ecfev1,
+        prior_ar,
+        prior_ho2sat,
+        cpt_o2satffa,
+        prior_ia,
+        cpt_uo2sat,
+        cpt_o2sat,
+    )
+    G.add_edges_from(
+        [
+            (prior_hfev1, HFEV1.name),
+            (HFEV1.name, cpt_ecfev1),
+            (prior_ar, AR.name),
+            (AR.name, cpt_ecfev1),
+            (AR.name, cpt_o2satffa),
+            (prior_ho2sat, HO2Sat.name),
+            (HO2Sat.name, cpt_o2satffa),
+            (cpt_o2satffa, O2SatFFA.name),
+            (O2SatFFA.name, cpt_uo2sat),
+            (prior_ia, IA.name),
+            (IA.name, cpt_uo2sat),
+            (cpt_uo2sat, UO2Sat.name),
+            (UO2Sat.name, cpt_o2sat),
+            (cpt_ecfev1, ecFEV1.name),
+        ]
+    )
 
     if check_model:
         assert G.check_model() == True
+        print("Model is valid")
 
     return G

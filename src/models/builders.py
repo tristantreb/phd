@@ -510,7 +510,7 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
-def o2sat_fev1_point_in_time_model_2(height, age, sex):
+def o2sat_fev1_point_in_time_model_2(height, age, sex, check_model=False):
     """
     Point in time model with full FEV1 and O2Sat sides
 
@@ -530,7 +530,7 @@ def o2sat_fev1_point_in_time_model_2(height, age, sex):
     ) = var_builders.o2sat_fev1_point_in_time(height, age, sex)
 
     model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
-        HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+        HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model=False
     )
     inf_alg = apply_pgmpy_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
