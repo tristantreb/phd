@@ -20,9 +20,7 @@ def calc_hfev1_prior(hfev1_bins, height, age, sex):
 
     # Get probabilities for each bin
     p = norm.pdf(zscores)
-    p = p / p.sum()
-
-    return p.reshape(len(hfev1_bins), 1)
+    return p / p.sum()
 
 
 def calc_FEV1_prct_predicted_df(df):
