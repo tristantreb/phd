@@ -25,23 +25,6 @@ def name_to_abbr(name: str):
     return abbr
 
 
-def get_cpt_2D(vars: List[mh.variableNode]):
-    """
-    Function specific to PGMPY which takes in only 2D arrays.
-    Obsolete: Use get_cpt instead and reshape your array upon loading if necessary.
-    """
-    var_spec = map(
-        lambda var: f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}", vars
-    )
-    filename = "_".join(var_spec)
-    path = dh.get_path_to_src() + "models/cpts/" + filename + ".txt"
-
-    cpt = np.loadtxt(path, delimiter=",")
-
-    assert 2 == len(cpt.shape)
-    return cpt
-
-
 def get_cpt(vars: List[mh.variableNode]):
     path_to_folder = dh.get_path_to_src() + "models/cpts/"
     var_spec = map(
