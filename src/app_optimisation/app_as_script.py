@@ -10,6 +10,7 @@ sex = "Male"
 age = 30
 height = 175
 
+
 def calc_cpts(sex: str, age: int, height: int):
     # TODO: why not int by default?
     height = int(height)
@@ -126,25 +127,23 @@ def model_and_inference(
     ia_max = 90
 
     # HFEV1
-    ih.plot_histogram(fig, HFEV1, HFEV1.prior[:, 0], fev1_min, fev1_max, 1, 1, False)
+    ih.plot_histogram(fig, HFEV1, HFEV1.cpt[:, 0], fev1_min, fev1_max, 1, 1, False)
     fig["data"][0]["marker"]["color"] = "green"
 
     ih.plot_histogram(fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1)
     fig["data"][1]["marker"]["color"] = "green"
 
     # HO2Sat
-    ih.plot_histogram(
-        fig, HO2Sat, HO2Sat.prior[:, 0], o2sat_min, o2sat_max, 1, 5, False
-    )
+    ih.plot_histogram(fig, HO2Sat, HO2Sat.cpt[:, 0], o2sat_min, o2sat_max, 1, 5, False)
     fig["data"][2]["marker"]["color"] = "blue"
-    o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.prior[:, 0]), 1, 5)
+    o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.cpt[:, 0]), 1, 5)
 
     ih.plot_histogram(fig, HO2Sat, res_ho2sat.values, o2sat_min, o2sat_max, 2, 5)
     fig["data"][3]["marker"]["color"] = "blue"
     o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
 
     # AR
-    ih.plot_histogram(fig, AR, AR.prior[:, 0], AR.a, AR.b, 4, 3, False)
+    ih.plot_histogram(fig, AR, AR.cpt[:, 0], AR.a, AR.b, 4, 3, False)
     fig["data"][4]["marker"]["color"] = "crimson"
 
     ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3)
@@ -169,10 +168,10 @@ def model_and_inference(
     # Given o2sat_obs, get the idx of the bin in which it falls in O2Sat
     o2sat_obs_idx = np.where(O2Sat.midbins == O2Sat_obs)[0][0]
     ih.plot_histogram(
-        fig, tmp_UO2Sat, O2Sat.prior[o2sat_obs_idx, :], o2sat_min, o2sat_max, 14, 5
+        fig, tmp_UO2Sat, O2Sat.cpt[o2sat_obs_idx, :], o2sat_min, o2sat_max, 14, 5
     )
     fig["data"][9]["marker"]["color"] = "blue"
-    o2h.add_o2sat_normal_range_line(fig, O2Sat.prior[o2sat_obs_idx, :], 14, 5)
+    o2h.add_o2sat_normal_range_line(fig, O2Sat.cpt[o2sat_obs_idx, :], 14, 5)
 
     fig.update_layout(
         showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01
@@ -197,6 +196,7 @@ def main():
         97,
     )
     return -1
+
 
 main()
 

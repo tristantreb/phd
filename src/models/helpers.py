@@ -1,5 +1,6 @@
 # Helper functions to create models for belief propagation
 import json
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -92,15 +93,22 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
     return PDF_X_x_Y(z, x_a, x_b, 1 - y_b, 1 - y_a)
 
 
-## Variable node
 class variableNode:
+    """
+    This variable node class can be used to build Bayesian networks as well as factor graphs.
+
+    Use the prior parameter to define the prior of the variable during instanciation. If the variable is a child variable, then the prior should be None.
+    Use set_cpt to define the conditional probability table of the variable.
+    For simplicity, both prior and cpt then belong to the class's "cpt" attribute
+    """
+
     def __init__(self, name: str, a, b, bin_width, prior):
         """
         name: variable's name (e.g. "Healthy FEV1 (L)")
         a: lower bound of the variable's domain
         b: upper bound of the variable's domain
         bin_width: width of the bins
-        prior: variable's prior distribution, possible None if it's a cpt
+        prior: if the prior is None, then the variable is a child variable (and has a CPT)
         """
         self.tol = TOL_GLOBAL
         self.name = name
@@ -122,8 +130,8 @@ class variableNode:
         self.bins_str = list(
             map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
         )
-        # Sets prior or CPT
-        self.prior = self.set_prior(prior)
+
+        self.cpt = self.set_prior(prior)
 
     def sample(self, n=1, p=None):
         """
@@ -136,7 +144,7 @@ class variableNode:
         if p is not None:
             midbins = np.random.choice(self.midbins, n, p=p.reshape(-1))
         else:
-            midbins = np.random.choice(self.midbins, n, p=self.prior.reshape(-1))
+            midbins = np.random.choice(self.midbins, n, p=self.cpt.reshape(-1))
 
         # If the variable is inherently discrete, return the midbins
         if self.name == "O2 saturation (%)":
@@ -170,8 +178,8 @@ class variableNode:
     def set_prior(self, prior):
         """
         The prior of node variable is a 2D array of shape (len(bins), 1), so that: sum(P(nodeVariable)) = 1
-        That is because in PGMPY, a prior is essentially a CPT with only one parent state
         """
+        # TODO: A prior should be a 1D array. For all priros below, go to the function and update it to return a 1D array
         # Child variables have no prior
         if prior == None:
             return None
@@ -242,6 +250,17 @@ class variableNode:
         p_arr = p_arr / sum(p_arr)
         return p_arr
 
+    def set_cpt(self, cpt):
+        """
+        Set the conditional probability table of the variable
+        Checks that the sum of the probabilities is 1
+        """
+        total_p = np.sum(cpt, axis=0)
+        assert (
+            (total_p - 1) < self.tol
+        ).all(), f"Error checking CPT: The sum of the probabilities should be 1, got {total_p}"
+        self.cpt = cpt
+
     def get_mean(self, p):
         """
         Returns the distribution's mean given an array of probabilities
@@ -273,9 +292,9 @@ def encode_node_variable(var):
     We must encode variables to JSON format to share them between Dash's callbacks
     """
     var_as_dict = vars(var)
-    var_as_dict = {k: var_as_dict[k] for k in ("name", "a", "b", "bin_width", "prior")}
+    var_as_dict = {k: var_as_dict[k] for k in ("name", "a", "b", "bin_width", "cpt")}
     # Transform ndarray to list
-    var_as_dict["prior"] = var_as_dict["prior"].tolist()
+    var_as_dict["cpt"] = var_as_dict["cpt"].tolist()
     return json.dumps(var_as_dict)
 
 
@@ -291,5 +310,5 @@ def decode_node_variable(jsoned_var):
     bin_width = jsoned_var["bin_width"]
     class_var = variableNode(name, a, b, bin_width, prior=None)
     # Transform list to ndarray
-    class_var.prior = np.array(jsoned_var["prior"])
+    class_var.cpt = np.array(jsoned_var["cpt"])
     return class_var
