@@ -6,6 +6,7 @@ import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
+from src.inference.inf_algs import apply_pgmpy_bp
 
 
 def model_and_inference_callback(app):
@@ -52,9 +53,11 @@ def model_and_inference_callback(app):
         O2Sat = mh.decode_node_variable(O2Sat)
 
         # Build model
-        _, inf_alg = graph_builders.fev1_o2sat_point_in_time_model(
+        model = graph_builders.fev1_o2sat_point_in_time_model(
             HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
         )
+
+        inf_alg = apply_pgmpy_bp(model)
 
         # INFERENCE
         print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)

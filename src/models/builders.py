@@ -8,12 +8,12 @@ import numpy as np
 
 # PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
 from pgmpy.factors.discrete import TabularCPD
-from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 import src.models.var_builders as var_builders
+from src.inference.inf_algs import apply_pgmpy_bp
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -130,7 +130,7 @@ def build_full_FEV1_side(
 
     model.check_model()
 
-    inf_alg = BeliefPropagation(model)
+    inf_alg = apply_pgmpy_bp(model)
     return model, inf_alg, HFEV1, LD, UFEV1, SAB, FEV1
 
 
@@ -181,7 +181,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
 
     model.check_model()
 
-    inf_alg = BeliefPropagation(model)
+    inf_alg = apply_pgmpy_bp(model)
 
     return model, inf_alg, FEV1, HFEV1, AB
 
@@ -261,7 +261,7 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2_sat_ffa)
 
     model.check_model()
-    inf_alg = BeliefPropagation(model)
+    inf_alg = apply_pgmpy_bp(model)
     print(f"Time to build model: {time.time() - tic}")
     return (model, inf_alg, HFEV1, ecFEV1, AR)
     # return (model, inf_alg, HFEV1, ecFEV1, HO2Sat, O2SatFFA, AR)
@@ -388,7 +388,7 @@ def build_longitudinal_FEV1_side(
 
     model.check_model()
 
-    inf_alg = BeliefPropagation(model)
+    inf_alg = apply_pgmpy_bp(model)
     return (
         model,
         inf_alg,
@@ -419,12 +419,10 @@ def o2sat_fev1_point_in_time_model(height, age, sex):
         O2Sat,
     ) = var_builders.o2sat_fev1_point_in_time(height, age, sex)
 
-    (
-        model,
-        inf_alg,
-    ) = graph_builders.fev1_o2sat_point_in_time_model(
+    model = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
+    inf_alg = apply_pgmpy_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -449,12 +447,11 @@ def o2sat_fev1_point_in_time_model_cf_priors(height, age, sex, ar_prior, ia_prio
         height, age, sex, ar_prior, ia_prior
     )
 
-    (
-        model,
-        inf_alg,
-    ) = graph_builders.fev1_o2sat_point_in_time_model(
+    model = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
+    inf_alg = apply_pgmpy_bp(model)
+
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -478,12 +475,10 @@ def o2sat_fev1_point_in_time_model_cf_ia_prior(height, age, sex):
         O2Sat,
     ) = var_builders.o2sat_fev1_point_in_time_cf_ia_prior(height, age, sex)
 
-    (
-        model,
-        inf_alg,
-    ) = graph_builders.fev1_o2sat_point_in_time_model(
+    model = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
+    inf_alg = apply_pgmpy_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -508,12 +503,10 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
         height, age, sex, ar_prior, cpd_ar_ia
     )
 
-    (
-        model,
-        inf_alg,
-    ) = graph_builders.fev1_o2sat_point_in_time_model_2(
+    model = graph_builders.fev1_o2sat_point_in_time_model_2(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
+    inf_alg = apply_pgmpy_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -539,5 +532,5 @@ def o2sat_fev1_point_in_time_model_2(height, age, sex):
     model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
-    inf_alg = BeliefPropagation(model)
+    inf_alg = apply_pgmpy_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
