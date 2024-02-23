@@ -49,10 +49,10 @@ def o2sat_fev1_point_in_time(height, age, sex):
     O2Sat = mh.variableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
     # Calculate CPTs
-    ecFEV1.prior = cptloader.get_cpt([ecFEV1, HFEV1, AR])
-    O2SatFFA.prior = cptloader.get_cpt([O2SatFFA, HO2Sat, AR])
-    UO2Sat.prior = cptloader.get_cpt([UO2Sat, O2SatFFA, IA])
-    O2Sat.prior = cptloader.get_cpt([O2Sat, UO2Sat])
+    ecFEV1.prior = cptloader.get_cpt_2D([ecFEV1, HFEV1, AR])
+    O2SatFFA.prior = cptloader.get_cpt_2D([O2SatFFA, HO2Sat, AR])
+    UO2Sat.prior = cptloader.get_cpt_2D([UO2Sat, O2SatFFA, IA])
+    O2Sat.prior = cptloader.get_cpt_2D([O2Sat, UO2Sat])
 
     return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
@@ -97,10 +97,10 @@ def o2sat_fev1_point_in_time_cf_priors(height, age, sex, ar_prior, ia_prior):
     O2Sat = mh.variableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
     # Calculate CPTs
-    ecFEV1.prior = cptloader.get_cpt([ecFEV1, HFEV1, AR])
-    O2SatFFA.prior = cptloader.get_cpt([O2SatFFA, HO2Sat, AR])
-    UO2Sat.prior = cptloader.get_cpt([UO2Sat, O2SatFFA, IA])
-    O2Sat.prior = cptloader.get_cpt([O2Sat, UO2Sat])
+    ecFEV1.prior = cptloader.get_cpt_2D([ecFEV1, HFEV1, AR])
+    O2SatFFA.prior = cptloader.get_cpt_2D([O2SatFFA, HO2Sat, AR])
+    UO2Sat.prior = cptloader.get_cpt_2D([UO2Sat, O2SatFFA, IA])
+    O2Sat.prior = cptloader.get_cpt_2D([O2Sat, UO2Sat])
 
     AR.prior = ar_prior
     IA.prior = ia_prior
@@ -148,10 +148,10 @@ def o2sat_fev1_point_in_time_cf_ia_prior(height, age, sex):
     O2Sat = mh.variableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
     # Calculate CPTs
-    ecFEV1.prior = cptloader.get_cpt([ecFEV1, HFEV1, AR])
-    O2SatFFA.prior = cptloader.get_cpt([O2SatFFA, HO2Sat, AR])
-    UO2Sat.prior = cptloader.get_cpt([UO2Sat, O2SatFFA, IA])
-    O2Sat.prior = cptloader.get_cpt([O2Sat, UO2Sat])
+    ecFEV1.prior = cptloader.get_cpt_2D([ecFEV1, HFEV1, AR])
+    O2SatFFA.prior = cptloader.get_cpt_2D([O2SatFFA, HO2Sat, AR])
+    UO2Sat.prior = cptloader.get_cpt_2D([UO2Sat, O2SatFFA, IA])
+    O2Sat.prior = cptloader.get_cpt_2D([O2Sat, UO2Sat])
 
     IA.prior = ia.get_IA_breathe_prior()
 
@@ -202,10 +202,10 @@ def o2sat_fev1_point_in_time_model_ar_ia_factor_test(
     O2Sat = mh.variableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
     # Calculate CPTs
-    ecFEV1.prior = cptloader.get_cpt([ecFEV1, HFEV1, AR])
-    O2SatFFA.prior = cptloader.get_cpt([O2SatFFA, HO2Sat, AR])
-    UO2Sat.prior = cptloader.get_cpt([UO2Sat, O2SatFFA, IA])
-    O2Sat.prior = cptloader.get_cpt([O2Sat, UO2Sat])
+    ecFEV1.prior = cptloader.get_cpt_2D([ecFEV1, HFEV1, AR])
+    O2SatFFA.prior = cptloader.get_cpt_2D([O2SatFFA, HO2Sat, AR])
+    UO2Sat.prior = cptloader.get_cpt_2D([UO2Sat, O2SatFFA, IA])
+    O2Sat.prior = cptloader.get_cpt_2D([O2Sat, UO2Sat])
 
     IA.prior = ar_ia_cpd
 
