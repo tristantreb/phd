@@ -9,6 +9,19 @@ import src.models.cpts.load_cpt as cptloader
 import src.models.helpers as mh
 
 
+def fev1_point_in_time(height, age, sex):
+    """
+    Point in time model with full FEV1 side
+
+    """
+    hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
+    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
+    ecFEV1 = mh.variableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    AR = mh.variableNode("Airway resistance (%)", 0, 90, 2, prior={"type": "uniform"})
+    ecFEV1.set_cpt(cptloader.get_cpt([ecFEV1, HFEV1, AR]))
+    return HFEV1, ecFEV1, AR
+
+
 def o2sat_fev1_point_in_time(height, age, sex):
     """
     Point in time model with full FEV1 and O2Sat sides
