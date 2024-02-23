@@ -177,9 +177,8 @@ class variableNode:
 
     def set_prior(self, prior):
         """
-        The prior of node variable is a 2D array of shape (len(bins), 1), so that: sum(P(nodeVariable)) = 1
+        The prior should be a 1D array of probabilities
         """
-        # TODO: A prior should be a 1D array. For all priros below, go to the function and update it to return a 1D array
         # Child variables have no prior
         if prior == None:
             return None
@@ -213,22 +212,20 @@ class variableNode:
         else:
             raise ValueError(f"Prior for {self.name} not recognized")
 
-        total_p = sum(sum(p))
+        total_p = sum(p)
         assert (
             total_p - 1
         ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_p}"
         return p
 
     def _uniform_prior(self):
-        return np.array([1 / len(self.bins)] * len(self.bins)).reshape(
-            len(self.bins), 1
-        )
+        return np.array([1 / len(self.bins)] * len(self.bins))
 
     def _gaussian_prior(self, mu: float, sigma: float):
         # print("Defining gaussian prior with mu = {:.2f}, sigma = {}".format(mu, sigma))
         p_arr = norm.pdf(self.bins + self.bin_width / 2, loc=mu, scale=sigma)
-        p_arr_norm = [p_arr / sum(p_arr)]
-        return np.transpose(p_arr_norm)
+        p_arr_norm = p_arr / sum(p_arr)
+        return p_arr_norm
 
     def _uniform_prior_with_gaussian_tail(self, constant: float, sigma: float):
         u_prior = self._uniform_prior(self)
