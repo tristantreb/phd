@@ -55,7 +55,7 @@ def build_full_FEV1_side(
     prior_HFEV1 = TabularCPD(
         variable=HFEV1.name,
         variable_card=len(HFEV1.bins),
-        values=HFEV1.prior,
+        values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -68,7 +68,7 @@ def build_full_FEV1_side(
     prior_LD = TabularCPD(
         variable=LD.name,
         variable_card=len(LD.bins),
-        values=LD.prior,
+        values=LD.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -99,7 +99,7 @@ def build_full_FEV1_side(
     prior_SAB = TabularCPD(
         variable=SAB.name,
         variable_card=len(SAB.bins),
-        values=SAB.prior,
+        values=SAB.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -164,7 +164,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
     prior_ab = TabularCPD(
         variable=AB.name,
         variable_card=len(AB.bins),
-        values=AB.prior,
+        values=AB.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -172,7 +172,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
     prior_u = TabularCPD(
         variable=HFEV1.name,
         variable_card=len(HFEV1.bins),
-        values=HFEV1.prior,
+        values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -210,21 +210,21 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     prior_hfev1 = TabularCPD(
         variable=HFEV1.name,
         variable_card=len(HFEV1.bins),
-        values=HFEV1.prior,
+        values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
     )
     # prior_ho2sat = TabularCPD(
     #     variable=HO2Sat.name,
     #     variable_card=len(HO2Sat.bins),
-    #     values=HO2Sat.prior,
+    #     values=HO2Sat.cpt,
     #     evidence=[],
     #     evidence_card=[],
     # )
     prior_ar = TabularCPD(
         variable=AR.name,
         variable_card=len(AR.bins),
-        values=AR.prior,
+        values=AR.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -257,7 +257,7 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
         ]
     )
 
-    model.add_cpds(cpt_fev1, AR.prior, prior_hfev1)
+    model.add_cpds(cpt_fev1, AR.cpt, prior_hfev1)
     # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2_sat_ffa)
 
     model.check_model()
@@ -296,7 +296,7 @@ def build_longitudinal_FEV1_side(
     prior_HFEV1 = TabularCPD(
         variable=HFEV1.name,
         variable_card=len(HFEV1.bins),
-        values=HFEV1.prior,
+        values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -309,7 +309,7 @@ def build_longitudinal_FEV1_side(
     prior_LD = TabularCPD(
         variable=LD.name,
         variable_card=len(LD.bins),
-        values=LD.prior,
+        values=LD.cpt,
         evidence=[],
         evidence_card=[],
     )
@@ -350,7 +350,7 @@ def build_longitudinal_FEV1_side(
         prior_SAB_i = TabularCPD(
             variable=SAB_i.name,
             variable_card=len(SAB_i.bins),
-            values=SAB_i.prior,
+            values=SAB_i.cpt,
             evidence=[],
             evidence_card=[],
         )

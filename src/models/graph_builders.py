@@ -2,10 +2,103 @@
 Use functions in this file to build the lung health models using the PGMPY library
 
 Each function corresponds to a different bayesian network
+
+Note on PGMPY:
+- TabularCPD only accepts 2D arrays. Hence, non 2D CPTs/priors are reshaped to 2D arrays
 """
 
 from pgmpy.factors.discrete import DiscreteFactor, TabularCPD
 from pgmpy.models import BayesianNetwork, FactorGraph
+
+
+def build_pgmpy_hfev1_prior(HFEV1):
+    return TabularCPD(
+        variable=HFEV1.name,
+        variable_card=len(HFEV1.bins),
+        values=HFEV1.cpt.reshape(-1, 1),
+        evidence=[],
+        evidence_card=[],
+    )
+
+
+def build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR):
+    return TabularCPD(
+        variable=ecFEV1.name,
+        variable_card=len(ecFEV1.bins),
+        values=ecFEV1.cpt.reshape(len(ecFEV1.bins), -1),
+        evidence=[HFEV1.name, AR.name],
+        evidence_card=[len(HFEV1.bins), len(AR.bins)],
+    )
+
+
+def build_pgmpy_ar_prior(AR):
+    return TabularCPD(
+        variable=AR.name,
+        variable_card=len(AR.bins),
+        values=AR.cpt.reshape(-1, 1),
+        evidence=[],
+        evidence_card=[],
+    )
+
+
+def build_pgmpy_ho2sat_prior(HO2Sat):
+    return TabularCPD(
+        variable=HO2Sat.name,
+        variable_card=len(HO2Sat.bins),
+        values=HO2Sat.cpt.reshape(-1, 1),
+        evidence=[],
+        evidence_card=[],
+    )
+
+
+def build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR):
+    return TabularCPD(
+        variable=O2SatFFA.name,
+        variable_card=len(O2SatFFA.bins),
+        values=O2SatFFA.cpt.reshape(len(O2SatFFA.bins), -1),
+        evidence=[HO2Sat.name, AR.name],
+        evidence_card=[len(HO2Sat.bins), len(AR.bins)],
+    )
+
+
+def build_pgmpy_ia_prior(IA):
+    return TabularCPD(
+        variable=IA.name,
+        variable_card=len(IA.bins),
+        values=IA.cpt.reshape(-1, 1),
+        evidence=[],
+        evidence_card=[],
+    )
+
+
+def build_pgmpy_ia_cpt(IA, AR):
+    return TabularCPD(
+        variable=IA.name,
+        variable_card=len(IA.bins),
+        values=IA.cpt,
+        evidence=[AR.name],
+        evidence_card=[len(AR.bins)],
+    )
+
+
+def build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA):
+    return TabularCPD(
+        variable=UO2Sat.name,
+        variable_card=len(UO2Sat.bins),
+        values=UO2Sat.cpt.reshape(len(UO2Sat.bins), -1),
+        evidence=[O2SatFFA.name, IA.name],
+        evidence_card=[len(O2SatFFA.bins), len(IA.bins)],
+    )
+
+
+def build_pgmpy_o2sat_cpt(O2Sat, UO2Sat):
+    return TabularCPD(
+        variable=O2Sat.name,
+        variable_card=len(O2Sat.bins),
+        values=O2Sat.cpt,
+        evidence=[UO2Sat.name],
+        evidence_card=[len(UO2Sat.bins)],
+    )
 
 
 def fev1_o2sat_point_in_time_model(
@@ -14,63 +107,14 @@ def fev1_o2sat_point_in_time_model(
     """
     AR and IA have no direct link in this model
     """
-    prior_hfev1 = TabularCPD(
-        variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
-        values=HFEV1.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    cpt_ecfev1 = TabularCPD(
-        variable=ecFEV1.name,
-        variable_card=len(ecFEV1.bins),
-        values=ecFEV1.prior,
-        evidence=[HFEV1.name, AR.name],
-        evidence_card=[len(HFEV1.bins), len(AR.bins)],
-    )
-
-    prior_ar = TabularCPD(
-        variable=AR.name,
-        variable_card=len(AR.bins),
-        values=AR.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    prior_ho2sat = TabularCPD(
-        variable=HO2Sat.name,
-        variable_card=len(HO2Sat.bins),
-        values=HO2Sat.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    cpt_o2satffa = TabularCPD(
-        variable=O2SatFFA.name,
-        variable_card=len(O2SatFFA.bins),
-        values=O2SatFFA.prior,
-        evidence=[HO2Sat.name, AR.name],
-        evidence_card=[len(HO2Sat.bins), len(AR.bins)],
-    )
-    cpt_ia = TabularCPD(
-        variable=IA.name,
-        variable_card=len(IA.bins),
-        values=IA.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    cpt_uo2sat = TabularCPD(
-        variable=UO2Sat.name,
-        variable_card=len(UO2Sat.bins),
-        values=UO2Sat.prior,
-        evidence=[O2SatFFA.name, IA.name],
-        evidence_card=[len(O2SatFFA.bins), len(IA.bins)],
-    )
-    cpt_o2sat = TabularCPD(
-        variable=O2Sat.name,
-        variable_card=len(O2Sat.bins),
-        values=O2Sat.prior,
-        evidence=[UO2Sat.name],
-        evidence_card=[len(UO2Sat.bins)],
-    )
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+    cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
+    prior_ar = build_pgmpy_ar_prior(AR)
+    prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
+    cpt_o2satffa = build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR)
+    cpt_ia = build_pgmpy_ia_prior(IA)
+    cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
+    cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
 
     model = BayesianNetwork(
         [
@@ -105,63 +149,14 @@ def fev1_o2sat_point_in_time_model_2(
     """
     Update: AR causes IA according to a specific factor
     """
-    prior_hfev1 = TabularCPD(
-        variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
-        values=HFEV1.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    cpt_ecfev1 = TabularCPD(
-        variable=ecFEV1.name,
-        variable_card=len(ecFEV1.bins),
-        values=ecFEV1.prior,
-        evidence=[HFEV1.name, AR.name],
-        evidence_card=[len(HFEV1.bins), len(AR.bins)],
-    )
-
-    prior_ar = TabularCPD(
-        variable=AR.name,
-        variable_card=len(AR.bins),
-        values=AR.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    prior_ho2sat = TabularCPD(
-        variable=HO2Sat.name,
-        variable_card=len(HO2Sat.bins),
-        values=HO2Sat.prior,
-        evidence=[],
-        evidence_card=[],
-    )
-    cpt_o2satffa = TabularCPD(
-        variable=O2SatFFA.name,
-        variable_card=len(O2SatFFA.bins),
-        values=O2SatFFA.prior,
-        evidence=[HO2Sat.name, AR.name],
-        evidence_card=[len(HO2Sat.bins), len(AR.bins)],
-    )
-    cpt_ia = TabularCPD(
-        variable=IA.name,
-        variable_card=len(IA.bins),
-        values=IA.prior,
-        evidence=[AR.name],
-        evidence_card=[len(AR.bins)],
-    )
-    cpt_uo2sat = TabularCPD(
-        variable=UO2Sat.name,
-        variable_card=len(UO2Sat.bins),
-        values=UO2Sat.prior,
-        evidence=[O2SatFFA.name, IA.name],
-        evidence_card=[len(O2SatFFA.bins), len(IA.bins)],
-    )
-    cpt_o2sat = TabularCPD(
-        variable=O2Sat.name,
-        variable_card=len(O2Sat.bins),
-        values=O2Sat.prior,
-        evidence=[UO2Sat.name],
-        evidence_card=[len(UO2Sat.bins)],
-    )
+    prior_hfev1 = build_pgmpy_hfev1_prior
+    cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
+    prior_ar = build_pgmpy_ar_prior(AR)
+    prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
+    cpt_o2satffa = build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR)
+    cpt_ia = build_pgmpy_ia_cpt(IA, AR)
+    cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
+    cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
 
     model = BayesianNetwork(
         [
@@ -201,7 +196,7 @@ def fev1_o2sat_point_in_time_factor_graph(
     phi1 = DiscreteFactor(
         [ecFEV1.name, HFEV1.name, AR.name],
         [len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)],
-        ecFEV1.prior.reshape(len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)),
+        ecFEV1.cpt.reshape(len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)),
     )
 
     G = FactorGraph()
