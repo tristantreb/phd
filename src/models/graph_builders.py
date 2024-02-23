@@ -5,7 +5,6 @@ Each function corresponds to a different bayesian network
 """
 
 from pgmpy.factors.discrete import DiscreteFactor, TabularCPD
-from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork, FactorGraph
 
 
@@ -97,8 +96,7 @@ def fev1_o2sat_point_in_time_model(
     )
 
     model.check_model()
-    inf_alg = BeliefPropagation(model)
-    return model, inf_alg
+    return model
 
 
 def fev1_o2sat_point_in_time_model_2(
@@ -190,8 +188,7 @@ def fev1_o2sat_point_in_time_model_2(
     )
 
     model.check_model()
-    inf_alg = BeliefPropagation(model)
-    return model, inf_alg
+    return model
 
 
 def fev1_o2sat_point_in_time_factor_graph(
