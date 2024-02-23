@@ -4,9 +4,9 @@ Use functions in this file to build the lung health models using the PGMPY libra
 Each function corresponds to a different bayesian network
 """
 
-from pgmpy.factors.discrete import TabularCPD
+from pgmpy.factors.discrete import DiscreteFactor, TabularCPD
 from pgmpy.inference import BeliefPropagation
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import BayesianNetwork, FactorGraph
 
 
 def fev1_o2sat_point_in_time_model(
@@ -192,3 +192,26 @@ def fev1_o2sat_point_in_time_model_2(
     model.check_model()
     inf_alg = BeliefPropagation(model)
     return model, inf_alg
+
+
+def fev1_o2sat_point_in_time_factor_graph(
+    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+):
+    """
+    AR and IA have no direct link in this model
+    """
+
+    phi1 = DiscreteFactor(
+        [ecFEV1.name, HFEV1.name, AR.name],
+        [len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)],
+        ecFEV1.prior.reshape(len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)),
+    )
+
+    G = FactorGraph()
+    G.add_nodes_from([HFEV1.name, ecFEV1.name, AR.name])
+    G.add_factors(phi1)
+    G.add_edges_from([(HFEV1.name, phi1), (AR.name, phi1), (phi1, ecFEV1.name)])
+
+    G.check_model()
+    inf_alg = BeliefPropagation(G)
+    return G, inf_alg

@@ -515,3 +515,31 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+
+
+def o2sat_fev1_point_in_time_factor_graph(height, age, sex):
+    """
+    Point in time model with full FEV1 and O2Sat sides
+
+    There is no factor linking AR and IA in this model
+    IA and AR's priors are uniform
+    """
+
+    (
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+    ) = var_builders.o2sat_fev1_point_in_time(height, age, sex)
+
+    (
+        model,
+        inf_alg,
+    ) = bayes_net_builders.fev1_o2sat_point_in_time_factor_graph(
+        HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+    )
+    return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
