@@ -138,9 +138,9 @@ class variableNode:
         else:
             midbins = np.random.choice(self.midbins, n, p=self.prior.reshape(-1))
 
-        # Return integer values for O2 saturation
+        # If the variable is inherently discrete, return the midbins
         if self.name == "O2 saturation (%)":
-            return sample
+            return midbins
 
         def sample_from_bin(bin):
             """
