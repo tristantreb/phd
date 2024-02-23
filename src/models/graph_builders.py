@@ -147,6 +147,28 @@ def build_pgmpy_o2sat_factor_fn(O2Sat, UO2Sat):
     )
 
 
+def fev1_point_in_time_model(HFEV1, ecFEV1, AR):
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+    cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
+    prior_ar = build_pgmpy_ar_prior(AR)
+
+    model = BayesianNetwork(
+        [
+            (HFEV1.name, ecFEV1.name),
+            (AR.name, ecFEV1.name),
+        ]
+    )
+
+    model.add_cpds(
+        cpt_ecfev1,
+        prior_ar,
+        prior_hfev1,
+    )
+
+    model.check_model()
+    return model
+
+
 def fev1_o2sat_point_in_time_model(
     HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 ):

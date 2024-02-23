@@ -400,6 +400,21 @@ def build_longitudinal_FEV1_side(
     )
 
 
+def fev1_point_in_time_model(height, age, sex):
+    """
+    Point in time model with full FEV1 side
+    """
+
+    (
+        HFEV1,
+        ecFEV1,
+        AR,
+    ) = var_builders.fev1_point_in_time(height, age, sex)
+    model = graph_builders.fev1_point_in_time_model(HFEV1, ecFEV1, AR)
+    inf_alg = apply_pgmpy_bp(model)
+    return model, inf_alg, HFEV1, ecFEV1, AR
+
+
 def o2sat_fev1_point_in_time_model(height, age, sex):
     """
     Point in time model with full FEV1 and O2Sat sides
