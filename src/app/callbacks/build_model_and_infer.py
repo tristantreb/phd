@@ -4,7 +4,7 @@ from plotly.subplots import make_subplots
 
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
-import src.models.bayes_net_builders as bayes_net_builders
+import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 
 
@@ -52,7 +52,7 @@ def model_and_inference_callback(app):
         O2Sat = mh.decode_node_variable(O2Sat)
 
         # Build model
-        _, inf_alg = bayes_net_builders.fev1_o2sat_point_in_time_model(
+        _, inf_alg = graph_builders.fev1_o2sat_point_in_time_model(
             HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
         )
 

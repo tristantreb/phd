@@ -11,7 +11,7 @@ from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from pgmpy.models import BayesianNetwork
 
-import src.models.bayes_net_builders as bayes_net_builders
+import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 import src.models.var_builders as var_builders
 
@@ -422,7 +422,7 @@ def o2sat_fev1_point_in_time_model(height, age, sex):
     (
         model,
         inf_alg,
-    ) = bayes_net_builders.fev1_o2sat_point_in_time_model(
+    ) = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
@@ -452,7 +452,7 @@ def o2sat_fev1_point_in_time_model_cf_priors(height, age, sex, ar_prior, ia_prio
     (
         model,
         inf_alg,
-    ) = bayes_net_builders.fev1_o2sat_point_in_time_model(
+    ) = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
@@ -481,7 +481,7 @@ def o2sat_fev1_point_in_time_model_cf_ia_prior(height, age, sex):
     (
         model,
         inf_alg,
-    ) = bayes_net_builders.fev1_o2sat_point_in_time_model(
+    ) = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
@@ -511,13 +511,13 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
     (
         model,
         inf_alg,
-    ) = bayes_net_builders.fev1_o2sat_point_in_time_model_2(
+    ) = graph_builders.fev1_o2sat_point_in_time_model_2(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
-def o2sat_fev1_point_in_time_factor_graph(height, age, sex):
+def o2sat_fev1_point_in_time_model_2(height, age, sex):
     """
     Point in time model with full FEV1 and O2Sat sides
 
@@ -536,10 +536,8 @@ def o2sat_fev1_point_in_time_factor_graph(height, age, sex):
         O2Sat,
     ) = var_builders.o2sat_fev1_point_in_time(height, age, sex)
 
-    (
-        model,
-        inf_alg,
-    ) = bayes_net_builders.fev1_o2sat_point_in_time_factor_graph(
+    model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
+    inf_alg = BeliefPropagation(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat

@@ -195,7 +195,7 @@ def fev1_o2sat_point_in_time_model_2(
 
 
 def fev1_o2sat_point_in_time_factor_graph(
-    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
+    HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model=False
 ):
     """
     AR and IA have no direct link in this model
@@ -212,6 +212,7 @@ def fev1_o2sat_point_in_time_factor_graph(
     G.add_factors(phi1)
     G.add_edges_from([(HFEV1.name, phi1), (AR.name, phi1), (phi1, ecFEV1.name)])
 
-    G.check_model()
-    inf_alg = BeliefPropagation(G)
-    return G, inf_alg
+    if check_model:
+        assert G.check_model() == True
+
+    return G
