@@ -127,8 +127,9 @@ class variableNode:
 
     def sample(self, n=1, p=None):
         """
-        Randomly samples n bins from the variable prior's distribution
-        Then samples n values from the sampled bins
+        Randomly select a midbins from the variable prior's distribution
+        If the variable was continuous but has been discretised, it returns a random value inside the sampled bins range
+        If the variable is inherently dicrete (e.g. O2 saturation), it returns the midbin as it is the actual real value
 
         By default it uses the variable's prior, but it can also use a custom distribution p
         """
@@ -137,9 +138,17 @@ class variableNode:
         else:
             midbins = np.random.choice(self.midbins, n, p=self.prior.reshape(-1))
 
+        # Return integer values for O2 saturation
+        if self.name == "O2 saturation (%)":
+            return sample
+
         def sample_from_bin(bin):
+            """
+            When using a continuour variable discretised with bins, we sample from the bin
+            """
             return np.random.uniform(bin - self.bin_width / 2, bin + self.bin_width / 2)
 
+        # Otherwise sample from the bins
         sample = np.array(list(map(sample_from_bin, midbins)))
         return sample
 
