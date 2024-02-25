@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.stats import multivariate_normal
 
-from pgmpy.factors.distributions import BaseDistribution
+from src.pgmpy.factors.distributions import BaseDistribution
 
 
 class GaussianDistribution(BaseDistribution):
@@ -30,7 +30,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis = GD(variables=['x1', 'x2', 'x3'],
         ...          mean=np.array([1, -3, 4]),
         ...          cov=np.array([[4, 2, -2],
@@ -77,7 +77,7 @@ class GaussianDistribution(BaseDistribution):
 
         Examples
         --------
-        >>> from pgmpy.factors.distributions import GaussianDistribution
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution
         >>> dist = GD(variables=['x1', 'x2', 'x3'],
         ...           mean=[1, -3, 4],
         ...           cov=[[4, 2, -2],
@@ -110,7 +110,7 @@ class GaussianDistribution(BaseDistribution):
 
         Examples
         --------
-        >>> from pgmpy.factors.distributions import GaussianDistribution
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution
         >>> dist = GaussianDistribution(variables=['x1', 'x2'],
         ...                             mean=[0, 0],
         ...                             cov=[[1, 0],
@@ -131,7 +131,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis = GD(variables=['x1', 'x2', 'x3'],
         ...          mean=[1, -3, 4],
         ...          cov=[[4, 2, -2],
@@ -168,7 +168,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis = GD(variables=['x1', 'x2', 'x3'],
         ...          mean=[1, -3, 4],
         ...          cov=[[4, 2, -2],
@@ -245,7 +245,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis = GD(variables=['x1', 'x2', 'x3'],
         ...             mean=[1, -3, 4],
         ...             cov=[[4, 2, -2],
@@ -337,7 +337,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> gauss_dis = GD(variables=['x1', 'x2', 'x3'],
         ...                mean=[1, -3, 4],
         ...                cov=[[4, 2, -2],
@@ -389,7 +389,7 @@ class GaussianDistribution(BaseDistribution):
         Example
         -------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis = GD(variables=['x1', 'x2', 'x3'],
         ...          mean=[1, -3, 4],
         ...          cov=[[4, 2, -2],
@@ -409,7 +409,7 @@ class GaussianDistribution(BaseDistribution):
         >>> phi.g
         -6.51533
         """
-        from pgmpy.factors.continuous import CanonicalDistribution
+        from src.pgmpy.factors.continuous import CanonicalDistribution
 
         mu = self.mean
         sigma = self.covariance
@@ -448,7 +448,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis1 = GD(['x1', 'x2', 'x3'], np.array([[1], [-3], [4]]),
         ...             np.array([[4, 2, -2], [2, 5, -5], [-2, -5, 8]]))
         >>> dis2 = GD(['x3', 'x4'], [1, 2], [[2, 3], [5, 6]])
@@ -497,7 +497,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis1 = GD(['x1', 'x2', 'x3'], np.array([[1], [-3], [4]]),
         ...            np.array([[4, 2, -2], [2, 5, -5], [-2, -5, 8]]))
         >>> dis2 = GD(['x3', 'x4'], [1, 2], [[2, 3], [5, 6]])
@@ -537,7 +537,7 @@ class GaussianDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis1 = GD(['x1', 'x2', 'x3'], np.array([[1], [-3], [4]]),
         ...            np.array([[4, 2, -2], [2, 5, -5], [-2, -5, 8]]))
         >>> dis2 = GD(['x3', 'x4'], [1, 2], [[2, 3], [5, 6]])

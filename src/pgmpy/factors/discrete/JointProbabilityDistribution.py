@@ -4,8 +4,8 @@ from functools import reduce
 
 import numpy as np
 
-from pgmpy.factors.discrete import DiscreteFactor
-from pgmpy.independencies import Independencies
+from src.pgmpy.factors.discrete import DiscreteFactor
+from src.pgmpy.independencies import Independencies
 
 
 class JointProbabilityDistribution(DiscreteFactor):
@@ -56,7 +56,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> prob = JointProbabilityDistribution(['x1', 'x2', 'x3'], [2, 2, 2], np.ones(8)/8)
         >>> print(prob)
         x1    x2    x3      P(x1,x2,x3)
@@ -101,7 +101,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> values = np.random.rand(12)
         >>> prob = JointProbabilityDistribution(['x1', 'x2', 'x3'], [2, 3, 2], values/np.sum(values))
         >>> prob.marginal_distribution(['x1', 'x2'])
@@ -153,7 +153,7 @@ class JointProbabilityDistribution(DiscreteFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution as JPD
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution as JPD
         >>> prob = JPD(['I','D','G'],[2,2,3],
                        [0.126,0.168,0.126,0.009,0.045,0.126,0.252,0.0224,0.0056,0.06,0.036,0.024])
         >>> prob.check_independence(['I'], ['D'])
@@ -224,7 +224,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> prob = JointProbabilityDistribution(['x1', 'x2', 'x3'], [2, 3, 2], np.ones(12)/12)
         >>> prob.get_independencies()
         (x1 \u27C2 x2)
@@ -261,7 +261,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> prob = JointProbabilityDistribution(['x1', 'x2', 'x3'], [2, 2, 2], np.ones(8)/8)
         >>> prob.conditional_distribution([('x1', 1)])
         >>> print(prob)
@@ -285,7 +285,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         Examples
         ---------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> prob = JointProbabilityDistribution(['x1', 'x2', 'x3'], [2, 3, 2], np.ones(12)/12)
         >>> prob_copy = prob.copy()
         >>> prob_copy.values == prob.values
@@ -311,7 +311,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> prob = JointProbabilityDistribution(['x1', 'x2', 'x3'], [2, 3, 2], np.ones(12)/12)
         >>> bayesian_model = prob.minimal_imap(order=['x2', 'x1', 'x3'])
         >>> bayesian_model
@@ -319,7 +319,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         >>> bayesian_model.edges()
         [('x1', 'x3'), ('x2', 'x3')]
         """
-        from pgmpy.models import BayesianNetwork
+        from src.pgmpy.models import BayesianNetwork
 
         def get_subsets(u):
             for r in range(len(u) + 1):
@@ -354,9 +354,9 @@ class JointProbabilityDistribution(DiscreteFactor):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> bm = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
         >>> intel_cpd = TabularCPD('intel', 3, [[0.5], [0.3], [0.2]])
@@ -373,7 +373,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         >>> JPD.is_imap(bm)
         True
         """
-        from pgmpy.models import BayesianNetwork
+        from src.pgmpy.models import BayesianNetwork
 
         if not isinstance(model, BayesianNetwork):
             raise TypeError("model must be an instance of BayesianNetwork")
@@ -392,7 +392,7 @@ class JointProbabilityDistribution(DiscreteFactor):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> prob = JointProbabilityDistribution(['x1', 'x2', 'x3'], [2, 3, 2], np.ones(12)/12)
         >>> phi = prob.to_factor()
         >>> type(phi)

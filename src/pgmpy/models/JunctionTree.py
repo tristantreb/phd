@@ -2,7 +2,7 @@
 
 import networkx as nx
 
-from pgmpy.models import ClusterGraph
+from src.pgmpy.models import ClusterGraph
 
 
 class JunctionTree(ClusterGraph):
@@ -24,7 +24,7 @@ class JunctionTree(ClusterGraph):
     --------
     Create an empty JunctionTree with no nodes and no edges
 
-    >>> from pgmpy.models import JunctionTree
+    >>> from src.pgmpy.models import JunctionTree
     >>> G = JunctionTree()
 
     G can be grown by adding clique nodes.
@@ -64,7 +64,7 @@ class JunctionTree(ClusterGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import JunctionTree
+        >>> from src.pgmpy.models import JunctionTree
         >>> G = JunctionTree()
         >>> G.add_nodes_from([('a', 'b', 'c'), ('a', 'b'), ('a', 'c')])
         >>> G.add_edges_from([(('a', 'b', 'c'), ('a', 'b')),
@@ -108,8 +108,8 @@ class JunctionTree(ClusterGraph):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import DiscreteFactor
-        >>> from pgmpy.models import JunctionTree
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import JunctionTree
         >>> G = JunctionTree()
         >>> G.add_edges_from([(('a', 'b', 'c'), ('a', 'b')), (('a', 'b', 'c'), ('a', 'c'))])
         >>> phi1 = DiscreteFactor(['a', 'b'], [1, 2], np.random.rand(2))

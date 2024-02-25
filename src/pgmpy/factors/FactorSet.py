@@ -2,7 +2,7 @@
 
 from functools import reduce
 
-from pgmpy.factors.base import BaseFactor
+from src.pgmpy.factors.base import BaseFactor
 
 
 class FactorSet(object):
@@ -27,8 +27,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set = FactorSet(phi1, phi2)
@@ -53,8 +53,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set1 = FactorSet(phi1, phi2)
@@ -80,8 +80,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set1 = FactorSet(phi1, phi2)
@@ -104,8 +104,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set1 = FactorSet(phi1, phi2)
@@ -140,8 +140,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set1 = FactorSet(phi1, phi2)
@@ -195,8 +195,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set1 = FactorSet(phi1, phi2)
@@ -238,8 +238,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set1 = FactorSet(phi1, phi2)
@@ -287,8 +287,8 @@ class FactorSet(object):
 
         Examples
         --------
-        >>> from pgmpy.factors import FactorSet
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors import FactorSet
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
         >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
         >>> factor_set = FactorSet(phi1, phi2)
@@ -320,9 +320,9 @@ def factorset_product(*factorsets_list):
 
     Examples
     --------
-    >>> from pgmpy.factors import FactorSet
-    >>> from pgmpy.factors.discrete import DiscreteFactor
-    >>> from pgmpy.factors import factorset_product
+    >>> from src.pgmpy.factors import FactorSet
+    >>> from src.pgmpy.factors.discrete import DiscreteFactor
+    >>> from src.pgmpy.factors import factorset_product
     >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
     >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
     >>> factor_set1 = FactorSet(phi1, phi2)
@@ -363,9 +363,9 @@ def factorset_divide(factorset1, factorset2):
 
     Examples
     --------
-    >>> from pgmpy.factors import FactorSet
-    >>> from pgmpy.factors.discrete import DiscreteFactor
-    >>> from pgmpy.factors import factorset_divide
+    >>> from src.pgmpy.factors import FactorSet
+    >>> from src.pgmpy.factors.discrete import DiscreteFactor
+    >>> from src.pgmpy.factors import factorset_divide
     >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
     >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
     >>> factor_set1 = FactorSet(phi1, phi2)

@@ -53,7 +53,7 @@ def get_example_model(model):
 
     Example
     -------
-    >>> from pgmpy.data import get_example_model
+    >>> from src.pgmpy.data import get_example_model
     >>> model = get_example_model(model='asia')
     >>> model
 
@@ -62,7 +62,7 @@ def get_example_model(model):
     pgmpy.models instance: An instance of one of the model classes in pgmpy.models
                            depending on the type of dataset.
     """
-    from pgmpy.readwrite import BIFReader
+    from src.pgmpy.readwrite import BIFReader
 
     filenames = {
         "asia": "utils/example_models/asia.bif.gz",

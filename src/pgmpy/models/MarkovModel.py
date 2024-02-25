@@ -1,6 +1,6 @@
 import warnings
 
-from pgmpy.models import MarkovNetwork
+from src.pgmpy.models import MarkovNetwork
 
 
 class MarkovModel(MarkovNetwork):

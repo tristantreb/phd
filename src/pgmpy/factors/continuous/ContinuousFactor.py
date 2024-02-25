@@ -3,8 +3,8 @@ import types
 import numpy as np
 import scipy.integrate as integrate
 
-from pgmpy.factors.base import BaseFactor
-from pgmpy.factors.distributions import GaussianDistribution, CustomDistribution
+from src.pgmpy.factors.base import BaseFactor
+from src.pgmpy.factors.distributions import GaussianDistribution, CustomDistribution
 
 
 class ContinuousFactor(BaseFactor):
@@ -27,7 +27,7 @@ class ContinuousFactor(BaseFactor):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         # Two variable dirichlet distribution with alpha = (1,2)
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
@@ -93,7 +93,7 @@ class ContinuousFactor(BaseFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         >>> from scipy.stats import multivariate_normal
         >>> normal_pdf = lambda x: multivariate_normal(x, [0, 0], [[1, 0], [0, 1]])
         >>> phi = ContinuousFactor(['x1', 'x2'], normal_pdf)
@@ -116,7 +116,7 @@ class ContinuousFactor(BaseFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         >>> from scipy.stats import multivariate_normal
         >>> normal_pdf = lambda x1, x2: multivariate_normal.pdf((x1, x2), [0, 0], [[1, 0], [0, 1]])
         >>> phi = ContinuousFactor(['x1', 'x2'], normal_pdf)
@@ -137,7 +137,7 @@ class ContinuousFactor(BaseFactor):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         # Two variable dirichlet distribution with alpha = (1,2)
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
@@ -157,7 +157,7 @@ class ContinuousFactor(BaseFactor):
 
         Parameters
         ----------
-        method : A Discretizer Class from pgmpy.discretize
+        method : A Discretizer Class from src.pgmpy.discretize
 
         *args, **kwargs:
             The parameters to be given to the Discretizer Class.
@@ -171,8 +171,8 @@ class ContinuousFactor(BaseFactor):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.continuous import ContinuousFactor
-        >>> from pgmpy.factors.continuous import RoundingDiscretizer
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import RoundingDiscretizer
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
         >>> dirichlet_factor = ContinuousFactor(['x', 'y'], dirichlet_pdf)
@@ -203,7 +203,7 @@ class ContinuousFactor(BaseFactor):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         >>> def custom_pdf(x, y, z):
         ...     return z*(np.power(x, 1) * np.power(y, 2)) / beta(x, y)
         >>> custom_factor = ContinuousFactor(['x', 'y', 'z'], custom_pdf)
@@ -244,7 +244,7 @@ class ContinuousFactor(BaseFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         >>> from scipy.stats import multivariate_normal
         >>> std_normal_pdf = lambda *x: multivariate_normal.pdf(x, [0, 0], [[1, 0], [0, 1]])
         >>> std_normal = ContinuousFactor(['x1', 'x2'], std_normal_pdf)
@@ -283,7 +283,7 @@ class ContinuousFactor(BaseFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         >>> from scipy.stats import multivariate_normal
         >>> std_normal_pdf = lambda x: 2 * multivariate_normal.pdf(x, [0, 0], [[1, 0], [0, 1]])
         >>> std_normal = ContinuousFactor(['x1', 'x2'], std_normal_pdf)
@@ -360,7 +360,7 @@ class ContinuousFactor(BaseFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         >>> from scipy.stats import multivariate_normal
         >>> sn_pdf1 = lambda x: multivariate_normal.pdf([x], [0], [[1]])
         >>> sn_pdf2 = lambda x1,x2: multivariate_normal.pdf([x1, x2], [0, 0], [[1, 0], [0, 1]])
@@ -394,7 +394,7 @@ class ContinuousFactor(BaseFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
         >>> from scipy.stats import multivariate_normal
         >>> sn_pdf1 = lambda x: multivariate_normal.pdf([x], [0], [[1]])
         >>> sn_pdf2 = lambda x1,x2: multivariate_normal.pdf([x1, x2], [0, 0], [[1, 0], [0, 1]])

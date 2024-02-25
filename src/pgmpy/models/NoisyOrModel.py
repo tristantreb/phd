@@ -36,7 +36,7 @@ class NoisyOrModel(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import NoisyOrModel
+        >>> from src.pgmpy.models import NoisyOrModel
         >>> model = NoisyOrModel(['x1', 'x2', 'x3'], [2, 3, 2], [[0.6, 0.4],
         ...                                                      [0.2, 0.4, 0.7],
         ...                                                      [0.1, 0.4]])
@@ -64,7 +64,7 @@ class NoisyOrModel(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import NoisyOrModel
+        >>> from src.pgmpy.models import NoisyOrModel
         >>> model = NoisyOrModel(['x1', 'x2', 'x3'], [2, 3, 2], [[0.6, 0.4],
         ...                                                      [0.2, 0.4, 0.7],
         ...                                                      [0.1, 0., 4]])
@@ -105,7 +105,7 @@ class NoisyOrModel(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import NoisyOrModel
+        >>> from src.pgmpy.models import NoisyOrModel
         >>> model = NoisyOrModel(['x1', 'x2', 'x3'], [2, 3, 2], [[0.6, 0.4],
         ...                                                      [0.2, 0.4, 0.7],
         ...                                                      [0.1, 0., 4]])

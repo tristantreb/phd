@@ -30,8 +30,8 @@ def factor_product(*args):
 
     Examples
     --------
-    >>> from pgmpy.factors.discrete import DiscreteFactor
-    >>> from pgmpy.factors import factor_product
+    >>> from src.pgmpy.factors.discrete import DiscreteFactor
+    >>> from src.pgmpy.factors import factor_product
     >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
     >>> phi2 = DiscreteFactor(['x3', 'x4', 'x1'], [2, 2, 2], range(8))
     >>> phi = factor_product(phi1, phi2)
@@ -88,8 +88,8 @@ def factor_divide(phi1, phi2):
 
     Examples
     --------
-    >>> from pgmpy.factors.discrete import DiscreteFactor
-    >>> from pgmpy.factors import factor_product
+    >>> from src.pgmpy.factors.discrete import DiscreteFactor
+    >>> from src.pgmpy.factors import factor_product
     >>> phi1 = DiscreteFactor(['x1', 'x2', 'x3'], [2, 3, 2], range(12))
     >>> phi2 = DiscreteFactor(['x3', 'x1'], [2, 2], range(1, 5))
     >>> phi = factor_divide(phi1, phi2)

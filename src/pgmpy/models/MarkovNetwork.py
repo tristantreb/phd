@@ -6,10 +6,10 @@ import networkx as nx
 import numpy as np
 from networkx.algorithms.components import connected_components
 
-from pgmpy.base import UndirectedGraph
-from pgmpy.factors.discrete import DiscreteFactor
-from pgmpy.factors import factor_product
-from pgmpy.independencies import Independencies
+from src.pgmpy.base import UndirectedGraph
+from src.pgmpy.factors.discrete import DiscreteFactor
+from src.pgmpy.factors import factor_product
+from src.pgmpy.independencies import Independencies
 
 
 class MarkovNetwork(UndirectedGraph):
@@ -31,7 +31,7 @@ class MarkovNetwork(UndirectedGraph):
     --------
     Create an empty Markov Model with no nodes and no edges.
 
-    >>> from pgmpy.models import MarkovNetwork
+    >>> from src.pgmpy.models import MarkovNetwork
     >>> G = MarkovNetwork()
 
     G can be grown in several ways.
@@ -94,7 +94,7 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.models import MarkovNetwork
         >>> G = MarkovNetwork()
         >>> G.add_nodes_from(['Alice', 'Bob', 'Charles'])
         >>> G.add_edge('Alice', 'Bob')
@@ -122,8 +122,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> student = MarkovNetwork([('Alice', 'Bob'), ('Bob', 'Charles'),
         ...                        ('Charles', 'Debbie'), ('Debbie', 'Alice')])
         >>> factor = DiscreteFactor(['Alice', 'Bob'], cardinality=[3, 2],
@@ -150,8 +150,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> student = MarkovNetwork([('Alice', 'Bob'), ('Bob', 'Charles')])
         >>> factor1 = DiscreteFactor(['Alice', 'Bob'], cardinality=[2, 2],
         ...                          values=np.random.rand(4))
@@ -181,8 +181,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> student = MarkovNetwork([('Alice', 'Bob'), ('Bob', 'Charles')])
         >>> factor = DiscreteFactor(['Alice', 'Bob'], cardinality=[2, 2],
         ...                 values=np.random.rand(4))
@@ -207,8 +207,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> student = MarkovNetwork([('Alice', 'Bob'), ('Bob', 'Charles')])
         >>> factor = DiscreteFactor(['Alice', 'Bob'], cardinality=[2, 2],
         ...                 values=np.random.rand(4))
@@ -269,15 +269,15 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> student = MarkovNetwork([('Alice', 'Bob'), ('Bob', 'Charles')])
         >>> factor1 = DiscreteFactor(['Alice', 'Bob'], [3, 2], np.random.rand(6))
         >>> factor2 = DiscreteFactor(['Bob', 'Charles'], [2, 2], np.random.rand(4))
         >>> student.add_factors(factor1, factor2)
         >>> factor_graph = student.to_factor_graph()
         """
-        from pgmpy.models import FactorGraph
+        from src.pgmpy.models import FactorGraph
 
         factor_graph = FactorGraph()
 
@@ -334,8 +334,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> G = MarkovNetwork()
         >>> G.add_nodes_from(['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7'])
         >>> G.add_edges_from([('x1', 'x3'), ('x1', 'x4'), ('x2', 'x4'),
@@ -479,8 +479,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> mm = MarkovNetwork()
         >>> mm.add_nodes_from(['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7'])
         >>> mm.add_edges_from([('x1', 'x3'), ('x1', 'x4'), ('x2', 'x4'),
@@ -490,7 +490,7 @@ class MarkovNetwork(UndirectedGraph):
         >>> mm.add_factors(*phi)
         >>> junction_tree = mm.to_junction_tree()
         """
-        from pgmpy.models import JunctionTree
+        from src.pgmpy.models import JunctionTree
 
         # Check whether the model is valid or not
         self.check_model()
@@ -571,7 +571,7 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.models import MarkovNetwork
         >>> mm = MarkovNetwork()
         >>> mm.add_nodes_from(['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7'])
         >>> mm.add_edges_from([('x1', 'x3'), ('x1', 'x4'), ('x2', 'x4'),
@@ -597,7 +597,7 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.models import MarkovNetwork
         >>> mm = MarkovNetwork()
         >>> mm.add_nodes_from(['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7'])
         >>> mm.add_edges_from([('x1', 'x3'), ('x1', 'x4'), ('x2', 'x4'),
@@ -636,8 +636,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> mm = MarkovNetwork()
         >>> mm.add_nodes_from(['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7'])
         >>> mm.add_edges_from([('x1', 'x3'), ('x1', 'x4'), ('x2', 'x4'),
@@ -647,7 +647,7 @@ class MarkovNetwork(UndirectedGraph):
         >>> mm.add_factors(*phi)
         >>> bm = mm.to_bayesian_model()
         """
-        from pgmpy.models import BayesianNetwork
+        from src.pgmpy.models import BayesianNetwork
 
         # If the graph is not connected, treat them as separate models and join them together in the end.
         bms = []
@@ -708,8 +708,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovNetwork
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> G = MarkovNetwork()
         >>> G.add_nodes_from(['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7'])
         >>> G.add_edges_from([('x1', 'x3'), ('x1', 'x4'), ('x2', 'x4'),
@@ -740,8 +740,8 @@ class MarkovNetwork(UndirectedGraph):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import DiscreteFactor
-        >>> from pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.models import MarkovNetwork
         >>> G = MarkovNetwork()
         >>> G.add_nodes_from([('a', 'b'), ('b', 'c')])
         >>> G.add_edge(('a', 'b'), ('b', 'c'))

@@ -1,9 +1,9 @@
 from collections import defaultdict
 from itertools import tee, chain, combinations
 
-from pgmpy.factors.discrete import DiscreteFactor
-from pgmpy.factors import factor_product
-from pgmpy.inference import Inference, BeliefPropagation
+from src.pgmpy.factors.discrete import DiscreteFactor
+from src.pgmpy.factors import factor_product
+from src.pgmpy.inference import Inference, BeliefPropagation
 
 
 class DBNInference(Inference):
@@ -22,9 +22,9 @@ class DBNInference(Inference):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.inference import DBNInference
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.inference import DBNInference
         >>> dbnet = DBN()
         >>> dbnet.add_edges_from([(('Z', 0), ('X', 0)), (('X', 0), ('Y', 0)),
         ...                       (('Z', 0), ('Z', 1))])
@@ -233,9 +233,9 @@ class DBNInference(Inference):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.inference import DBNInference
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.inference import DBNInference
         >>> dbnet = DBN()
         >>> dbnet.add_edges_from([(('Z', 0), ('X', 0)), (('X', 0), ('Y', 0)),
         ...                       (('Z', 0), ('Z', 1))])
@@ -347,9 +347,9 @@ class DBNInference(Inference):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.inference import DBNInference
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.inference import DBNInference
         >>> dbnet = DBN()
         >>> dbnet.add_edges_from([(('Z', 0), ('X', 0)), (('X', 0), ('Y', 0)),
         ...                       (('Z', 0), ('Z', 1))])
@@ -445,9 +445,9 @@ class DBNInference(Inference):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.inference import DBNInference
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.inference import DBNInference
         >>> dbnet = DBN()
         >>> dbnet.add_edges_from([(('Z', 0), ('X', 0)), (('X', 0), ('Y', 0)),
         ...                       (('Z', 0), ('Z', 1))])

@@ -6,13 +6,13 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 
-from pgmpy.factors import factor_product
-from pgmpy.global_vars import SHOW_PROGRESS
-from pgmpy.models import BayesianNetwork
-from pgmpy.models import DynamicBayesianNetwork as DBN
-from pgmpy.models import MarkovChain, MarkovNetwork
-from pgmpy.sampling import BayesianModelInference, _return_samples
-from pgmpy.utils.mathext import sample_discrete, sample_discrete_maps
+from src.pgmpy.factors import factor_product
+from src.pgmpy.global_vars import SHOW_PROGRESS
+from src.pgmpy.models import BayesianNetwork
+from src.pgmpy.models import DynamicBayesianNetwork as DBN
+from src.pgmpy.models import MarkovChain, MarkovNetwork
+from src.pgmpy.sampling import BayesianModelInference, _return_samples
+from src.pgmpy.utils.mathext import sample_discrete, sample_discrete_maps
 
 State = namedtuple("State", ["var", "state"])
 
@@ -66,9 +66,9 @@ class BayesianModelSampling(BayesianModelInference):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.sampling import BayesianModelSampling
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.sampling import BayesianModelSampling
         >>> student = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> cpd_d = TabularCPD('diff', 2, [[0.6], [0.4]])
         >>> cpd_i = TabularCPD('intel', 2, [[0.7], [0.3]])
@@ -167,10 +167,10 @@ class BayesianModelSampling(BayesianModelInference):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.factors.discrete import State
-        >>> from pgmpy.sampling import BayesianModelSampling
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.factors.discrete import State
+        >>> from src.pgmpy.sampling import BayesianModelSampling
         >>> student = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> cpd_d = TabularCPD('diff', 2, [[0.6], [0.4]])
         >>> cpd_i = TabularCPD('intel', 2, [[0.7], [0.3]])
@@ -274,10 +274,10 @@ class BayesianModelSampling(BayesianModelInference):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import State
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.sampling import BayesianModelSampling
+        >>> from src.pgmpy.factors.discrete import State
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.sampling import BayesianModelSampling
         >>> student = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> cpd_d = TabularCPD('diff', 2, [[0.6], [0.4]])
         >>> cpd_i = TabularCPD('intel', 2, [[0.7], [0.3]])
@@ -380,15 +380,15 @@ class GibbsSampling(MarkovChain):
     --------
     Initialization from a BayesianNetwork object:
 
-    >>> from pgmpy.factors.discrete import TabularCPD
-    >>> from pgmpy.models import BayesianNetwork
+    >>> from src.pgmpy.factors.discrete import TabularCPD
+    >>> from src.pgmpy.models import BayesianNetwork
     >>> intel_cpd = TabularCPD('intel', 2, [[0.7], [0.3]])
     >>> sat_cpd = TabularCPD('sat', 2, [[0.95, 0.2], [0.05, 0.8]], evidence=['intel'], evidence_card=[2])
     >>> student = BayesianNetwork()
     >>> student.add_nodes_from(['intel', 'sat'])
     >>> student.add_edge('intel', 'sat')
     >>> student.add_cpds(intel_cpd, sat_cpd)
-    >>> from pgmpy.sampling import GibbsSampling
+    >>> from src.pgmpy.sampling import GibbsSampling
     >>> gibbs_chain = GibbsSampling(student)
     >>> gibbs_chain.sample(size=3)
        intel  sat
@@ -502,9 +502,9 @@ class GibbsSampling(MarkovChain):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import DiscreteFactor
-        >>> from pgmpy.sampling import GibbsSampling
-        >>> from pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.sampling import GibbsSampling
+        >>> from src.pgmpy.models import MarkovNetwork
         >>> model = MarkovNetwork([('A', 'B'), ('C', 'B')])
         >>> factor_ab = DiscreteFactor(['A', 'B'], [2, 2], [1, 2, 3, 4])
         >>> factor_cb = DiscreteFactor(['C', 'B'], [2, 2], [5, 6, 7, 8])
@@ -555,9 +555,9 @@ class GibbsSampling(MarkovChain):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import DiscreteFactor
-        >>> from pgmpy.sampling import GibbsSampling
-        >>> from pgmpy.models import MarkovNetwork
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.sampling import GibbsSampling
+        >>> from src.pgmpy.models import MarkovNetwork
         >>> model = MarkovNetwork([('A', 'B'), ('C', 'B')])
         >>> factor_ab = DiscreteFactor(['A', 'B'], [2, 2], [1, 2, 3, 4])
         >>> factor_cb = DiscreteFactor(['C', 'B'], [2, 2], [5, 6, 7, 8])

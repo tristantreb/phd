@@ -4,8 +4,8 @@ from tqdm.auto import tqdm
 
 import numpy as np
 
-from pgmpy.models import BayesianNetwork
-from pgmpy.global_vars import SHOW_PROGRESS
+from src.pgmpy.models import BayesianNetwork
+from src.pgmpy.global_vars import SHOW_PROGRESS
 
 
 class BaseEliminationOrder:
@@ -54,9 +54,9 @@ class BaseEliminationOrder:
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.inference.EliminationOrder import WeightedMinFill
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.inference.EliminationOrder import WeightedMinFill
         >>> model = BayesianNetwork([('c', 'd'), ('d', 'g'), ('i', 'g'),
         ...                          ('i', 's'), ('s', 'j'), ('g', 'l'),
         ...                        ('l', 'j'), ('j', 'h'), ('g', 'h')])

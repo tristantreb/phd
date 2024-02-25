@@ -25,9 +25,9 @@ class BaseDiscretizer(ABCMeta):
     Examples
     --------
     >>> from scipy.stats import norm
-    >>> from pgmpy.factors.continuous import ContinuousNode
+    >>> from src.pgmpy.factors.continuous import ContinuousNode
     >>> normal = ContinuousNode(norm(0, 1).pdf)
-    >>> from pgmpy.discretize import BaseDiscretizer
+    >>> from src.pgmpy.discretize import BaseDiscretizer
     >>> class ChildDiscretizer(BaseDiscretizer):
     ...     def get_discrete_values(self):
     ...         pass
@@ -73,8 +73,8 @@ class BaseDiscretizer(ABCMeta):
 
         Examples
         --------
-        >>> from pgmpy.factors import ContinuousNode
-        >>> from pgmpy.discretize import BaseDiscretizer
+        >>> from src.pgmpy.factors import ContinuousNode
+        >>> from src.pgmpy.discretize import BaseDiscretizer
         >>> class ChildDiscretizer(BaseDiscretizer):
         ...     def get_discrete_values(self):
         ...         pass
@@ -112,8 +112,8 @@ class RoundingDiscretizer(BaseDiscretizer):
     Examples
     --------
     >>> import numpy as np
-    >>> from pgmpy.factors.continuous import ContinuousNode
-    >>> from pgmpy.factors.continuous import RoundingDiscretizer
+    >>> from src.pgmpy.factors.continuous import ContinuousNode
+    >>> from src.pgmpy.factors.continuous import RoundingDiscretizer
     >>> std_normal_pdf = lambda x : np.exp(-x*x/2) / (np.sqrt(2*np.pi))
     >>> std_normal = ContinuousNode(std_normal_pdf)
     >>> std_normal.discretize(RoundingDiscretizer, low=-3, high=3,
@@ -177,8 +177,8 @@ class UnbiasedDiscretizer(BaseDiscretizer):
     Examples
     --------
     >>> import numpy as np
-    >>> from pgmpy.factors import ContinuousNode
-    >>> from pgmpy.factors.continuous import UnbiasedDiscretizer
+    >>> from src.pgmpy.factors import ContinuousNode
+    >>> from src.pgmpy.factors.continuous import UnbiasedDiscretizer
     # exponential distribution with rate = 2
     >>> exp_pdf = lambda x: 2*np.exp(-2*x) if x>=0 else 0
     >>> exp_node = ContinuousNode(exp_pdf)
