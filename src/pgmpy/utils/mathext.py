@@ -114,7 +114,7 @@ def sample_discrete(values, weights, size=1, seed=None):
     Example
     -------
     >>> import numpy as np
-    >>> from pgmpy.utils.mathext import sample_discrete
+    >>> from src.pgmpy.utils.mathext import sample_discrete
     >>> values = np.array(['v_0', 'v_1', 'v_2'])
     >>> probabilities = np.array([0.2, 0.5, 0.3])
     >>> sample_discrete(values, probabilities, 10, seed=0).tolist()
@@ -165,7 +165,7 @@ def sample_discrete_maps(states, weight_indices, index_to_weight, size=1, seed=N
     Example
     -------
     >>> import numpy as np
-    >>> from pgmpy.utils.mathext import sample_discrete
+    >>> from src.pgmpy.utils.mathext import sample_discrete
     >>> values = np.array(['v_0', 'v_1', 'v_2'])
     >>> probabilities = np.array([0.2, 0.5, 0.3])
     >>> sample_discrete(values, probabilities, 10, seed=0).tolist()
@@ -190,7 +190,7 @@ def powerset(l):
 
     Example
     -------
-    >>> from pgmpy.utils.mathext import powerset
+    >>> from src.pgmpy.utils.mathext import powerset
     >>> list(powerset([1,2,3]))
     [(), (1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3)]
     """

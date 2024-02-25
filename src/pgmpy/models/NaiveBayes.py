@@ -1,5 +1,5 @@
-from pgmpy.independencies import Independencies
-from pgmpy.models import BayesianNetwork
+from src.pgmpy.independencies import Independencies
+from src.pgmpy.models import BayesianNetwork
 
 
 class NaiveBayes(BayesianNetwork):
@@ -53,7 +53,7 @@ class NaiveBayes(BayesianNetwork):
 
         Examples
         --------
-        >>> from pgmpy.models import NaiveBayes
+        >>> from src.pgmpy.models import NaiveBayes
         >>> G = NaiveBayes()
         >>> G.add_nodes_from(['a', 'b', 'c'])
         >>> G.add_edge('a', 'b')
@@ -88,7 +88,7 @@ class NaiveBayes(BayesianNetwork):
 
         Examples
         --------
-        >>> from pgmpy.models import NaiveBayes
+        >>> from src.pgmpy.models import NaiveBayes
         >>> G = NaiveBayes()
         >>> G.add_nodes_from(['a', 'b', 'c'])
         >>> G.add_edges_from([('a', 'b'), ('a', 'c')])
@@ -124,7 +124,7 @@ class NaiveBayes(BayesianNetwork):
 
         Examples
         --------
-        >>> from pgmpy.models import NaiveBayes
+        >>> from src.pgmpy.models import NaiveBayes
         >>> model = NaiveBayes()
         >>> model.add_nodes_from(['a', 'b', 'c', 'd'])
         >>> model.add_edges_from([('a', 'b'), ('a', 'c'), ('a', 'd')])
@@ -154,7 +154,7 @@ class NaiveBayes(BayesianNetwork):
 
         Examples
         --------
-        >>> from pgmpy.models import NaiveBayes
+        >>> from src.pgmpy.models import NaiveBayes
         >>> model = NaiveBayes()
         >>> model.add_edges_from([('a', 'b'), ('a', 'c'), ('a', 'd')])
         >>> ind = model.local_independencies('b')
@@ -191,7 +191,7 @@ class NaiveBayes(BayesianNetwork):
         --------
         >>> import numpy as np
         >>> import pandas as pd
-        >>> from pgmpy.models import NaiveBayes
+        >>> from src.pgmpy.models import NaiveBayes
         >>> model = NaiveBayes()
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
         ...                       columns=['A', 'B', 'C', 'D', 'E'])

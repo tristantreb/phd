@@ -12,14 +12,14 @@ import pandas as pd
 from joblib import Parallel, delayed
 from tqdm.auto import tqdm
 
-from pgmpy.base import DAG
-from pgmpy.factors.continuous import ContinuousFactor
-from pgmpy.factors.discrete import (
+from src.pgmpy.base import DAG
+from src.pgmpy.factors.continuous import ContinuousFactor
+from src.pgmpy.factors.discrete import (
     DiscreteFactor,
     JointProbabilityDistribution,
     TabularCPD,
 )
-from pgmpy.models.MarkovNetwork import MarkovNetwork
+from src.pgmpy.models.MarkovNetwork import MarkovNetwork
 
 
 class BayesianNetwork(DAG):
@@ -54,7 +54,7 @@ class BayesianNetwork(DAG):
         --------
         Create an empty bayesian model with no nodes and no edges.
 
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> G = BayesianNetwork()
 
         G can be grown in several ways.
@@ -113,7 +113,7 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> G = BayesianNetwork()
         >>> G.add_nodes_from(['grade', 'intel'])
         >>> G.add_edge('grade', 'intel')
@@ -148,7 +148,7 @@ class BayesianNetwork(DAG):
         --------
         >>> import pandas as pd
         >>> import numpy as np
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> model = BayesianNetwork([('A', 'B'), ('B', 'C'),
         ...                        ('A', 'D'), ('D', 'C')])
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 4)),
@@ -199,7 +199,7 @@ class BayesianNetwork(DAG):
         --------
         >>> import pandas as pd
         >>> import numpy as np
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> model = BayesianNetwork([('A', 'B'), ('B', 'C'),
         ...                        ('A', 'D'), ('D', 'C')])
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 4)),
@@ -229,8 +229,8 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete.CPD import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete.CPD import TabularCPD
         >>> student = BayesianNetwork([('diff', 'grades'), ('intel', 'grades')])
         >>> grades_cpd = TabularCPD('grades', 3, [[0.1,0.1,0.1,0.1,0.1,0.1],
         ...                                       [0.1,0.1,0.1,0.1,0.1,0.1],
@@ -282,8 +282,8 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> student = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> cpd = TabularCPD('grade', 2, [[0.1, 0.9, 0.2, 0.7],
         ...                               [0.9, 0.1, 0.8, 0.3]],
@@ -313,8 +313,8 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> student = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> cpd = TabularCPD('grade', 2, [[0.1, 0.9, 0.2, 0.7],
         ...                               [0.9, 0.1, 0.8, 0.3]],
@@ -347,8 +347,8 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> student = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> cpd_diff = TabularCPD('diff', 2, [[0.6], [0.4]]);
         >>> cpd_intel = TabularCPD('intel', 2, [[0.7], [0.3]]);
@@ -453,7 +453,7 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> G = BayesianNetwork([('diff', 'grade'), ('intel', 'grade'),
         ...                    ('intel', 'SAT'), ('grade', 'letter')])
         >>> mm = G.to_markov_model()
@@ -483,8 +483,8 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> G = BayesianNetwork([('diff', 'grade'), ('intel', 'grade'),
         ...                    ('intel', 'SAT'), ('grade', 'letter')])
         >>> diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
@@ -559,8 +559,8 @@ class BayesianNetwork(DAG):
         Examples
         --------
         >>> import pandas as pd
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.estimators import MaximumLikelihoodEstimator
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.estimators import MaximumLikelihoodEstimator
         >>> data = pd.DataFrame(data={'A': [0, 0, 1], 'B': [0, 1, 0], 'C': [1, 1, 0]})
         >>> model = BayesianNetwork([('A', 'C'), ('B', 'C')])
         >>> model.fit(data)
@@ -569,7 +569,7 @@ class BayesianNetwork(DAG):
         <TabularCPD representing P(B:2) at 0x7fb98a7d5588>,
         <TabularCPD representing P(C:2 | A:2, B:2) at 0x7fb98a7b1f98>]
         """
-        from pgmpy.estimators import BaseEstimator, MaximumLikelihoodEstimator
+        from src.pgmpy.estimators import BaseEstimator, MaximumLikelihoodEstimator
 
         if estimator is None:
             estimator = MaximumLikelihoodEstimator
@@ -614,14 +614,14 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
-        >>> from pgmpy.sampling import BayesianModelSampling
+        >>> from src.pgmpy.utils import get_example_model
+        >>> from src.pgmpy.sampling import BayesianModelSampling
         >>> model = get_example_model('alarm')
         >>> # Generate some new data.
         >>> data = BayesianModelSampling(model).forward_sample(int(1e3))
         >>> model.fit_update(data)
         """
-        from pgmpy.estimators import BayesianEstimator
+        from src.pgmpy.estimators import BayesianEstimator
 
         if n_prev_samples is None:
             n_prev_samples = data.shape[0]
@@ -665,7 +665,7 @@ class BayesianNetwork(DAG):
         --------
         >>> import numpy as np
         >>> import pandas as pd
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
         ...                       columns=['A', 'B', 'C', 'D', 'E'])
         >>> train_data = values[:800]
@@ -691,7 +691,7 @@ class BayesianNetwork(DAG):
         998 0
         999 0
         """
-        from pgmpy.inference import VariableElimination
+        from src.pgmpy.inference import VariableElimination
 
         if set(data.columns) == set(self.nodes()):
             raise ValueError("No variable missing in data. Nothing to predict")
@@ -761,7 +761,7 @@ class BayesianNetwork(DAG):
         --------
         >>> import numpy as np
         >>> import pandas as pd
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(100, 5)),
         ...                       columns=['A', 'B', 'C', 'D', 'E'])
         >>> train_data = values[:80]
@@ -794,7 +794,7 @@ class BayesianNetwork(DAG):
         98  0.488275    0.511725
         99  0.407978    0.592022
         """
-        from pgmpy.inference import VariableElimination
+        from src.pgmpy.inference import VariableElimination
 
         if set(data.columns) == set(self.nodes()):
             raise ValueError("No variable missing in data. Nothing to predict")
@@ -842,9 +842,9 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.factors.discrete import JointProbabilityDistribution
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.factors.discrete import JointProbabilityDistribution
         >>> G = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
         >>> diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
         >>> intel_cpd = TabularCPD('intel', 3, [[0.5], [0.3], [0.2]])
@@ -882,8 +882,8 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> model = BayesianNetwork([('A', 'B'), ('B', 'C')])
         >>> cpd_a = TabularCPD('A', 2, [[0.2], [0.8]])
         >>> cpd_b = TabularCPD('B', 2, [[0.3, 0.7], [0.7, 0.3]],
@@ -927,8 +927,8 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> G = BayesianNetwork([('x', 'y'), ('z', 'y'), ('y', 'w'), ('y', 'v'), ('u', 'w'),
         ...                    ('s', 'v'), ('w', 't'), ('w', 'm'), ('v', 'n'), ('v', 'q')])
         >>> G.get_markov_blanket('y')
@@ -972,7 +972,7 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> model = BayesianNetwork.get_random(n_nodes=5)
         >>> model.nodes()
         NodeView((0, 1, 3, 4, 2))
@@ -1033,7 +1033,7 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
+        >>> from src.pgmpy.utils import get_example_model
         >>> asia = get_example_model('asia')
         >>> asia.edges()
         OutEdgeView([('asia', 'tub'), ('tub', 'either'), ('smoke', 'lung'), ('smoke', 'bronc'),
@@ -1120,7 +1120,7 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
+        >>> from src.pgmpy.utils import get_example_model
 
         Simulation without any evidence or intervention:
 
@@ -1146,7 +1146,7 @@ class BayesianNetwork(DAG):
         >>> virt_intervention = [TabularCPD("CVP", 3, [[0.2], [0.5], [0.3]], state_names={"CVP": ["LOW", "NORMAL", "HIGH"]})]
         >>> model.simulate(n_samples, virtual_intervention=virt_intervention)
         """
-        from pgmpy.sampling import BayesianModelSampling
+        from src.pgmpy.sampling import BayesianModelSampling
 
         self.check_model()
         model = self.copy()
@@ -1252,7 +1252,7 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
+        >>> from src.pgmpy.utils import get_example_model
         >>> alarm = get_example_model('alarm')
         >>> alarm.save('alarm.bif', filetype='bif')
         """
@@ -1261,19 +1261,19 @@ class BayesianNetwork(DAG):
             filetype = filename.split(".")[-1].lower()
 
         if filetype == "bif":
-            from pgmpy.readwrite import BIFWriter
+            from src.pgmpy.readwrite import BIFWriter
 
             writer = BIFWriter(self)
             writer.write_bif(filename=filename)
 
         elif filetype == "uai":
-            from pgmpy.readwrite import UAIWriter
+            from src.pgmpy.readwrite import UAIWriter
 
             writer = UAIWriter(self)
             writer.write_uai(filename=filename)
 
         elif filetype == "xmlbif":
-            from pgmpy.readwrite import XMLBIFWriter
+            from src.pgmpy.readwrite import XMLBIFWriter
 
             writer = XMLBIFWriter(self)
             writer.write_xmlbif(filename=filename)
@@ -1294,7 +1294,7 @@ class BayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
+        >>> from src.pgmpy.utils import get_example_model
         >>> alarm = get_example_model('alarm')
         >>> alarm.save('alarm.bif', filetype='bif')
         >>> alarm_model = BayesianNetwork.load('alarm.bif', filetype='bif')
@@ -1304,19 +1304,19 @@ class BayesianNetwork(DAG):
             filetype = filename.split(".")[-1].lower()
 
         if filetype == "bif":
-            from pgmpy.readwrite import BIFReader
+            from src.pgmpy.readwrite import BIFReader
 
             reader = BIFReader(path=filename)
             return reader.get_model()
 
         elif filetype == "uai":
-            from pgmpy.readwrite import UAIReader
+            from src.pgmpy.readwrite import UAIReader
 
             reader = UAIReader(path=filename)
             return reader.get_model()
 
         elif filetype == "xmlbif":
-            from pgmpy.readwrite import XMLBIFReader
+            from src.pgmpy.readwrite import XMLBIFReader
 
             reader = XMLBIFReader(path=filename)
             return reader.get_model()

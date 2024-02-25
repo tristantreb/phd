@@ -5,12 +5,12 @@ from itertools import chain
 
 import numpy as np
 
-from pgmpy.models import BayesianNetwork
-from pgmpy.models import MarkovNetwork
-from pgmpy.models import FactorGraph
-from pgmpy.models import JunctionTree
-from pgmpy.models import DynamicBayesianNetwork
-from pgmpy.factors.discrete import TabularCPD
+from src.pgmpy.models import BayesianNetwork
+from src.pgmpy.models import MarkovNetwork
+from src.pgmpy.models import FactorGraph
+from src.pgmpy.models import JunctionTree
+from src.pgmpy.models import DynamicBayesianNetwork
+from src.pgmpy.factors.discrete import TabularCPD
 
 
 class Inference(object):
@@ -30,9 +30,9 @@ class Inference(object):
 
     Examples
     --------
-    >>> from pgmpy.inference import Inference
-    >>> from pgmpy.models import BayesianNetwork
-    >>> from pgmpy.factors.discrete import TabularCPD
+    >>> from src.pgmpy.inference import Inference
+    >>> from src.pgmpy.models import BayesianNetwork
+    >>> from src.pgmpy.factors.discrete import TabularCPD
     >>> student = BayesianNetwork([('diff', 'grade'), ('intel', 'grade')])
     >>> diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
     >>> intel_cpd = TabularCPD('intel', 2, [[0.3], [0.7]])
@@ -43,8 +43,8 @@ class Inference(object):
     >>> student.add_cpds(diff_cpd, intel_cpd, grade_cpd)
     >>> model = Inference(student)
 
-    >>> from pgmpy.models import MarkovNetwork
-    >>> from pgmpy.factors.discrete import DiscreteFactor
+    >>> from src.pgmpy.models import MarkovNetwork
+    >>> from src.pgmpy.factors.discrete import DiscreteFactor
     >>> import numpy as np
     >>> student = MarkovNetwork([('Alice', 'Bob'), ('Bob', 'Charles'),
     ...                        ('Charles', 'Debbie'), ('Debbie', 'Alice')])

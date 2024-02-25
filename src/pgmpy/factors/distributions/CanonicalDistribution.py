@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-from pgmpy.factors.distributions import BaseDistribution
-from pgmpy.factors.distributions import GaussianDistribution
+from src.pgmpy.factors.distributions import BaseDistribution
+from src.pgmpy.factors.distributions import GaussianDistribution
 
 
 class CanonicalDistribution(BaseDistribution):
@@ -47,7 +47,7 @@ class CanonicalDistribution(BaseDistribution):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import CanonicalDistribution
+        >>> from src.pgmpy.factors.continuous import CanonicalDistribution
         >>> phi = CanonicalDistribution(['X', 'Y'], np.array([[1, -1], [-1, 1]]),
                                   np.array([[1], [-1]]), -3)
         >>> phi.variables
@@ -105,7 +105,7 @@ class CanonicalDistribution(BaseDistribution):
         float: The probability value at the point.
         Examples
         --------
-        >>> from pgmpy.factors.distributions import GaussianDistribution
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution
         >>> dist = GaussianDistribution(variables=['x1', 'x2'],
         ...                             mean=[[0], [0]],
         ...                             cov=[[1, 0], [0, 1]])
@@ -124,7 +124,7 @@ class CanonicalDistribution(BaseDistribution):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import CanonicalDistribution
+        >>> from src.pgmpy.factors.continuous import CanonicalDistribution
         >>> phi = CanonicalDistribution(['X', 'Y'], np.array([[1, -1], [-1, 1]]),
                                   np.array([[1], [-1]]), -3)
         >>> phi.variables
@@ -172,7 +172,7 @@ class CanonicalDistribution(BaseDistribution):
         --------
 
         >>> import numpy as np
-        >>> from pgmpy.factors.continuous import CanonicalDistribution
+        >>> from src.pgmpy.factors.continuous import CanonicalDistribution
         >>> phi = CanonicalDistribution(['x1', 'x2'], np.array([[3, -2], [-2, 4]]),
                                   np.array([[5], [-1]]), 1)
         >>> jgd = phi.to_joint_gaussian()
@@ -226,7 +226,7 @@ class CanonicalDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.continuous import CanonicalDistribution
+        >>> from src.pgmpy.factors.continuous import CanonicalDistribution
         >>> phi = CanonicalDistribution(['X1', 'X2', 'X3'],
         ...                       np.array([[1, -1, 0], [-1, 4, -2], [0, -2, 4]]),
         ...                       np.array([[1], [4], [-1]]), -2)
@@ -335,7 +335,7 @@ class CanonicalDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.continuous import CanonicalDistribution
+        >>> from src.pgmpy.factors.continuous import CanonicalDistribution
         >>> phi = CanonicalDistribution(['X1', 'X2', 'X3'],
         ...                       np.array([[1, -1, 0], [-1, 4, -2], [0, -2, 4]]),
         ...                       np.array([[1], [4], [-1]]), -2)
@@ -445,7 +445,7 @@ class CanonicalDistribution(BaseDistribution):
         Example
         -------
         >>> import numpy as np
-        >>> from pgmpy.factors.continuous import CanonicalDistribution
+        >>> from src.pgmpy.factors.continuous import CanonicalDistribution
         >>> phi1 = CanonicalDistribution(['x1', 'x2', 'x3'],
                                    np.array([[1, -1, 0], [-1, 4, -2], [0, -2, 4]]),
                                    np.array([[1], [4], [-1]]), -2)
@@ -543,7 +543,7 @@ class CanonicalDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis1 = GD(['x1', 'x2', 'x3'], np.array([[1], [-3], [4]]),
         ...            np.array([[4, 2, -2], [2, 5, -5], [-2, -5, 8]]))
         >>> dis2 = GD(['x3', 'x4'], [1, 2], [[2, 3], [5, 6]])
@@ -583,7 +583,7 @@ class CanonicalDistribution(BaseDistribution):
         Examples
         --------
         >>> import numpy as np
-        >>> from pgmpy.factors.distributions import GaussianDistribution as GD
+        >>> from src.pgmpy.factors.distributions import GaussianDistribution as GD
         >>> dis1 = GD(['x1', 'x2', 'x3'], np.array([[1], [-3], [4]]),
         ...            np.array([[4, 2, -2], [2, 5, -5], [-2, -5, 8]]))
         >>> dis2 = GD(['x3', 'x4'], [1, 2], [[2, 3], [5, 6]])

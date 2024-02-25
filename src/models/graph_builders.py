@@ -7,8 +7,8 @@ Note on PGMPY:
 - TabularCPD only accepts 2D arrays. Hence, non 2D CPTs/priors are reshaped to 2D arrays
 """
 
-from pgmpy.factors.discrete import DiscreteFactor, TabularCPD
-from pgmpy.models import BayesianNetwork, FactorGraph
+from src.pgmpy.factors.discrete import DiscreteFactor, TabularCPD
+from src.pgmpy.models import BayesianNetwork, FactorGraph
 
 
 def build_pgmpy_hfev1_prior(HFEV1):

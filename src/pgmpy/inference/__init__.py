@@ -1,5 +1,5 @@
 from .base import Inference
-from .CausalInference import CausalInference
+# from .CausalInference import CausalInference
 from .ExactInference import BeliefPropagation
 from .ExactInference import VariableElimination
 from .ApproxInference import ApproxInference
@@ -12,7 +12,7 @@ __all__ = [
     "DBNInference",
     "BeliefPropagation",
     "BayesianModelSampling",
-    "CausalInference",
+    # "CausalInference",
     "ApproxInference",
     "GibbsSampling",
     "Mplp",

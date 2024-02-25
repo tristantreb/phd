@@ -6,8 +6,8 @@ import numpy as np
 from pandas import DataFrame
 from scipy.linalg import eig
 
-from pgmpy.factors.discrete import State
-from pgmpy.utils import sample_discrete
+from src.pgmpy.factors.discrete import State
+from src.pgmpy.utils import sample_discrete
 
 
 class MarkovChain(object):
@@ -20,7 +20,7 @@ class MarkovChain(object):
 
     Create an empty Markov Chain:
 
-    >>> from pgmpy.models import MarkovChain as MC
+    >>> from src.pgmpy.models import MarkovChain as MC
     >>> model = MC()
 
     And then add variables to it
@@ -40,7 +40,7 @@ class MarkovChain(object):
 
     Set a start state
 
-    >>> from pgmpy.factors.discrete import State
+    >>> from src.pgmpy.factors.discrete import State
     >>> model.set_start_state([State('intel', 0), State('diff', 2)])
 
     Sample from it
@@ -93,8 +93,8 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovChain as MC
-        >>> from pgmpy.factors.discrete import State
+        >>> from src.pgmpy.models import MarkovChain as MC
+        >>> from src.pgmpy.factors.discrete import State
         >>> model = MC(['a', 'b'], [2, 2])
         >>> model.set_start_state([State('a', 0), State('b', 1)])
         """
@@ -137,7 +137,7 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovChain as MC
+        >>> from src.pgmpy.models import MarkovChain as MC
         >>> model = MC()
         >>> model.add_variable('x', 4)
         """
@@ -162,7 +162,7 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovChain as MC
+        >>> from src.pgmpy.models import MarkovChain as MC
         >>> model = MC()
         >>> model.add_variables_from(['x', 'y'], [3, 4])
         """
@@ -185,7 +185,7 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovChain as MC
+        >>> from src.pgmpy.models import MarkovChain as MC
         >>> model = MC()
         >>> model.add_variable('grade', 3)
         >>> grade_tm = {0: {0: 0.1, 1: 0.5, 2: 0.4}, 1: {0: 0.2, 1: 0.2, 2: 0.6 }, 2: {0: 0.7, 1: 0.15, 2: 0.15}}
@@ -262,8 +262,8 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovChain as MC
-        >>> from pgmpy.factors.discrete import State
+        >>> from src.pgmpy.models import MarkovChain as MC
+        >>> from src.pgmpy.factors.discrete import State
         >>> model = MC(['intel', 'diff'], [2, 3])
         >>> model.set_start_state([State('intel', 0), State('diff', 2)])
         >>> intel_tm = {0: {0: 0.25, 1: 0.75}, 1: {0: 0.5, 1: 0.5}}
@@ -317,8 +317,8 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models.MarkovChain import MarkovChain as MC
-        >>> from pgmpy.factors.discrete import State
+        >>> from src.pgmpy.models.MarkovChain import MarkovChain as MC
+        >>> from src.pgmpy.factors.discrete import State
         >>> model = MC(['intel', 'diff'], [3, 2])
         >>> intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {2: 0.5, 1:0.5}}
         >>> model.add_transition_model('intel', intel_tm)
@@ -354,8 +354,8 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models.MarkovChain import MarkovChain
-        >>> from pgmpy.factors.discrete import State
+        >>> from src.pgmpy.models.MarkovChain import MarkovChain
+        >>> from src.pgmpy.factors.discrete import State
         >>> model = MarkovChain()
         >>> model.add_variables_from(['intel', 'diff'], [3, 2])
         >>> intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {0: 0.3, 1: 0.3, 2: 0.4}}
@@ -405,8 +405,8 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models.MarkovChain import MarkovChain
-        >>> from pgmpy.factors.discrete import State
+        >>> from src.pgmpy.models.MarkovChain import MarkovChain
+        >>> from src.pgmpy.factors.discrete import State
         >>> model = MarkovChain()
         >>> model.add_variables_from(['intel', 'diff'], [3, 2])
         >>> intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {0: 0.3, 1: 0.3, 2: 0.4}}
@@ -456,7 +456,7 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovChain as MC
+        >>> from src.pgmpy.models import MarkovChain as MC
         >>> model = MC(['intel', 'diff'], [2, 3])
         >>> model.random_state()
         [State(var='diff', state=2), State(var='intel', state=1)]
@@ -476,8 +476,8 @@ class MarkovChain(object):
 
         Examples
         --------
-        >>> from pgmpy.models import MarkovChain
-        >>> from pgmpy.factors.discrete import State
+        >>> from src.pgmpy.models import MarkovChain
+        >>> from src.pgmpy.factors.discrete import State
         >>> model = MarkovChain()
         >>> model.add_variables_from(['intel', 'diff'], [3, 2])
         >>> intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {0: 0.3, 1: 0.3, 2: 0.4}}

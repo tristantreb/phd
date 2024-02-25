@@ -6,16 +6,16 @@ import networkx as nx
 import numpy as np
 from tqdm.auto import tqdm
 
-from pgmpy.factors import factor_product
-from pgmpy.inference import Inference
-from pgmpy.inference.EliminationOrder import (
+from src.pgmpy.factors import factor_product
+from src.pgmpy.inference import Inference
+from src.pgmpy.inference.EliminationOrder import (
     WeightedMinFill,
     MinNeighbors,
     MinFill,
     MinWeight,
 )
-from pgmpy.models import JunctionTree, BayesianNetwork
-from pgmpy.global_vars import SHOW_PROGRESS
+from src.pgmpy.models import JunctionTree, BayesianNetwork
+from src.pgmpy.global_vars import SHOW_PROGRESS
 
 DEBUG = False
 # DEBUG = True
@@ -264,8 +264,8 @@ class VariableElimination(Inference):
 
         Examples
         --------
-        >>> from pgmpy.inference import VariableElimination
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import VariableElimination
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> import numpy as np
         >>> import pandas as pd
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
@@ -346,8 +346,8 @@ class VariableElimination(Inference):
         --------
         >>> import numpy as np
         >>> import pandas as pd
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.inference import VariableElimination
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import VariableElimination
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
         ...                       columns=['A', 'B', 'C', 'D', 'E'])
         >>> model = BayesianNetwork([('A', 'B'), ('C', 'B'), ('C', 'D'), ('B', 'E')])
@@ -419,8 +419,8 @@ class VariableElimination(Inference):
 
         Examples
         --------
-        >>> from pgmpy.inference import VariableElimination
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import VariableElimination
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> import numpy as np
         >>> import pandas as pd
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
@@ -498,8 +498,8 @@ class VariableElimination(Inference):
         --------
         >>> import numpy as np
         >>> import pandas as pd
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.inference import VariableElimination
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import VariableElimination
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
         ...                       columns=['A', 'B', 'C', 'D', 'E'])
         >>> model = BayesianNetwork([('A', 'B'), ('C', 'B'), ('C', 'D'), ('B', 'E')])
@@ -562,8 +562,8 @@ class VariableElimination(Inference):
         --------
         >>> import numpy as np
         >>> import pandas as pd
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.inference import VariableElimination
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import VariableElimination
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
         ...                       columns=['A', 'B', 'C', 'D', 'E'])
         >>> model = BayesianNetwork([('A', 'B'), ('C', 'B'), ('C', 'D'), ('B', 'E')])
@@ -752,9 +752,9 @@ class BeliefPropagation(Inference):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.inference import BeliefPropagation
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.inference import BeliefPropagation
         >>> G = BayesianNetwork([('diff', 'grade'), ('intel', 'grade'),
         ...                    ('intel', 'SAT'), ('grade', 'letter')])
         >>> diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
@@ -785,9 +785,9 @@ class BeliefPropagation(Inference):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.inference import BeliefPropagation
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.inference import BeliefPropagation
         >>> G = BayesianNetwork([('diff', 'grade'), ('intel', 'grade'),
         ...                    ('intel', 'SAT'), ('grade', 'letter')])
         >>> diff_cpd = TabularCPD('diff', 2, [[0.2], [0.8]])
@@ -830,8 +830,8 @@ class BeliefPropagation(Inference):
 
         Examples
         --------
-        >>> from pgmpy.inference import BeliefPropagation
-        >>> from pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import BeliefPropagation
+        >>> from src.pgmpy.models import BayesianNetwork
         >>> import numpy as np
         >>> import pandas as pd
         >>> values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),
@@ -966,9 +966,9 @@ class BeliefPropagation(Inference):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.inference import BeliefPropagation
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import BeliefPropagation
         >>> bayesian_model = BayesianNetwork([('A', 'J'), ('R', 'J'), ('J', 'Q'),
         ...                                 ('J', 'L'), ('G', 'L')])
         >>> cpd_a = TabularCPD('A', 2, [[0.2], [0.8]])
@@ -1064,9 +1064,9 @@ class BeliefPropagation(Inference):
 
         Examples
         --------
-        >>> from pgmpy.factors.discrete import TabularCPD
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.inference import BeliefPropagation
+        >>> from src.pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import BayesianNetwork
+        >>> from src.pgmpy.inference import BeliefPropagation
         >>> bayesian_model = BayesianNetwork([('A', 'J'), ('R', 'J'), ('J', 'Q'),
         ...                                 ('J', 'L'), ('G', 'L')])
         >>> cpd_a = TabularCPD('A', 2, [[0.2], [0.8]])

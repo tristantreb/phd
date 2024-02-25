@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 import plotly.graph_objects as go
-from pgmpy.inference import BeliefPropagation
+from src.pgmpy.inference import BeliefPropagation
 
 import src.models.helpers as mh
 

@@ -7,8 +7,8 @@ import time
 import numpy as np
 
 # PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
-from pgmpy.factors.discrete import TabularCPD
-from pgmpy.models import BayesianNetwork
+from src.pgmpy.factors.discrete import TabularCPD
+from src.pgmpy.models import BayesianNetwork
 
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh

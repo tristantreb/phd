@@ -8,9 +8,9 @@ import pandas as pd
 import networkx as nx
 from tqdm.auto import tqdm
 
-from pgmpy.base import DAG
-from pgmpy.factors.discrete import TabularCPD
-from pgmpy.global_vars import SHOW_PROGRESS
+from src.pgmpy.base import DAG
+from src.pgmpy.factors.discrete import TabularCPD
+from src.pgmpy.global_vars import SHOW_PROGRESS
 
 
 @dataclass(eq=True, frozen=True)
@@ -87,7 +87,7 @@ class DynamicBayesianNetwork(DAG):
         Examples
         --------
         Create an empty Dynamic Bayesian Network with no nodes and no edges:
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
 
         Adding nodes and edges inside the dynamic bayesian network. A single
@@ -151,7 +151,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_node('A')
         ['A']
@@ -169,7 +169,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_nodes_from(['A', 'B', 'C'])
         """
@@ -182,7 +182,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_nodes_from(['A', 'B', 'C'])
         >>> sorted(dbn._nodes())
@@ -229,7 +229,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> model = DBN()
         >>> model.add_nodes_from(['D', 'I'])
         >>> model.add_edge(('D',0), ('I',0))
@@ -298,7 +298,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_edges_from([(('D', 0), ('G', 0)), (('I', 0), ('G', 0))])
         >>> dbn.nodes()
@@ -324,7 +324,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_nodes_from(['D', 'G', 'I', 'S', 'L'])
         >>> dbn.add_edges_from([(('D', 0), ('G', 0)), (('I', 0), ('G', 0)),
@@ -351,7 +351,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_edges_from([(('D', 0), ('G', 0)), (('I', 0), ('G', 0)),
         ...                     (('G', 0), ('L', 0)), (('D', 0), ('D', 1)),
@@ -377,7 +377,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_nodes_from(['D', 'G', 'I', 'S', 'L'])
         >>> dbn.add_edges_from([(('D',0),('G',0)),(('I',0),('G',0)),(('G',0),('L',0)),(('D',0),('D',1))])
@@ -405,7 +405,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN()
         >>> dbn.add_nodes_from(['D', 'G', 'I', 'S', 'L'])
         >>> dbn.add_edges_from([(('D', 0),('G', 0)),(('I', 0),('G', 0)),(('G', 0),('L', 0)),(('D', 0),('D', 1))])
@@ -436,8 +436,8 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> dbn = DBN()
         >>> dbn.add_edges_from([(('D', 0),('G', 0)),(('I', 0),('G', 0)),(('D', 0),('D', 1)),(('I', 0),('I', 1))])
         >>> grade_cpd = TabularCPD(('G', 0), 3, [[0.3, 0.05, 0.9, 0.5],
@@ -491,8 +491,8 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> dbn = DBN()
         >>> dbn.add_edges_from([(('D',0),('G',0)),(('I',0),('G',0)),(('D',0),('D',1)),(('I',0),('I',1))])
         >>> grade_cpd =  TabularCPD(('G',0), 3, [[0.3,0.05,0.9,0.5],
@@ -546,8 +546,8 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> dbn = DBN()
         >>> dbn.add_edges_from([(('D',0),('G',0)),(('I',0),('G',0)),(('D',0),('D',1)),(('I',0),('I',1))])
         >>> grade_cpd =  TabularCPD(('G',0), 3, [[0.3,0.05,0.9,0.5],
@@ -611,8 +611,8 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> student = DBN()
         >>> student.add_nodes_from(['D', 'G', 'I', 'S', 'L'])
         >>> student.add_edges_from([(('D', 0),('G', 0)),(('I', 0),('G', 0)),(('D', 0),('D', 1)),(('I', 0),('I', 1))])
@@ -679,7 +679,7 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> dbn = DBN([(('D',0), ('G',0)), (('I',0), ('G',0))])
         >>> moral_graph = dbn.moralize()
         >>> moral_graph.edges()
@@ -707,8 +707,8 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> dbn = DBN()
         >>> dbn.add_edges_from([(('D',0),('G',0)),(('I',0),('G',0)),(('D',0),('D',1)),(('I',0),('I',1))])
         >>> grade_cpd =  TabularCPD(('G',0), 3, [[0.3, 0.05, 0.9,  0.5 ],
@@ -786,7 +786,7 @@ class DynamicBayesianNetwork(DAG):
 
         The node names are changed to strings in the form `{var}_{time}`.
         """
-        from pgmpy.models import BayesianNetwork
+        from src.pgmpy.models import BayesianNetwork
 
         edges = [
             (
@@ -839,7 +839,7 @@ class DynamicBayesianNetwork(DAG):
         --------
         >>> import numpy as np
         >>> import pandas as pd
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
         >>> model = DBN(
         >>>     [
         >>>         (("A", 0), ("B", 0)),
@@ -1011,8 +1011,8 @@ class DynamicBayesianNetwork(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import DynamicBayesianNetwork as DBN
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.models import DynamicBayesianNetwork as DBN
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> dbn = DBN([(("D", 0), ("G", 0)), (("I", 0), ("G", 0)),
         ...            (("D", 0), ("D", 1)), (("I", 0), ("I", 1)),])
         >>> diff_cpd = TabularCPD(("D", 0), 2, [[0.6], [0.4]])
@@ -1074,7 +1074,7 @@ class DynamicBayesianNetwork(DAG):
         0       0       0       0       1       2       0       1       2       1       1       0       1
         1       0       1       1       1       2       0       1       2       1       1       0       0
         """
-        from pgmpy.sampling import BayesianModelSampling
+        from src.pgmpy.sampling import BayesianModelSampling
 
         if show_progress and SHOW_PROGRESS:
             pbar = tqdm(total=n_time_slices * len(self._nodes()))

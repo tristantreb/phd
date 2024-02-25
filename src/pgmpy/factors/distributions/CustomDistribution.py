@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import integrate
 
-from pgmpy.factors.distributions import BaseDistribution
+from src.pgmpy.factors.distributions import BaseDistribution
 
 
 class CustomDistribution(BaseDistribution):
@@ -21,7 +21,7 @@ class CustomDistribution(BaseDistribution):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         # Two variable dirichlet distribution with alpha = (1, 2)
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
@@ -53,7 +53,7 @@ class CustomDistribution(BaseDistribution):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         # Two variable dirichlet distribution with alpha = (1, 2)
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
@@ -81,7 +81,7 @@ class CustomDistribution(BaseDistribution):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         # Two variable dirichlet distribution with alpha = (1, 2)
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
@@ -111,7 +111,7 @@ class CustomDistribution(BaseDistribution):
 
         Examples
         --------
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         >>> from scipy.stats import multivariate_normal
         >>> normal_pdf = lambda x1, x2: multivariate_normal.pdf(
         ...     x=(x1, x2), mean=[0, 0], cov=[[1, 0], [0, 1]])
@@ -135,7 +135,7 @@ class CustomDistribution(BaseDistribution):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         # Two variable dirichlet distribution with alpha = (1,2)
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
@@ -156,7 +156,7 @@ class CustomDistribution(BaseDistribution):
         Parameters
         ----------
         method: string, BaseDiscretizer instance
-            A Discretizer Class from pgmpy.factors.discretize
+            A Discretizer Class from src.pgmpy.factors.discretize
 
         *args, **kwargs: values
             The parameters to be given to the Discretizer Class.
@@ -170,8 +170,8 @@ class CustomDistribution(BaseDistribution):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.continuous import ContinuousFactor
-        >>> from pgmpy.factors.continuous import RoundingDiscretizer
+        >>> from src.pgmpy.factors.continuous import ContinuousFactor
+        >>> from src.pgmpy.factors.continuous import RoundingDiscretizer
         >>> def dirichlet_pdf(x, y):
         ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)
         >>> dirichlet_factor = ContinuousFactor(['x', 'y'], dirichlet_pdf)
@@ -204,7 +204,7 @@ class CustomDistribution(BaseDistribution):
         --------
         >>> import numpy as np
         >>> from scipy.special import beta
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         >>> def custom_pdf(x, y, z):
         ...     return z*(np.power(x, 1) * np.power(y, 2)) / beta(x, y)
         >>> custom_dist = CustomDistribution(['x', 'y', 'z'], custom_pdf)
@@ -280,7 +280,7 @@ class CustomDistribution(BaseDistribution):
 
         Examples
         --------
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         >>> from scipy.stats import multivariate_normal
         >>> normal_pdf = lambda x1, x2: multivariate_normal.pdf(
         ...                x=[x1, x2], mean=[0, 0], cov=[[1, 0], [0, 1]])
@@ -358,7 +358,7 @@ class CustomDistribution(BaseDistribution):
 
         Examples
         --------
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         >>> from scipy.stats import multivariate_normal
         >>> normal_pdf_x2 = lambda x1, x2: 2 * multivariate_normal.pdf(
         ...                     x=[x1, x2], mean=[0, 0], cov=[[1, 0], [0, 1]])
@@ -458,7 +458,7 @@ class CustomDistribution(BaseDistribution):
 
         Example
         -------
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         >>> from scipy.stats import multivariate_normal
         >>> sn_pdf1 = lambda x: multivariate_normal.pdf(
         ...                                 x=[x], mean=[0], cov=[[1]])
@@ -495,7 +495,7 @@ class CustomDistribution(BaseDistribution):
 
         Example
         -------
-        >>> from pgmpy.factors.distributions import CustomDistribution
+        >>> from src.pgmpy.factors.distributions import CustomDistribution
         >>> from scipy.stats import multivariate_normal
         >>> sn_pdf1 = lambda x: multivariate_normal.pdf(
         ...                                     x=[x], mean=[0], cov=[[1]])

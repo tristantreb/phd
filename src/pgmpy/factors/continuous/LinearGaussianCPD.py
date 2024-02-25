@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import multivariate_normal
 
-from pgmpy.factors.base import BaseFactor
+from src.pgmpy.factors.base import BaseFactor
 
 
 class LinearGaussianCPD(BaseFactor):
@@ -209,7 +209,7 @@ class LinearGaussianCPD(BaseFactor):
 
         Examples
         --------
-        >>> from pgmpy.factors.continuous import LinearGaussianCPD
+        >>> from src.pgmpy.factors.continuous import LinearGaussianCPD
         >>> cpd = LinearGaussianCPD('Y',  [0.2, -2, 3, 7], 9.6, ['X1', 'X2', 'X3'])
         >>> copy_cpd = cpd.copy()
         >>> copy_cpd.variable

@@ -6,8 +6,8 @@ import itertools
 from networkx.algorithms.dag import descendants
 from pyparsing import OneOrMore, Word, Optional, Suppress, alphanums, nums
 
-from pgmpy.base import DAG
-from pgmpy.global_vars import HAS_PANDAS
+from src.pgmpy.base import DAG
+from src.pgmpy.global_vars import HAS_PANDAS
 
 
 if HAS_PANDAS:
@@ -74,7 +74,7 @@ class SEMGraph(DAG):
         Examples
         --------
         Defining a model (Union sentiment model[1]) without setting any paramaters.
-        >>> from pgmpy.models import SEMGraph
+        >>> from src.pgmpy.models import SEMGraph
         >>> sem = SEMGraph(ebunch=[('deferenc', 'unionsen'), ('laboract', 'unionsen'),
         ...                        ('yrsmill', 'unionsen'), ('age', 'deferenc'),
         ...                        ('age', 'laboract'), ('deferenc', 'laboract')],
@@ -151,7 +151,7 @@ class SEMGraph(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import SEMGraph
+        >>> from src.pgmpy.models import SEMGraph
         >>> sem = SEMGraph(ebunch=[('deferenc', 'unionsen'), ('laboract', 'unionsen'),
         ...                        ('yrsmill', 'unionsen'), ('age', 'deferenc'),
         ...                        ('age', 'laboract'), ('deferenc', 'laboract')],
@@ -177,7 +177,7 @@ class SEMGraph(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import SEMGraph
+        >>> from src.pgmpy.models import SEMGraph
         >>> model = SEMGraph(ebunch=[('xi1', 'eta1'), ('xi1', 'x1'), ('xi1', 'x2'),
         ...                          ('eta1', 'y1'), ('eta1', 'y2')],
         ...                  latents=['xi1', 'eta1'])
@@ -221,7 +221,7 @@ class SEMGraph(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import SEM
+        >>> from src.pgmpy.models import SEM
         >>> model = SEMGraph(ebunch=[('yrsmill', 'unionsen'), ('age', 'laboract'),
         ...                          ('age', 'deferenc'), ('deferenc', 'laboract'),
         ...                          ('deferenc', 'unionsen'), ('laboract', 'unionsen')],
@@ -319,7 +319,7 @@ class SEMGraph(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import SEMGraph
+        >>> from src.pgmpy.models import SEMGraph
         >>> model = SEMGraph(ebunch=[('xi1', 'eta1'), ('xi1', 'x1'), ('xi1', 'x2'),
         ...                          ('eta1', 'y1'), ('eta1', 'y2')],
         ...                  latents=['xi1', 'eta1'])
@@ -374,7 +374,7 @@ class SEMGraph(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import SEMGraph
+        >>> from src.pgmpy.models import SEMGraph
         >>> model = SEMGraph(ebunch=[('I', 'X'), ('X', 'Y')],
         ...                  latents=[],
         ...                  err_corr=[('X', 'Y')])
@@ -532,7 +532,7 @@ class SEMGraph(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import SEMGraph
+        >>> from src.pgmpy.models import SEMGraph
         >>> model = SEMGraph(ebunch=[('I', 'X'), ('X', 'Y'), ('W', 'I')],
         ...                  latents=[],
         ...                  err_corr=[('W', 'Y')])
@@ -581,7 +581,7 @@ class SEMGraph(DAG):
 
         Examples
         --------
-        >>> from pgmpy.models import SEM
+        >>> from src.pgmpy.models import SEM
         >>> sem = SEM.from_graph(ebunch=[('deferenc', 'unionsen'), ('laboract', 'unionsen'),
         ...                              ('yrsmill', 'unionsen'), ('age', 'deferenc'),
         ...                              ('age', 'laboract'), ('deferenc', 'laboract')],
@@ -616,7 +616,7 @@ class SEMGraph(DAG):
         for index, obs_var in enumerate(self.observed):
             wedge_y[index][nodelist.index(obs_var)] = 1.0
 
-        from pgmpy.models import SEMAlg
+        from src.pgmpy.models import SEMAlg
 
         return SEMAlg(
             eta=nodelist,
@@ -865,7 +865,7 @@ class SEMAlg:
 
         Examples
         --------
-        >>> from pgmpy.models import SEMAlg
+        >>> from src.pgmpy.models import SEMAlg
         # TODO: Finish this example
         """
         self.eta = eta
@@ -903,7 +903,7 @@ class SEMAlg:
 
         Examples
         --------
-        >>> from pgmpy.models import SEMAlg
+        >>> from src.pgmpy.models import SEMAlg
         >>> model = SEMAlg()
         # TODO: Finish this example
         """
@@ -923,7 +923,7 @@ class SEMAlg:
 
         latents = set(self.eta) - set(self.y)
 
-        from pgmpy.models import SEMGraph
+        from src.pgmpy.models import SEMGraph
 
         # TODO: Add edge weights
         sem_graph = SEMGraph(
@@ -1188,7 +1188,7 @@ class SEM(SEMGraph):
         Examples
         --------
         Defining a model (Union sentiment model[1]) without setting any paramaters.
-        >>> from pgmpy.models import SEM
+        >>> from src.pgmpy.models import SEM
         >>> sem = SEM.from_graph(ebunch=[('deferenc', 'unionsen'), ('laboract', 'unionsen'),
         ...                              ('yrsmill', 'unionsen'), ('age', 'deferenc'),
         ...                              ('age', 'laboract'), ('deferenc', 'laboract')],
@@ -1268,7 +1268,7 @@ class SEM(SEMGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import SEMAlg
+        >>> from src.pgmpy.models import SEMAlg
         # TODO: Finish this example
         """
         eta = var_names["y"] + var_names["x"] + var_names["eta"] + var_names["xi"]
@@ -1369,7 +1369,7 @@ class SEM(SEMGraph):
 
         Examples
         --------
-        >>> from pgmpy.models import SEM
+        >>> from src.pgmpy.models import SEM
         >>> SEM.from_RAM  # TODO: Finish this
         """
         if observed:

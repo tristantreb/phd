@@ -1,5 +1,5 @@
-from pgmpy.models import BayesianNetwork, DynamicBayesianNetwork
-from pgmpy.factors.discrete import DiscreteFactor
+from src.pgmpy.models import BayesianNetwork, DynamicBayesianNetwork
+from src.pgmpy.factors.discrete import DiscreteFactor
 
 
 class ApproxInference(object):
@@ -13,7 +13,7 @@ class ApproxInference(object):
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
+        >>> from src.pgmpy.utils import get_example_model
         >>> model = get_example_model('alarm')
         >>> infer = ApproxInference(model)
         """
@@ -107,8 +107,8 @@ class ApproxInference(object):
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
-        >>> from pgmpy.inference import ApproxInference
+        >>> from src.pgmpy.utils import get_example_model
+        >>> from src.pgmpy.inference import ApproxInference
         >>> model = get_example_model("alarm")
         >>> infer = ApproxInference(model)
         >>> infer.query(variables=["HISTORY"])

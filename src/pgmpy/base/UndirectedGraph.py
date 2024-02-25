@@ -23,7 +23,7 @@ class UndirectedGraph(nx.Graph):
     --------
     Create an empty UndirectedGraph with no nodes and no edges
 
-    >>> from pgmpy.base import UndirectedGraph
+    >>> from src.pgmpy.base import UndirectedGraph
     >>> G = UndirectedGraph()
 
     G can be grown in several ways
@@ -82,7 +82,7 @@ class UndirectedGraph(nx.Graph):
 
         Examples
         --------
-        >>> from pgmpy.base import UndirectedGraph
+        >>> from src.pgmpy.base import UndirectedGraph
         >>> G = UndirectedGraph()
         >>> G.add_node(node='A')
         >>> G.nodes()
@@ -124,7 +124,7 @@ class UndirectedGraph(nx.Graph):
 
         Examples
         --------
-        >>> from pgmpy.base import UndirectedGraph
+        >>> from src.pgmpy.base import UndirectedGraph
         >>> G = UndirectedGraph()
         >>> G.add_nodes_from(nodes=['A', 'B', 'C'])
         >>> G.nodes()
@@ -169,7 +169,7 @@ class UndirectedGraph(nx.Graph):
 
         Examples
         --------
-        >>> from pgmpy.base import UndirectedGraph
+        >>> from src.pgmpy.base import UndirectedGraph
         >>> G = UndirectedGraph()
         >>> G.add_nodes_from(nodes=['Alice', 'Bob', 'Charles'])
         >>> G.add_edge(u='Alice', v='Bob')
@@ -214,7 +214,7 @@ class UndirectedGraph(nx.Graph):
 
         Examples
         --------
-        >>> from pgmpy.base import UndirectedGraph
+        >>> from src.pgmpy.base import UndirectedGraph
         >>> G = UndirectedGraph()
         >>> G.add_nodes_from(nodes=['Alice', 'Bob', 'Charles'])
         >>> G.add_edges_from(ebunch=[('Alice', 'Bob'), ('Bob', 'Charles')])
@@ -262,7 +262,7 @@ class UndirectedGraph(nx.Graph):
 
         Examples
         --------
-        >>> from pgmpy.base import UndirectedGraph
+        >>> from src.pgmpy.base import UndirectedGraph
         >>> G = UndirectedGraph(ebunch=[('A', 'B'), ('C', 'B'), ('B', 'D'),
                                         ('B', 'E'), ('D', 'E'), ('E', 'F'),
                                         ('D', 'F'), ('B', 'F')])
@@ -291,7 +291,7 @@ class UndirectedGraph(nx.Graph):
 
         Examples
         --------
-        >>> from pgmpy.base import UndirectedGraph
+        >>> from src.pgmpy.base import UndirectedGraph
         >>> G = UndirectedGraph()
         >>> G.add_edges_from(ebunch=[('x1', 'x2'), ('x1', 'x3'),
         ...                          ('x2', 'x4'), ('x3', 'x4')])

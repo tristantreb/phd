@@ -1,4 +1,4 @@
-from pgmpy.inference import BeliefPropagation
+from src.pgmpy.inference import BeliefPropagation
 
 
 def apply_pgmpy_bp(model):

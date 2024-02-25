@@ -7,13 +7,13 @@ from math import sqrt
 import numpy as np
 from tqdm.auto import tqdm
 
-from pgmpy.sampling import (
+from src.pgmpy.sampling import (
     BaseGradLogPDF,
     BaseSimulateHamiltonianDynamics,
     LeapFrog,
     _return_samples,
 )
-from pgmpy.utils import _check_1d_array_object, _check_length_equal
+from src.pgmpy.utils import _check_1d_array_object, _check_length_equal
 
 
 class HamiltonianMC(object):
@@ -36,8 +36,8 @@ class HamiltonianMC(object):
 
     Example
     -------
-    >>> from pgmpy.sampling import HamiltonianMC as HMC, LeapFrog, GradLogPDFGaussian
-    >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+    >>> from src.pgmpy.sampling import HamiltonianMC as HMC, LeapFrog, GradLogPDFGaussian
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
     >>> import numpy as np
     >>> mean = np.array([-3, 4])
     >>> covariance = np.array([[3, 0.7], [0.7, 5]])
@@ -238,8 +238,8 @@ class HamiltonianMC(object):
 
         Examples
         --------
-        >>> from pgmpy.sampling import HamiltonianMC as HMC, GradLogPDFGaussian, ModifiedEuler
-        >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import HamiltonianMC as HMC, GradLogPDFGaussian, ModifiedEuler
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([1, -1])
         >>> covariance = np.array([[1, 0.2], [0.2, 1]])
@@ -327,8 +327,8 @@ class HamiltonianMC(object):
 
         Examples
         --------
-        >>> from pgmpy.sampling import HamiltonianMC as HMC, GradLogPDFGaussian as GLPG
-        >>> from pgmpy.factors import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import HamiltonianMC as HMC, GradLogPDFGaussian as GLPG
+        >>> from src.pgmpy.factors import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([4, -1])
         >>> covariance = np.array([[3, 0.4], [0.4, 3]])
@@ -398,8 +398,8 @@ class HamiltonianMCDA(HamiltonianMC):
 
     Example
     -------
-    >>> from pgmpy.sampling import HamiltonianMCDA as HMCda, LeapFrog, GradLogPDFGaussian as GLPG
-    >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+    >>> from src.pgmpy.sampling import HamiltonianMCDA as HMCda, LeapFrog, GradLogPDFGaussian as GLPG
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
     >>> import numpy as np
     >>> mean = np.array([1, 2, 3])
     >>> covariance = np.array([[2, 0.4, 0.5], [0.4, 3, 0.6], [0.5, 0.6, 4]])
@@ -501,8 +501,8 @@ class HamiltonianMCDA(HamiltonianMC):
 
         Examples
         ---------
-        >>> from pgmpy.sampling import HamiltonianMCDA as HMCda, GradLogPDFGaussian as GLPG, LeapFrog
-        >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import HamiltonianMCDA as HMCda, GradLogPDFGaussian as GLPG, LeapFrog
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([1, 1])
         >>> covariance = np.array([[1, 0.7], [0.7, 3]])
@@ -598,8 +598,8 @@ class HamiltonianMCDA(HamiltonianMC):
 
         Examples
         --------
-        >>> from pgmpy.sampling import HamiltonianMCDA as HMCda, GradLogPDFGaussian as GLPG, LeapFrog
-        >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import HamiltonianMCDA as HMCda, GradLogPDFGaussian as GLPG, LeapFrog
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([1, 1])
         >>> covariance = np.array([[1, 0.7], [0.7, 3]])

@@ -6,8 +6,8 @@ from warnings import warn
 import networkx as nx
 import numpy as np
 
-from pgmpy.base import UndirectedGraph
-from pgmpy.independencies import Independencies
+from src.pgmpy.base import UndirectedGraph
+from src.pgmpy.independencies import Independencies
 
 
 class DAG(nx.DiGraph):
@@ -28,7 +28,7 @@ class DAG(nx.DiGraph):
     --------
     Create an empty DAG with no nodes and no edges
 
-    >>> from pgmpy.base import DAG
+    >>> from src.pgmpy.base import DAG
     >>> G = DAG()
 
     G can be grown in several ways:
@@ -101,7 +101,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> G = DAG()
         >>> G.add_node(node='A')
         >>> sorted(G.nodes())
@@ -152,7 +152,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> G = DAG()
         >>> G.add_nodes_from(nodes=['A', 'B', 'C'])
         >>> G.nodes()
@@ -202,7 +202,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> G = DAG()
         >>> G.add_nodes_from(nodes=['Alice', 'Bob', 'Charles'])
         >>> G.add_edge(u='Alice', v='Bob')
@@ -247,7 +247,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> G = DAG()
         >>> G.add_nodes_from(nodes=['Alice', 'Bob', 'Charles'])
         >>> G.add_edges_from(ebunch=[('Alice', 'Bob'), ('Bob', 'Charles')])
@@ -297,7 +297,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> G = DAG(ebunch=[('diff', 'grade'), ('intel', 'grade')])
         >>> G.get_parents(node='grade')
         ['diff', 'intel']
@@ -314,7 +314,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> G = DAG(ebunch=[('diff', 'grade'), ('intel', 'grade')])
         >>> moral_graph = G.moralize()
         >>> moral_graph.edges()
@@ -337,7 +337,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> graph = DAG([('A', 'B'), ('B', 'C'), ('B', 'D')])
         >>> graph.get_leaves()
         ['C', 'D']
@@ -362,7 +362,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> graph = DAG([('A', 'B'), ('B', 'C'), ('B', 'D'), ('E', 'B')])
         >>> graph.get_roots()
         ['A', 'E']
@@ -383,7 +383,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> g = DAG(ebunch=[('A', 'B'), ('C', 'B'), ('B', 'D'),
                                       ('B', 'E'), ('B', 'F'), ('E', 'G')])
         >>> g.get_children(node='B')
@@ -407,7 +407,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> chain = DAG([('X', 'Y'), ('Y', 'Z')])
         >>> chain.get_independencies()
         (X \u27C2 Z | Y)
@@ -460,7 +460,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> student = DAG()
         >>> student.add_edges_from([('diff', 'grade'), ('intel', 'grade'),
         >>>                         ('grade', 'letter'), ('intel', 'SAT')])
@@ -503,7 +503,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> G = DAG()
         >>> G.add_edges_from([('V', 'W'), ('W', 'X'),
         ...                   ('X', 'Y'), ('Z', 'Y')])
@@ -537,7 +537,7 @@ class DAG(nx.DiGraph):
 
         Examples
         ---------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> student = DAG()
         >>> student.add_edges_from([('diff', 'grade'), ('intel', 'grade'),
         ...                         ('intel', 'SAT'), ('grade', 'letter')])
@@ -569,7 +569,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> student = DAG()
         >>> student.add_nodes_from(['diff', 'intel', 'grades', 'letter', 'sat'])
         >>> student.add_edges_from([('diff', 'grades'), ('intel', 'grades'), ('grades', 'letter'),
@@ -657,8 +657,8 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
-        >>> from pgmpy.factors.discrete import TabularCPD
+        >>> from src.pgmpy.base import DAG
+        >>> from src.pgmpy.factors.discrete import TabularCPD
         >>> G = DAG([('x', 'y'), ('z', 'y'), ('y', 'w'), ('y', 'v'), ('u', 'w'),
                                ('s', 'v'), ('w', 't'), ('w', 'm'), ('v', 'n'), ('v', 'q')])
         >>> G.get_markov_blanket('y')
@@ -692,7 +692,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> student = DAG()
         >>> student.add_nodes_from(['diff', 'intel', 'grades'])
         >>> student.add_edges_from([('diff', 'grades'), ('intel', 'grades')])
@@ -765,7 +765,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> model = DAG([('D', 'G'), ('I', 'G'), ('G', 'L'),
         ...                        ('I', 'L')])
         >>> model._get_ancestors_of('G')
@@ -878,7 +878,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> dag = DAG([('A', 'C'), ('B', 'C'), ('D', 'A'), ('D', 'B')])
         >>> anc_dag = dag.get_ancestral_graph(nodes=['A', 'B'])
         >>> anc_dag.edges()
@@ -931,7 +931,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> dag = DAG([('a', 'b'), ('b', 'c'), ('d', 'c')])
         >>> dag.to_daft(node_pos={'a': (0, 0), 'b': (1, 0), 'c': (2, 0), 'd': (1, 1)})
         <daft.PGM at 0x7fc756e936d0>
@@ -1037,7 +1037,7 @@ class DAG(nx.DiGraph):
 
         Examples
         --------
-        >>> from pgmpy.base import DAG
+        >>> from src.pgmpy.base import DAG
         >>> random_dag = DAG.get_random(n_nodes=10, edge_prob=0.3)
         >>> random_dag.nodes()
         NodeView((0, 1, 2, 3, 4, 5, 6, 7, 8, 9))

@@ -12,7 +12,7 @@ class StateNameMixin:
         Example
         -------
         >>> import numpy as np
-        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from src.pgmpy.factors.discrete import DiscreteFactor
         >>> sn = {'speed': ['low', 'medium', 'high'],
         ...       'switch': ['on', 'off'],
         ...       'time': ['day', 'night']}

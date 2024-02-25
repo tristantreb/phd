@@ -1,6 +1,6 @@
 import warnings
 
-from pgmpy.models import BayesianNetwork
+from src.pgmpy.models import BayesianNetwork
 
 
 class BayesianModel(BayesianNetwork):

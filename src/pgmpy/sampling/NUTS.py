@@ -2,8 +2,8 @@
 import numpy as np
 from tqdm.auto import tqdm
 
-from pgmpy.sampling import HamiltonianMCDA, LeapFrog, _return_samples
-from pgmpy.utils import _check_1d_array_object, _check_length_equal
+from src.pgmpy.sampling import HamiltonianMCDA, LeapFrog, _return_samples
+from src.pgmpy.utils import _check_1d_array_object, _check_length_equal
 
 
 class NoUTurnSampler(HamiltonianMCDA):
@@ -30,8 +30,8 @@ class NoUTurnSampler(HamiltonianMCDA):
 
     Example
     -------
-    >>> from pgmpy.sampling import NoUTurnSampler as NUTS, LeapFrog, GradLogPDFGaussian
-    >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+    >>> from src.pgmpy.sampling import NoUTurnSampler as NUTS, LeapFrog, GradLogPDFGaussian
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
     >>> import numpy as np
     >>> mean = np.array([1, 2, 3])
     >>> covariance = np.array([[4, 0.1, 0.2], [0.1, 1, 0.3], [0.2, 0.3, 8]])
@@ -314,8 +314,8 @@ class NoUTurnSampler(HamiltonianMCDA):
 
         Examples
         ---------
-        >>> from pgmpy.sampling import NoUTurnSampler as NUTS, GradLogPDFGaussian, LeapFrog
-        >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import NoUTurnSampler as NUTS, GradLogPDFGaussian, LeapFrog
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([0, 0, 0])
         >>> covariance = np.array([[6, 0.7, 0.2], [0.7, 3, 0.9], [0.2, 0.9, 1]])
@@ -380,8 +380,8 @@ class NoUTurnSampler(HamiltonianMCDA):
 
         Examples
         ---------
-        >>> from pgmpy.sampling import NoUTurnSampler as NUTS, GradLogPDFGaussian
-        >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import NoUTurnSampler as NUTS, GradLogPDFGaussian
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([11, -6])
         >>> covariance = np.array([[0.7, 0.2], [0.2, 14]])
@@ -441,8 +441,8 @@ class NoUTurnSamplerDA(NoUTurnSampler):
 
     Example
     -------
-    >>> from pgmpy.sampling import NoUTurnSamplerDA as NUTSda, GradLogPDFGaussian
-    >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+    >>> from src.pgmpy.sampling import NoUTurnSamplerDA as NUTSda, GradLogPDFGaussian
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
     >>> import numpy as np
     >>> mean = np.array([-1, 12, -3])
     >>> covariance = np.array([[-2, 7, 2], [7, 14, 4], [2, 4, -1]])
@@ -744,8 +744,8 @@ class NoUTurnSamplerDA(NoUTurnSampler):
 
         Examples
         ---------
-        >>> from pgmpy.sampling import NoUTurnSamplerDA as NUTSda, GradLogPDFGaussian, LeapFrog
-        >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import NoUTurnSamplerDA as NUTSda, GradLogPDFGaussian, LeapFrog
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([10, -13])
         >>> covariance = np.array([[16, -3], [-3, 13]])
@@ -828,8 +828,8 @@ class NoUTurnSamplerDA(NoUTurnSampler):
 
         Examples
         --------
-        >>> from pgmpy.sampling import NoUTurnSamplerDA as NUTSda, GradLogPDFGaussian
-        >>> from pgmpy.factors.continuous import GaussianDistribution as JGD
+        >>> from src.pgmpy.sampling import NoUTurnSamplerDA as NUTSda, GradLogPDFGaussian
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution as JGD
         >>> import numpy as np
         >>> mean = np.array([1, -100])
         >>> covariance = np.array([[-12, 45], [45, -10]])

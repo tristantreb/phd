@@ -81,7 +81,7 @@ class Independencies(object):
 
         Examples
         --------
-        >>> from pgmpy.independencies import Independencies, IndependenceAssertion
+        >>> from src.pgmpy.independencies import Independencies, IndependenceAssertion
         >>> ind = Independencies(['A', 'B', ['C', 'D']])
         >>> IndependenceAssertion('A', 'B', ['C', 'D']) in ind
         True
@@ -113,7 +113,7 @@ class Independencies(object):
 
         Examples
         --------
-        >>> from pgmpy.independencies import Independencies
+        >>> from src.pgmpy.independencies import Independencies
         >>> independencies = Independencies(['X', 'Y', 'Z'])
         >>> independencies.get_assertions()
         """
@@ -130,7 +130,7 @@ class Independencies(object):
 
         Examples
         --------
-        >>> from pgmpy.independencies import Independencies
+        >>> from src.pgmpy.independencies import Independencies
         >>> independencies = Independencies()
         >>> independencies.add_assertions(['X', 'Y', 'Z'])
         >>> independencies.add_assertions(['a', ['b', 'c'], 'd'])
@@ -160,7 +160,7 @@ class Independencies(object):
 
         Examples
         --------
-        >>> from pgmpy.independencies import Independencies
+        >>> from src.pgmpy.independencies import Independencies
         >>> ind1 = Independencies(('A', ['B', 'C'], 'D'))
         >>> ind1.closure()
         (A \u27C2 B | D, C)
@@ -285,7 +285,7 @@ class Independencies(object):
 
         Examples
         --------
-        >>> from pgmpy.independencies import Independencies
+        >>> from src.pgmpy.independencies import Independencies
         >>> ind1 = Independencies([['A', 'B'], ['C', 'D'], 'E'])
         >>> ind2 = Independencies(['A', 'C', 'E'])
         >>> ind1.entails(ind2)
@@ -315,7 +315,7 @@ class Independencies(object):
 
         Examples
         --------
-        >>> from pgmpy.independencies import Independencies
+        >>> from src.pgmpy.independencies import Independencies
         >>> ind1 = Independencies(['X', ['Y', 'W'], 'Z'])
         >>> ind2 = Independencies(['X', 'Y', 'Z'], ['X', 'W', 'Z'])
         >>> ind3 = Independencies(['X', 'Y', 'Z'], ['X', 'W', 'Z'], ['X', 'Y', ['W','Z']])
@@ -383,7 +383,7 @@ class IndependenceAssertion(object):
 
     Examples
     --------
-    >>> from pgmpy.independencies import IndependenceAssertion
+    >>> from src.pgmpy.independencies import IndependenceAssertion
     >>> assertion = IndependenceAssertion('U', 'X')
     >>> assertion = IndependenceAssertion('U', ['X', 'Y'])
     >>> assertion = IndependenceAssertion('U', ['X', 'Y'], 'Z')
@@ -468,7 +468,7 @@ class IndependenceAssertion(object):
 
         Examples
         --------
-        >>> from pgmpy.independencies import IndependenceAssertion
+        >>> from src.pgmpy.independencies import IndependenceAssertion
         >>> asser = IndependenceAssertion('X', 'Y', 'Z')
         >>> asser.get_assertion()
         """

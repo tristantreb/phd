@@ -4,9 +4,9 @@ from warnings import warn
 import numpy as np
 import networkx as nx
 
-from pgmpy.inference import Inference
+from src.pgmpy.inference import Inference
 from pgmpy import HAS_PANDAS
-from pgmpy.utils import _check_1d_array_object, _check_length_equal
+from src.pgmpy.utils import _check_1d_array_object, _check_length_equal
 
 if HAS_PANDAS:
     import pandas
@@ -26,7 +26,7 @@ class BayesianModelInference(Inference):
         model: Bayesian Model
             model on which inference queries will be computed
         """
-        from pgmpy.models import BayesianNetwork
+        from src.pgmpy.models import BayesianNetwork
 
         if not isinstance(model, BayesianNetwork):
             raise TypeError(
@@ -135,8 +135,8 @@ class BaseGradLogPDF(object):
 
     Examples
     --------
-    >>> from pgmpy.factors import GaussianDistribution
-    >>> from pgmpy.inference.continuous import BaseGradLogPDF
+    >>> from src.pgmpy.factors import GaussianDistribution
+    >>> from src.pgmpy.inference.continuous import BaseGradLogPDF
     >>> import numpy as np
     >>> class GradLogGaussian(BaseGradLogPDF):
     ...     def __init__(self, position, model):
@@ -193,8 +193,8 @@ class BaseGradLogPDF(object):
         Example
         --------
         >>> # Using implementation of GradLogPDFGaussian
-        >>> from pgmpy.sampling.base import GradLogPDFGaussian
-        >>> from pgmpy.factors.continuous import GaussianDistribution
+        >>> from src.pgmpy.sampling.base import GradLogPDFGaussian
+        >>> from src.pgmpy.factors.continuous import GaussianDistribution
         >>> import numpy as np
         >>> mean = np.array([1, 1])
         >>> covariance = np.array([[1, -5], [-5, 2]])
@@ -224,8 +224,8 @@ class GradLogPDFGaussian(BaseGradLogPDF):
 
     Example
     -------
-    >>> from pgmpy.sampling import GradLogPDFGaussian
-    >>> from pgmpy.factors.continuous import GaussianDistribution
+    >>> from src.pgmpy.sampling import GradLogPDFGaussian
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution
     >>> import numpy as np
     >>> mean = np.array([3, 4])
     >>> covariance = np.array([[5, 4], [4, 5]])
@@ -283,9 +283,9 @@ class BaseSimulateHamiltonianDynamics(object):
 
     Examples
     --------
-    >>> from pgmpy.sampling import BaseSimulateHamiltonianDynamics
-    >>> from pgmpy.factors.continuous import GaussianDistribution
-    >>> from pgmpy.sampling import GradLogPDFGaussian
+    >>> from src.pgmpy.sampling import BaseSimulateHamiltonianDynamics
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution
+    >>> from src.pgmpy.sampling import GradLogPDFGaussian
     >>> import numpy as np
     >>> # Class should initalize self.new_position, self.new_momentum and self.new_grad_logp
     >>> # self.new_grad_logp represents gradient log at new proposed value of position
@@ -370,8 +370,8 @@ class BaseSimulateHamiltonianDynamics(object):
         Example
         -------
         >>> # Using implementation of ModifiedEuler
-        >>> from pgmpy.inference.continuous import ModifiedEuler, GradLogPDFGaussian as GLPG
-        >>> from pgmpy.factors import GaussianDistribution
+        >>> from src.pgmpy.inference.continuous import ModifiedEuler, GradLogPDFGaussian as GLPG
+        >>> from src.pgmpy.factors import GaussianDistribution
         >>> import numpy as np
         >>> pos = np.array([3, 4])
         >>> momentum = np.array([1, 1])
@@ -418,8 +418,8 @@ class LeapFrog(BaseSimulateHamiltonianDynamics):
 
     Example
     --------
-    >>> from pgmpy.factors.continuous import GaussianDistribution
-    >>> from pgmpy.sampling import LeapFrog, GradLogPDFGaussian as GLPG
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution
+    >>> from src.pgmpy.sampling import LeapFrog, GradLogPDFGaussian as GLPG
     >>> import numpy as np
     >>> pos = np.array([2, 1])
     >>> momentum = np.array([7, 7])
@@ -496,8 +496,8 @@ class ModifiedEuler(BaseSimulateHamiltonianDynamics):
 
     Example
     --------
-    >>> from pgmpy.factors.continuous import GaussianDistribution
-    >>> from pgmpy.sampling import GradLogPDFGaussian, ModifiedEuler
+    >>> from src.pgmpy.factors.continuous import GaussianDistribution
+    >>> from src.pgmpy.sampling import GradLogPDFGaussian, ModifiedEuler
     >>> import numpy as np
     >>> pos = np.array([2, 1])
     >>> momentum = np.array([1, 1])
