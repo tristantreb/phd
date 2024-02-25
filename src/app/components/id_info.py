@@ -45,7 +45,7 @@ id_info_layout = html.Div(
                     debounce=True,
                 ),
             ],
-            id="styled-numeric-input",
+            id="styled-numeric-input-1",
         ),
     ],
     style={"width": "300px"},

@@ -16,6 +16,7 @@ https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dyli
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE, "./assets/styles.css"])
+server = app.server
 
 app.layout = dbc.Container(
     [
@@ -54,4 +55,4 @@ app.layout = dbc.Container(
 build_variables_callback(app)
 model_and_inference_callback(app)
 
-app.run_server(debug=True, port=8052, use_reloader=False)
+if __name__ == "__main__": app.run_server(debug=True, host='0.0.0.0', port=8050, use_reloader=False)
