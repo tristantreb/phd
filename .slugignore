@@ -1,0 +1,5 @@
+cpts/
+data/
+app_optimisation/
+logs/
+*.ipynb
