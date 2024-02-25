@@ -119,7 +119,7 @@ def model_and_inference_callback(app):
         ia_max = 90
 
         # HFEV1
-        ih.plot_histogram(fig, HFEV1, HFEV1.cpt[:, 0], fev1_min, fev1_max, 1, 1, False)
+        ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, False)
         fig["data"][0]["marker"]["color"] = "green"
 
         ih.plot_histogram(fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1)
@@ -127,17 +127,17 @@ def model_and_inference_callback(app):
 
         # HO2Sat
         ih.plot_histogram(
-            fig, HO2Sat, HO2Sat.cpt[:, 0], o2sat_min, o2sat_max, 1, 5, False
+            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, False
         )
         fig["data"][2]["marker"]["color"] = "blue"
-        o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.cpt[:, 0]), 1, 5)
+        o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.cpt), 1, 5)
 
         ih.plot_histogram(fig, HO2Sat, res_ho2sat.values, o2sat_min, o2sat_max, 2, 5)
         fig["data"][3]["marker"]["color"] = "blue"
         o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
 
         # AR
-        ih.plot_histogram(fig, AR, AR.cpt[:, 0], AR.a, AR.b, 4, 3, False)
+        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, False)
         fig["data"][4]["marker"]["color"] = "crimson"
 
         ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3)
@@ -151,7 +151,7 @@ def model_and_inference_callback(app):
         o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
 
         # IA
-        ih.plot_histogram(fig, IA, IA.cpt[:, 0], ia_min, ia_max, 9, 3, False)
+        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 9, 3, False)
         fig["data"][7]["marker"]["color"] = "crimson"
         ih.plot_histogram(fig, IA, res_ia.values, ia_min, ia_max, 10, 3)
         fig["data"][8]["marker"]["color"] = "crimson"

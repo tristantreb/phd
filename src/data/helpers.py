@@ -39,8 +39,8 @@ def _str_to_array(s):
 
 
 def get_path_to_src():
-    return os.getcwd().split("src")[0] + "src/"
+    return os.getcwd().split("src")[0] + "/src/"
 
 
 def get_path_to_main():
-    return os.getcwd().split("PhD")[0] + "PhD/"
+    return os.getcwd().split("PhD")[0] + "/PhD/"
