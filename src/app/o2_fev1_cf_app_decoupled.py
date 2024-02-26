@@ -9,9 +9,9 @@ from dash import Dash, dcc, html
 
 from src.app.callbacks.build_model_and_infer import model_and_inference_callback
 from src.app.callbacks.build_variables import build_variables_with_cf_ia_prior_callback
-from src.app.components.fev1_slider import fev1_slider_layout
-from src.app.components.id_info import id_info_layout
-from src.app.components.o2sat_slider import O2Sat_slider_layout
+from src.app.components.sliders import fev1_slider_layout
+from src.app.components.clinical_profile_input import clinical_profile_input_layout
+from src.app.components.sliders import O2Sat_slider_layout, fev1_slider_layout
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -24,7 +24,7 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE, "./assets/style
 app.layout = dbc.Container(
     [
         html.H2("My lung's health", style={"textAlign": "center"}),
-        id_info_layout,
+        clinical_profile_input_layout,
         dcc.Loading(
             id="graph-loader",
             type="default",
