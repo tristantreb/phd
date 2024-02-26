@@ -5,6 +5,7 @@ from plotly.subplots import make_subplots
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.builders as mb
+import src.app.assets.styles as s
 
 
 def build_all(app):
@@ -73,8 +74,8 @@ def build_all(app):
             [None, None, None, None, None, None],  # 10
             [None, None, None, None, posterior, None],  # 11
             [None, None, None, None, None, None],  # 12
-            [None, None, None, None, None, None],  # 13
-            [None, None, None, None, prior, None],  # 14
+            # [None, None, None, None, None, None],  # 13
+            # [None, None, None, None, prior, None],  # 14
         ]
 
         fig = make_subplots(
@@ -130,19 +131,21 @@ def build_all(app):
         ih.plot_histogram(fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 12, 5)
         fig["data"][9]["marker"]["color"] = "blue"
         o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 12, 5)
+
         # Put the message up from O2Sat to UO2Sat to see the result from the generative o2sat noise model
-        tmp_UO2Sat = UO2Sat
-        tmp_UO2Sat.name = "Message up from O2Sat"
-        # Given o2sat_obs, get the idx of the bin in which it falls in O2Sat
-        o2sat_obs_idx = np.where(O2Sat.midbins == O2Sat_obs)[0][0]
-        ih.plot_histogram(
-            fig, tmp_UO2Sat, O2Sat.cpt[o2sat_obs_idx, :], o2sat_min, o2sat_max, 15, 5
-        )
-        fig["data"][10]["marker"]["color"] = "blue"
-        o2h.add_o2sat_normal_range_line(fig, O2Sat.cpt[o2sat_obs_idx, :], 15, 5)
+        # tmp_UO2Sat = UO2Sat
+        # tmp_UO2Sat.name = "Message up from O2Sat"
+
+        # # Given o2sat_obs, get the idx of the bin in which it falls in O2Sat
+        # o2sat_obs_idx = np.where(O2Sat.midbins == O2Sat_obs)[0][0]
+        # ih.plot_histogram(
+        #     fig, tmp_UO2Sat, O2Sat.cpt[o2sat_obs_idx, :], o2sat_min, o2sat_max, 15, 5
+        # )
+        # fig["data"][10]["marker"]["color"] = "blue"
+        # o2h.add_o2sat_normal_range_line(fig, O2Sat.cpt[o2sat_obs_idx, :], 15, 5)
 
         fig.update_layout(
-            showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01
+            showlegend=False, height=600, width=1400, font=dict(size=10), bargap=0.01, margin=dict(l=0, r=0, b=0, t=0)
         )
         fig.update_traces(marker_line_width=0)
 

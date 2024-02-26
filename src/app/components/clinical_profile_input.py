@@ -1,11 +1,22 @@
 import dash_bootstrap_components as dbc
 from dash import html
+import src.app.assets.styles as styles
 
-id_info_layout = html.Div(
+font_size = styles.font_size()
+
+clinical_profile_box_style = {"width": "250px"}
+input_group_text_style = {"width": "110px", "font-size": font_size}
+select_style = {"font-size": font_size}
+
+clinical_profile_input_layout = html.Div(
     [
+        html.Div(
+            "1. Enter your clinical profile:",
+            style={"textAlign": "left", "padding-top": "0px", "padding-bottom": "5px"},
+        ),
         dbc.InputGroup(
             [
-                dbc.InputGroupText("Sex"),
+                dbc.InputGroupText("Sex", style=input_group_text_style),
                 dbc.Select(
                     id="sex-select",
                     options=[
@@ -13,12 +24,14 @@ id_info_layout = html.Div(
                         {"label": "Female", "value": "Female"},
                     ],
                     value="Male",
+                    style=select_style,
                 ),
-            ]
+            ],
+
         ),
         dbc.InputGroup(
             [
-                dbc.InputGroupText("Age (years)"),
+                dbc.InputGroupText("Age (years)", style=input_group_text_style),
                 dbc.Input(
                     type="number",
                     min=18,
@@ -27,6 +40,7 @@ id_info_layout = html.Div(
                     step=1,
                     id="age-input",
                     debounce=True,
+                    style=select_style,
                 ),
             ],
             id="styled-numeric-input",
@@ -34,7 +48,7 @@ id_info_layout = html.Div(
         html.Div(id="age-error-message", style={"color": "#dc3545"}),
         dbc.InputGroup(
             [
-                dbc.InputGroupText("Height (cm)"),
+                dbc.InputGroupText("Height (cm)", style=input_group_text_style),
                 dbc.Input(
                     type="number",
                     min=140,
@@ -43,10 +57,11 @@ id_info_layout = html.Div(
                     step=1,
                     id="height-input",
                     debounce=True,
+                    style=select_style,
                 ),
             ],
             id="styled-numeric-input-1",
         ),
     ],
-    style={"width": "300px"},
+    style=clinical_profile_box_style,
 )
