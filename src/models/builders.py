@@ -13,7 +13,7 @@ from pgmpy.models import BayesianNetwork
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 import src.models.var_builders as var_builders
-from src.inference.inf_algs import apply_pgmpy_bp
+from src.inference.inf_algs import apply_custom_bp, apply_pgmpy_bp
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -545,7 +545,7 @@ def o2sat_fev1_point_in_time_model_2(height, age, sex, check_model=False):
     ) = var_builders.o2sat_fev1_point_in_time(height, age, sex)
 
     model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
-        HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model=False
+        HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model
     )
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_custom_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
