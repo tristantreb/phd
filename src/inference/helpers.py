@@ -35,7 +35,7 @@ def infer(
         evidences_binned.update({evidence_var.name: bin_idx})
 
     tic = time.time()
-    query = inference_alg.query(
+    res = inference_alg.query(
         variables=list(map(lambda v: v.name, variables)),
         evidence=evidences_binned,
         show_progress=show_progress,
@@ -44,7 +44,7 @@ def infer(
     if get_time:
         print(f"Query time: {time.time() - tic} seconds")
 
-    return query
+    return res
 
 
 # Given an observation and an array of bins, this returns the bin that the value falls into
