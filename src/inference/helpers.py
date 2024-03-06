@@ -1,8 +1,6 @@
-import time
-
 import numpy as np
 import plotly.graph_objects as go
-from pgmpy.inference import BeliefPropagation
+from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 
 import src.models.helpers as mh
 
@@ -14,11 +12,11 @@ TOL_GLOBAL = 1e-6
 
 def infer(
     inference_alg: BeliefPropagation,
+    BeliefPropagationWithMessageParsing,
     variables: tuple[mh.variableNode],
     evidences: tuple[tuple[mh.variableNode, float]],
     show_progress=False,
     joint=False,
-    get_time=False,
 ):
     """
     Runs an inference query against a given PGMPY inference model, variables, evidences
@@ -34,16 +32,12 @@ def infer(
         [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
         evidences_binned.update({evidence_var.name: bin_idx})
 
-    tic = time.time()
     res = inference_alg.query(
         variables=list(map(lambda v: v.name, variables)),
         evidence=evidences_binned,
         show_progress=show_progress,
         joint=joint,
     )
-    if get_time:
-        print(f"Query time: {time.time() - tic} seconds")
-
     return res
 
 
