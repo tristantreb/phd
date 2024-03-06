@@ -11,8 +11,7 @@ TOL_GLOBAL = 1e-6
 
 
 def infer(
-    inference_alg: BeliefPropagation,
-    BeliefPropagationWithMessageParsing,
+    inference_alg: BeliefPropagation | BeliefPropagationWithMessageParsing,
     variables: tuple[mh.variableNode],
     evidences: tuple[tuple[mh.variableNode, float]],
     show_progress=False,
