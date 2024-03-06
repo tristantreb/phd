@@ -57,7 +57,16 @@ def get_bin_for_value(obs: float, var: mh.variableNode, tol=TOL_GLOBAL):
 
 
 def plot_histogram(
-    fig, Var: mh.variableNode, p, xmin, xmax, row, col, title=True, annot=True
+    fig,
+    Var: mh.variableNode,
+    p,
+    xmin,
+    xmax,
+    row,
+    col,
+    colour=None,
+    title=True,
+    annot=True,
 ):
     fig.add_trace(
         go.Histogram(
@@ -69,6 +78,9 @@ def plot_histogram(
         row=row,
         col=col,
     )
+    if colour:
+        fig.update_traces(marker_color=colour, row=row, col=col)
+
     fig.update_xaxes(
         range=[xmin, xmax],
         nticks=20,
