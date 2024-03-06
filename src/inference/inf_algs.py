@@ -1,4 +1,4 @@
-from pgmpy.inference import BeliefPropagation, BeliefPropagationForFactorGraphs
+from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 
 
 def apply_pgmpy_bp(model):
@@ -8,8 +8,8 @@ def apply_pgmpy_bp(model):
     return BeliefPropagation(model)
 
 
-def apply_custom_bp(model):
+def apply_custom_bp(model, check_model=False):
     """
     Given a graphical model, returns the custom Belief Propagation class
     """
-    return BeliefPropagationForFactorGraphs(model)
+    return BeliefPropagationWithMessageParsing(model, check_model)
