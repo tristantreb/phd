@@ -15,18 +15,20 @@ plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
 
 class SharedNodeVariable:
-    def __init__(self, name, card, graph_key):
+    def __init__(self, name, card, factor_node_key):
         self.name = name
         self.card = card
-        self.graph_key = graph_key
+        self.factor_node_key = factor_node_key
         self.messages = {}
         self.aggregated_message_up = np.ones(card)
-        self.posteriors = []
 
     def add_message(self, plate_key, message):
         assert message.shape == (
             self.card,
         ), "The message must have the same shape as the variable's cardinality"
+        # if plate_key in self.messages.keys():
+        #     self.messages[plate_key] = message
+        #     # divide out like before
         # Always replace the message, even if it already exists
         self.messages[plate_key] = message
         agg_m = np.multiply(self.aggregated_message_up, message)
@@ -153,7 +155,7 @@ def query_across_days(
                 )
                 # Save message for current day
                 for shared_var in shared_variables:
-                    shared_var.add_message(day, messages[shared_var.graph_key])
+                    shared_var.add_message(day, messages[shared_var.factor_node_key])
 
         posteriors_old, diffs = get_diffs(res, posteriors_old, shared_variables)
 
