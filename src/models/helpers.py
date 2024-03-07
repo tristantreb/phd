@@ -132,6 +132,7 @@ class variableNode:
         )
 
         self.cpt = self.set_prior(prior)
+        self.posterior = None
 
     def sample(self, n=1, p=None):
         """
@@ -282,6 +283,12 @@ class variableNode:
 
         (lower_idx, upper_idx) = self.bins_arr[idx]
         return "[{}; {})".format(lower_idx, upper_idx), idx
+    
+    def set_posterior(self, p):
+        """
+        Set the posterior of the variable
+        """
+        self.posterior = p
 
 
 def encode_node_variable(var):
