@@ -173,7 +173,9 @@ def query_across_days(
             if final_epoch:
                 # Terminates the query
                 return df_res_vars, df_res_shared
-            print("All diffs are 0, rerunning a last inference to get all posteriors")
+            print(
+                f"All diffs are below {diff_threshold}, running another epoch to get all posteriors"
+            )
             final_epoch = True
         epoch += 1
 
