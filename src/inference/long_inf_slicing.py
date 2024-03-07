@@ -19,39 +19,48 @@ class SharedNodeVariable:
         self.name = name
         self.card = card
         self.factor_node_key = factor_node_key
-        self.messages = {}
-        self.aggregated_message_up = np.ones(card)
+        self.virtual_messages = {}
+        self.agg_virtual_message = np.ones(card)
 
-    def add_message(self, plate_key, message):
-        assert message.shape == (
+    def add_or_update_message(self, day_key, new_message):
+        assert new_message.shape == (
             self.card,
         ), "The message must have the same shape as the variable's cardinality"
-        # if plate_key in self.messages.keys():
-        #     self.messages[plate_key] = message
-        #     # divide out like before
-        # Always replace the message, even if it already exists
-        self.messages[plate_key] = message
-        agg_m = np.multiply(self.aggregated_message_up, message)
-        # Renormalise
-        self.aggregated_message_up = agg_m / agg_m.sum()
+        # Always replace the message for that day, even if it already exists
+        self.virtual_messages[day_key] = new_message
 
-    def get_virtual_message(self, plate_key):
-        # Use the aggregated message instead
-        agg_m = self.aggregated_message_up
+    def update_agg_virtual_message(self, virtual_message, new_message):
+        """
+        The new aggregated message is the multiplication of all messages coming from the factor to the node
+
+        Virtual message: multiplication of all factor to node messages excluding current day message
+        New message: newly computed factor to node message
+        """
+        agg_m = np.multiply(virtual_message, new_message)
+        self.agg_virtual_message = agg_m / agg_m.sum()
+
+    def get_virtual_message(self, day_key):
+        """
+        Returns the aggregated message, excluding the message from the current day
+        if applicable (if n_epoch > 0).
+        """
+        agg_m = self.agg_virtual_message
+
+        if day_key not in self.virtual_messages.keys():
+            return agg_m
+
         # Remove previous today's message from agg_m
-        if plate_key in self.messages.keys():
-            curr_m = self.messages[plate_key]
-            agg_m = np.divide(
-                agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
-            )
-            agg_m = agg_m / agg_m.sum()
-        return agg_m
+        curr_m = self.messages[day_key]
+        agg_m_excl_curr_m = np.divide(
+            agg_m_excl_curr_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
+        )
+        return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
 
         # Multiply all messages together (less efficient)
-        # Remove message with plate_key from the list of messages
+        # Remove message with day_key from the list of messages
         # messages_up = self.messages.copy()
-        # if plate_key in self.messages.keys():
-        #     messages_up.pop(plate_key)
+        # if day_key in self.messages.keys():
+        #     messages_up.pop(day_key)
 
         # if len(messages_up) == 0:
         #     return None
@@ -125,17 +134,12 @@ def query_across_days(
             def build_virtual_evidence(shared_variables):
                 virtual_evidence = {}
                 for shared_var in shared_variables:
-                    # tic = time.time()
                     virtual_message = shared_var.get_virtual_message(day)
-                    # toc = time.time()
-                    # print(
-                    #     f"Time to get virtual message for {shared_var.name}: {toc-tic}"
-                    # )
                     if virtual_message is not None:
                         virtual_evidence[shared_var.name] = virtual_message
-                return virtual_evidence
+                return virtual_evidence, virtual_message
 
-            virtual_evidence = build_virtual_evidence(shared_variables)
+            virtual_evidence, virtual_message = build_virtual_evidence(shared_variables)
 
             # Query the graph
             if final_epoch:
@@ -153,9 +157,14 @@ def query_across_days(
                 res, messages = belief_propagation.query(
                     vars_to_infer, evidence, virtual_evidence, get_messages=True
                 )
-                # Save message for current day
                 for shared_var in shared_variables:
-                    shared_var.add_message(day, messages[shared_var.factor_node_key])
+                    # Get newly computed message from the query output
+                    new_message = messages[shared_var.factor_node_key]
+                    # Add or update it into the virtual messages list
+                    shared_var.add_or_update_message(
+                        day, messages[shared_var.factor_node_key]
+                    )
+                    shared_var.update_agg_virtual_message(virtual_message, new_message)
 
         posteriors_old, diffs = get_diffs(res, posteriors_old, shared_variables)
 
