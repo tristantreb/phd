@@ -169,7 +169,7 @@ def query_across_days(
 
         df_res_shared = pd.concat([df_res_shared, new_row], ignore_index=True)
 
-        if np.sum(diffs) < diff_threshold:
+        if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
                 # Terminates the query
                 return df_res_vars, df_res_shared
@@ -227,6 +227,7 @@ def plot_posterior_validation(
     df_breathe,
     ecFEV1,
     O2Sat,
+    n_epochs,
     colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
     save=False,
 ):
@@ -269,7 +270,7 @@ def plot_posterior_validation(
     plot_heatmap(fig, df_res_hfev1, HFEV1shared, row=3, col=1, coloraxis="coloraxis1")
     plot_heatmap(fig, df_res_ho2sat, HO2Satshared, row=5, col=1, coloraxis="coloraxis2")
 
-    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation"
+    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation {n_epochs}"
     fig.update_layout(
         title=title,
         width=1200,
