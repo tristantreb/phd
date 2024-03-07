@@ -1,3 +1,4 @@
+import time
 from functools import reduce
 from typing import List
 
@@ -6,7 +7,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+import src.data.helpers as dh
 import src.inference.helpers as ih
+
+plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
 
 class SharedNodeVariable:
@@ -15,6 +19,7 @@ class SharedNodeVariable:
         self.card = card
         self.graph_key = graph_key
         self.messages = {}
+        self.aggregated_message_up = np.ones(card)
         self.posteriors = []
 
     def add_message(self, plate_key, message):
@@ -23,18 +28,39 @@ class SharedNodeVariable:
         ), "The message must have the same shape as the variable's cardinality"
         # Always replace the message, even if it already exists
         self.messages[plate_key] = message
+        agg_m = np.multiply(self.aggregated_message_up, message)
+        # Renormalise
+        self.aggregated_message_up = agg_m / agg_m.sum()
 
     def get_virtual_message(self, plate_key):
-        # Remove message with plate_key from the list of messages
-        messages_up = self.messages.copy()
+        # Use the aggregated message instead
+        agg_m = self.aggregated_message_up
+        # Remove previous today's message from agg_m
         if plate_key in self.messages.keys():
-            messages_up.pop(plate_key)
-        if len(messages_up) == 0:
-            return None
-        elif len(messages_up) == 1:
-            return list(messages_up.values())[0]
-        else:
-            return reduce(np.multiply, list(messages_up.values()))
+            curr_m = self.messages[plate_key]
+            agg_m = np.divide(
+                agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
+            )
+            agg_m = agg_m / agg_m.sum()
+        return agg_m
+
+        # Multiply all messages together (less efficient)
+        # Remove message with plate_key from the list of messages
+        # messages_up = self.messages.copy()
+        # if plate_key in self.messages.keys():
+        #     messages_up.pop(plate_key)
+
+        # if len(messages_up) == 0:
+        #     return None
+        # elif len(messages_up) == 1:
+        #     return list(messages_up.values())[0]
+        # else:
+        #     message_up = np.ones(self.card)
+        #     for message in messages_up.values():
+        #         message_up = np.multiply(message_up, message)
+        #         # Renormalise each time to avoid numerical issues (message going to 0)
+        #         message_up = message_up / message_up.sum()
+        #     return message_up
 
 
 def get_diffs(res, posteriors_old, vars):
@@ -63,6 +89,7 @@ def query_across_days(
     shared_variables: List[SharedNodeVariable],
     variables: List[str],
     evidence_variables: List[str],
+    diff_threshold,
 ):
     final_epoch = False
     epoch = 0
@@ -95,7 +122,12 @@ def query_across_days(
             def build_virtual_evidence(shared_variables):
                 virtual_evidence = {}
                 for shared_var in shared_variables:
+                    # tic = time.time()
                     virtual_message = shared_var.get_virtual_message(day)
+                    # toc = time.time()
+                    # print(
+                    #     f"Time to get virtual message for {shared_var.name}: {toc-tic}"
+                    # )
                     if virtual_message is not None:
                         virtual_evidence[shared_var.name] = virtual_message
                 return virtual_evidence
@@ -136,7 +168,7 @@ def query_across_days(
 
         df_res_shared = pd.concat([df_res_shared, new_row], ignore_index=True)
 
-        if np.sum(diffs) == 0:
+        if np.sum(diffs) < diff_threshold:
             if final_epoch:
                 # Terminates the query
                 return df_res_vars, df_res_shared
@@ -160,7 +192,7 @@ def plot_scatter(fig, x, y, row, col, colour=None, title=None):
         fig.update_traces(marker=dict(color=colour), row=row, col=col)
     # Add x axis title
     fig.update_yaxes(title_text=title, row=row, col=col)
-    fig.update_xaxes(title_text="Days", row=row, col=col)
+    # fig.update_xaxes(title_text="Days", row=row, col=col)
 
 
 def plot_heatmap(fig, df, shared_var, row, col, coloraxis):
@@ -169,10 +201,9 @@ def plot_heatmap(fig, df, shared_var, row, col, coloraxis):
     z = df
 
     fig.add_trace(go.Heatmap(z=z, x=x, y=y, coloraxis=coloraxis), row=row, col=col)
-    fig.update_layout(
-        yaxis_title=shared_var.name,
-        xaxis_title="Day",
-    )
+    # Update yaxis properties
+    fig.update_yaxes(title_text=shared_var.name, row=row, col=col)
+    # fig.update_xaxes(title_text="Days", row=row, col=col)
 
 
 def plot_res_for_ID_just_shared_variables(
@@ -211,3 +242,79 @@ def plot_res_for_ID_just_shared_variables(
         showlegend=False,
     )
     fig.show()
+
+
+def plot_posterior_validation(
+    df_res_hfev1,
+    HFEV1shared,
+    df_res_ho2sat,
+    HO2Satshared,
+    df_breathe,
+    ecFEV1,
+    O2Sat,
+    colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
+    save=False,
+):
+    fig = go.Figure()
+    layout = [
+        [{"type": "scatter", "rowspan": 1}],
+        [{"type": "scatter", "rowspan": 1}],
+        [{"type": "heatmap", "rowspan": 2}],
+        [None],
+        [{"type": "heatmap", "rowspan": 2}],
+        [None],
+    ]
+    fig = make_subplots(
+        rows=np.shape(layout)[0],
+        cols=np.shape(layout)[1],
+        specs=layout,
+        vertical_spacing=0.01,
+        shared_xaxes=True,
+    )
+    plot_scatter(
+        fig,
+        df_breathe["Date Recorded"],
+        df_breathe["ecFEV1"],
+        row=1,
+        col=1,
+        colour="black",
+        title=ecFEV1.name,
+    )
+    plot_scatter(
+        fig,
+        df_breathe["Date Recorded"],
+        df_breathe["O2 Saturation"],
+        row=2,
+        col=1,
+        colour="black",
+        title=O2Sat.name,
+    )
+    plot_heatmap(fig, df_res_hfev1, HFEV1shared, row=3, col=1, coloraxis="coloraxis1")
+    plot_heatmap(fig, df_res_ho2sat, HO2Satshared, row=5, col=1, coloraxis="coloraxis2")
+
+    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation"
+    fig.update_layout(
+        title=title,
+        width=1200,
+        height=800,
+        font=dict(size=5),
+        showlegend=False,
+        coloraxis1=dict(
+            colorscale=colorscale,
+            colorbar_x=1,
+            colorbar_y=0.5,
+            colorbar_thickness=23,
+            colorbar_len=0.3,
+        ),
+        coloraxis2=dict(
+            colorscale=colorscale,
+            colorbar_x=1,
+            colorbar_y=0.15,
+            colorbar_thickness=23,
+            colorbar_len=0.3,
+        ),
+    )
+    if save:
+        fig.write_image(f"{plotsdir}Inference_stability_validation/{title}.pdf")
+    else:
+        fig.show()
