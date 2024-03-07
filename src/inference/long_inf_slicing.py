@@ -3,6 +3,10 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+import src.inference.helpers as ih
 
 
 class SharedNodeVariable:
@@ -58,11 +62,15 @@ def query_across_days(
     belief_propagation,
     shared_variables: List[SharedNodeVariable],
     variables: List[str],
+    evidence_variables: List[str],
 ):
+    final_epoch = False
     epoch = 0
-    df_res = pd.DataFrame(
+    df_res_shared = pd.DataFrame(
         columns=["Epoch"] + list(map(lambda v: v.name, shared_variables))
     )
+
+    df_res_vars = pd.DataFrame(columns=["Day"] + list(map(lambda v: v.name, variables)))
 
     # Initialize posteriors distribution to uniform
     posteriors_old = [
@@ -82,7 +90,7 @@ def query_across_days(
                     evidence[variable] = idx_obs
                 return evidence
 
-            evidence = build_evidence(variables)
+            evidence = build_evidence(evidence_variables)
 
             def build_virtual_evidence(shared_variables):
                 virtual_evidence = {}
@@ -94,16 +102,25 @@ def query_across_days(
 
             virtual_evidence = build_virtual_evidence(shared_variables)
 
-            var_to_infer = list(map(lambda v: v.name, shared_variables))
-
             # Query the graph
-            res, messages = belief_propagation.query(
-                var_to_infer, evidence, virtual_evidence, get_messages=True
-            )
+            if final_epoch:
+                vars_to_infer = shared_variables + variables
+                vars_to_infer = list(map(lambda v: v.name, vars_to_infer))
+                res = belief_propagation.query(
+                    vars_to_infer, evidence, virtual_evidence, get_messages=False
+                )
+                new_row = [day] + list(map(lambda v: res[v].values, vars_to_infer))
+                new_row = pd.DataFrame([new_row], columns=["Day"] + vars_to_infer)
+                df_res_vars = pd.concat([df_res_vars, new_row], ignore_index=True)
 
-            # Save message for current day
-            for shared_var in shared_variables:
-                shared_var.add_message(day, messages[shared_var.graph_key])
+            else:
+                vars_to_infer = list(map(lambda v: v.name, shared_variables))
+                res, messages = belief_propagation.query(
+                    vars_to_infer, evidence, virtual_evidence, get_messages=True
+                )
+                # Save message for current day
+                for shared_var in shared_variables:
+                    shared_var.add_message(day, messages[shared_var.graph_key])
 
         posteriors_old, diffs = get_diffs(res, posteriors_old, shared_variables)
 
@@ -117,9 +134,80 @@ def query_across_days(
             [new_row], columns=["Epoch"] + list(map(lambda v: v.name, shared_variables))
         )
 
-        df_res = pd.concat([df_res, new_row], ignore_index=True)
+        df_res_shared = pd.concat([df_res_shared, new_row], ignore_index=True)
 
         if np.sum(diffs) == 0:
-            print("All diffs are 0, inference converged")
-            return df_res
+            if final_epoch:
+                # Terminates the query
+                return df_res_vars, df_res_shared
+            print("All diffs are 0, rerunning a last inference to get all posteriors")
+            final_epoch = True
         epoch += 1
+
+
+def plot_scatter(fig, x, y, row, col, colour=None, title=None):
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            mode="markers",
+        ),
+        row=row,
+        col=col,
+    )
+    fig.update_traces(marker=dict(size=2), row=row, col=col)
+    if colour:
+        fig.update_traces(marker=dict(color=colour), row=row, col=col)
+    # Add x axis title
+    fig.update_yaxes(title_text=title, row=row, col=col)
+    fig.update_xaxes(title_text="Days", row=row, col=col)
+
+
+def plot_heatmap(fig, df, shared_var, row, col, coloraxis):
+    x = df.columns
+    y = df.index
+    z = df
+
+    fig.add_trace(go.Heatmap(z=z, x=x, y=y, coloraxis=coloraxis), row=row, col=col)
+    fig.update_layout(
+        yaxis_title=shared_var.name,
+        xaxis_title="Day",
+    )
+
+
+def plot_res_for_ID_just_shared_variables(
+    df, HFEV1, HO2Sat, ecFEV1, O2Sat, hfev1_posterior, ho2sat_posterior
+):
+    fig = go.Figure()
+    fig = make_subplots(rows=4, cols=1)
+    ih.plot_histogram(fig, HFEV1, hfev1_posterior, HFEV1.a, HFEV1.b, 1, 1, "#636EFA")
+    ih.plot_histogram(
+        fig, HO2Sat, ho2sat_posterior, HO2Sat.a, HO2Sat.b, 2, 1, "#636EFA"
+    )
+
+    plot_scatter(
+        fig,
+        df["Date Recorded"],
+        df[ecFEV1.name],
+        3,
+        1,
+        "black",
+        ecFEV1.name,
+    )
+    plot_scatter(
+        fig,
+        df["Date Recorded"],
+        df[O2Sat.name],
+        4,
+        1,
+        "black",
+        O2Sat.name,
+    )
+    fig.update_layout(
+        title=f"ID 101 - HFEV1 and HO2Sat posterior distributions over time ({len(df)} data-points)",
+        width=1000,
+        height=800,
+        font=dict(size=9),
+        showlegend=False,
+    )
+    fig.show()
