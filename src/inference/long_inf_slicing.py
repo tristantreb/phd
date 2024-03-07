@@ -9,6 +9,7 @@ from plotly.subplots import make_subplots
 
 import src.data.helpers as dh
 import src.inference.helpers as ih
+import src.models.helpers as mh
 
 plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
@@ -195,67 +196,38 @@ def plot_scatter(fig, x, y, row, col, colour=None, title=None):
     # fig.update_xaxes(title_text="Days", row=row, col=col)
 
 
-def plot_heatmap(fig, df, shared_var, row, col, coloraxis):
+def get_heatmap_data(df, var: mh.variableNode):
+    data = (
+        np.array([item for sublist in df[var.name] for item in sublist])
+        .reshape(len(df), len(var.bins))
+        .T
+    )
+    return pd.DataFrame(index=var.bins_str, columns=df.Day, data=data)
+
+
+def plot_heatmap(fig, df, var, row, col, coloraxis):
     x = df.columns
     y = df.index
     z = df
 
     fig.add_trace(go.Heatmap(z=z, x=x, y=y, coloraxis=coloraxis), row=row, col=col)
     # Update yaxis properties
-    fig.update_yaxes(title_text=shared_var.name, row=row, col=col)
+    fig.update_yaxes(title_text=var.name, row=row, col=col)
     # fig.update_xaxes(title_text="Days", row=row, col=col)
 
 
-def plot_res_for_ID_just_shared_variables(
-    df, HFEV1, HO2Sat, ecFEV1, O2Sat, hfev1_posterior, ho2sat_posterior
-):
-    fig = go.Figure()
-    fig = make_subplots(rows=4, cols=1)
-    ih.plot_histogram(fig, HFEV1, hfev1_posterior, HFEV1.a, HFEV1.b, 1, 1, "#636EFA")
-    ih.plot_histogram(
-        fig, HO2Sat, ho2sat_posterior, HO2Sat.a, HO2Sat.b, 2, 1, "#636EFA"
-    )
-
-    plot_scatter(
-        fig,
-        df["Date Recorded"],
-        df[ecFEV1.name],
-        3,
-        1,
-        "black",
-        ecFEV1.name,
-    )
-    plot_scatter(
-        fig,
-        df["Date Recorded"],
-        df[O2Sat.name],
-        4,
-        1,
-        "black",
-        O2Sat.name,
-    )
-    fig.update_layout(
-        title=f"ID 101 - HFEV1 and HO2Sat posterior distributions over time ({len(df)} data-points)",
-        width=1000,
-        height=800,
-        font=dict(size=9),
-        showlegend=False,
-    )
-    fig.show()
-
-
 def plot_posterior_validation(
-    df_res_hfev1,
+    df_query_res,
     HFEV1shared,
-    df_res_ho2sat,
+    HFEV1,
     HO2Satshared,
+    HO2Sat,
     df_breathe,
     ecFEV1,
     O2Sat,
     colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
     save=False,
 ):
-    fig = go.Figure()
     layout = [
         [{"type": "scatter", "rowspan": 1}],
         [{"type": "scatter", "rowspan": 1}],
@@ -289,6 +261,9 @@ def plot_posterior_validation(
         colour="black",
         title=O2Sat.name,
     )
+
+    df_res_hfev1 = get_heatmap_data(df_query_res, HFEV1)
+    df_res_ho2sat = get_heatmap_data(df_query_res, HO2Sat)
     plot_heatmap(fig, df_res_hfev1, HFEV1shared, row=3, col=1, coloraxis="coloraxis1")
     plot_heatmap(fig, df_res_ho2sat, HO2Satshared, row=5, col=1, coloraxis="coloraxis2")
 
@@ -315,6 +290,114 @@ def plot_posterior_validation(
         ),
     )
     if save:
-        fig.write_image(f"{plotsdir}Inference_stability_validation/{title}.pdf")
+        fig.write_image(
+            f"{plotsdir}Healthy_vars_inference_stability_validation/{title}.pdf"
+        )
+    else:
+        fig.show()
+
+
+def plot_query_res(
+    df_breathe: pd.DataFrame,
+    ecFEV1: mh.variableNode,
+    O2Sat: mh.variableNode,
+    df_query_res: pd.DataFrame,
+    AR: mh.variableNode,
+    IA: mh.variableNode,
+    HFEV1: mh.variableNode,
+    HO2Sat: mh.variableNode,
+    colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
+    save=False,
+):
+    layout = [
+        [{"type": "scatter", "rowspan": 1}, {"type": "scatter", "rowspan": 1}],
+        [{"type": "scatter", "rowspan": 1}, {"type": "scatter", "rowspan": 1}],
+        [{"type": "heatmap", "rowspan": 2}, {"type": "heatmap", "rowspan": 2}],
+        [None, None],
+        [{"type": "scatter", "rowspan": 1}, {"type": "scatter", "rowspan": 1}],
+    ]
+    fig = make_subplots(
+        rows=np.shape(layout)[0],
+        cols=np.shape(layout)[1],
+        specs=layout,
+        vertical_spacing=0.05,
+    )
+    # Priors
+    ih.plot_histogram(
+        fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, row=1, col=1, colour="#636EFA"
+    )
+    ih.plot_histogram(
+        fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, row=1, col=2, colour="#636EFA"
+    )
+
+    # Posteriors for shared variables
+    hfev1_posterior = df_query_res[HFEV1.name].iloc[-1]
+    ih.plot_histogram(
+        fig, HFEV1, hfev1_posterior, HFEV1.a, HFEV1.b, row=2, col=1, colour="#636EFA"
+    )
+    ho2sat_posterior = df_query_res[HO2Sat.name].iloc[-1]
+    ih.plot_histogram(
+        fig,
+        HO2Sat,
+        ho2sat_posterior,
+        HO2Sat.a,
+        HO2Sat.b,
+        row=2,
+        col=2,
+        colour="#636EFA",
+    )
+
+    # Heatmaps
+    df_query_res_ar = get_heatmap_data(df_query_res, AR)
+    df_query_res_ia = get_heatmap_data(df_query_res, IA)
+    plot_heatmap(fig, df_query_res_ar, AR, row=3, col=1, coloraxis="coloraxis1")
+    plot_heatmap(fig, df_query_res_ia, IA, row=3, col=2, coloraxis="coloraxis2")
+
+    # Observations
+    plot_scatter(
+        fig,
+        df_breathe["Date Recorded"],
+        df_breathe["ecFEV1"],
+        row=5,
+        col=1,
+        colour="black",
+        title=ecFEV1.name,
+    )
+    plot_scatter(
+        fig,
+        df_breathe["Date Recorded"],
+        df_breathe["O2 Saturation"],
+        row=5,
+        col=2,
+        colour="black",
+        title=O2Sat.name,
+    )
+
+    title = f"ID {df_breathe.ID[0]} - Longitudinal inference results"
+    fig.update_layout(
+        title=title,
+        height=900,
+        width=1300,
+        font=dict(size=5),
+        showlegend=False,
+        coloraxis1=dict(
+            colorscale=colorscale,
+            colorbar_x=0.45,
+            colorbar_y=0.402,
+            colorbar_thickness=23,
+            colorbar_len=0.415,
+            colorbar={"title": "AR"},
+        ),
+        coloraxis2=dict(
+            colorscale=colorscale,
+            colorbar_x=1,
+            colorbar_y=0.402,
+            colorbar_thickness=23,
+            colorbar_len=0.415,
+            colorbar={"title": "IA"},
+        ),
+    )
+    if save:
+        fig.write_image(f"{plotsdir}Healthy_vars_inference_results/{title}.pdf")
     else:
         fig.show()
