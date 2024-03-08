@@ -119,6 +119,6 @@ def calc_cpt(O2Sat: mh.VariableNode, UO2Sat: mh.VariableNode):
         # Check that the sum of the column is 1
         assert np.isclose(
             cpt[:, i].sum(), 1, tol=UO2Sat.tol
-        ), f"The sum of probabilities should be 1, got {cpt[:, i].sum()} while calculating P({O2Sat.name}|{UO2Sat.name}={UO2Sat.bins_str[i]})"
+        ), f"The sum of probabilities should be 1, got {cpt[:, i].sum()} while calculating P({O2Sat.name}|{UO2Sat.name}={UO2Sat.get_bins_str()[i]})"
 
     return cpt

@@ -235,7 +235,7 @@ def get_heatmap_data(df, var: mh.VariableNode):
         .reshape(len(df), var.card)
         .T
     )
-    return pd.DataFrame(index=var.bins_str, columns=df.Day, data=data)
+    return pd.DataFrame(index=var.get_bins_str(), columns=df.Day, data=data)
 
 
 def plot_heatmap(fig, df, var, row, col, coloraxis):

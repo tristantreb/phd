@@ -122,13 +122,16 @@ class VariableNode:
         # We're b - TOL_GLOBAL allows to exclude b from the array of bins
         self.bins = np.arange(a, b - self.tol, bin_width)
         self.midbins = self.bins + self.bin_width / 2
-        # bins_str = ["[a, a+bin_width]", "[a+bin_width, a+2*bin_width]", ...
-        self.bins_str = list(
+        self.card = len(self.bins)
+        self.cpt = self.set_prior(prior)
+
+    def get_bins_str(self):
+        """
+        bins_str = ["[a, a+bin_width]", "[a+bin_width, a+2*bin_width]", ...
+        """
+        return list(
             map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
         )
-        self.card = len(self.bins)
-
-        self.cpt = self.set_prior(prior)
 
     def get_bins_arr(self):
         """
