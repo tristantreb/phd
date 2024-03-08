@@ -305,8 +305,8 @@ class SharedVariableNode(VariableNode):
         super().__init__(name, a, b, bin_width, prior)
         self.name = name
         self.factor_node_key = ""
-        self.virtual_messages = {}
-        self.agg_virtual_message = np.ones(self.card)
+        self.vmessages = {}
+        self.agg_vmessage = np.ones(self.card)
 
     def set_factor_node_key(self, factor_node_key):
         """
@@ -319,56 +319,56 @@ class SharedVariableNode(VariableNode):
             self.card,
         ), "The message must have the same shape as the variable's cardinality"
         # Always replace the message for that day, even if it already exists
-        self.virtual_messages[day_key] = new_message
+        self.vmessages[day_key] = new_message
 
-    def set_agg_virtual_message(self, virtual_message, new_message):
+    def set_agg_virtual_message(self, vmessage, new_message):
         """
         The new aggregated message is the multiplication of all messages coming from the factor to the node
 
         Virtual message: multiplication of all factor to node messages excluding current day message
         New message: newly computed factor to node message
         """
-        agg_m = np.multiply(virtual_message, new_message)
-        self.agg_virtual_message = agg_m / agg_m.sum()
+        agg_m = np.multiply(vmessage, new_message)
+        self.agg_vmessage = agg_m / agg_m.sum()
 
     def reset(self):
-        self.virtual_messages = {}
-        self.agg_virtual_message = np.ones(self.card)
+        self.vmessages = {}
+        self.agg_vmessage = np.ones(self.card)
 
     def get_virtual_message(self, day_key):
         """
         Returns the aggregated message, excluding the message from the current day
         if applicable (if n_epoch > 0).
         """
-        agg_m = self.agg_virtual_message
+        # agg_m = self.agg_vmessage
 
-        if day_key not in self.virtual_messages.keys():
-            return agg_m
+        # if day_key not in self.vmessages.keys():
+        #     return agg_m
 
-        # Remove previous today's message from agg_m
-        curr_m = self.virtual_messages[day_key]
-        agg_m_excl_curr_m = np.divide(
-            agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
-        )
-        return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
+        # # Remove previous today's message from agg_m
+        # curr_m = self.vmessages[day_key]
+        # agg_m_excl_curr_m = np.divide(
+        #     agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
+        # )
+        # return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
 
         # Multiply all messages together (less efficient)
         # Remove message with day_key from the list of messages
-        # messages_up = self.messages.copy()
-        # if day_key in self.messages.keys():
-        #     messages_up.pop(day_key)
+        vmessages = self.vmessages.copy()
+        if day_key in self.vmessages.keys():
+            vmessages.pop(day_key)
 
-        # if len(messages_up) == 0:
-        #     return None
-        # elif len(messages_up) == 1:
-        #     return list(messages_up.values())[0]
-        # else:
-        #     message_up = np.ones(self.card)
-        #     for message in messages_up.values():
-        #         message_up = np.multiply(message_up, message)
-        #         # Renormalise each time to avoid numerical issues (message going to 0)
-        #         message_up = message_up / message_up.sum()
-        #     return message_up
+        if len(vmessages) == 0:
+            return None
+        elif len(vmessages) == 1:
+            return list(vmessages.values())[0]
+        else:
+            agg_message = np.ones(self.card)
+            for vm in vmessages.values():
+                agg_message = np.multiply(agg_message, vm)
+                # Renormalise each time to avoid numerical issues (message going to 0)
+                agg_message = agg_message / agg_message.sum()
+            return agg_message
 
 
 def encode_node_variable(var):
