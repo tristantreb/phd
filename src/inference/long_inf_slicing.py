@@ -47,26 +47,26 @@ def save_res_to_df(df, day, res, variables):
 def build_evidence(df, i, variables):
     evidence = {}
     for variable in variables:
-        idx_obs = df[variable].iloc[i]
+        idx_obs = df["idx " + variable].iloc[i]
         evidence[variable] = idx_obs
     return evidence
 
 
 def build_virtual_evidence(shared_variables, day):
-    virtual_evidence = []
-    virtual_messages = {}
+    vevidence = []
+    vmessage_dict = {}
     for shared_var in shared_variables:
         virtual_message = shared_var.get_virtual_message(day)
         if virtual_message is not None:
-            virtual_evidence.append(
+            vevidence.append(
                 TabularCPD(
                     shared_var.name,
                     shared_var.card,
                     virtual_message.reshape(-1, 1),
                 )
             )
-            virtual_messages[shared_var.name] = virtual_message
-    return virtual_evidence, virtual_messages
+            vmessage_dict[shared_var.name] = virtual_message
+    return vevidence, vmessage_dict
 
 
 def query_across_days(
@@ -99,16 +99,12 @@ def query_across_days(
             day = df["Date Recorded"].iloc[i].strftime("%Y-%m-%d")
             # Get query inputs
             evidence = build_evidence(df, i, evidence_variables)
-            virtual_evidence, virtual_messages = build_virtual_evidence(
-                shared_variables, day
-            )
+            vevidence, vmessage_dict = build_virtual_evidence(shared_variables, day)
 
             if final_epoch:
                 # Query all variables to get all posteriors
                 vars_to_infer = get_var_name_list(shared_variables + variables)
-                query_res = belief_propagation.query(
-                    vars_to_infer, evidence, virtual_evidence
-                )
+                query_res = belief_propagation.query(vars_to_infer, evidence, vevidence)
                 df_res_final_epoch = save_res_to_df(
                     df_res_final_epoch,
                     day,
@@ -119,7 +115,7 @@ def query_across_days(
                 # Query shared variables to get cross plate message
                 vars_to_infer = get_var_name_list(shared_variables)
                 query_res, query_messages = belief_propagation.query(
-                    vars_to_infer, evidence, virtual_evidence, get_messages=True
+                    vars_to_infer, evidence, vevidence, get_messages=True
                 )
                 df_res_before_convergence = save_res_to_df(
                     df_res_before_convergence,
@@ -131,9 +127,11 @@ def query_across_days(
                     # Get newly computed message from the query output
                     new_message = query_messages[shared_var.factor_node_key]
                     shared_var.add_or_update_message(day, new_message)
-                    shared_var.set_agg_virtual_message(
-                        virtual_messages[shared_var.name], new_message
-                    )
+                    if len(vmessage_dict) == 0:
+                        vmessage = get_uniform_message(shared_var.card)
+                    else:
+                        vmessage = vmessage_dict[shared_var.name]
+                    shared_var.set_agg_virtual_message(vmessage, new_message)
 
         posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
 
