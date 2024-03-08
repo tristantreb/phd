@@ -2,10 +2,10 @@ import numpy as np
 from dash import Input, Output
 from plotly.subplots import make_subplots
 
+import src.app.assets.styles as s
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.builders as mb
-import src.app.assets.styles as s
 
 
 def build_all(app):
@@ -22,13 +22,15 @@ def build_all(app):
         Input("O2Sat-slider", "value"),
     )
     def content(
-        sex, 
+        sex,
         age,
         height,
         FEV1_obs: float,
         O2Sat_obs: float,
     ):
-        _, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat = mb.o2sat_fev1_point_in_time_model(height, age, sex)
+        _, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat = (
+            mb.o2sat_fev1_point_in_time_model(height, age, sex)
+        )
 
         # INFERENCE
         print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
@@ -90,46 +92,45 @@ def build_all(app):
         ia_max = 90
 
         # HFEV1
-        ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, False)
-        fig["data"][0]["marker"]["color"] = "green"
-
-        ih.plot_histogram(fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1)
-        fig["data"][1]["marker"]["color"] = "green"
+        ih.plot_histogram(
+            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, False, "green"
+        )
+        ih.plot_histogram(
+            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, True, "green"
+        )
 
         # HO2Sat
         ih.plot_histogram(
-            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, False
+            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, False, "blue"
         )
-        fig["data"][2]["marker"]["color"] = "blue"
         o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.cpt), 1, 5)
 
-        ih.plot_histogram(fig, HO2Sat, res_ho2sat.values, o2sat_min, o2sat_max, 2, 5)
-        fig["data"][3]["marker"]["color"] = "blue"
+        ih.plot_histogram(
+            fig, HO2Sat, res_ho2sat.values, o2sat_min, o2sat_max, 2, 5, True, "blue"
+        )
         o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
 
         # AR
-        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, False)
-        fig["data"][4]["marker"]["color"] = "crimson"
+        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, False, "crimson")
 
-        ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3)
-        fig["data"][5]["marker"]["color"] = "crimson"
+        ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3, True, "crimson")
 
         # O2SatFFA
         ih.plot_histogram(
-            fig, O2SatFFA, res_o2satffa.values, o2sat_min, o2sat_max, 7, 5
+            fig, O2SatFFA, res_o2satffa.values, o2sat_min, o2sat_max, 7, 5, True, "blue"
         )
-        fig["data"][6]["marker"]["color"] = "blue"
         o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
 
         # IA
-        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 9, 3, False)
-        fig["data"][7]["marker"]["color"] = "crimson"
-        ih.plot_histogram(fig, IA, res_ia.values, ia_min, ia_max, 10, 3)
-        fig["data"][8]["marker"]["color"] = "crimson"
+        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 9, 3, False, "crimson")
+        ih.plot_histogram(
+            fig, IA, res_ia.values, ia_min, ia_max, 10, 3, True, "crimson"
+        )
 
         # UO2Sat
-        ih.plot_histogram(fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 12, 5)
-        fig["data"][9]["marker"]["color"] = "blue"
+        ih.plot_histogram(
+            fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 12, 5, True, "blue"
+        )
         o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 12, 5)
 
         # Put the message up from O2Sat to UO2Sat to see the result from the generative o2sat noise model
@@ -145,7 +146,12 @@ def build_all(app):
         # o2h.add_o2sat_normal_range_line(fig, O2Sat.cpt[o2sat_obs_idx, :], 15, 5)
 
         fig.update_layout(
-            showlegend=False, height=600, width=1400, font=dict(size=10), bargap=0.01, margin=dict(l=0, r=0, b=0, t=0)
+            showlegend=False,
+            height=600,
+            width=1400,
+            font=dict(size=10),
+            bargap=0.01,
+            margin=dict(l=0, r=0, b=0, t=0),
         )
         fig.update_traces(marker_line_width=0)
 

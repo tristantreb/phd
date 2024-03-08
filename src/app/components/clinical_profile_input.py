@@ -43,7 +43,7 @@ clinical_profile_input_layout = html.Div(
                     style=select_style,
                 ),
             ],
-            id="styled-numeric-input",
+            id="styled-numeric-input1",
         ),
         html.Div(id="age-error-message", style={"color": "#dc3545"}),
         dbc.InputGroup(
@@ -60,7 +60,7 @@ clinical_profile_input_layout = html.Div(
                     style=select_style,
                 ),
             ],
-            id="styled-numeric-input",
+            id="styled-numeric-input2",
         ),
     ],
     style=clinical_profile_box_style,

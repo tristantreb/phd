@@ -15,6 +15,15 @@ plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
 
 def get_diffs(res, posteriors_old, vars):
+    """
+    Returns the sum of the absolute elementwise difference between the new and old posteriors
+    """
+
+    def get_diff(res, old, var):
+        new = res[var.name].values
+        diff = np.abs(new - old).sum()
+        return new, diff
+
     diffs = []
     posteriors_new = []
     for var, old in zip(vars, posteriors_old):
@@ -22,12 +31,6 @@ def get_diffs(res, posteriors_old, vars):
         diffs.append(diff)
         posteriors_new.append(new)
     return posteriors_new, diffs
-
-
-def get_diff(res, old, var):
-    new = res[var.name].values
-    diff = np.abs(new - old).sum()
-    return new, diff
 
 
 def get_uniform_message(card):
@@ -233,7 +236,7 @@ def plot_posterior_validation(
     df_res_hfev1 = get_heatmap_data(df_res_before_convergence, HFEV1)
     df_res_ho2sat = get_heatmap_data(df_res_before_convergence, HO2Sat)
     plot_heatmap(fig, df_res_hfev1, HFEV1, row=3, col=1, coloraxis="coloraxis1")
-    plot_heatmap(fig, df_res_ho2sat, HFEV1, row=5, col=1, coloraxis="coloraxis2")
+    plot_heatmap(fig, df_res_ho2sat, HO2Sat, row=5, col=1, coloraxis="coloraxis2")
 
     title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation"
     fig.update_layout(
@@ -291,17 +294,15 @@ def plot_query_res(
         vertical_spacing=0.05,
     )
     # Priors
+    ih.plot_histogram(fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, 1, 1, True, "#636EFA")
     ih.plot_histogram(
-        fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, row=1, col=1, colour="#636EFA"
-    )
-    ih.plot_histogram(
-        fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, row=1, col=2, colour="#636EFA"
+        fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, 1, 2, True, "#636EFA"
     )
 
     # Posteriors for shared variables
     hfev1_posterior = df_query_res[HFEV1.name].iloc[-1]
     ih.plot_histogram(
-        fig, HFEV1, hfev1_posterior, HFEV1.a, HFEV1.b, row=2, col=1, colour="#636EFA"
+        fig, HFEV1, hfev1_posterior, HFEV1.a, HFEV1.b, 2, 1, True, colour="#636EFA"
     )
     ho2sat_posterior = df_query_res[HO2Sat.name].iloc[-1]
     ih.plot_histogram(
@@ -310,9 +311,10 @@ def plot_query_res(
         ho2sat_posterior,
         HO2Sat.a,
         HO2Sat.b,
-        row=2,
-        col=2,
-        colour="#636EFA",
+        2,
+        2,
+        True,
+        "#636EFA",
     )
 
     # Heatmaps

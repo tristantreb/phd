@@ -63,8 +63,8 @@ def plot_histogram(
     xmax,
     row,
     col,
-    colour=None,
     title=True,
+    colour=None,
     annot=True,
 ):
     fig.add_trace(
