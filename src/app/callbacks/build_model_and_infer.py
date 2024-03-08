@@ -126,9 +126,7 @@ def model_and_inference_callback(app):
         fig["data"][1]["marker"]["color"] = "green"
 
         # HO2Sat
-        ih.plot_histogram(
-            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, False
-        )
+        ih.plot_histogram(fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, False)
         fig["data"][2]["marker"]["color"] = "blue"
         o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.cpt), 1, 5)
 
@@ -160,7 +158,7 @@ def model_and_inference_callback(app):
         ih.plot_histogram(fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 12, 5)
         fig["data"][9]["marker"]["color"] = "blue"
         o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 12, 5)
-        
+
         # Put the message up from O2Sat to UO2Sat to see the result from the generative o2sat noise model
         tmp_UO2Sat = UO2Sat
         tmp_UO2Sat.name = "Message up from O2Sat"
