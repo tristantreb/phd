@@ -292,6 +292,85 @@ class VariableNode:
         return "[{}; {})".format(lower_idx, upper_idx), idx
 
 
+class SharedVariableNode(VariableNode):
+    """
+    In longitudinal models, a shared variable is a variable that is
+    connected to a factor belonging to a different time plate.
+    The shared variable is able to store messages coming from that factor,
+    and operate on them to be used as virtual messages in the slicing belief
+    propagation algorithm.
+    """
+
+    def __init__(self, name: str, a, b, bin_width, prior):
+        super().__init__(name, a, b, bin_width, prior)
+        self.name = name
+        self.factor_node_key = ""
+        self.virtual_messages = {}
+        self.agg_virtual_message = np.ones(self.card)
+
+    def set_factor_node_key(self, factor_node_key):
+        """
+        Key to identify the factor -> node message in the graph
+        """
+        self.factor_node_key = factor_node_key
+
+    def add_or_update_message(self, day_key, new_message):
+        assert new_message.shape == (
+            self.card,
+        ), "The message must have the same shape as the variable's cardinality"
+        # Always replace the message for that day, even if it already exists
+        self.virtual_messages[day_key] = new_message
+
+    def set_agg_virtual_message(self, virtual_message, new_message):
+        """
+        The new aggregated message is the multiplication of all messages coming from the factor to the node
+
+        Virtual message: multiplication of all factor to node messages excluding current day message
+        New message: newly computed factor to node message
+        """
+        agg_m = np.multiply(virtual_message, new_message)
+        self.agg_virtual_message = agg_m / agg_m.sum()
+
+    def reset(self):
+        self.virtual_messages = {}
+        self.agg_virtual_message = np.ones(self.card)
+
+    def get_virtual_message(self, day_key):
+        """
+        Returns the aggregated message, excluding the message from the current day
+        if applicable (if n_epoch > 0).
+        """
+        agg_m = self.agg_virtual_message
+
+        if day_key not in self.virtual_messages.keys():
+            return agg_m
+
+        # Remove previous today's message from agg_m
+        curr_m = self.virtual_messages[day_key]
+        agg_m_excl_curr_m = np.divide(
+            agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
+        )
+        return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
+
+        # Multiply all messages together (less efficient)
+        # Remove message with day_key from the list of messages
+        # messages_up = self.messages.copy()
+        # if day_key in self.messages.keys():
+        #     messages_up.pop(day_key)
+
+        # if len(messages_up) == 0:
+        #     return None
+        # elif len(messages_up) == 1:
+        #     return list(messages_up.values())[0]
+        # else:
+        #     message_up = np.ones(self.card)
+        #     for message in messages_up.values():
+        #         message_up = np.multiply(message_up, message)
+        #         # Renormalise each time to avoid numerical issues (message going to 0)
+        #         message_up = message_up / message_up.sum()
+        #     return message_up
+
+
 def encode_node_variable(var):
     """
     We must encode variables to JSON format to share them between Dash's callbacks
