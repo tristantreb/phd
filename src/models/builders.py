@@ -525,12 +525,14 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
-def o2sat_fev1_point_in_time_model_2(height, age, sex, check_model=False):
+def o2sat_fev1_point_in_time_model_shared_healthy_vars(
+    height, age, sex, check_model=False
+):
     """
-    Point in time model with full FEV1 and O2Sat sides
+    Longitudinal model with full FEV1 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
 
-    There is no factor linking AR and IA in this model
-    IA and AR's priors are uniform
+    AR and IA have uniform prior
     """
 
     (
@@ -542,7 +544,9 @@ def o2sat_fev1_point_in_time_model_2(height, age, sex, check_model=False):
         IA,
         UO2Sat,
         O2Sat,
-    ) = var_builders.o2sat_fev1_point_in_time(height, age, sex)
+    ) = var_builders.o2sat_fev1_point_in_time_model_shared_healthy_vars(
+        height, age, sex
+    )
 
     model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model

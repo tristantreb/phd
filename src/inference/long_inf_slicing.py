@@ -14,67 +14,6 @@ import src.models.helpers as mh
 plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
 
-class SharedVariableNode:
-    def __init__(self, name, card, factor_node_key):
-        self.name = name
-        self.card = card
-        self.factor_node_key = factor_node_key
-        self.virtual_messages = {}
-        self.agg_virtual_message = np.ones(card)
-
-    def add_or_update_message(self, day_key, new_message):
-        assert new_message.shape == (
-            self.card,
-        ), "The message must have the same shape as the variable's cardinality"
-        # Always replace the message for that day, even if it already exists
-        self.virtual_messages[day_key] = new_message
-
-    def set_agg_virtual_message(self, virtual_message, new_message):
-        """
-        The new aggregated message is the multiplication of all messages coming from the factor to the node
-
-        Virtual message: multiplication of all factor to node messages excluding current day message
-        New message: newly computed factor to node message
-        """
-        agg_m = np.multiply(virtual_message, new_message)
-        self.agg_virtual_message = agg_m / agg_m.sum()
-
-    def get_virtual_message(self, day_key):
-        """
-        Returns the aggregated message, excluding the message from the current day
-        if applicable (if n_epoch > 0).
-        """
-        agg_m = self.agg_virtual_message
-
-        if day_key not in self.virtual_messages.keys():
-            return agg_m
-
-        # Remove previous today's message from agg_m
-        curr_m = self.virtual_messages[day_key]
-        agg_m_excl_curr_m = np.divide(
-            agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
-        )
-        return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
-
-        # Multiply all messages together (less efficient)
-        # Remove message with day_key from the list of messages
-        # messages_up = self.messages.copy()
-        # if day_key in self.messages.keys():
-        #     messages_up.pop(day_key)
-
-        # if len(messages_up) == 0:
-        #     return None
-        # elif len(messages_up) == 1:
-        #     return list(messages_up.values())[0]
-        # else:
-        #     message_up = np.ones(self.card)
-        #     for message in messages_up.values():
-        #         message_up = np.multiply(message_up, message)
-        #         # Renormalise each time to avoid numerical issues (message going to 0)
-        #         message_up = message_up / message_up.sum()
-        #     return message_up
-
-
 def get_diffs(res, posteriors_old, vars):
     diffs = []
     posteriors_new = []
@@ -95,7 +34,7 @@ def get_uniform_message(card):
     return np.ones(card) / card
 
 
-def get_var_name_list(variables: List[mh.VariableNode] | List[SharedVariableNode]):
+def get_var_name_list(variables: List[mh.VariableNode] | List[mh.SharedVariableNode]):
     return list(map(lambda v: v.name, variables))
 
 
@@ -133,7 +72,7 @@ def build_virtual_evidence(shared_variables, day):
 def query_across_days(
     df,
     belief_propagation,
-    shared_variables: List[SharedVariableNode],
+    shared_variables: List[mh.SharedVariableNode],
     variables: List[str],
     evidence_variables: List[str],
     diff_threshold,
@@ -251,14 +190,12 @@ def plot_heatmap(fig, df, var, row, col, coloraxis):
 
 def plot_posterior_validation(
     df_res_before_convergence,
-    HFEV1shared,
     HFEV1,
-    HO2Satshared,
     HO2Sat,
     df_breathe,
     ecFEV1,
     O2Sat,
-    colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
+    colorscale,
     save=False,
 ):
     layout = [
@@ -297,8 +234,8 @@ def plot_posterior_validation(
 
     df_res_hfev1 = get_heatmap_data(df_res_before_convergence, HFEV1)
     df_res_ho2sat = get_heatmap_data(df_res_before_convergence, HO2Sat)
-    plot_heatmap(fig, df_res_hfev1, HFEV1shared, row=3, col=1, coloraxis="coloraxis1")
-    plot_heatmap(fig, df_res_ho2sat, HO2Satshared, row=5, col=1, coloraxis="coloraxis2")
+    plot_heatmap(fig, df_res_hfev1, HFEV1, row=3, col=1, coloraxis="coloraxis1")
+    plot_heatmap(fig, df_res_ho2sat, HFEV1, row=5, col=1, coloraxis="coloraxis2")
 
     title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation"
     fig.update_layout(
@@ -337,8 +274,8 @@ def plot_query_res(
     df_query_res: pd.DataFrame,
     AR: mh.VariableNode,
     IA: mh.VariableNode,
-    HFEV1: mh.VariableNode,
-    HO2Sat: mh.VariableNode,
+    HFEV1: mh.SharedVariableNode,
+    HO2Sat: mh.SharedVariableNode,
     colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
     save=False,
 ):
