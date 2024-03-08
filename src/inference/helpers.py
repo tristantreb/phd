@@ -31,12 +31,18 @@ def infer(
         [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
         evidences_binned.update({evidence_var.name: bin_idx})
 
-    res = inference_alg.query(
-        variables=list(map(lambda v: v.name, variables)),
-        evidence=evidences_binned,
-        show_progress=show_progress,
-        joint=joint,
-    )
+    if isinstance(inference_alg, BeliefPropagationWithMessageParsing):
+        res = inference_alg.query(
+            variables=list(map(lambda v: v.name, variables)),
+            evidence=evidences_binned,
+        )
+    elif isinstance(inference_alg, BeliefPropagation):
+        res = inference_alg.query(
+            variables=list(map(lambda v: v.name, variables)),
+            evidence=evidences_binned,
+            show_progress=show_progress,
+            joint=joint,
+        )
     return res
 
 

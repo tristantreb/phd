@@ -143,7 +143,7 @@ def query_across_days(
 
         if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
-                return df_res_final_epoch, df_res_before_convergence
+                return df_res_final_epoch, df_res_before_convergence, shared_variables
             print(
                 f"All diffs are below {diff_threshold}, running another epoch to get all posteriors"
             )
