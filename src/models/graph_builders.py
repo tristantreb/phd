@@ -14,7 +14,7 @@ from pgmpy.models import BayesianNetwork, FactorGraph
 def build_pgmpy_hfev1_prior(HFEV1):
     return TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
+        variable_card=HFEV1.card,
         values=HFEV1.cpt.reshape(-1, 1),
         evidence=[],
         evidence_card=[],
@@ -24,17 +24,17 @@ def build_pgmpy_hfev1_prior(HFEV1):
 def build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR):
     return TabularCPD(
         variable=ecFEV1.name,
-        variable_card=len(ecFEV1.bins),
-        values=ecFEV1.cpt.reshape(len(ecFEV1.bins), -1),
+        variable_card=ecFEV1.card,
+        values=ecFEV1.cpt.reshape(ecFEV1.card, -1),
         evidence=[HFEV1.name, AR.name],
-        evidence_card=[len(HFEV1.bins), len(AR.bins)],
+        evidence_card=[HFEV1.card, AR.card],
     )
 
 
 def build_pgmpy_ar_prior(AR):
     return TabularCPD(
         variable=AR.name,
-        variable_card=len(AR.bins),
+        variable_card=AR.card,
         values=AR.cpt.reshape(-1, 1),
         evidence=[],
         evidence_card=[],
@@ -44,7 +44,7 @@ def build_pgmpy_ar_prior(AR):
 def build_pgmpy_ho2sat_prior(HO2Sat):
     return TabularCPD(
         variable=HO2Sat.name,
-        variable_card=len(HO2Sat.bins),
+        variable_card=HO2Sat.card,
         values=HO2Sat.cpt.reshape(-1, 1),
         evidence=[],
         evidence_card=[],
@@ -54,17 +54,17 @@ def build_pgmpy_ho2sat_prior(HO2Sat):
 def build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR):
     return TabularCPD(
         variable=O2SatFFA.name,
-        variable_card=len(O2SatFFA.bins),
-        values=O2SatFFA.cpt.reshape(len(O2SatFFA.bins), -1),
+        variable_card=O2SatFFA.card,
+        values=O2SatFFA.cpt.reshape(O2SatFFA.card, -1),
         evidence=[HO2Sat.name, AR.name],
-        evidence_card=[len(HO2Sat.bins), len(AR.bins)],
+        evidence_card=[HO2Sat.card, AR.card],
     )
 
 
 def build_pgmpy_ia_prior(IA):
     return TabularCPD(
         variable=IA.name,
-        variable_card=len(IA.bins),
+        variable_card=IA.card,
         values=IA.cpt.reshape(-1, 1),
         evidence=[],
         evidence_card=[],
@@ -74,76 +74,76 @@ def build_pgmpy_ia_prior(IA):
 def build_pgmpy_ia_cpt(IA, AR):
     return TabularCPD(
         variable=IA.name,
-        variable_card=len(IA.bins),
+        variable_card=IA.card,
         values=IA.cpt,
         evidence=[AR.name],
-        evidence_card=[len(AR.bins)],
+        evidence_card=[AR.card],
     )
 
 
 def build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA):
     return TabularCPD(
         variable=UO2Sat.name,
-        variable_card=len(UO2Sat.bins),
-        values=UO2Sat.cpt.reshape(len(UO2Sat.bins), -1),
+        variable_card=UO2Sat.card,
+        values=UO2Sat.cpt.reshape(UO2Sat.card, -1),
         evidence=[O2SatFFA.name, IA.name],
-        evidence_card=[len(O2SatFFA.bins), len(IA.bins)],
+        evidence_card=[O2SatFFA.card, IA.card],
     )
 
 
 def build_pgmpy_o2sat_cpt(O2Sat, UO2Sat):
     return TabularCPD(
         variable=O2Sat.name,
-        variable_card=len(O2Sat.bins),
+        variable_card=O2Sat.card,
         values=O2Sat.cpt,
         evidence=[UO2Sat.name],
-        evidence_card=[len(UO2Sat.bins)],
+        evidence_card=[UO2Sat.card],
     )
 
 
 def build_pgmpy_hfev1_factor_fn(HFEV1):
-    return DiscreteFactor([HFEV1.name], [len(HFEV1.bins)], HFEV1.cpt)
+    return DiscreteFactor([HFEV1.name], [HFEV1.card], HFEV1.cpt)
 
 
 def build_pgmpy_ecfev1_factor_fn(ecFEV1, HFEV1, AR):
     return DiscreteFactor(
         [ecFEV1.name, HFEV1.name, AR.name],
-        [len(ecFEV1.bins), len(HFEV1.bins), len(AR.bins)],
+        [ecFEV1.card, HFEV1.card, AR.card],
         ecFEV1.cpt,
     )
 
 
 def build_pgmpy_ar_factor_fn(AR):
-    return DiscreteFactor([AR.name], [len(AR.bins)], AR.cpt)
+    return DiscreteFactor([AR.name], [AR.card], AR.cpt)
 
 
 def build_pgmpy_ho2sat_factor_fn(HO2Sat):
-    return DiscreteFactor([HO2Sat.name], [len(HO2Sat.bins)], HO2Sat.cpt)
+    return DiscreteFactor([HO2Sat.name], [HO2Sat.card], HO2Sat.cpt)
 
 
 def build_pgmpy_o2satffa_factor_fn(O2SatFFA, HO2Sat, AR):
     return DiscreteFactor(
         [O2SatFFA.name, HO2Sat.name, AR.name],
-        [len(O2SatFFA.bins), len(HO2Sat.bins), len(AR.bins)],
+        [O2SatFFA.card, HO2Sat.card, AR.card],
         O2SatFFA.cpt,
     )
 
 
 def build_pgmpy_ia_factor_fn(IA):
-    return DiscreteFactor([IA.name], [len(IA.bins)], IA.cpt)
+    return DiscreteFactor([IA.name], [IA.card], IA.cpt)
 
 
 def build_pgmpy_uo2sat_factor_fn(UO2Sat, O2SatFFA, IA):
     return DiscreteFactor(
         [UO2Sat.name, O2SatFFA.name, IA.name],
-        [len(UO2Sat.bins), len(O2SatFFA.bins), len(IA.bins)],
+        [UO2Sat.card, O2SatFFA.card, IA.card],
         UO2Sat.cpt,
     )
 
 
 def build_pgmpy_o2sat_factor_fn(O2Sat, UO2Sat):
     return DiscreteFactor(
-        [O2Sat.name, UO2Sat.name], [len(O2Sat.bins), len(UO2Sat.bins)], O2Sat.cpt
+        [O2Sat.name, UO2Sat.name], [O2Sat.card, UO2Sat.card], O2Sat.cpt
     )
 
 

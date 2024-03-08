@@ -44,7 +44,7 @@ def calc_cpt(
     cpt = calc_cpt_X_x_funcY(
         O2SatFFA, HO2Sat, AR, multiplicative_drop_func, debug=debug
     )
-    return cpt.reshape(len(O2SatFFA.bins), len(HO2Sat.bins) * len(AR.bins))
+    return cpt.reshape(O2SatFFA.card, HO2Sat.card * AR.card)
 
 
 def calc_cpt_X_x_funcY(

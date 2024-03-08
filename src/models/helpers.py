@@ -130,9 +130,10 @@ class VariableNode:
         self.bins_str = list(
             map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
         )
+        self.card = len(self.bins)
 
         self.cpt = self.set_prior(prior)
-        self.posterior = None
+
 
     def sample(self, n=1, p=None):
         """
@@ -283,12 +284,6 @@ class VariableNode:
 
         (lower_idx, upper_idx) = self.bins_arr[idx]
         return "[{}; {})".format(lower_idx, upper_idx), idx
-
-    def set_posterior(self, p):
-        """
-        Set the posterior of the variable
-        """
-        self.posterior = p
 
 
 def encode_node_variable(var):
