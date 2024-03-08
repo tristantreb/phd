@@ -59,7 +59,7 @@ def generate_o2sat_distribution(
 
 
 def generate_underlying_uo2sat_distribution(
-    UO2Sat: mh.variableNode, o2sat_obs, repetitions, std_gauss, show_std=False
+    UO2Sat: mh.VariableNode, o2sat_obs, repetitions, std_gauss, show_std=False
 ):
     """
     Generates the upwards distribution, P(UO2Sat | O2Sat)
@@ -86,7 +86,7 @@ def generate_underlying_uo2sat_distribution(
     return hist, bin_edges, uo2sat_arr
 
 
-def calc_cpt(O2Sat: mh.variableNode, UO2Sat: mh.variableNode):
+def calc_cpt(O2Sat: mh.VariableNode, UO2Sat: mh.VariableNode):
     """
     The CPT is calculated using the generative o2 saturation noise model
     See 2024-01-08_o2sat_noise_model.ipynb

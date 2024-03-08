@@ -1,7 +1,7 @@
 import src.models.helpers as mh
 
 
-def calc_cpt(UO2Sat: mh.variableNode, O2SatFFA: mh.variableNode, IA: mh.variableNode):
+def calc_cpt(UO2Sat: mh.VariableNode, O2SatFFA: mh.VariableNode, IA: mh.VariableNode):
     """
     UO2Sat = O2SatFFA * (1-IA)
     UO2Sat: Underling O2 saturation

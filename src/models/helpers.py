@@ -93,7 +93,7 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
     return PDF_X_x_Y(z, x_a, x_b, 1 - y_b, 1 - y_a)
 
 
-class variableNode:
+class VariableNode:
     """
     This variable node class can be used to build Bayesian networks as well as factor graphs.
 
@@ -283,7 +283,7 @@ class variableNode:
 
         (lower_idx, upper_idx) = self.bins_arr[idx]
         return "[{}; {})".format(lower_idx, upper_idx), idx
-    
+
     def set_posterior(self, p):
         """
         Set the posterior of the variable
@@ -312,7 +312,7 @@ def decode_node_variable(jsoned_var):
     a = jsoned_var["a"]
     b = jsoned_var["b"]
     bin_width = jsoned_var["bin_width"]
-    class_var = variableNode(name, a, b, bin_width, prior=None)
+    class_var = VariableNode(name, a, b, bin_width, prior=None)
     # Transform list to ndarray
     class_var.cpt = np.array(jsoned_var["cpt"])
     return class_var

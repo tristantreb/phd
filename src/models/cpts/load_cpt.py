@@ -25,7 +25,7 @@ def name_to_abbr(name: str):
     return abbr
 
 
-def get_cpt(vars: List[mh.variableNode]):
+def get_cpt(vars: List[mh.VariableNode]):
     path_to_folder = dh.get_path_to_src() + "models/cpts/"
     var_spec = map(
         lambda var: f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}", vars
@@ -38,7 +38,7 @@ def get_cpt(vars: List[mh.variableNode]):
     return cpt
 
 
-def save_cpt(vars: List[mh.variableNode], cpt: np.ndarray):
+def save_cpt(vars: List[mh.VariableNode], cpt: np.ndarray):
     path_to_folder = dh.get_path_to_src() + "/models/cpts/"
     filename = "_".join(
         [f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}" for var in vars]

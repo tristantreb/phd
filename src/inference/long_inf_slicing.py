@@ -95,7 +95,7 @@ def get_uniform_message(card):
     return np.ones(card) / card
 
 
-def get_var_name_list(variables: List[mh.variableNode] | List[SharedNodeVariable]):
+def get_var_name_list(variables: List[mh.VariableNode] | List[SharedNodeVariable]):
     return list(map(lambda v: v.name, variables))
 
 
@@ -229,7 +229,7 @@ def plot_scatter(fig, x, y, row, col, colour=None, title=None):
     # fig.update_xaxes(title_text="Days", row=row, col=col)
 
 
-def get_heatmap_data(df, var: mh.variableNode):
+def get_heatmap_data(df, var: mh.VariableNode):
     data = (
         np.array([item for sublist in df[var.name] for item in sublist])
         .reshape(len(df), len(var.bins))
@@ -332,13 +332,13 @@ def plot_posterior_validation(
 
 def plot_query_res(
     df_breathe: pd.DataFrame,
-    ecFEV1: mh.variableNode,
-    O2Sat: mh.variableNode,
+    ecFEV1: mh.VariableNode,
+    O2Sat: mh.VariableNode,
     df_query_res: pd.DataFrame,
-    AR: mh.variableNode,
-    IA: mh.variableNode,
-    HFEV1: mh.variableNode,
-    HO2Sat: mh.variableNode,
+    AR: mh.VariableNode,
+    IA: mh.VariableNode,
+    HFEV1: mh.VariableNode,
+    HO2Sat: mh.VariableNode,
     colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
     save=False,
 ):
