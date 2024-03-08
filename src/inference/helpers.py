@@ -12,8 +12,8 @@ TOL_GLOBAL = 1e-6
 
 def infer(
     inference_alg: BeliefPropagation | BeliefPropagationWithMessageParsing,
-    variables: tuple[mh.variableNode],
-    evidences: tuple[tuple[mh.variableNode, float]],
+    variables: tuple[mh.VariableNode],
+    evidences: tuple[tuple[mh.VariableNode, float]],
     show_progress=False,
     joint=False,
 ):
@@ -41,9 +41,9 @@ def infer(
 
 
 # Given an observation and an array of bins, this returns the bin that the value falls into
-def get_bin_for_value(obs: float, var: mh.variableNode, tol=TOL_GLOBAL):
+def get_bin_for_value(obs: float, var: mh.VariableNode, tol=TOL_GLOBAL):
     """
-    Obsolete as this function has been added ot the variableNode class
+    Obsolete as this function has been added ot the VariableNode class
     """
     # Center bins around value observed
     relative_bins = var.bins - obs - tol
@@ -57,7 +57,7 @@ def get_bin_for_value(obs: float, var: mh.variableNode, tol=TOL_GLOBAL):
 
 def plot_histogram(
     fig,
-    Var: mh.variableNode,
+    Var: mh.VariableNode,
     p,
     xmin,
     xmax,

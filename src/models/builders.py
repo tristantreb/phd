@@ -48,7 +48,7 @@ def build_full_FEV1_side(
 
     HFEV1_low = 1
     HFEV1_high = 6
-    HFEV1 = mh.variableNode(
+    HFEV1 = mh.VariableNode(
         "Healthy FEV1 (L)", HFEV1_low, HFEV1_high, 0.1, prior=HFEV1_prior
     )
 
@@ -63,7 +63,7 @@ def build_full_FEV1_side(
     LD_low = 0
     LD_high = 0.8
     # It's not possible to live with >80% of global airway blockage (LD + SAB)
-    LD = mh.variableNode("Lung Damage (%)", LD_low, LD_high, 0.05, prior=LD_prior)
+    LD = mh.VariableNode("Lung Damage (%)", LD_low, LD_high, 0.05, prior=LD_prior)
 
     prior_LD = TabularCPD(
         variable=LD.name,
@@ -75,7 +75,7 @@ def build_full_FEV1_side(
 
     UFEV1_low = HFEV1_low * (1 - LD_high)  # 0.2
     UFEV1_high = HFEV1_high * (1 - LD_low)  # 6
-    UFEV1 = mh.variableNode("Unblocked FEV1 (L)", UFEV1_low, UFEV1_high, 0.1)
+    UFEV1 = mh.VariableNode("Unblocked FEV1 (L)", UFEV1_low, UFEV1_high, 0.1)
 
     cpt_UFEV1 = TabularCPD(
         variable=UFEV1.name,
@@ -88,7 +88,7 @@ def build_full_FEV1_side(
     # It's not possible to live with >80% of global airway blockage (LD + SAB)
     SAB_low = 0
     SAB_high = 0.8
-    SAB = mh.variableNode(
+    SAB = mh.VariableNode(
         "Small Airway Blockage (%)",
         SAB_low,
         SAB_high,
@@ -107,7 +107,7 @@ def build_full_FEV1_side(
     # Min observed to 0.4 in our data. Putting 0.1 for now
     FEV1_low = min(0.1, UFEV1_low * (1 - SAB_high))  # 0.04
     FEV1_high = UFEV1_high * (1 - SAB_low)  # 6
-    FEV1 = mh.variableNode("FEV1 (L)", FEV1_low, FEV1_high, 0.1)
+    FEV1 = mh.VariableNode("FEV1 (L)", FEV1_low, FEV1_high, 0.1)
 
     cpt_FEV1 = TabularCPD(
         variable=FEV1.name,
@@ -146,10 +146,10 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
     """
     print("*** Building lung model with HFEV1 and AB ***")
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
-    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.1, HFEV1_prior)
+    HFEV1 = mh.VariableNode("Healthy FEV1 (L)", 1, 6, 0.1, HFEV1_prior)
     # It's not possible to live with >80% of airway blockage
-    AB = mh.variableNode("Airway Degradation", 0, 0.8, 0.05, prior={"type": "uniform"})
-    FEV1 = mh.variableNode("FEV1 (L)", 0.1, 6, 0.1, None)
+    AB = mh.VariableNode("Airway Degradation", 0, 0.8, 0.05, prior={"type": "uniform"})
+    FEV1 = mh.VariableNode("FEV1 (L)", 0.1, 6, 0.1, None)
 
     model = BayesianNetwork([(HFEV1.name, FEV1.name), (AB.name, FEV1.name)])
 
@@ -197,13 +197,13 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     print("*** Building FEV1 and O2 point in time model ***")
 
     # The Heatlhy FEV1 takes the input prior distribution and truncates it in the interval [0.1,6)
-    HFEV1 = mh.variableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
-    AR = mh.variableNode("Airway Resistance (%)", 0, 90, 1, prior={"type": "uniform"})
-    ecFEV1 = mh.variableNode("FEV1 (L)", 0, 6, 0.05, prior=None)
-    # HO2Sat = mh.variableNode(
+    HFEV1 = mh.VariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
+    AR = mh.VariableNode("Airway Resistance (%)", 0, 90, 1, prior={"type": "uniform"})
+    ecFEV1 = mh.VariableNode("FEV1 (L)", 0, 6, 0.05, prior=None)
+    # HO2Sat = mh.VariableNode(
     #     "Healthy O2 Saturation (%)", 90, 100, 1, prior=ho2sat_prior
     # )
-    # O2SatFFA = mh.variableNode(
+    # O2SatFFA = mh.VariableNode(
     #     "O2 Sat if fully functional alveoli (%)", 70, 100, 1, prior=None
     # )
 
@@ -289,7 +289,7 @@ def build_longitudinal_FEV1_side(
     # Variables shared across tmie
     HFEV1_low = 1
     HFEV1_high = 6
-    HFEV1 = mh.variableNode(
+    HFEV1 = mh.VariableNode(
         "Healthy FEV1 (L)", HFEV1_low, HFEV1_high, 0.1, prior=HFEV1_prior
     )
 
@@ -304,7 +304,7 @@ def build_longitudinal_FEV1_side(
     LD_low = 0
     LD_high = 0.8
     # It's not possible to live with >80% of global airway blockage (LD + SAB)
-    LD = mh.variableNode("Lung Damage (%)", LD_low, LD_high, 0.05, prior=LD_prior)
+    LD = mh.VariableNode("Lung Damage (%)", LD_low, LD_high, 0.05, prior=LD_prior)
 
     prior_LD = TabularCPD(
         variable=LD.name,
@@ -316,7 +316,7 @@ def build_longitudinal_FEV1_side(
 
     UFEV1_low = HFEV1_low * (1 - LD_high)  # 0.2
     UFEV1_high = HFEV1_high * (1 - LD_low)  # 6
-    UFEV1 = mh.variableNode("Unblocked FEV1 (L)", UFEV1_low, UFEV1_high, 0.1)
+    UFEV1 = mh.VariableNode("Unblocked FEV1 (L)", UFEV1_low, UFEV1_high, 0.1)
 
     cpt_UFEV1 = TabularCPD(
         variable=UFEV1.name,
@@ -339,7 +339,7 @@ def build_longitudinal_FEV1_side(
         # It's not possible to live with >80% of global airway blockage (LD + SAB)
         SAB_low = 0
         SAB_high = 0.8
-        SAB_i = mh.variableNode(
+        SAB_i = mh.VariableNode(
             f"Small Airway Blockage {i} (%)",
             SAB_low,
             SAB_high,
@@ -358,7 +358,7 @@ def build_longitudinal_FEV1_side(
         # Min observed to 0.4 in our data. Putting 0.1 for now
         FEV1_low = min(0.1, UFEV1_low * (1 - SAB_high))  # 0.04
         FEV1_high = UFEV1_high * (1 - SAB_low)  # 6
-        FEV1_i = mh.variableNode(f"FEV1 {i} (L)", FEV1_low, FEV1_high, 0.1)
+        FEV1_i = mh.VariableNode(f"FEV1 {i} (L)", FEV1_low, FEV1_high, 0.1)
 
         cpt_FEV1 = TabularCPD(
             variable=FEV1_i.name,

@@ -35,7 +35,7 @@ def multiplicative_drop_func(x):
 
 
 def calc_cpt(
-    O2SatFFA: mh.variableNode, HO2Sat: mh.variableNode, AR: mh.variableNode, debug=False
+    O2SatFFA: mh.VariableNode, HO2Sat: mh.VariableNode, AR: mh.VariableNode, debug=False
 ):
     """
     Computes the CPT for P(O2SatFFA|HO2Sat, AR)
@@ -48,9 +48,9 @@ def calc_cpt(
 
 
 def calc_cpt_X_x_funcY(
-    Z: mh.variableNode,
-    X: mh.variableNode,
-    Y: mh.variableNode,
+    Z: mh.VariableNode,
+    X: mh.VariableNode,
+    Y: mh.VariableNode,
     func,
     tol=1e-6,
     debug=False,
