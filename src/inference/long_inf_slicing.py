@@ -14,7 +14,7 @@ import src.models.helpers as mh
 plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
 
-class SharedNodeVariable:
+class SharedVariableNode:
     def __init__(self, name, card, factor_node_key):
         self.name = name
         self.card = card
@@ -95,7 +95,7 @@ def get_uniform_message(card):
     return np.ones(card) / card
 
 
-def get_var_name_list(variables: List[mh.VariableNode] | List[SharedNodeVariable]):
+def get_var_name_list(variables: List[mh.VariableNode] | List[SharedVariableNode]):
     return list(map(lambda v: v.name, variables))
 
 
@@ -133,7 +133,7 @@ def build_virtual_evidence(shared_variables, day):
 def query_across_days(
     df,
     belief_propagation,
-    shared_variables: List[SharedNodeVariable],
+    shared_variables: List[SharedVariableNode],
     variables: List[str],
     evidence_variables: List[str],
     diff_threshold,
@@ -232,7 +232,7 @@ def plot_scatter(fig, x, y, row, col, colour=None, title=None):
 def get_heatmap_data(df, var: mh.VariableNode):
     data = (
         np.array([item for sublist in df[var.name] for item in sublist])
-        .reshape(len(df), len(var.bins))
+        .reshape(len(df), var.card)
         .T
     )
     return pd.DataFrame(index=var.bins_str, columns=df.Day, data=data)

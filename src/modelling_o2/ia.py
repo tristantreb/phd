@@ -81,8 +81,8 @@ def calc_cpt(IA: mh.VariableNode, AR: mh.VariableNode, debug=True):
     AR: airway resistance
     """
 
-    nbinsIA = len(IA.bins)
-    nbinsAR = len(AR.bins)
+    nbinsIA = IA.card
+    nbinsAR = AR.card
 
     cpt = np.zeros((nbinsIA, nbinsAR))
 

@@ -54,7 +54,7 @@ def build_full_FEV1_side(
 
     prior_HFEV1 = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
+        variable_card=HFEV1.card,
         values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
@@ -82,7 +82,7 @@ def build_full_FEV1_side(
         variable_card=len(UFEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, LD, UFEV1),
         evidence=[LD.name, HFEV1.name],
-        evidence_card=[len(LD.bins), len(HFEV1.bins)],
+        evidence_card=[len(LD.bins), HFEV1.card],
     )
 
     # It's not possible to live with >80% of global airway blockage (LD + SAB)
@@ -158,7 +158,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
         variable_card=len(FEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AB, FEV1),
         evidence=[HFEV1.name, AB.name],
-        evidence_card=[len(HFEV1.bins), len(AB.bins)],
+        evidence_card=[HFEV1.card, len(AB.bins)],
     )
 
     prior_ab = TabularCPD(
@@ -171,7 +171,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
 
     prior_u = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
+        variable_card=HFEV1.card,
         values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
@@ -209,21 +209,21 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
 
     prior_hfev1 = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
+        variable_card=HFEV1.card,
         values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
     )
     # prior_ho2sat = TabularCPD(
     #     variable=HO2Sat.name,
-    #     variable_card=len(HO2Sat.bins),
+    #     variable_card=HO2Sat.card,
     #     values=HO2Sat.cpt,
     #     evidence=[],
     #     evidence_card=[],
     # )
     prior_ar = TabularCPD(
         variable=AR.name,
-        variable_card=len(AR.bins),
+        variable_card=AR.card,
         values=AR.cpt,
         evidence=[],
         evidence_card=[],
@@ -231,19 +231,19 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     print(prior_ar)
     cpt_fev1 = TabularCPD(
         variable=ecFEV1.name,
-        variable_card=len(ecFEV1.bins),
+        variable_card=ecFEV1.card,
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AR, ecFEV1),
         evidence=[HFEV1.name, AR.name],
-        evidence_card=[len(HFEV1.bins), len(AR.bins)],
+        evidence_card=[HFEV1.card, AR.card],
     )
     # cpt_o2_sat_ffa = TabularCPD(
     #     variable=O2SatFFA.name,
-    #     variable_card=len(O2SatFFA.bins),
+    #     variable_card=O2SatFFA.card,
     #     values=o2satffa_factor.calc_cpt_O2SatFFA_HO2Sat_AR(
     #         O2SatFFA, HO2Sat, AR, debug=False
     #     ),
     #     evidence=[HO2Sat.name, AR.name],
-    #     evidence_card=[len(HO2Sat.bins), len(AR.bins)],
+    #     evidence_card=[HO2Sat.card, AR.card],
     # )
     print(f"Time to build variables: {time.time() - tic}")
     tic = time.time()
@@ -295,7 +295,7 @@ def build_longitudinal_FEV1_side(
 
     prior_HFEV1 = TabularCPD(
         variable=HFEV1.name,
-        variable_card=len(HFEV1.bins),
+        variable_card=HFEV1.card,
         values=HFEV1.cpt,
         evidence=[],
         evidence_card=[],
@@ -323,7 +323,7 @@ def build_longitudinal_FEV1_side(
         variable_card=len(UFEV1.bins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, LD, UFEV1),
         evidence=[LD.name, HFEV1.name],
-        evidence_card=[len(LD.bins), len(HFEV1.bins)],
+        evidence_card=[len(LD.bins), HFEV1.card],
     )
 
     # One variable per time point.

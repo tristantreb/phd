@@ -100,7 +100,7 @@ def calc_cpt(O2Sat: mh.VariableNode, UO2Sat: mh.VariableNode):
     ## Sampling size
     repetitions = 1000000
 
-    cpt = np.zeros((len(O2Sat.bins), len(UO2Sat.bins)))
+    cpt = np.zeros((O2Sat.card, UO2Sat.card))
 
     for i, o2sat_obs in enumerate(O2Sat.bin):
         # Generate underlying distribution
