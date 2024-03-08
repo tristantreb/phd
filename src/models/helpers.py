@@ -335,22 +335,23 @@ class SharedVariableNode(VariableNode):
         self.vmessages = {}
         self.agg_vmessage = np.ones(self.card)
 
-    def get_virtual_message(self, day_key):
+    def get_virtual_message(self, day_key, agg_method=True):
         """
         Returns the aggregated message, excluding the message from the current day
         if applicable (if n_epoch > 0).
         """
-        # agg_m = self.agg_vmessage
+        if agg_method:
+            agg_m = self.agg_vmessage
 
-        # if day_key not in self.vmessages.keys():
-        #     return agg_m
+            if day_key not in self.vmessages.keys():
+                return agg_m
 
-        # # Remove previous today's message from agg_m
-        # curr_m = self.vmessages[day_key]
-        # agg_m_excl_curr_m = np.divide(
-        #     agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
-        # )
-        # return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
+            # Remove previous today's message from agg_m
+            curr_m = self.vmessages[day_key]
+            agg_m_excl_curr_m = np.divide(
+                agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
+            )
+            return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
 
         # Multiply all messages together (less efficient)
         # Remove message with day_key from the list of messages

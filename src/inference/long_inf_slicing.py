@@ -56,7 +56,7 @@ def build_virtual_evidence(shared_variables, day):
     vevidence = []
     vmessage_dict = {}
     for shared_var in shared_variables:
-        virtual_message = shared_var.get_virtual_message(day)
+        virtual_message = shared_var.get_virtual_message(day, agg_method=True)
         if virtual_message is not None:
             vevidence.append(
                 TabularCPD(
