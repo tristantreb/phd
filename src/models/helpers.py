@@ -122,10 +122,6 @@ class VariableNode:
         # We're b - TOL_GLOBAL allows to exclude b from the array of bins
         self.bins = np.arange(a, b - self.tol, bin_width)
         self.midbins = self.bins + self.bin_width / 2
-        # bins_arr = [[a, a+bin_width], [a+bin_width, a+2*bin_width], ...
-        self.bins_arr = np.array(
-            list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
-        )
         # bins_str = ["[a, a+bin_width]", "[a+bin_width, a+2*bin_width]", ...
         self.bins_str = list(
             map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
@@ -134,6 +130,13 @@ class VariableNode:
 
         self.cpt = self.set_prior(prior)
 
+    def get_bins_arr(self):
+        """
+        bins_arr = [[a, a+bin_width], [a+bin_width, a+2*bin_width], ...
+        """
+        return np.array(
+            list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
+        )
 
     def sample(self, n=1, p=None):
         """
@@ -282,7 +285,7 @@ class VariableNode:
         # Find the highest negative value of the bins relative to centered bins
         idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
 
-        (lower_idx, upper_idx) = self.bins_arr[idx]
+        (lower_idx, upper_idx) = self.get_bins_arr()[idx]
         return "[{}; {})".format(lower_idx, upper_idx), idx
 
 

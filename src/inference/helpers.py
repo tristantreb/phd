@@ -51,7 +51,7 @@ def get_bin_for_value(obs: float, var: mh.VariableNode, tol=TOL_GLOBAL):
     # Find the highest negative value of the bins relative to centered bins
     idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
 
-    (lower_idx, upper_idx) = var.bins_arr[idx]
+    (lower_idx, upper_idx) = var.get_bins_arr()[idx]
     return "[{}; {})".format(lower_idx, upper_idx), idx
 
 
