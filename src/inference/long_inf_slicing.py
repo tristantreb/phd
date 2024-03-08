@@ -29,7 +29,7 @@ class SharedNodeVariable:
         # Always replace the message for that day, even if it already exists
         self.virtual_messages[day_key] = new_message
 
-    def update_agg_virtual_message(self, virtual_message, new_message):
+    def set_agg_virtual_message(self, virtual_message, new_message):
         """
         The new aggregated message is the multiplication of all messages coming from the factor to the node
 
@@ -158,55 +158,51 @@ def query_across_days(
 
         for i in range(len(df)):
             day = df["Date Recorded"].iloc[i].strftime("%Y-%m-%d")
-
+            # Get query inputs
             evidence = build_evidence(df, i, evidence_variables)
-
             virtual_evidence, virtual_messages = build_virtual_evidence(
                 shared_variables, day
             )
 
-            # Query the graph
             if final_epoch:
+                # Query all variables to get all posteriors
                 vars_to_infer = get_var_name_list(shared_variables + variables)
-                res = belief_propagation.query(
+                query_res = belief_propagation.query(
                     vars_to_infer, evidence, virtual_evidence
                 )
                 df_res_final_epoch = save_res_to_df(
                     df_res_final_epoch,
                     day,
-                    res,
+                    query_res,
                     vars_to_infer,
                 )
             else:
+                # Query shared variables to get cross plate message
                 vars_to_infer = get_var_name_list(shared_variables)
-                res, messages = belief_propagation.query(
+                query_res, query_messages = belief_propagation.query(
                     vars_to_infer, evidence, virtual_evidence, get_messages=True
                 )
                 df_res_before_convergence = save_res_to_df(
                     df_res_before_convergence,
                     f"{epoch}, {day}",
-                    res,
+                    query_res,
                     vars_to_infer,
                 )
                 for shared_var in shared_variables:
                     # Get newly computed message from the query output
-                    new_message = messages[shared_var.factor_node_key]
-                    # Add or update it into the virtual messages list
-                    shared_var.add_or_update_message(
-                        day, messages[shared_var.factor_node_key]
-                    )
-                    shared_var.update_agg_virtual_message(
+                    new_message = query_messages[shared_var.factor_node_key]
+                    shared_var.add_or_update_message(day, new_message)
+                    shared_var.set_agg_virtual_message(
                         virtual_messages[shared_var.name], new_message
                     )
 
-        posteriors_old, diffs = get_diffs(res, posteriors_old, shared_variables)
+        posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
 
         for shared_var, diff in zip(shared_variables, diffs):
             print(f"Epoch {epoch} - Posteriors' diff for {shared_var.name}: {diff}")
 
         if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
-                # Terminates the query
                 return df_res_final_epoch, df_res_before_convergence
             print(
                 f"All diffs are below {diff_threshold}, running another epoch to get all posteriors"
