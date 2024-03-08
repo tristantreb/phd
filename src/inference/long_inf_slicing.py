@@ -1,10 +1,10 @@
-import time
 from functools import reduce
 from typing import List
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from pgmpy.factors.discrete import TabularCPD
 from plotly.subplots import make_subplots
 
 import src.data.helpers as dh
@@ -50,9 +50,9 @@ class SharedNodeVariable:
             return agg_m
 
         # Remove previous today's message from agg_m
-        curr_m = self.messages[day_key]
+        curr_m = self.virtual_messages[day_key]
         agg_m_excl_curr_m = np.divide(
-            agg_m_excl_curr_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
+            agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
         )
         return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
 
@@ -95,6 +95,41 @@ def get_uniform_message(card):
     return np.ones(card) / card
 
 
+def get_var_name_list(variables: List[mh.variableNode] | List[SharedNodeVariable]):
+    return list(map(lambda v: v.name, variables))
+
+
+def save_res_to_df(df, day, res, variables):
+    new_row = [day] + list(map(lambda v: res[v].values, variables))
+    new_row = pd.DataFrame([new_row], columns=["Day"] + variables)
+    return pd.concat([df, new_row], ignore_index=True)
+
+
+def build_evidence(df, i, variables):
+    evidence = {}
+    for variable in variables:
+        idx_obs = df[variable].iloc[i]
+        evidence[variable] = idx_obs
+    return evidence
+
+
+def build_virtual_evidence(shared_variables, day):
+    virtual_evidence = []
+    virtual_messages = {}
+    for shared_var in shared_variables:
+        virtual_message = shared_var.get_virtual_message(day)
+        if virtual_message is not None:
+            virtual_evidence.append(
+                TabularCPD(
+                    shared_var.name,
+                    shared_var.card,
+                    virtual_message.reshape(-1, 1),
+                )
+            )
+            virtual_messages[shared_var.name] = virtual_message
+    return virtual_evidence, virtual_messages
+
+
 def query_across_days(
     df,
     belief_propagation,
@@ -105,11 +140,13 @@ def query_across_days(
 ):
     final_epoch = False
     epoch = 0
-    df_res_shared = pd.DataFrame(
-        columns=["Epoch"] + list(map(lambda v: v.name, shared_variables))
-    )
 
-    df_res_vars = pd.DataFrame(columns=["Day"] + list(map(lambda v: v.name, variables)))
+    df_res_before_convergence = pd.DataFrame(
+        columns=["Day"] + list(map(lambda v: v.name, shared_variables))
+    )
+    df_res_final_epoch = pd.DataFrame(
+        columns=["Day"] + list(map(lambda v: v.name, variables))
+    )
 
     # Initialize posteriors distribution to uniform
     posteriors_old = [
@@ -122,40 +159,34 @@ def query_across_days(
         for i in range(len(df)):
             day = df["Date Recorded"].iloc[i].strftime("%Y-%m-%d")
 
-            def build_evidence(variables):
-                evidence = {}
-                for variable in variables:
-                    idx_obs = df[variable].iloc[i]
-                    evidence[variable] = idx_obs
-                return evidence
+            evidence = build_evidence(df, i, evidence_variables)
 
-            evidence = build_evidence(evidence_variables)
-
-            def build_virtual_evidence(shared_variables):
-                virtual_evidence = {}
-                for shared_var in shared_variables:
-                    virtual_message = shared_var.get_virtual_message(day)
-                    if virtual_message is not None:
-                        virtual_evidence[shared_var.name] = virtual_message
-                return virtual_evidence, virtual_message
-
-            virtual_evidence, virtual_message = build_virtual_evidence(shared_variables)
+            virtual_evidence, virtual_messages = build_virtual_evidence(
+                shared_variables, day
+            )
 
             # Query the graph
             if final_epoch:
-                vars_to_infer = shared_variables + variables
-                vars_to_infer = list(map(lambda v: v.name, vars_to_infer))
+                vars_to_infer = get_var_name_list(shared_variables + variables)
                 res = belief_propagation.query(
-                    vars_to_infer, evidence, virtual_evidence, get_messages=False
+                    vars_to_infer, evidence, virtual_evidence
                 )
-                new_row = [day] + list(map(lambda v: res[v].values, vars_to_infer))
-                new_row = pd.DataFrame([new_row], columns=["Day"] + vars_to_infer)
-                df_res_vars = pd.concat([df_res_vars, new_row], ignore_index=True)
-
+                df_res_final_epoch = save_res_to_df(
+                    df_res_final_epoch,
+                    day,
+                    res,
+                    vars_to_infer,
+                )
             else:
-                vars_to_infer = list(map(lambda v: v.name, shared_variables))
+                vars_to_infer = get_var_name_list(shared_variables)
                 res, messages = belief_propagation.query(
                     vars_to_infer, evidence, virtual_evidence, get_messages=True
+                )
+                df_res_before_convergence = save_res_to_df(
+                    df_res_before_convergence,
+                    f"{epoch}, {day}",
+                    res,
+                    vars_to_infer,
                 )
                 for shared_var in shared_variables:
                     # Get newly computed message from the query output
@@ -164,26 +195,19 @@ def query_across_days(
                     shared_var.add_or_update_message(
                         day, messages[shared_var.factor_node_key]
                     )
-                    shared_var.update_agg_virtual_message(virtual_message, new_message)
+                    shared_var.update_agg_virtual_message(
+                        virtual_messages[shared_var.name], new_message
+                    )
 
         posteriors_old, diffs = get_diffs(res, posteriors_old, shared_variables)
 
         for shared_var, diff in zip(shared_variables, diffs):
             print(f"Epoch {epoch} - Posteriors' diff for {shared_var.name}: {diff}")
 
-        # Create new row df with epoch, and on shared variables array per row cel
-        new_row = [epoch] + list(map(lambda v: res[v.name].values, shared_variables))
-        # Same but as df
-        new_row = pd.DataFrame(
-            [new_row], columns=["Epoch"] + list(map(lambda v: v.name, shared_variables))
-        )
-
-        df_res_shared = pd.concat([df_res_shared, new_row], ignore_index=True)
-
         if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
                 # Terminates the query
-                return df_res_vars, df_res_shared
+                return df_res_final_epoch, df_res_before_convergence
             print(
                 f"All diffs are below {diff_threshold}, running another epoch to get all posteriors"
             )
@@ -230,7 +254,7 @@ def plot_heatmap(fig, df, var, row, col, coloraxis):
 
 
 def plot_posterior_validation(
-    df_query_res,
+    df_res_before_convergence,
     HFEV1shared,
     HFEV1,
     HO2Satshared,
@@ -238,7 +262,6 @@ def plot_posterior_validation(
     df_breathe,
     ecFEV1,
     O2Sat,
-    n_epochs,
     colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
     save=False,
 ):
@@ -276,12 +299,12 @@ def plot_posterior_validation(
         title=O2Sat.name,
     )
 
-    df_res_hfev1 = get_heatmap_data(df_query_res, HFEV1)
-    df_res_ho2sat = get_heatmap_data(df_query_res, HO2Sat)
+    df_res_hfev1 = get_heatmap_data(df_res_before_convergence, HFEV1)
+    df_res_ho2sat = get_heatmap_data(df_res_before_convergence, HO2Sat)
     plot_heatmap(fig, df_res_hfev1, HFEV1shared, row=3, col=1, coloraxis="coloraxis1")
     plot_heatmap(fig, df_res_ho2sat, HO2Satshared, row=5, col=1, coloraxis="coloraxis2")
 
-    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation {n_epochs}"
+    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation"
     fig.update_layout(
         title=title,
         width=1200,
