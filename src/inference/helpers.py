@@ -10,8 +10,38 @@ TOL_GLOBAL = 1e-6
 # Switch from 1e-8 to 1e-6 to because got 0.9999999885510139 sum of probabilities for a model with AW
 
 
+def infer_on_factor_graph(
+    inference_alg: BeliefPropagationWithMessageParsing,
+    variables: tuple[mh.VariableNode],
+    evidences: tuple[tuple[mh.VariableNode, float]],
+    virtual_evidence=None,
+    get_messages=False,
+):
+    """
+    Runs an inference query against a given PGMPY inference model, variables, evidences
+    :param inference_alg: The inference algorithm to use
+    :param variables: The variables to query
+    :param evidences: The evidences to use
+
+    :return: The result of the inference
+    """
+
+    evidences_binned = dict()
+    for [evidence_var, value] in evidences:
+        [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
+        evidences_binned.update({evidence_var.name: bin_idx})
+
+    res = inference_alg.query(
+        variables=list(map(lambda v: v.name, variables)),
+        evidence=evidences_binned,
+        virtual_evidence=virtual_evidence,
+        get_messages=get_messages,
+    )
+    return res
+
+
 def infer(
-    inference_alg: BeliefPropagation | BeliefPropagationWithMessageParsing,
+    inference_alg: BeliefPropagation,
     variables: tuple[mh.VariableNode],
     evidences: tuple[tuple[mh.VariableNode, float]],
     show_progress=False,
@@ -31,18 +61,12 @@ def infer(
         [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
         evidences_binned.update({evidence_var.name: bin_idx})
 
-    if isinstance(inference_alg, BeliefPropagationWithMessageParsing):
-        res = inference_alg.query(
-            variables=list(map(lambda v: v.name, variables)),
-            evidence=evidences_binned,
-        )
-    elif isinstance(inference_alg, BeliefPropagation):
-        res = inference_alg.query(
-            variables=list(map(lambda v: v.name, variables)),
-            evidence=evidences_binned,
-            show_progress=show_progress,
-            joint=joint,
-        )
+    res = inference_alg.query(
+        variables=list(map(lambda v: v.name, variables)),
+        evidence=evidences_binned,
+        show_progress=show_progress,
+        joint=joint,
+    )
     return res
 
 

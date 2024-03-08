@@ -35,7 +35,7 @@ def build_all_with_factor_graph(app):
         # INFERENCE
         print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
 
-        query = ih.infer(
+        query = ih.infer_on_factor_graph(
             inf_alg,
             [HFEV1, AR, HO2Sat, IA, O2SatFFA, UO2Sat],
             [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
