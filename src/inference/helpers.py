@@ -93,7 +93,7 @@ def plot_histogram(
     xmax,
     row,
     col,
-    title=True,
+    title=None,
     colour=None,
     annot=True,
 ):
@@ -113,7 +113,7 @@ def plot_histogram(
     fig.update_xaxes(
         range=[xmin, xmax],
         nticks=20,
-        title=Var.name if title else None,
+        title=title,
         row=row,
         col=col,
     )

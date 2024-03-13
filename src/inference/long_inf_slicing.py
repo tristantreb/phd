@@ -294,15 +294,25 @@ def plot_query_res(
         vertical_spacing=0.05,
     )
     # Priors
-    ih.plot_histogram(fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, 1, 1, True, "#636EFA")
     ih.plot_histogram(
-        fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, 1, 2, True, "#636EFA"
+        fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, 1, 1, HFEV1.name, "#636EFA"
+    )
+    ih.plot_histogram(
+        fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, 1, 2, HO2Sat.name, "#636EFA"
     )
 
     # Posteriors for shared variables
     hfev1_posterior = df_query_res[HFEV1.name].iloc[-1]
     ih.plot_histogram(
-        fig, HFEV1, hfev1_posterior, HFEV1.a, HFEV1.b, 2, 1, True, colour="#636EFA"
+        fig,
+        HFEV1,
+        hfev1_posterior,
+        HFEV1.a,
+        HFEV1.b,
+        2,
+        1,
+        HFEV1.name,
+        colour="#636EFA",
     )
     ho2sat_posterior = df_query_res[HO2Sat.name].iloc[-1]
     ih.plot_histogram(
@@ -313,7 +323,7 @@ def plot_query_res(
         HO2Sat.b,
         2,
         2,
-        True,
+        HO2Sat.name,
         "#636EFA",
     )
 
