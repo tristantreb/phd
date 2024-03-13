@@ -131,3 +131,51 @@ def plot_histogram(
             col=col,
         )
     return -1
+
+
+def plot_histogram_discrete(
+    fig,
+    Var: mh.VariableNode,
+    p,
+    xmin,
+    xmax,
+    row,
+    col,
+    title=None,
+    colour=None,
+    annot=True,
+):
+    fig.add_trace(
+        go.Bar(
+            x=Var.midbins,
+            y=p,
+            # histfunc="sum",  # Use 'sum' to represent pre-counted data
+            # xbins=dict(start=xmin, end=xmax, size=Var.bin_width),
+        ),
+        row=row,
+        col=col,
+    )
+    if colour:
+        fig.update_traces(marker_color=colour, row=row, col=col)
+
+    fig.update_xaxes(
+        range=[xmin, xmax],
+        nticks=20,
+        title=title,
+        row=row,
+        col=col,
+    )
+    # Add one specific tick label on the x axis
+    # fig.update_xaxes(tickvals=[Var.get_mean(p)], row=row, col=col)
+    # Add distribution's mean as an annotation with small font size
+    if annot:
+        fig.add_annotation(
+            x=Var.get_mean(p),
+            y=max(p) * 1.1,
+            text=f"{Var.get_mean(p):.2f}",
+            showarrow=False,
+            font=dict(size=6),
+            row=row,
+            col=col,
+        )
+    return -1
