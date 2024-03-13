@@ -291,6 +291,13 @@ class VariableNode:
         (lower_idx, upper_idx) = self.get_bins_arr()[idx]
         return "[{}; {})".format(lower_idx, upper_idx), idx
 
+    def get_point_message(self, obs_val):
+        # Create an array with 1 at the index of the evidence and 0 elsewhere
+        message = np.zeros(self.card)
+        idx = self.get_bin_for_value(obs_val)[1]
+        message[idx] = 1
+        return message
+
 
 class SharedVariableNode(VariableNode):
     """

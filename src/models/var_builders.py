@@ -252,7 +252,14 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(height, age, sex):
     # O2 sat can't be below 70%.
     # If there's no airway resistance, it should still be possible to reach 70% O2 sat
     # Hence, min IA is 30% because i
-    IA = VariableNode("Inactive alveoli (%)", 0, 30, 1, prior={"type": "uniform"})
+    IA = VariableNode(
+        "Inactive alveoli (%)",
+        0,
+        30,
+        1,
+        prior={"type": "custom", "p": get_IA_breathe_prior()},
+    )
+    # IA = VariableNode("Inactive alveoli (%)", 0, 30, 1, prior={"type": "uniform"})
     # In reality O2 sat can't be below 70%.
     # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.
     # 82.8-30 = 52.8%
