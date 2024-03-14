@@ -482,11 +482,11 @@ def build_all_with_factor_graph_debug(app):
         key = get_key(f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}']", AR.name)
         ih.plot_histogram(fig, AR, messages[key], AR.a, AR.b, 5, 2, None, "gray")
         # AR prior
-        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, None, "crimson")
+        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, AR.name, "crimson")
         # IA priors
         key = get_key(f"['{UO2Sat.name}', '{O2SatFFA.name}', '{IA.name}']", IA.name)
         ih.plot_histogram(
-            fig, IA, IA.cpt.reshape(-1), ia_min, ia_max, 10, 3, None, "crimson"
+            fig, IA, IA.cpt.reshape(-1), ia_min, ia_max, 10, 3, IA.name, "crimson"
         )
         # factor - AR
         key = get_key(f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", AR.name)
@@ -496,7 +496,7 @@ def build_all_with_factor_graph_debug(app):
         ih.plot_histogram(fig, IA, messages[key], ia_min, ia_max, 11, 4, None, "gray")
         # HO2Sat prior
         ih.plot_histogram(
-            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, None, "blue"
+            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, HO2Sat.name, "blue"
         )
         # HO2Sat to factor
         key = get_key(f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", HO2Sat.name)
@@ -508,7 +508,7 @@ def build_all_with_factor_graph_debug(app):
             f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", O2SatFFA.name
         )
         ih.plot_histogram(
-            fig, O2SatFFA, messages[key], o2sat_min, o2sat_max, 7, 5, None, "gray"
+            fig, O2SatFFA, messages[key], o2sat_min, o2sat_max, 7, 5, O2SatFFA.name, "gray"
         )
         # factor to node
         key = get_key(
@@ -520,7 +520,7 @@ def build_all_with_factor_graph_debug(app):
         # UO2Sat
         key = get_key(f"['{UO2Sat.name}', '{O2SatFFA.name}', '{IA.name}']", UO2Sat.name)
         ih.plot_histogram(
-            fig, UO2Sat, messages[key], o2sat_min, o2sat_max, 13, 5, None, "gray"
+            fig, UO2Sat, messages[key], o2sat_min, o2sat_max, 13, 5, UO2Sat.name, "gray"
         )
         # factor to uO2Sat
         key = get_key(f"['{O2Sat.name}', '{UO2Sat.name}']", UO2Sat.name)
