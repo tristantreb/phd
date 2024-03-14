@@ -5,7 +5,7 @@ import src.app.assets.styles as styles
 font_size = styles.font_size()
 
 clinical_profile_box_style = {"width": "250px"}
-input_group_text_style = {"width": "110px", "font-size": font_size}
+input_group_text_style = {"width": "105px", "font-size": font_size}
 select_style = {"font-size": font_size}
 
 clinical_profile_input_layout = html.Div(
