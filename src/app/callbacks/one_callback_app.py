@@ -7,6 +7,9 @@ import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.modelling_o2.ia as ia
 import src.models.builders as mb
+import src.models.graph_builders as graph_builders
+import src.models.var_builders as var_builders
+from src.inference.inf_algs import apply_custom_bp
 
 
 def build_all_with_factor_graph(app):
@@ -338,6 +341,7 @@ def build_all_with_factor_graph_debug(app):
         Input("O2Sat-slider", "value"),
         # Var to infer
         Input("var-to-infer-select", "value"),
+        Input("ia-prior-select", "value"),
     )
     def content(
         sex,
@@ -346,10 +350,25 @@ def build_all_with_factor_graph_debug(app):
         FEV1_obs: float,
         O2Sat_obs: float,
         var_to_infer: str,
+        ia_prior: str,
     ):
-        _, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat = (
-            mb.o2sat_fev1_point_in_time_model_shared_healthy_vars(height, age, sex)
+        (
+            HFEV1,
+            ecFEV1,
+            AR,
+            HO2Sat,
+            O2SatFFA,
+            IA,
+            UO2Sat,
+            O2Sat,
+        ) = var_builders.o2sat_fev1_point_in_time_model_shared_healthy_vars(
+            height, age, sex, ia_prior
         )
+
+        model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
+            HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model=False
+        )
+        inf_alg = apply_custom_bp(model)
 
         # Plot specs before inference
         fev1_min = ecFEV1.a
