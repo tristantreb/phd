@@ -16,6 +16,27 @@ TOL_GLOBAL = 1e-6
 # Switch from 1e-8 to 1e-6 to because got 0.9999999885510139 sum of probabilities for a model with AW
 
 
+def name_to_abbr_dict():
+    return {
+        "Healthy FEV1 (L)": "HFEV1",
+        "ecFEV1 (L)": "ecFEV1",
+        "Airway resistance (%)": "AR",
+        "O2 saturation (%)": "O2Sat",
+        "Healthy O2 saturation (%)": "HO2Sat",
+        "O2 saturation if fully functional alveoli (%)": "O2SatFFA",
+        "Inactive alveoli (%)": "IA",
+        "Underlying O2 saturation (%)": "UO2Sat",
+    }
+
+
+def name_to_abbr(name: str):
+    abbr = name_to_abbr_dict().get(name, "Invalid name")
+    if abbr == "Invalid name":
+        raise ValueError(f"Invalid name: {name}")
+
+    return abbr
+
+
 ## Discretized PDF with the sampling solution
 # Let Unblocked FEV1 be a continuous random variable following a uniform distribution between a and b
 def get_unblocked_fev1(a, b):

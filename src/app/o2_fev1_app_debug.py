@@ -7,6 +7,7 @@ import src.app.assets.styles as s
 import src.app.components.sliders as sliders
 from src.app.callbacks.one_callback_app import build_all_with_factor_graph_debug
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
+from src.app.components.var_to_infer_input import var_to_infer_input_layout
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -33,8 +34,9 @@ app.layout = dbc.Container(
             style={"textAlign": "center", "padding-top": "0px"},
         ),
         clinical_profile_input_layout,
+        var_to_infer_input_layout,
         html.Div(
-            "2. Select your FEV1 and O2 saturation, and analyse your lung's health variables:",
+            "3. Select your FEV1 and O2 saturation, and analyse your lung's health variables:",
             style={
                 "textAlign": "left",
                 "padding-top": "20px",

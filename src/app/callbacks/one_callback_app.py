@@ -5,8 +5,8 @@ from plotly.subplots import make_subplots
 import src.app.assets.styles as s
 import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
-import src.models.builders as mb
 import src.modelling_o2.ia as ia
+import src.models.builders as mb
 
 
 def build_all_with_factor_graph(app):
@@ -336,6 +336,8 @@ def build_all_with_factor_graph_debug(app):
         # Evidences
         Input("FEV1-slider", "value"),
         Input("O2Sat-slider", "value"),
+        # Var to infer
+        Input("var-to-infer-select", "value"),
     )
     def content(
         sex,
@@ -343,56 +345,13 @@ def build_all_with_factor_graph_debug(app):
         height,
         FEV1_obs: float,
         O2Sat_obs: float,
+        var_to_infer: str,
     ):
         _, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat = (
             mb.o2sat_fev1_point_in_time_model_shared_healthy_vars(height, age, sex)
         )
 
-        # INFERENCE
-        print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
-
-        var_to_infer = HFEV1
-
-        query, messages = ih.infer_on_factor_graph(
-            inf_alg,
-            [HFEV1],
-            [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
-            get_messages=True,
-        )
-
-        res_hfev1 = query[HFEV1.name]
-
-        # PLOT
-        # Priors take 1x1 cells, posteriors take 2x2 cells
-        message = {"type": "bar", "rowspan": 1, "colspan": 1}
-        posterior = {"type": "bar", "rowspan": 2, "colspan": 1}
-
-        viz_layout = [
-            [message, None, None, None, message],  # 1
-            [posterior, None, None, None, None],  # 2
-            [None, None, None, None, None],  #
-            [message, None, message, None, message],  # 3
-            [None, message, None, message, None],  # 4
-            [None, None, None, None, None],  # 5
-            [message, None, None, None, message],  # 6
-            [None, None, None, None, None],  # 7
-            [None, None, None, None, None],  # 8
-            [None, None, message, None, message],  # 9
-            [None, None, None, message, None],  # 10
-            [None, None, None, None, None],  # 11
-            [None, None, None, None, message],  # 12
-            [None, None, None, None, None],  # 13
-            [None, None, None, None, None],  # 14
-            [None, None, None, None, message],  # 15
-            [None, None, None, None, None],  # 16
-            [None, None, None, None, None],  # 17
-            [None, None, None, None, message],  # 19
-        ]
-
-        fig = make_subplots(
-            rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
-        )
-
+        # Plot specs before inference
         fev1_min = ecFEV1.a
         fev1_max = ecFEV1.b
         o2sat_min = 80
@@ -400,18 +359,93 @@ def build_all_with_factor_graph_debug(app):
         ia_min = 0
         ia_max = 30
 
+        # Update viz_layout with posterior plot location
+        posterior_plot_location_dict = {
+            HFEV1.name: (HFEV1, 2, 1, fev1_min, fev1_max),
+            HO2Sat.name: (HO2Sat, 2, 5, o2sat_min, o2sat_max),
+            AR.name: (AR, 5, 3, AR.a, AR.b),
+            O2SatFFA.name: (O2SatFFA, 8, 5, o2sat_min, o2sat_max),
+            IA.name: (IA, 11, 3, ia_min, ia_max),
+            UO2Sat.name: (UO2Sat, 14, 5, o2sat_min, o2sat_max),
+        }
+        var_to_infer, post_row, post_col, xmin, xmax = posterior_plot_location_dict.get(
+            var_to_infer
+        )
+
+        # INFERENCE
+        print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
+
+        query, messages = ih.infer_on_factor_graph(
+            inf_alg,
+            [var_to_infer],
+            [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
+            get_messages=True,
+        )
+
+        # Plot
+        # Priors take 1x1 cells, posteriors take 2x2 cells
+        m_plot = {"type": "bar", "rowspan": 1, "colspan": 1}
+        post_plot = {"type": "bar", "rowspan": 2, "colspan": 1}
+
+        viz_layout = [
+            [m_plot, None, None, None, m_plot],  # 1
+            [None, None, None, None, None],  # 2
+            [None, None, None, None, None],  #
+            [m_plot, None, m_plot, None, m_plot],  # 3
+            [None, m_plot, None, m_plot, None],  # 4
+            [None, None, None, None, None],  # 5
+            [m_plot, None, None, None, m_plot],  # 6
+            [None, None, None, None, None],  # 7
+            [None, None, None, None, None],  # 8
+            [None, None, m_plot, None, m_plot],  # 9
+            [None, None, None, m_plot, None],  # 10
+            [None, None, None, None, None],  # 11
+            [None, None, None, None, m_plot],  # 12
+            [None, None, None, None, None],  # 13
+            [None, None, None, None, None],  # 14
+            [None, None, None, None, m_plot],  # 15
+            [None, None, None, None, None],  # 16
+            [None, None, None, None, None],  # 17
+            [None, None, None, None, m_plot],  # 19
+        ]
+
+        # Update the layout
+        viz_layout[post_row - 1][post_col - 1] = post_plot
+
+        fig = make_subplots(
+            rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
+        )
+
+        # Plot posterior
+        ih.plot_histogram(
+            fig,
+            var_to_infer,
+            query[var_to_infer.name].values,
+            xmin,
+            xmax,
+            post_row,
+            post_col,
+            None,
+            "black",
+        )
+
+        # Plot messages
+        def get_key(factor_name, var_name):
+            # The key is either "factor_name -> var_name" or "var_name -> factor_name"
+            key = f"{factor_name} -> {var_name}"
+            if key in messages:
+                return key
+            else:
+                return f"{var_name} -> {factor_name}"
+
         # HFEV1 prior
         ih.plot_histogram(
             fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
         )
-        # hfev1 posterior
+        # factor - HFEV1
+        key = get_key(f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}']", HFEV1.name)
         ih.plot_histogram(
-            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, None, "green"
-        )
-        # factor to node
-        key = f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
-        ih.plot_histogram(
-            fig, HFEV1, messages[key], fev1_min, fev1_max, 4, 1, None, "green"
+            fig, HFEV1, messages[key], fev1_min, fev1_max, 4, 1, None, "gray"
         )
         # FEV1 obs
         ih.plot_histogram(
@@ -426,54 +460,56 @@ def build_all_with_factor_graph_debug(app):
             "blue",
         )
         # AR - factor
-        key = "Airway resistance (%) -> ['ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
-        ih.plot_histogram(fig, AR, messages[key], AR.a, AR.b, 5, 2, None, "crimson")
+        key = get_key(f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}']", AR.name)
+        ih.plot_histogram(fig, AR, messages[key], AR.a, AR.b, 5, 2, None, "gray")
         # AR prior
         ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, None, "crimson")
-        # IA prior
-        key = "Inactive alveoli (%) -> ['Underlying O2 saturation (%)', 'O2 saturation if fully functional alveoli (%)', 'Inactive alveoli (%)']"
-        ih.plot_histogram(fig, IA, IA.cpt.reshape(-1), ia_min, ia_max, 10, 3, None, "crimson")
-        # factor - AR
-        key = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {AR.name}"
-        ih.plot_histogram(fig, AR, messages[key], AR.a, AR.b, 5, 4, None, "blue")
-        # IA
-        key = "Inactive alveoli (%) -> ['Underlying O2 saturation (%)', 'O2 saturation if fully functional alveoli (%)', 'Inactive alveoli (%)']"
+        # IA priors
+        key = get_key(f"['{UO2Sat.name}', '{O2SatFFA.name}', '{IA.name}']", IA.name)
         ih.plot_histogram(
-            fig, IA, messages[key], ia_min, ia_max, 11, 4, None, "crimson"
+            fig, IA, IA.cpt.reshape(-1), ia_min, ia_max, 10, 3, None, "crimson"
         )
+        # factor - AR
+        key = get_key(f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", AR.name)
+        ih.plot_histogram(fig, AR, messages[key], AR.a, AR.b, 5, 4, None, "gray")
+        # IA
+        key = get_key(f"['{UO2Sat.name}', '{O2SatFFA.name}', '{IA.name}']", IA.name)
+        ih.plot_histogram(fig, IA, messages[key], ia_min, ia_max, 11, 4, None, "gray")
         # HO2Sat prior
         ih.plot_histogram(
             fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, None, "blue"
         )
         # HO2Sat to factor
-        key = "Healthy O2 saturation (%) -> ['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)']"
+        key = get_key(f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", HO2Sat.name)
         ih.plot_histogram(
-            fig, HO2Sat, messages[key], o2sat_min, o2sat_max, 4, 5, None, "blue"
+            fig, HO2Sat, messages[key], o2sat_min, o2sat_max, 4, 5, None, "gray"
         )
         # O2SatFFA to factor
-        key = f"{O2SatFFA.name} -> ['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)']"
+        key = get_key(
+            f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", O2SatFFA.name
+        )
         ih.plot_histogram(
-            fig, O2SatFFA, messages[key], o2sat_min, o2sat_max, 7, 5, None, "blue"
+            fig, O2SatFFA, messages[key], o2sat_min, o2sat_max, 7, 5, None, "gray"
         )
         # factor to node
-        key = "['Underlying O2 saturation (%)', 'O2 saturation if fully functional alveoli (%)', 'Inactive alveoli (%)'] -> O2 saturation if fully functional alveoli (%)"
+        key = get_key(
+            f"['{UO2Sat.name}', '{O2SatFFA.name}', '{IA.name}']", O2SatFFA.name
+        )
         ih.plot_histogram(
-            fig, O2SatFFA, messages[key], o2sat_min, o2sat_max, 10, 5, None, "blue"
+            fig, O2SatFFA, messages[key], o2sat_min, o2sat_max, 10, 5, None, "gray"
         )
         # UO2Sat
-        key = "Underlying O2 saturation (%) -> ['Underlying O2 saturation (%)', 'O2 saturation if fully functional alveoli (%)', 'Inactive alveoli (%)']"
+        key = get_key(f"['{UO2Sat.name}', '{O2SatFFA.name}', '{IA.name}']", UO2Sat.name)
         ih.plot_histogram(
-            fig, UO2Sat, messages[key], o2sat_min, o2sat_max, 13, 5, None, "blue"
+            fig, UO2Sat, messages[key], o2sat_min, o2sat_max, 13, 5, None, "gray"
         )
         # factor to uO2Sat
-        key = "['O2 saturation (%)', 'Underlying O2 saturation (%)'] -> Underlying O2 saturation (%)"
+        key = get_key(f"['{O2Sat.name}', '{UO2Sat.name}']", UO2Sat.name)
         ih.plot_histogram(
-            fig, UO2Sat, messages[key], o2sat_min, o2sat_max, 16, 5, None, "blue"
+            fig, UO2Sat, messages[key], o2sat_min, o2sat_max, 16, 5, None, "gray"
         )
         # O2 sat
-        key = (
-            "O2 saturation (%) -> ['O2 saturation (%)', 'Underlying O2 saturation (%)']"
-        )
+        key = get_key(f"['{O2Sat.name}', '{UO2Sat.name}']", O2Sat.name)
         ih.plot_histogram_discrete(
             fig, O2Sat, messages[key], o2sat_min, o2sat_max, 19, 5, None, "blue"
         )
@@ -482,7 +518,7 @@ def build_all_with_factor_graph_debug(app):
             showlegend=False,
             height=1000,
             width=1400,
-            font=dict(size=10),
+            font=dict(size=8),
             bargap=0.01,
             margin=dict(l=0, r=0, b=0, t=0),
         )
