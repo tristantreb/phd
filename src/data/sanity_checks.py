@@ -50,6 +50,17 @@ def fev1(value, id):
     return -1
 
 
+def fef2575(value, id):
+    """
+    FEF25-75 should be in 1-10 L/s
+    """
+    if value < 0.1 or value > 10:
+        print(
+            "Warning - ID {} has FEF25-75 ({}) outside 0-10 L/s range".format(id, value)
+        )
+    return -1
+
+
 def sex(value, id):
     """
     Sex should be in Male, Female
@@ -102,7 +113,17 @@ def data_types(df):
                     print(
                         "Warning - Expected {col} to be of type object, got {df[col].dtype}"
                     )
-            case "Height" | "FEV1" | "ecFEV1" | "Predicted FEV1" | "FEV1 % Predicted" | "ecFEV1 % Predicted" | "Healthy O2 Saturation" | "O2 Saturation % Healthy":
+            case (
+                "Height"
+                | "FEV1"
+                | "FEF2575"
+                | "ecFEV1"
+                | "Predicted FEV1"
+                | "FEV1 % Predicted"
+                | "ecFEV1 % Predicted"
+                | "Healthy O2 Saturation"
+                | "O2 Saturation % Healthy"
+            ):
                 if df[col].dtype != np.dtype("float64"):
                     print(
                         f"Warning - Expected {col} to be of type float64, got {df[col].dtype}"
