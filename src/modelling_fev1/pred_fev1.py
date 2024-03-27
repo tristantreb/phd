@@ -395,7 +395,7 @@ def load_LMS_coeffs(sex: str):
                 "Age": 0.0574,
             },
             "S": {"Intercept": -2.3268, "Age": 0.0798},
-            "L": {"Intercept": 0.9966, "Age": 0.085},
+            "L": {"Intercept": 0.8866, "Age": 0.085},
         }
     elif sex == "Female":
         return {
