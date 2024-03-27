@@ -73,21 +73,33 @@ def calc_predicted_FEV1_LMS_df(df):
     return df
 
 
-def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str):
+def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str, debug=False):
     return calc_predicted_FEV1_LMS(
-        load_LMS_spline_vals(age, sex), load_LMS_coeffs(sex), height, age, sex
+        load_LMS_spline_vals(age, sex),
+        load_LMS_coeffs(sex),
+        height,
+        age,
+        sex,
+        debug,
     )
 
 
-def get_lms_pred_fev1_for_zscore(zscore_arr, M, S, L):
-    return np.exp(np.log(1 + zscore_arr * L * S) / L + np.log(M))
+def get_lms_pred_fev1_for_zscore(zscore_arr, M, S, L, debug=False):
+    x = np.exp(np.log(1 + zscore_arr * L * S) / L + np.log(M))
+    if debug:
+        print(
+            f"LMS pred for zscore {zscore_arr} = exp(ln(1 + {zscore_arr} * {L} * {S}) / {L} + ln({M})) = {x}"
+        )
+    return x
 
 
 def get_inverse_lms_pred_fev1_for_zscore(pred_fev1_arr, S, M, L):
     return (np.exp(L * np.log(pred_fev1_arr / M)) - 1) / (S * L)
 
 
-def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str):
+def calc_predicted_FEV1_LMS(
+    spline_vals, coeffs, height: int, age: int, sex: str, debug=False
+):
     """
     Implemented from the GLI reference equations.
     The GLI's model a location (M), scale (S), shape (L) model to predicted FEV1 given a Z-Score​
@@ -110,9 +122,17 @@ def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str
     )
 
     L = coeffs["L"]["Intercept"] + coeffs["L"]["Age"] * np.log(age)
+    if debug:
+        print(
+            f"M = exp({coeffs['M']['Intercept']} + {coeffs['M']['Height']}*ln({height}) + {coeffs['M']['Age']}*ln({age}) + {spline_vals['Mspline']})"
+        )
+        print(
+            f"S = exp({coeffs['S']['Intercept']} + {coeffs['S']['Age']}*ln({age}) + {spline_vals['Sspline']})"
+        )
+        print(f"L = {coeffs['L']['Intercept']} + {coeffs['L']['Age']}*ln({age})")
 
     # Get lower limit of normal (5th percentile)
-    LLN = get_lms_pred_fev1_for_zscore(-1.645, M, S, L)
+    LLN = get_lms_pred_fev1_for_zscore(-1.644, M, S, L, debug)
 
     # The Z-score of a value indicates how far from the mean is that value, in units of standard deviation.
     # In the LMS model, percentile_value(zscore) = exp(ln(1 - z-score *L*S)/L +ln(M))
