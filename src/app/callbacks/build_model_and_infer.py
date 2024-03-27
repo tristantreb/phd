@@ -135,7 +135,7 @@ def model_and_inference_callback(app):
         o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
 
         # AR
-        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, False)
+        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3)
         fig["data"][4]["marker"]["color"] = "crimson"
 
         ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3)
