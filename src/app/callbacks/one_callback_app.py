@@ -58,21 +58,21 @@ def build_all_with_factor_graph(app):
         posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
         viz_layout = [
-            [prior, None, None, None, prior],  # 1
-            [posterior, None, None, None, posterior],  # 2
-            [None, None, None, None, None, None, None, None],  # 3
-            [None, None, None, None, None, prior, None, None],  # 4
-            [None, None, None, None, None, posterior, None, None],  # 5
-            [None, None, None, None, None, None, None, None],  # 6
-            [None, None, None, None, None, None, None, posterior],  # 7
-            [None, None, None, None, None, None, None, None],  # 8
-            [None, None, None, None, None, prior, None, None],  # 8
-            [None, None, None, None, None, posterior, None, None],  # 9
-            [None, None, None, None, None, None, None, None],  # 10
-            [None, None, None, None, None, None, None, posterior],  # 11
-            [None, None, None, None, None, None, None, None],  # 12
-            # [None,     None,     None,     None,     None,     None,     None,     None],  # 13
-            # [None,     None,     None,     None,     None,     None,     None,     prior],  # 14
+            [prior, None, None, None, prior, None],  # 1
+            [posterior, None, None, None, posterior, None],  # 2
+            [None, None, None, None, None, None],  # 3
+            [None, None, prior, None, None, None],  # 4
+            [None, None, posterior, None, None, None],  # 5
+            [None, None, None, None, None, None],  # 6
+            [None, None, None, None, posterior, None],  # 7
+            [None, None, None, None, None, None],  # 8
+            [None, None, prior, None, None, None],  # 8
+            [None, None, posterior, None, None, None],  # 9
+            [None, None, None, None, None, None],  # 10
+            [None, None, None, None, posterior, None],  # 11
+            [None, None, None, None, None, None],  # 12
+            # [None, None, None, None, None, None],  # 13
+            # [None, None, None, None, prior, None],  # 14
         ]
 
         fig = make_subplots(
@@ -220,21 +220,21 @@ def build_all_with_bayes_net(app):
         posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
         viz_layout = [
-            [prior, None, None, None, prior],  # 1
-            [posterior, None, None, None, posterior],  # 2
-            [None, None, None, None, None, None, None, None],  # 3
-            [None, None, None, None, None, prior, None, None],  # 4
-            [None, None, None, None, None, posterior, None, None],  # 5
-            [None, None, None, None, None, None, None, None],  # 6
-            [None, None, None, None, None, None, None, posterior],  # 7
-            [None, None, None, None, None, None, None, None],  # 8
-            [None, None, None, None, None, prior, None, None],  # 8
-            [None, None, None, None, None, posterior, None, None],  # 9
-            [None, None, None, None, None, None, None, None],  # 10
-            [None, None, None, None, None, None, None, posterior],  # 11
-            [None, None, None, None, None, None, None, None],  # 12
-            # [None,     None,     None,     None,     None,     None,     None,     None],  # 13
-            # [None,     None,     None,     None,     None,     None,     None,     prior],  # 14
+            [prior, None, None, None, prior, None],  # 1
+            [posterior, None, None, None, posterior, None],  # 2
+            [None, None, None, None, None, None],  # 3
+            [None, None, prior, None, None, None],  # 4
+            [None, None, posterior, None, None, None],  # 5
+            [None, None, None, None, None, None],  # 6
+            [None, None, None, None, posterior, None],  # 7
+            [None, None, None, None, None, None],  # 8
+            [None, None, prior, None, None, None],  # 8
+            [None, None, posterior, None, None, None],  # 9
+            [None, None, None, None, None, None],  # 10
+            [None, None, None, None, posterior, None],  # 11
+            [None, None, None, None, None, None],  # 12
+            # [None, None, None, None, None, None],  # 13
+            # [None, None, None, None, prior, None],  # 14
         ]
 
         fig = make_subplots(
@@ -508,7 +508,15 @@ def build_all_with_factor_graph_debug(app):
             f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", O2SatFFA.name
         )
         ih.plot_histogram(
-            fig, O2SatFFA, messages[key], o2sat_min, o2sat_max, 7, 5, O2SatFFA.name, "gray"
+            fig,
+            O2SatFFA,
+            messages[key],
+            o2sat_min,
+            o2sat_max,
+            7,
+            5,
+            O2SatFFA.name,
+            "gray",
         )
         # factor to node
         key = get_key(
