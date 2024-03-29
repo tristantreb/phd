@@ -4,7 +4,7 @@ import pandas as pd
 
 import src.data.helpers as dh
 import src.data.sanity_checks as sanity_checks
-import src.modelling_fev1.effort_corrected_fev1 as effort_corrected_fev1
+import src.modelling_fev1.ecfev1 as ecfev1
 import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.modelling_o2.ho2sat as ho2sat
 
@@ -45,9 +45,12 @@ def load_patients():
         "The 4 NaN values belong to IDs ('322', '338', '344', '348') whose height are missing.\nHowever, we don't correct for them as we don't have any measurement corresponding to those IDs for now."
     )
 
-    df.apply(lambda x: sanity_checks.age(x.Age, x.ID), axis=1)
-    df.apply(lambda x: sanity_checks.sex(x.Sex, x.ID), axis=1)
-    df.apply(lambda x: sanity_checks.height(x.Height, x.ID), axis=1)
+    def patients_sanity_checks(x):
+        sanity_checks.age(x.Age, x.ID)
+        sanity_checks.sex(x.Sex, x.ID)
+        sanity_checks.height(x.Height, x.ID)
+
+    df.apply(patients_sanity_checks, axis=1)
 
     print(f"Loaded {len(df)} individuals")
     return df
@@ -117,6 +120,7 @@ def load_measurements(fef2575=True):
         ),
         df_meas_list,
     )
+
     sanity_checks.data_types(df_meas)
 
     print("Number of IDs: ", df_meas.ID.nunique())
@@ -172,73 +176,107 @@ def build_O2_FEV1_df():
     Merges patients and measurement dataframes
     Computes the following additional variables: Predicted FEV1, FEV1 % Predicted, Healthy O2 Saturation, Avg FEV1 % Predicted, Avg Predicted FEV1
     """
+    var_kept = ["O2 Saturation", "FEV1"]
     print("\n*** Building O2 Saturation and FEV1 dataframe ***")
+
     df_patients = load_patients()
     df_meas = load_measurements()
+    df_meas = dh.remove_any_nan(df_meas, var_kept)
 
-    # Clean df_meas
-    tmp_len = len(df_meas)
-    df_meas = df_meas.dropna(subset=["O2 Saturation", "FEV1"], how="all")
-    print(
-        f"Dropped {tmp_len - len(df_meas)} entries with NaN O2 Saturation and NaN FEV1"
-    )
-    tmp_len = len(df_meas)
-    df_meas = df_meas.dropna(subset=["O2 Saturation"])
-    print(f"Dropped {tmp_len - len(df_meas)} entries with NaN O2 Saturation")
-    tmp_len = len(df_meas)
-    df_meas = df_meas.dropna(subset=["FEV1"])
-    print(f"Dropped {tmp_len - len(df_meas)} entries with NaN FEV1")
-    print(f"{len(df_meas)} entries remain")
+    df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
 
-    df_meas = effort_corrected_fev1.calc_with_smoothed_max_df(df_meas)
-
-    df_patients = pred_fev1.calc_predicted_FEV1_LMS_df(df_patients)
-    df_patients = ho2sat.calc_healthy_O2_sat_df(df_patients)
+    df_patients = calc_predicted_FEV1_LMS_df(df_patients)
+    df_patients = calc_healthy_O2_sat_df(df_patients)
 
     df = df_meas.merge(df_patients, on="ID", how="left")
 
-    df = pred_fev1.calc_FEV1_prct_predicted_df(df)
-    df = ho2sat.calc_O2_sat_prct_healthy_df(df)
+    df = calc_FEV1_prct_predicted_df(df)
+    df = calc_O2_sat_prct_healthy_df(df)
 
     print(f"Built data structure with {df.ID.nunique()} IDs and {len(df)} entries")
 
     return df
 
 
-def build_O2_FEV_df():
+def build_O2_FEV1_FEF2575_df():
     """
     Drop NaN entries
     Merges patients and measurement dataframes
     Computes the following additional variables: Predicted FEV1, FEV1 % Predicted, Healthy O2 Saturation, Avg FEV1 % Predicted, Avg Predicted FEV1
     """
-    print("\n*** Building O2 Saturation and FEV1 dataframe ***")
+    var_kept = ["O2 Saturation", "FEV1", "FEF2575"]
+    print("\n*** Building O2Sat, FEV1, FEF2575 dataframe ***")
+
     df_patients = load_patients()
     df_meas = load_measurements()
+    df_meas = dh.remove_any_nan(df_meas, var_kept)
 
-    # Clean df_meas
-    tmp_len = len(df_meas)
-    df_meas = df_meas.dropna(subset=["O2 Saturation", "FEV1", "FEF2575"], how="all")
-    print(
-        f"Dropped {tmp_len - len(df_meas)} entries with NaN O2 Saturation and NaN FEV1"
-    )
-    tmp_len = len(df_meas)
-    df_meas = df_meas.dropna(subset=["O2 Saturation"])
-    print(f"Dropped {tmp_len - len(df_meas)} entries with NaN O2 Saturation")
-    tmp_len = len(df_meas)
-    df_meas = df_meas.dropna(subset=["FEV1"])
-    print(f"Dropped {tmp_len - len(df_meas)} entries with NaN FEV1")
-    print(f"{len(df_meas)} entries remain")
+    df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
 
-    df_meas = effort_corrected_fev1.calc_with_smoothed_max_df(df_meas)
-
-    df_patients = pred_fev1.calc_predicted_FEV1_LMS_df(df_patients)
-    df_patients = ho2sat.calc_healthy_O2_sat_df(df_patients)
+    df_patients = calc_predicted_FEV1_LMS_df(df_patients)
+    df_patients = calc_healthy_O2_sat_df(df_patients)
 
     df = df_meas.merge(df_patients, on="ID", how="left")
 
-    df = pred_fev1.calc_FEV1_prct_predicted_df(df)
-    df = ho2sat.calc_O2_sat_prct_healthy_df(df)
+    df = calc_FEV1_prct_predicted_df(df)
+    df = calc_O2_sat_prct_healthy_df(df)
 
     print(f"Built data structure with {df.ID.nunique()} IDs and {len(df)} entries")
 
+    return df
+
+
+def calc_predicted_FEV1_LMS_df(df):
+    """
+    Returns a Series with Predicted FEV1 from a DataFrame with Sex, Height, Age
+    """
+    df["Predicted FEV1"] = df.apply(
+        lambda x: pred_fev1.calc_predicted_FEV1_LMS(
+            pred_fev1.load_LMS_spline_vals(x.Age, x.Sex),
+            pred_fev1.load_LMS_coeffs(x.Sex),
+            x.Height,
+            x.Age,
+            x.Sex,
+        )["M"],
+        axis=1,
+    )
+    df.apply(lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID), axis=1)
+    return df
+
+
+def calc_FEV1_prct_predicted_df(df):
+    """
+    Returns input DataFrame with FEV1 % Predicted as a new column, after sanity check
+    """
+    df["ecFEV1 % Predicted"] = df["ecFEV1"] / df["Predicted FEV1"] * 100
+    df.apply(
+        lambda x: sanity_checks.fev1_prct_predicted(x["ecFEV1 % Predicted"], x.ID),
+        axis=1,
+    )
+    df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
+    df.apply(
+        lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1
+    )
+    return df
+
+
+def calc_healthy_O2_sat_df(df):
+    """
+    Returns input DataFrame with added column Healthy O2 Saturation, given Height and Sex
+    """
+    df["Healthy O2 Saturation"] = df.apply(
+        lambda x: ho2sat.calc_healthy_O2_sat(x.Height, x.Sex)["mean"],
+        axis=1,
+    )
+
+    return df
+
+
+def calc_O2_sat_prct_healthy_df(df):
+    """
+    Returns input DataFramce with added column O2 Saturation % Healthy, given O2 Saturation and Healthy O2 Saturation
+    """
+    df["O2 Saturation % Healthy"] = (
+        df["O2 Saturation"] / df["Healthy O2 Saturation"] * 100
+    )
     return df

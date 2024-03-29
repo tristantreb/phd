@@ -2,7 +2,7 @@ import pandas as pd
 
 import src.data.smartcare_measurements as smartcare_measurements
 import src.data.smartcare_patients as smartcare_patients
-import src.modelling_fev1.effort_corrected_fev1 as ecfev1
+import src.modelling_fev1.ecfev1 as ecfev1
 import src.modelling_fev1.pred_fev1 as pred_fev1
 
 datadir = "../../../../SmartCareData/"
