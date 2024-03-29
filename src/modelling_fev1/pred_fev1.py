@@ -23,22 +23,6 @@ def calc_hfev1_prior(hfev1_bins, height, age, sex):
     return p / p.sum()
 
 
-def calc_FEV1_prct_predicted_df(df):
-    """
-    Returns input DataFrame with FEV1 % Predicted as a new column, after sanity check
-    """
-    df["ecFEV1 % Predicted"] = df["ecFEV1"] / df["Predicted FEV1"] * 100
-    df.apply(
-        lambda x: sanity_checks.fev1_prct_predicted(x["ecFEV1 % Predicted"], x.ID),
-        axis=1,
-    )
-    df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
-    df.apply(
-        lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1
-    )
-    return df
-
-
 def calc_predicted_FEV1_linear(height: int, age: int, sex: str):
     """
     Calculate predicted FEV1 according to the formula given by the lung function people at Royal Papworth Hospital
@@ -54,23 +38,6 @@ def calc_predicted_FEV1_linear(height: int, age: int, sex: str):
         std_dev = 0.35
         return {"Predicted FEV1": pred_FEV1, "std": std_dev}
 
-
-def calc_predicted_FEV1_LMS_df(df):
-    """
-    Returns a Series with Predicted FEV1 from a DataFrame with Sex, Height, Age
-    """
-    df["Predicted FEV1"] = df.apply(
-        lambda x: calc_predicted_FEV1_LMS(
-            load_LMS_spline_vals(x.Age, x.Sex),
-            load_LMS_coeffs(x.Sex),
-            x.Height,
-            x.Age,
-            x.Sex,
-        )["M"],
-        axis=1,
-    )
-    df.apply(lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID), axis=1)
-    return df
 
 
 def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str, debug=False):

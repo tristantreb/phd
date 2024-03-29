@@ -4,6 +4,14 @@ import numpy as np
 import pandas as pd
 
 
+def get_path_to_src():
+    return os.getcwd().split("src")[0] + "/src/"
+
+
+def get_path_to_main():
+    return os.getcwd().split("PhD")[0] + "/PhD/"
+
+
 def compute_avg(df, col_name, unit):
     """
     Compute avg of col_name per individual
@@ -38,9 +46,20 @@ def _str_to_array(s):
     return np.fromstring(s_cleaned[1:-1], sep=" ")
 
 
-def get_path_to_src():
-    return os.getcwd().split("src")[0] + "/src/"
+def remove_any_nan(df, var_kept):
+    """
+    Removes entries with NaN in any of the variables in var_kept
+    """
+    tmp_len = len(df)
+    df = df.dropna(subset=var_kept, how="all")
+    print(
+        f"Dropped {tmp_len - len(df)} entries with at least one NaN in subset {var_kept}"
+    )
+    print(f"{len(df)} entries remain")
 
+    for var in var_kept:
+        tmp_len = len(df)
+        df = df.dropna(subset=[var])
+        print(f"This includes dropping {tmp_len - len(df)} entries with NaN {var}")
 
-def get_path_to_main():
-    return os.getcwd().split("PhD")[0] + "/PhD/"
+    return df
