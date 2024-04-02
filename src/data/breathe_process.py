@@ -99,7 +99,7 @@ class MeasurementData:
             "InterpFEV1Recording": "FEV",
             "HasColdOrFluRecording": "HasCondition",
             "HasHayFeverRecording": "HasCondition",
-            "LungFunctionRecording": "CalcFEV1_",
+            # "LungFunctionRecording": "CalcFEV1_",
             "MinsAsleepRecording": "Sleep",
             "MinsAwakeRecording": "Sleep",
             "O2SaturationRecording": "O2Saturation",
@@ -268,11 +268,11 @@ class MeasurementData:
         #     left_on="SmartCareID",
         #     right_on="SmartCareID",
         # )
-        temp_rows["RecordingType"] = "LungFunctionRecording"
+        # temp_rows["RecordingType"] = "LungFunctionRecording"
         # temp_rows["CalcFEV1_"] = (100 * temp_rows["FEV"]) / temp_rows[
         #     "CalcPredictedFEV1"
         # ]
-        temp_rows["FEV"] = 0
+        # temp_rows["FEV"] = 0
         # temp_rows = temp_rows.drop(["CalcPredictedFEV1"], axis=1)
         self.brphysdata = pd.concat([self.brphysdata, temp_rows], ignore_index=True)
 
@@ -316,20 +316,20 @@ class MeasurementData:
             xb25 = valueArray[round(len(valueArray) * 0.25) :]
             xu25 = valueArray[: round(len(valueArray) * 0.75)]
             return {
-                "mean": np.mean(valueArray),
-                "std": np.std(valueArray),
+                "mean": np.nanmean(valueArray),
+                "std": np.nanstd(valueArray),
                 "mini": min(valueArray),
                 "maxi": max(valueArray),
-                "mid50mean": np.mean(mid50),
-                "mid50std": np.std(mid50),
+                "mid50mean": np.nanmean(mid50),
+                "mid50std": np.nanstd(mid50),
                 "mid50min": min(mid50),
                 "mid50max": max(mid50),
-                "xb25mean": np.mean(xb25),
-                "xb25std": np.std(xb25),
+                "xb25mean": np.nanmean(xb25),
+                "xb25std": np.nanstd(xb25),
                 "xb25min": min(xb25),
                 "xb25max": max(xb25),
-                "xu25mean": np.mean(xu25),
-                "xu25std": np.std(xu25),
+                "xu25mean": np.nanmean(xu25),
+                "xu25std": np.nanstd(xu25),
                 "xu25min": min(xu25),
                 "xu25max": max(xu25),
             }
@@ -355,10 +355,15 @@ class MeasurementData:
             ["SmartCareID", "RecordingType"], as_index=False
         ).agg(lambda x: self.demographicFunction(list(x)))
 
+        demographicstable.to_excel(
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDataDemographicsByPatientTEST.xlsx",
+        )
+
         values = [
             i[self.outputcolnames[i["RecordingType"]]]
             for i in demographicstable.to_dict("records")
         ]
+
         for i in [
             "mean",
             "std",
@@ -378,11 +383,13 @@ class MeasurementData:
             "xu25max",
         ]:
 
-            def tmp(j):
-                print("get back j", j)
-                return j[i]
+            def tmp_fn(j):
+                if isinstance(j, dict):
+                    return j[i]
+                else:
+                    return np.nan
 
-            demographicstable[i] = [tmp(j) for j in values]
+            demographicstable[i] = [tmp_fn(j) for j in values]
 
         demographicstable = demographicstable.drop(
             [
@@ -443,7 +450,8 @@ class MeasurementData:
             "xu25min",
             "xu25max",
         ]:
-            overalltable[i] = [j[i] for j in values]
+
+            overalltable[i] = [tmp_fn(j) for j in values]
 
         overalltable = overalltable.drop(
             [
@@ -481,11 +489,11 @@ class MeasurementData:
             "DataDemographicsByPatient": demographicstable,
             "OverallDataDemographics": overalltable,
         }
-        tmp_df = pd.DataFrame(data=out_dict, index=[0])
+        # tmp_df = pd.DataFrame(data=out_dict, index=[0])
 
-        tmp_df.to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDataDemographicsByPatient-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
-        )
+        # tmp_df.to_excel(
+        #     f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDataDemographicsByPatient-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+        # )
 
     def handleBreatheDuplicateMeasuresOneSheet(self):
         temp_physdata = (
@@ -749,7 +757,8 @@ class MeasurementData:
         # analyseAndHandleDateOutliers() # not done for BR
         # createMeasuresHeatmapWithStudyPeriod() # Makes plots so havent done
 
-        self.generateDataDemographicsTables()  # second time run
+        # TODO: removed permanently on 02.04.2024 due to code error, will fix later
+        # self.generateDataDemographicsTables()  # second time run
 
     def returnData(self):
         return (
@@ -764,15 +773,15 @@ class MeasurementData:
     def exportData(self):
         today = datetime.today()
         self.brphysdata.to_excel(
-            f"{dh.get_path_to_main()}/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
         )
         self.brphysdata_deleted[
             self.brphysdata_deleted["Reason"] != "NULL Measurement"
         ].to_excel(
-            f"{dh.get_path_to_main()}/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
         )
         pd.DataFrame.from_dict({"Offset": [self.broffset]}).to_excel(
-            f"{dh.get_path_to_main()}/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
         )
 
 
