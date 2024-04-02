@@ -32,9 +32,9 @@ def load_patients():
     """
     print("\n*** Loading patients data ***")
     df = pd.read_excel(
-        "../../../../DataFiles/BR/PredModInputData.xlsx",
+        f"{dh.get_path_to_main()}/DataFiles/BR/PredModInputData.xlsx",
         sheet_name="brPatient",
-        usecols="A, J, K, L",
+        usecols="A, J, K, L, D, AD",
     )
     # Set ID as string
     df.ID = df.ID.astype(str)
@@ -53,10 +53,11 @@ def load_patients():
     df.apply(patients_sanity_checks, axis=1)
 
     print(f"Loaded {len(df)} individuals")
+    # df.to_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_patients.xlsx", index=False)
     return df
 
 
-def load_measurements(fef2575=True):
+def load_measurements_predmodinputs(fef2575=True):
     """
     Loads the Breathe data from the excel file and returns a dataframe
     Only loads FEV1 and O2 Saturation measurements
@@ -180,7 +181,7 @@ def build_O2_FEV1_df():
     print("\n*** Building O2 Saturation and FEV1 dataframe ***")
 
     df_patients = load_patients()
-    df_meas = load_measurements()
+    df_meas = load_measurements_predmodinputs()
     df_meas = dh.remove_any_nan(df_meas, var_kept)
 
     df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
@@ -208,7 +209,7 @@ def build_O2_FEV1_FEF2575_df():
     print("\n*** Building O2Sat, FEV1, FEF2575 dataframe ***")
 
     df_patients = load_patients()
-    df_meas = load_measurements()
+    df_meas = load_measurements_predmodinputs()
     df_meas = dh.remove_any_nan(df_meas, var_kept)
 
     df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
