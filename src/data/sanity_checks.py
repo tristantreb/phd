@@ -146,6 +146,8 @@ def data_types(df):
                     print(
                         f"Warning - Expected {col} to be of type int or float, got {df[col].dtype}"
                     )
+            case "PartitionKey" | "StudyNumber":
+                continue
             case _:
                 raise ValueError(f"Unexpected column {col} in dataframe")
 

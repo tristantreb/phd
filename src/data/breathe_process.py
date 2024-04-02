@@ -1,4 +1,4 @@
-]import logging
+import logging
 import math
 import sys
 from datetime import datetime
@@ -6,22 +6,19 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from shared_code.blob_tools import BlobTools
 
-# path_root = Path(__file__).parents[2]
-# sys.path.append(str(path_root))
-from shared_code.utilities import getMostRecentDataFrameFromFile, normalRound, toDateNum
+import src.data.breathe_data as br
+import src.data.helpers as dh
+
+# from shared_code.utilities import getMostRecentDataFrameFromFile, normalRound, toDateNum
 
 
 class MeasurementData:
 
     def __init__(self):
-        self.blob = BlobTools()
-        patient_loc = self.blob.get_latest_filename_in_blob_container(
-            "outputs/brPatient"
-        )
+        patient_loc = dh.get_path_to_main() + "DataFiles/BR/PredModInputData.xlsx"
         logging.warning(f"Loading patient data from {patient_loc}")
-        self.brPatient = self.blob.read_csv(patient_loc)
+        self.brPatient = br.load_patient_df_from_excel()
         self.brphysdata = pd.DataFrame(
             columns=[
                 "SmartCareID",
@@ -120,24 +117,25 @@ class MeasurementData:
 
     def loadMeasureTables(self):
         """
-        Function to load in measurement data from blob storage and join with the brPatient REDCap data.
+        Function to load in measurement data from storage and join with the brPatient REDCap data.
         """
         self.measure_tables = {}
         for meas_table_name in [
-            "Activity",
-            "Coughing",
-            "HeartRate",
+            # "Activity",
+            # "Coughing",
+            # "HeartRate",
             "Oximeter",
-            "Sleep",
+            # "Sleep",
             "Spirometer",
-            "Temperature",
-            "Weight",
-            "Wellbeing",
+            # "Temperature",
+            # "Weight",
+            # "Wellbeing",
         ]:
-            file_location = self.blob.get_latest_filename_in_blob_container(
-                f"MeasurementData/Breathe_{meas_table_name}"
+            file_location = (
+                dh.get_path_to_main()
+                + f"DataFiles/BR/MeasurementData/Breathe_{meas_table_name}_20231113.csv"
             )
-            self.measure_tables[meas_table_name] = self.blob.read_csv(file_location)
+            self.measure_tables[meas_table_name] = pd.read_csv(file_location)
             self.measure_tables[meas_table_name] = self.measure_tables[
                 meas_table_name
             ].merge(
@@ -145,15 +143,15 @@ class MeasurementData:
                     ["ID", "StudyNumber", "StudyDate", "PatClinDate", "PartitionKey"]
                 ),
                 how="left",
-                left_on="PartitionKey",
+                left_on="UserId",
                 right_on="PartitionKey",
             )
             self.measure_tables[meas_table_name]["TimestampDt"] = pd.to_datetime(
                 self.measure_tables[meas_table_name]["Timestamp"], utc=False
             )
-            self.measure_tables[meas_table_name]["DateDt"] = pd.to_datetime(
-                self.measure_tables[meas_table_name]["Date"], utc=False
-            )
+            self.measure_tables[meas_table_name]["DateDt"] = self.measure_tables[
+                meas_table_name
+            ]["TimestampDt"]
             self.measure_tables[meas_table_name] = self.measure_tables[meas_table_name][
                 (self.measure_tables[meas_table_name]["StudyNumber"].notnull())
                 & (self.measure_tables[meas_table_name]["ID"].notnull())
@@ -239,43 +237,43 @@ class MeasurementData:
     def generateBreathePhysdataTableFromMeasureTables(self):
         """Iterate through the data and generate the breathe physdata table."""
         breatheRowsToAdd = [
-            ["Activity", "CalorieRecording", 1],
-            ["Coughing", "CoughRecording", 1],
-            ["HeartRate", "RestingHRRecording", 1],
+            # ["Activity", "CalorieRecording", 1],
+            # ["Coughing", "CoughRecording", 1],
+            # ["HeartRate", "RestingHRRecording", 1],
             ["Oximeter", "O2SaturationRecording", 1],
             ["Oximeter", "PulseRateRecording", 1],
-            ["Sleep", "MinsAsleepRecording", 0],
-            ["Sleep", "MinsAwakeRecording", 0],
+            # ["Sleep", "MinsAsleepRecording", 0],
+            # ["Sleep", "MinsAwakeRecording", 0],
             ["Spirometer", "FEV1Recording", 1],
             ["Spirometer", "FEF2575Recording", 1],
             ["Spirometer", "FEV075Recording", 1],
             ["Spirometer", "FEV1DivFEV6Recording", 1],
             ["Spirometer", "FEV6Recording", 1],
-            ["Temperature", "TemperatureRecording", 1],
-            ["Weight", "WeightRecording", 1],
-            ["Wellbeing", "WellnessRecording", 1],
-            ["Wellbeing", "HasColdOrFluRecording", 0],
-            ["Wellbeing", "HasHayFeverRecording", 0],
+            # ["Temperature", "TemperatureRecording", 1],
+            # ["Weight", "WeightRecording", 1],
+            # ["Wellbeing", "WellnessRecording", 1],
+            # ["Wellbeing", "HasColdOrFluRecording", 0],
+            # ["Wellbeing", "HasHayFeverRecording", 0],
         ]
         for i in breatheRowsToAdd:
             self.addBreatheRowsForMeasure(self.measure_tables[i[0]], i[1], i[2])
         temp_rows = self.brphysdata[self.brphysdata["RecordingType"] == "FEV1Recording"]
 
         # merge FEV1 Recording with the Redcap FEV1 data and calc a percentage of a baseline
-        temp_rows = temp_rows.merge(
-            self.brPatient.filter(["ID", "CalcPredictedFEV1"]).rename(
-                columns={"ID": "SmartCareID"}
-            ),
-            how="left",
-            left_on="SmartCareID",
-            right_on="SmartCareID",
-        )
+        # temp_rows = temp_rows.merge(
+        #     self.brPatient.filter(["ID", "CalcPredictedFEV1"]).rename(
+        #         columns={"ID": "SmartCareID"}
+        #     ),
+        #     how="left",
+        #     left_on="SmartCareID",
+        #     right_on="SmartCareID",
+        # )
         temp_rows["RecordingType"] = "LungFunctionRecording"
-        temp_rows["CalcFEV1_"] = (100 * temp_rows["FEV"]) / temp_rows[
-            "CalcPredictedFEV1"
-        ]
+        # temp_rows["CalcFEV1_"] = (100 * temp_rows["FEV"]) / temp_rows[
+        #     "CalcPredictedFEV1"
+        # ]
         temp_rows["FEV"] = 0
-        temp_rows = temp_rows.drop(["CalcPredictedFEV1"], axis=1)
+        # temp_rows = temp_rows.drop(["CalcPredictedFEV1"], axis=1)
         self.brphysdata = pd.concat([self.brphysdata, temp_rows], ignore_index=True)
 
     def findAndDeleteAnomalousMeasures(self, recordingtype, lowerthresh, upperthresh):
@@ -313,12 +311,10 @@ class MeasurementData:
         else:
             valueArray = np.sort(np.asarray(valueArray))
             mid50 = valueArray[
-                normalRound(len(valueArray) * 0.25) : normalRound(
-                    len(valueArray) * 0.75
-                )
+                round(len(valueArray) * 0.25) : round(len(valueArray) * 0.75)
             ]
-            xb25 = valueArray[normalRound(len(valueArray) * 0.25) :]
-            xu25 = valueArray[: normalRound(len(valueArray) * 0.75)]
+            xb25 = valueArray[round(len(valueArray) * 0.25) :]
+            xu25 = valueArray[: round(len(valueArray) * 0.75)]
             return {
                 "mean": np.mean(valueArray),
                 "std": np.std(valueArray),
@@ -381,7 +377,12 @@ class MeasurementData:
             "xu25min",
             "xu25max",
         ]:
-            demographicstable[i] = [j[i] for j in values]
+
+            def tmp(j):
+                print("get back j", j)
+                return j[i]
+
+            demographicstable[i] = [tmp(j) for j in values]
 
         demographicstable = demographicstable.drop(
             [
@@ -480,10 +481,10 @@ class MeasurementData:
             "DataDemographicsByPatient": demographicstable,
             "OverallDataDemographics": overalltable,
         }
+        tmp_df = pd.DataFrame(data=out_dict, index=[0])
 
-        self.blob.output_xlsx(
-            out_dict,
-            f"outputs/BRDataDemographicsByPatient-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+        tmp_df.to_excel(
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDataDemographicsByPatient-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
         )
 
     def handleBreatheDuplicateMeasuresOneSheet(self):
@@ -667,9 +668,9 @@ class MeasurementData:
                         i : i + n_consecutive_rows - 1,
                         self.outputcolnames[curr_recording_type],
                     ].mean()
-                    temp_physdata.at[
-                        i : i + n_consecutive_rows - 1,
-                        self.outputcolnames[curr_recording_type],
+                    indexer = temp_physdata.index[i : i + n_consecutive_rows - 1]
+                    temp_physdata.loc[
+                        indexer, self.outputcolnames[curr_recording_type]
                     ] = mean_value
 
         # Remove the rows marked for deletion
@@ -680,19 +681,21 @@ class MeasurementData:
         )
         self.brphysdata = temp_physdata.drop(columns=["ToRemove"])
         today = datetime.today()
-        self.blob.output_csv(
-            self.brphysdata,
-            f"outputs/BRDuplicates-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+        self.brphysdata.to_csv(
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDuplicates-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
         )
 
     def runPreprocess(self):
         self.loadMeasureTables()
         self.generateBreathePhysdataTableFromMeasureTables()
         self.brphysdata_original = self.brphysdata
-
-        self.broffset = toDateNum(min(self.brphysdata["Date_TimeRecorded"]))
+        self.broffset = (
+            min(self.brphysdata["Date_TimeRecorded"]).date() - datetime(1, 1, 1).date()
+        ).days
         self.brphysdata["DateNum"] = self.brphysdata["Date_TimeRecorded"].apply(
-            lambda x: math.ceil(toDateNum(x) - self.broffset)
+            lambda x: math.ceil(
+                (x.date() - datetime(1, 1, 1).date()).days - self.broffset
+            )
         )
 
         measureRanges = [
@@ -760,19 +763,16 @@ class MeasurementData:
 
     def exportData(self):
         today = datetime.today()
-        self.blob.output_csv(
-            self.brphysdata,
-            f"outputs/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+        self.brphysdata.to_excel(
+            f"{dh.get_path_to_main()}/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
         )
-        self.blob.output_csv(
-            self.brphysdata_deleted[
-                self.brphysdata_deleted["Reason"] != "NULL Measurement"
-            ],
-            f"outputs/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+        self.brphysdata_deleted[
+            self.brphysdata_deleted["Reason"] != "NULL Measurement"
+        ].to_excel(
+            f"{dh.get_path_to_main()}/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
         )
-        self.blob.output_csv(
-            pd.DataFrame.from_dict({"Offset": [self.broffset]}),
-            f"outputs/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+        pd.DataFrame.from_dict({"Offset": [self.broffset]}).to_excel(
+            f"{dh.get_path_to_main()}/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
         )
 
 
