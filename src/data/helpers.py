@@ -51,15 +51,14 @@ def remove_any_nan(df, var_kept):
     Removes entries with NaN in any of the variables in var_kept
     """
     tmp_len = len(df)
-    df = df.dropna(subset=var_kept, how="all")
+    df_out = df.dropna(subset=var_kept, how="any")
     print(
-        f"Dropped {tmp_len - len(df)} entries with at least one NaN in subset {var_kept}"
+        f"Dropped {tmp_len - len(df_out)} entries with at least one NaN in subset {var_kept}"
     )
-    print(f"{len(df)} entries remain")
+    print(f"{len(df)}/{tmp_len} entries remain")
 
     for var in var_kept:
-        tmp_len = len(df)
-        df = df.dropna(subset=[var])
-        print(f"This includes dropping {tmp_len - len(df)} entries with NaN {var}")
+        df_tmp = df.dropna(subset=[var])
+        print(f"This includes dropping {tmp_len - len(df_tmp)} entries with NaN {var}")
 
-    return df
+    return df_out

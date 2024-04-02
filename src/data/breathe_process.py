@@ -355,10 +355,6 @@ class MeasurementData:
             ["SmartCareID", "RecordingType"], as_index=False
         ).agg(lambda x: self.demographicFunction(list(x)))
 
-        demographicstable.to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDataDemographicsByPatientTEST.xlsx",
-        )
-
         values = [
             i[self.outputcolnames[i["RecordingType"]]]
             for i in demographicstable.to_dict("records")
@@ -773,15 +769,15 @@ class MeasurementData:
     def exportData(self):
         today = datetime.today()
         self.brphysdata.to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx", index=False
         )
         self.brphysdata_deleted[
             self.brphysdata_deleted["Reason"] != "NULL Measurement"
         ].to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx", index=False
         )
         pd.DataFrame.from_dict({"Offset": [self.broffset]}).to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx", index=False
         )
 
 

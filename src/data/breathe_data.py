@@ -25,16 +25,21 @@ def load_patient_df_from_excel():
     return df
 
 
-def load_patients():
+def load_patients(part_key=False):
     """
     Loads Breathe patient data from the excel file and returns a dataframe
-    Columns loaded: ID, Age, Sex, Height
+    Columns loaded: ID, Age, Sex, Height, PartitionKey if requested
     """
     print("\n*** Loading patients data ***")
+    if part_key:
+        usecols = "A, J, K, L, D, AD"
+    else:
+        usecols = "A, J, K, L, D"
+
     df = pd.read_excel(
-        f"{dh.get_path_to_main()}/DataFiles/BR/PredModInputData.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/PredModInputData.xlsx",
         sheet_name="brPatient",
-        usecols="A, J, K, L, D, AD",
+        usecols=usecols,
     )
     # Set ID as string
     df.ID = df.ID.astype(str)
@@ -57,21 +62,35 @@ def load_patients():
     return df
 
 
-def load_measurements_predmodinputs(fef2575=True):
+def load_measurements(file=1, fef2575=True):
     """
     Loads the Breathe data from the excel file and returns a dataframe
     Only loads FEV1 and O2 Saturation measurements
     """
     print("\n*** Loading measurements data ***")
-    df_raw = (
-        pd.read_excel(
-            "../../../../DataFiles/BR/PredModInputData.xlsx",
-            sheet_name="BRphysdata",
-            usecols="A, E, G, H , J",
+    if file == 1:
+        df_raw = (
+            pd.read_excel(
+                f"{dh.get_path_to_main()}ExcelFiles/BR/PredModInputData.xlsx",
+                sheet_name="BRphysdata",
+                usecols="A, E, G, H , J",
+            )
+            .rename(
+                columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"}
+            )
+            .astype({"ID": str, "DateTime Recorded": "datetime64[ns]"})
         )
-        .rename(columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"})
-        .astype({"ID": str, "DateTime Recorded": "datetime64[ns]"})
-    )
+    elif file == 2:
+        df_raw = (
+            pd.read_excel(
+                f"{dh.get_path_to_main()}ExcelFiles/BR/BRPhysdata-20240402T175851.xlsx",
+                usecols="A, E, G, H , J",
+            )
+            .rename(
+                columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"}
+            )
+            .astype({"ID": str, "DateTime Recorded": "datetime64[ns]"})
+        )
 
     df_raw["Date Recorded"] = df_raw["DateTime Recorded"].dt.date
 
@@ -181,7 +200,7 @@ def build_O2_FEV1_df():
     print("\n*** Building O2 Saturation and FEV1 dataframe ***")
 
     df_patients = load_patients()
-    df_meas = load_measurements_predmodinputs()
+    df_meas = load_measurements()
     df_meas = dh.remove_any_nan(df_meas, var_kept)
 
     df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
@@ -199,7 +218,7 @@ def build_O2_FEV1_df():
     return df
 
 
-def build_O2_FEV1_FEF2575_df():
+def build_O2_FEV1_FEF2575_df(meas_file=2):
     """
     Drop NaN entries
     Merges patients and measurement dataframes
@@ -209,7 +228,7 @@ def build_O2_FEV1_FEF2575_df():
     print("\n*** Building O2Sat, FEV1, FEF2575 dataframe ***")
 
     df_patients = load_patients()
-    df_meas = load_measurements_predmodinputs()
+    df_meas = load_measurements(file=meas_file)
     df_meas = dh.remove_any_nan(df_meas, var_kept)
 
     df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
