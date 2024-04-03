@@ -9,8 +9,13 @@ import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.modelling_o2.ho2sat as ho2sat
 
 
-def load_o2_fev1_df_from_excel():
-    df = pd.read_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_O2_FEV1.xlsx")
+def load_meas_from_excel(type):
+    if type == 1:
+        df = pd.read_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_O2_FEV1.xlsx")
+    if type == 2:
+        df = pd.read_excel(
+            dh.get_path_to_main() + "ExcelFiles/BR/BR_O2_FEV1_FEF2575.xlsx"
+        )
     # ID column as type string
     df["ID"] = df["ID"].astype(str)
     # Date Redocrded as datetime
@@ -34,7 +39,7 @@ def load_patients(part_key=False):
     if part_key:
         usecols = "A, J, K, L, D, AD"
     else:
-        usecols = "A, J, K, L, D"
+        usecols = "A, J, K, L"
 
     df = pd.read_excel(
         f"{dh.get_path_to_main()}/ExcelFiles/BR/PredModInputData.xlsx",
@@ -83,7 +88,7 @@ def load_measurements(file=1, fef2575=True):
     elif file == 2:
         df_raw = (
             pd.read_excel(
-                f"{dh.get_path_to_main()}ExcelFiles/BR/BRPhysdata-20240402T175851.xlsx",
+                f"{dh.get_path_to_main()}ExcelFiles/BR/BRPhysdata-20240403T193349.xlsx",
                 usecols="A, E, G, H , J",
             )
             .rename(
@@ -133,6 +138,13 @@ def load_measurements(file=1, fef2575=True):
         df_fef2575.apply(lambda x: sanity_checks.fef2575(x["FEF2575"], x.ID), axis=1)
         df_meas_list.append(df_fef2575)
 
+        df_pef = _get_measure_from_raw_df(
+            df_raw, "FEV", "PEFRecording", type=int, new_col_name="PEF"
+        )
+        sanity_checks.same_day_measurements(df_pef)
+        df_pef.apply(lambda x: sanity_checks.pef(x["PEF"], x.ID), axis=1)
+        df_meas_list.append(df_pef)
+
     # Build final dataframe, must have at least 2 elements in list
     df_meas = reduce(
         lambda left, right: pd.merge(
@@ -148,6 +160,7 @@ def load_measurements(file=1, fef2575=True):
     print(f"Number of FEV1 recordings: {len(df_fev1)}")
     if fef2575:
         print(f"Number of FEF2575 recordings: {len(df_fef2575)}")
+        print(f"Number of PEF recordings: {len(df_pef)}")
     print(f"Number of O2 Saturation recordings: {len(df_o2_sat)}")
     return df_meas
 
@@ -190,7 +203,7 @@ def _correct_fev1(df):
     return df
 
 
-def build_O2_FEV1_df():
+def build_O2_FEV1_df(meas_file=2):
     """
     Drop NaN entries
     Merges patients and measurement dataframes
@@ -200,7 +213,7 @@ def build_O2_FEV1_df():
     print("\n*** Building O2 Saturation and FEV1 dataframe ***")
 
     df_patients = load_patients()
-    df_meas = load_measurements()
+    df_meas = load_measurements(file=meas_file, fef2575=False)
     df_meas = dh.remove_any_nan(df_meas, var_kept)
 
     df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
@@ -224,7 +237,7 @@ def build_O2_FEV1_FEF2575_df(meas_file=2):
     Merges patients and measurement dataframes
     Computes the following additional variables: Predicted FEV1, FEV1 % Predicted, Healthy O2 Saturation, Avg FEV1 % Predicted, Avg Predicted FEV1
     """
-    var_kept = ["O2 Saturation", "FEV1", "FEF2575"]
+    var_kept = ["O2 Saturation", "FEV1", "FEF2575", "PEF"]
     print("\n*** Building O2Sat, FEV1, FEF2575 dataframe ***")
 
     df_patients = load_patients()
