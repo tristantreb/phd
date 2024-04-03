@@ -37,7 +37,7 @@ class MeasurementData:
                 "Rating",
                 "Sleep",
                 "HasCondition",
-                "CalcFEV1_",
+                # "CalcFEV1_",
             ]
         )
         self.brphysdata_deleted = pd.DataFrame(
@@ -58,7 +58,7 @@ class MeasurementData:
                 "Rating",
                 "Sleep",
                 "HasCondition",
-                "CalcFEV1_",
+                # "CalcFEV1_",
                 "Reason",
             ]
         )
@@ -70,6 +70,7 @@ class MeasurementData:
             "CalorieRecording": "Calories",
             "FEV1Recording": "FEV1",
             "FEF2575Recording": "FEF2575",
+            "PEFRecording": "PEF",
             "FEV075Recording": "FEV075",
             "FEV1DivFEV6Recording": "FEV1DivFEV6",
             "FEV6Recording": "FEV6",
@@ -93,6 +94,7 @@ class MeasurementData:
             "CalorieRecording": "Calories",
             "FEV1Recording": "FEV",
             "FEF2575Recording": "FEV",
+            "PEFRecording": "FEV",
             "FEV075Recording": "FEV",
             "FEV1DivFEV6Recording": "FEV",
             "FEV6Recording": "FEV",
@@ -146,12 +148,12 @@ class MeasurementData:
                 left_on="UserId",
                 right_on="PartitionKey",
             )
-            self.measure_tables[meas_table_name]["TimestampDt"] = pd.to_datetime(
-                self.measure_tables[meas_table_name]["Timestamp"], utc=False
+            aware_timestamp = pd.to_datetime(
+                self.measure_tables[meas_table_name]["ClientTimestamp"], utc=False
             )
-            self.measure_tables[meas_table_name]["DateDt"] = self.measure_tables[
-                meas_table_name
-            ]["TimestampDt"]
+            unaware_timestamp = aware_timestamp.apply(lambda x: x.astimezone(None))
+            self.measure_tables[meas_table_name]["TimestampDt"] = aware_timestamp
+            self.measure_tables[meas_table_name]["DateDt"] = unaware_timestamp
             self.measure_tables[meas_table_name] = self.measure_tables[meas_table_name][
                 (self.measure_tables[meas_table_name]["StudyNumber"].notnull())
                 & (self.measure_tables[meas_table_name]["ID"].notnull())
@@ -189,7 +191,7 @@ class MeasurementData:
                 "Rating",
                 "Sleep",
                 "HasCondition",
-                "CalcFEV1_",
+                # "CalcFEV1_",
             ]
         )
         if meas_table.shape[0] > 0:
@@ -246,6 +248,7 @@ class MeasurementData:
             # ["Sleep", "MinsAwakeRecording", 0],
             ["Spirometer", "FEV1Recording", 1],
             ["Spirometer", "FEF2575Recording", 1],
+            ["Spirometer", "PEFRecording", 1],
             ["Spirometer", "FEV075Recording", 1],
             ["Spirometer", "FEV1DivFEV6Recording", 1],
             ["Spirometer", "FEV6Recording", 1],
@@ -257,7 +260,7 @@ class MeasurementData:
         ]
         for i in breatheRowsToAdd:
             self.addBreatheRowsForMeasure(self.measure_tables[i[0]], i[1], i[2])
-        temp_rows = self.brphysdata[self.brphysdata["RecordingType"] == "FEV1Recording"]
+        # temp_rows = self.brphysdata[self.brphysdata["RecordingType"] == "FEV1Recording"]
 
         # merge FEV1 Recording with the Redcap FEV1 data and calc a percentage of a baseline
         # temp_rows = temp_rows.merge(
@@ -274,7 +277,7 @@ class MeasurementData:
         # ]
         # temp_rows["FEV"] = 0
         # temp_rows = temp_rows.drop(["CalcPredictedFEV1"], axis=1)
-        self.brphysdata = pd.concat([self.brphysdata, temp_rows], ignore_index=True)
+        # self.brphysdata = pd.concat([self.brphysdata, temp_rows], ignore_index=True)
 
     def findAndDeleteAnomalousMeasures(self, recordingtype, lowerthresh, upperthresh):
         """Function to trim data to within thresholds and add trimmed data to the deleted table
@@ -398,7 +401,7 @@ class MeasurementData:
                 "Rating",
                 "Sleep",
                 "HasCondition",
-                "CalcFEV1_",
+                # "CalcFEV1_",
             ],
             axis=1,
         )
@@ -460,7 +463,7 @@ class MeasurementData:
                 "Rating",
                 "Sleep",
                 "HasCondition",
-                "CalcFEV1_",
+                # "CalcFEV1_",
             ],
             axis=1,
         )
@@ -769,15 +772,18 @@ class MeasurementData:
     def exportData(self):
         today = datetime.today()
         self.brphysdata.to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx", index=False
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            index=False,
         )
         self.brphysdata_deleted[
             self.brphysdata_deleted["Reason"] != "NULL Measurement"
         ].to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx", index=False
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            index=False,
         )
         pd.DataFrame.from_dict({"Offset": [self.broffset]}).to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx", index=False
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            index=False,
         )
 
 

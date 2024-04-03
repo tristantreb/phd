@@ -61,6 +61,19 @@ def fef2575(value, id):
     return -1
 
 
+def pef(value, id):
+    """
+    PEF should be in 1-10 L/s
+    """
+    if value < 0.1 or value > 1000:
+        print(
+            "Warning - ID {} has FEF25-75 ({}) outside 0.1-1000 L/s range".format(
+                id, value
+            )
+        )
+    return -1
+
+
 def sex(value, id):
     """
     Sex should be in Male, Female
@@ -138,7 +151,7 @@ def data_types(df):
                     print(
                         f"Warning - Expected {col} to be of type datetime64[ns], got {df[col].dtype}"
                     )
-            case "O2 Saturation":
+            case "O2 Saturation" | "PEF":
                 # TODO: Choose int or float
                 if df[col].dtype != np.dtype("int64") and df[col].dtype != np.dtype(
                     "float64"

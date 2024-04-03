@@ -55,7 +55,6 @@ def remove_any_nan(df, var_kept):
     print(
         f"Dropped {tmp_len - len(df_out)} entries with at least one NaN in subset {var_kept}"
     )
-    print(f"{len(df)}/{tmp_len} entries remain")
 
     for var in var_kept:
         df_tmp = df.dropna(subset=[var])
