@@ -9,13 +9,8 @@ import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.modelling_o2.ho2sat as ho2sat
 
 
-def load_meas_from_excel(type):
-    if type == 1:
-        df = pd.read_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_O2_FEV1.xlsx")
-    if type == 2:
-        df = pd.read_excel(
-            dh.get_path_to_main() + "ExcelFiles/BR/BR_O2_FEV1_FEF2575.xlsx"
-        )
+def load_meas_from_excel(filename):
+    df = pd.read_excel(dh.get_path_to_main() + f"ExcelFiles/BR/{filename}.xlsx")
     # ID column as type string
     df["ID"] = df["ID"].astype(str)
     # Date Redocrded as datetime
@@ -67,7 +62,7 @@ def load_patients(part_key=False):
     return df
 
 
-def load_measurements(file=1, fef2575=True):
+def load_measurements(file=2, fef2575=True):
     """
     Loads the Breathe data from the excel file and returns a dataframe
     Only loads FEV1 and O2 Saturation measurements
