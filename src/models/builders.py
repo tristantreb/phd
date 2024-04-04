@@ -526,13 +526,11 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
 
 
 def o2sat_fev1_point_in_time_model_shared_healthy_vars(
-    height, age, sex, check_model=False, ia_prior="breathe"
+    height, age, sex, check_model=False, ia_prior="uniform"
 ):
     """
     Longitudinal model with full FEV1 and O2Sat sides.
     HFEV1 and HO2Sat are shared across time points.
-
-    AR and IA have uniform prior
     """
 
     (
