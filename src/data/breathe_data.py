@@ -226,7 +226,7 @@ def build_O2_FEV1_df(meas_file=2):
     return df
 
 
-def build_O2_FEV1_FEF2575_df(meas_file=2):
+def build_O2_FEV1_FEF2575_df(meas_file=2, remove_nan=True):
     """
     Drop NaN entries
     Merges patients and measurement dataframes
@@ -237,7 +237,8 @@ def build_O2_FEV1_FEF2575_df(meas_file=2):
 
     df_patients = load_patients()
     df_meas = load_measurements(file=meas_file)
-    df_meas = dh.remove_any_nan(df_meas, var_kept)
+    if remove_nan:
+        df_meas = dh.remove_any_nan(df_meas, var_kept)
 
     df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
 
