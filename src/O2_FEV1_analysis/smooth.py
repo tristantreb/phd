@@ -38,9 +38,7 @@ def smooth_vector(vector, mode):
     for i in range(0, n - 1):
         # If i == 0, set the value to the max between the current value and the next two values
         if i == 0:
-            smoothed_vector[i] = eval("np." + mode)(
-                [vector[i], vector[i + 1], vector[i + 2]]
-            )
+            return eval("np." + mode)([vector[i], vector[i + 1], vector[i + 2]])
         # If i == vector length, set the value to the max/mean between the current value and the previous two values
         elif i == n - 1:
             smoothed_vector[i] = eval("np." + mode)(
@@ -52,3 +50,15 @@ def smooth_vector(vector, mode):
                 [vector[i], vector[i - 1], vector[i + 1]]
             )
     return smoothed_vector
+
+
+def get_mode(vector, i, n, mode="max"):
+    # If i == 0, set the value to the max between the current value and the next two values
+    if i == 0:
+        return eval("np." + mode)([vector[i], vector[i + 1], vector[i + 2]])
+    # If i == vector length, set the value to the max/mean between the current value and the previous two values
+    elif i == n - 1:
+        return eval("np." + mode)([vector[i], vector[i - 1], vector[i - 2]])
+    # Else, set the value to the max/mean between the current value and the previous and next values
+    else:
+        return eval("np." + mode)([vector[i], vector[i - 1], vector[i + 1]])
