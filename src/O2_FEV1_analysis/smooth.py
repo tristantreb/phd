@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import numpy as np
 import pandas as pd
 
@@ -34,25 +36,14 @@ def smooth_vector(vector, mode):
         return vector[0]
     if n == 2:
         return eval("np." + mode)([vector[0], vector[1]])
-    # For i going from 1 to vector length
+
     for i in range(0, n - 1):
-        # If i == 0, set the value to the max between the current value and the next two values
-        if i == 0:
-            return eval("np." + mode)([vector[i], vector[i + 1], vector[i + 2]])
-        # If i == vector length, set the value to the max/mean between the current value and the previous two values
-        elif i == n - 1:
-            smoothed_vector[i] = eval("np." + mode)(
-                [vector[i], vector[i - 1], vector[i - 2]]
-            )
-        # Else, set the value to the max/mean between the current value and the previous and next values
-        else:
-            smoothed_vector[i] = eval("np." + mode)(
-                [vector[i], vector[i - 1], vector[i + 1]]
-            )
+        smoothed_vector[i] = apply_three_day_window(vector, i, n, mode)
+
     return smoothed_vector
 
 
-def get_mode(vector, i, n, mode="max"):
+def apply_three_day_window(vector, i, n, mode="max"):
     # If i == 0, set the value to the max between the current value and the next two values
     if i == 0:
         return eval("np." + mode)([vector[i], vector[i + 1], vector[i + 2]])
@@ -62,3 +53,52 @@ def get_mode(vector, i, n, mode="max"):
     # Else, set the value to the max/mean between the current value and the previous and next values
     else:
         return eval("np." + mode)([vector[i], vector[i - 1], vector[i + 1]])
+
+
+def replace_with_neighbouring_value(vector, i, n, mode="max"):
+    # If i == 0, set the value to the max between the current value and the next two values
+    if i == 0:
+        if n > 1:
+            return eval("np." + mode)([vector[i + 1]])
+        return eval("np." + mode)([vector[i]])
+    # If i == vector length, set the value to the max/mean between the current value and the previous two values
+    elif i == n - 1:
+        if n > 1:
+            return eval("np." + mode)([vector[i - 1]])
+        return eval("np." + mode)([vector[i]])
+    # Else, set the value to the max/mean between the current value and the previous and next values
+    else:
+        return eval("np." + mode)([vector[i - 1], vector[i + 1]])
+
+
+def identify_and_replace_outliers_up(df, col):
+    if len(df) == 1:
+        return df
+    for i in range(len(df)):
+        date = df["Date Recorded"].iloc[i]
+        val = df[col].iloc[i]
+
+        date_up = date + timedelta(days=15)
+        date_max = max(df["Date Recorded"])
+        if date_up >= date_max:
+            date_up = date_max
+
+        date_low = date - timedelta(days=15)
+        date_min = min(df["Date Recorded"])
+        if date_low <= date_min:
+            date_low = date_min
+
+        df_in_interval = df[
+            (df["Date Recorded"] > date_low) & (df["Date Recorded"] < date_up)
+        ]
+
+        mean = df_in_interval[col].mean()
+
+        if val > mean * 1.4:
+            new = replace_with_neighbouring_value(df[col].to_numpy(), i, len(df))
+            print(
+                f"ID {df.ID[0]} - Outlier up for {col}, day {date}: {val} > {mean}, update to {new}"
+            )
+            df.loc[i, col] = new
+
+    return df
