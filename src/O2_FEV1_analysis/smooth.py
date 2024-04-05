@@ -122,7 +122,7 @@ def identify_and_replace_outliers_up(df, col, scale=1.3, shift=0.5):
             else:
                 new = df[col].iloc[i - 1]
             print(
-                f"ID {df.ID[0]} - Outlier up for {col}, day {date}: {val:.2f} > {mean + scale*std:.2f} and > {mean + shift:.2f} (mean={mean:.2f},std={std:.2f}), update to {new}"
+                f"ID {df.ID[0]} - Outlier up for {col}, day {date}: {val:.2f} > {mean + scale*std:.2f} and > {mean + shift:.2f} (mean={mean:.2f},std={std:.2f}), update to {new:.2f}"
             )
             df.loc[i, col] = new
 
