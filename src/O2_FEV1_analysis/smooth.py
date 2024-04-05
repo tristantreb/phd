@@ -38,12 +38,16 @@ def smooth_vector(vector, mode):
         return eval("np." + mode)([vector[0], vector[1]])
 
     for i in range(0, n - 1):
-        smoothed_vector[i] = apply_three_day_window(vector, i, n, mode)
+        smoothed_vector[i] = apply_three_day_window(vector, i, mode)
 
     return smoothed_vector
 
 
-def apply_three_day_window(vector, i, n, mode="max"):
+def apply_three_day_window(vector, i, mode="max"):
+    """
+    Vector is an array of non nan values
+    """
+    n = len(vector)
     # If i == 0, set the value to the max between the current value and the next two values
     if i == 0:
         return eval("np." + mode)([vector[i], vector[i + 1], vector[i + 2]])
@@ -55,7 +59,11 @@ def apply_three_day_window(vector, i, n, mode="max"):
         return eval("np." + mode)([vector[i], vector[i - 1], vector[i + 1]])
 
 
-def replace_with_neighbouring_value(vector, i, n, mode="max"):
+def get_previous_val(vector, i, mode="max"):
+    """
+    Vector is an array of non nan values
+    """
+    n = len(vector)
     # If i == 0, set the value to the max between the current value and the next two values
     if i == 0:
         if n > 1:
@@ -71,7 +79,13 @@ def replace_with_neighbouring_value(vector, i, n, mode="max"):
         return eval("np." + mode)([vector[i - 1], vector[i + 1]])
 
 
-def identify_and_replace_outliers_up(df, col):
+def identify_and_replace_outliers_up(df, col, scale=1.3, shift=0.5):
+    """
+    df[col] must not have NaN
+
+    Identify outliers, and replacce them with the previous val if applicable
+    """
+    df = df.reset_index(drop=True)
     if len(df) == 1:
         return df
     for i in range(len(df)):
@@ -91,13 +105,24 @@ def identify_and_replace_outliers_up(df, col):
         df_in_interval = df[
             (df["Date Recorded"] > date_low) & (df["Date Recorded"] < date_up)
         ]
+        # Remove current value
+        df_in_interval = pd.concat([df_in_interval[0:i], df_in_interval[i + 1 :]])
+
+        # If there are no other data points in the data range, continue
+        if len(df_in_interval) == 0:
+            continue
 
         mean = df_in_interval[col].mean()
+        std = df_in_interval[col].std()
 
-        if val > mean * 1.4:
-            new = replace_with_neighbouring_value(df[col].to_numpy(), i, len(df))
+        if (val > mean + scale * std) and (val > mean + shift):
+            # Always take the previous value, except if the cur val is the first of the date range
+            if i == df_in_interval.index[0]:
+                new = df[col].iloc[i + 1]
+            else:
+                new = df[col].iloc[i - 1]
             print(
-                f"ID {df.ID[0]} - Outlier up for {col}, day {date}: {val} > {mean}, update to {new}"
+                f"ID {df.ID[0]} - Outlier up for {col}, day {date}: {val:.2f} > {mean + scale*std:.2f} and > {mean + shift:.2f} (mean={mean:.2f},std={std:.2f}), update to {new}"
             )
             df.loc[i, col] = new
 
