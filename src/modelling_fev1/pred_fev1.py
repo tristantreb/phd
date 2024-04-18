@@ -1,8 +1,6 @@
 import numpy as np
 from scipy.stats import norm
 
-import src.data.sanity_checks as sanity_checks
-
 
 def calc_hfev1_prior(hfev1_bins, height, age, sex):
     """
@@ -37,7 +35,6 @@ def calc_predicted_FEV1_linear(height: int, age: int, sex: str):
         pred_FEV1 = (height / 100) * 3.95 - age * 0.025 - 2.6
         std_dev = 0.35
         return {"Predicted FEV1": pred_FEV1, "std": std_dev}
-
 
 
 def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str, debug=False):
