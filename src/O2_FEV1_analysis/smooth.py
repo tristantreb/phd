@@ -112,6 +112,8 @@ def identify_and_replace_outliers_up(df, col, scale=1.3, shift=0.5):
         if len(df_in_interval) == 0:
             continue
 
+        # Take the 70-95th percentile of the data
+        # mean = df_in_interval[col].quantile([0.5, 0.95]).mean()
         mean = df_in_interval[col].mean()
         std = df_in_interval[col].std()
 
