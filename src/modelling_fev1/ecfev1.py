@@ -19,19 +19,18 @@ def calc_with_smoothed_max_df(df):
         mask = df.ID == id
 
         # Adjust outliers up. If measurement is above 140% of the monthly average, take the average of the 2 neighbouring values
-        
 
         # Adjust outliers down
         df.loc[mask, "ecFEV1"] = smooth.smooth_vector(
             df.loc[mask, "FEV1"].to_numpy(), "max"
         )
-        if "FEF2575" in df.columns:
-            df.loc[mask, "ecFEF2575"] = smooth.smooth_vector(
-                df.loc[mask, "FEF2575"].to_numpy(), "max"
-            )
-        if "PEF" in df.columns:
-            df.loc[mask, "ecPEF"] = smooth.smooth_vector(
-                df.loc[mask, "PEF"].to_numpy(), "max"
-            )
+        # if "FEF2575" in df.columns:
+        #     df.loc[mask, "ecFEF2575"] = smooth.smooth_vector(
+        #         df.loc[mask, "FEF2575"].to_numpy(), "max"
+        #     )
+        # if "PEF" in df.columns:
+        #     df.loc[mask, "ecPEF"] = smooth.smooth_vector(
+        #         df.loc[mask, "PEF"].to_numpy(), "max"
+        #     )
 
     return df
