@@ -226,7 +226,7 @@ def build_O2_FEV1_df(meas_file=2):
     return df
 
 
-def build_O2_FEV1_FEF2575_df(meas_file=2, remove_nan=True):
+def build_O2_FEV1_FEF2575_PEF_df(meas_file=2, remove_nan=True):
     """
     Drop NaN entries
     Merges patients and measurement dataframes
