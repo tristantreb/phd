@@ -9,12 +9,17 @@ import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.modelling_o2.ho2sat as ho2sat
 
 
-def load_meas_from_excel(filename):
+def load_meas_from_excel(filename, str_cols_to_arrays=None):
     df = pd.read_excel(dh.get_path_to_main() + f"ExcelFiles/BR/{filename}.xlsx")
     # ID column as type string
     df["ID"] = df["ID"].astype(str)
     # Date Redocrded as datetime
     df["Date Recorded"] = df["Date Recorded"].dt.date
+
+    # Convert the given string columns to arrays
+    if str_cols_to_arrays:
+        for col in str_cols_to_arrays:
+            df[col] = df[col].apply(dh._str_to_array)
     return df
 
 
