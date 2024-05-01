@@ -20,6 +20,7 @@ def name_to_abbr_dict():
     return {
         "Healthy FEV1 (L)": "HFEV1",
         "ecFEV1 (L)": "ecFEV1",
+        "ecFEF25-75 % ecFEV1 (%)": "ecFEF25-75%ecFEV1",
         "Airway resistance (%)": "AR",
         "O2 saturation (%)": "O2Sat",
         "Healthy O2 saturation (%)": "HO2Sat",
