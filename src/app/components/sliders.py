@@ -1,8 +1,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc
 
-import src.app.assets.styles as s
-
 fev1_slider_layout = dbc.Form(
     [
         dbc.Label("FEV1 observed:"),

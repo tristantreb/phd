@@ -51,6 +51,14 @@ app.layout = dbc.Container(
             ],
         ),
         html.Div(
+            id="FEF25-75-prct-FEV1-output",
+            style={
+                "font-size": s.font_size(),
+                "margin-left": s.width_px(2 / 6),
+                "padding-top": "0px",
+            },
+        ),
+        html.Div(
             [
                 dbc.Row(
                     [

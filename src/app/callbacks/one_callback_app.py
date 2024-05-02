@@ -168,6 +168,7 @@ def build_fev1_o2sat_with_factor_graph(app):
 def build_fev1_fef2575_o2sat_with_factor_graph(app):
     @app.callback(
         Output("lung-graph", "figure"),
+        Output("FEF25-75-prct-FEV1-output", "children"),
         # Output("FEF25-75-slider", "min"),
         # Output("FEF25-75-slider", "max"),
         # Inputs
@@ -342,7 +343,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         )
         fig.update_traces(marker_line_width=0)
 
-        return fig
+        return fig, f"FEF25-75 in % of FEV1: {FEF2575prctFEV1_obs:.2f}%"
 
 
 def build_fev1_o2sat_with_bayes_net(app):
