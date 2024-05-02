@@ -5,7 +5,7 @@ from dash import Dash, dcc, html
 
 import src.app.assets.styles as s
 import src.app.components.sliders as sliders
-from src.app.callbacks.one_callback_app import build_all_with_factor_graph
+from src.app.callbacks.one_callback_app import build_fev1_o2sat_with_factor_graph
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
 
 """
@@ -68,7 +68,7 @@ app.layout = dbc.Container(
     fluid=True,
 )
 
-build_all_with_factor_graph(app)
+build_fev1_o2sat_with_factor_graph(app)
 
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=8050)

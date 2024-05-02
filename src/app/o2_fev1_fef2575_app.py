@@ -5,9 +5,10 @@ from dash import Dash, dcc, html
 
 import src.app.assets.styles as s
 import src.app.components.sliders as sliders
-from src.app.callbacks.one_callback_app import build_fev1_o2sat_with_factor_graph_debug
+from src.app.callbacks.one_callback_app import (
+    build_fev1_fef2575_o2sat_with_factor_graph,
+)
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
-from src.app.components.inf_settings import inference_settings_layout
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -34,9 +35,8 @@ app.layout = dbc.Container(
             style={"textAlign": "center", "padding-top": "0px"},
         ),
         clinical_profile_input_layout,
-        inference_settings_layout,
         html.Div(
-            "3. Select your FEV1 and O2 saturation, and analyse your lung's health variables:",
+            "2. Select your FEV1, FEF25-75, and O2 saturation, and analyse your lung's health variables:",
             style={
                 "textAlign": "left",
                 "padding-top": "20px",
@@ -55,6 +55,7 @@ app.layout = dbc.Container(
                 dbc.Row(
                     [
                         dbc.Col(sliders.fev1_slider_layout),
+                        dbc.Col(sliders.fef2575_slider_layout),
                         dbc.Col(sliders.O2Sat_slider_layout),
                     ],
                     style={
@@ -70,7 +71,7 @@ app.layout = dbc.Container(
     fluid=True,
 )
 
-build_fev1_o2sat_with_factor_graph_debug(app)
+build_fev1_fef2575_o2sat_with_factor_graph(app)
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8054)
+    app.run(debug=True, host="0.0.0.0", port=8050)
