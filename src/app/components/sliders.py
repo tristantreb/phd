@@ -31,8 +31,8 @@ fef2575_slider_layout = dbc.Form(
         dbc.Label("FEF25-75 observed:"),
         dcc.Slider(
             id="FEF25-75-slider",
-            # min=0,
-            # max=6,
+            min=0,
+            max=6,
             step=0.1,
             value=3,
             marks={
