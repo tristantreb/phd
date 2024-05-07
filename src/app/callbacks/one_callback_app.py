@@ -199,7 +199,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             IA,
             UO2Sat,
             O2Sat,
-            ecFEF2575prctFEV1,
+            ecFEF2575prctecFEV1,
         ) = mb.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
             height, age, sex
         )
@@ -221,7 +221,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             [HFEV1, AR, HO2Sat, IA, O2SatFFA, UO2Sat],
             [
                 [ecFEV1, FEV1_obs],
-                [ecFEF2575prctFEV1, FEF2575prctFEV1_obs],
+                [ecFEF2575prctecFEV1, FEF2575prctFEV1_obs],
                 [O2Sat, O2Sat_obs],
             ],
         )

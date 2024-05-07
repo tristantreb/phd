@@ -242,6 +242,8 @@ def build_O2_FEV1_FEF2575_PEF_df(remove_nan, meas_file=2):
 
     df_patients = load_patients()
     df_meas = load_measurements(file=meas_file)
+    df_meas["PEF (L/s)"] = df_meas.PEF / 60
+
     if remove_nan:
         df_meas = dh.remove_any_nan(df_meas, var_kept)
 
@@ -265,9 +267,7 @@ def calc_predicted_FEV1_LMS_df(df):
     Returns a Series with Predicted FEV1 from a DataFrame with Sex, Height, Age
     """
     df["Predicted FEV1"] = df.apply(
-        lambda x: pred_fev1.calc_predicted_FEV1_LMS(
-            pred_fev1.load_LMS_spline_vals(x.Age, x.Sex),
-            pred_fev1.load_LMS_coeffs(x.Sex),
+        lambda x: pred_fev1.calc_predicted_value_LMS_straight(
             x.Height,
             x.Age,
             x.Sex,
