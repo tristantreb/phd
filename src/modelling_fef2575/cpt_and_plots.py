@@ -33,13 +33,14 @@ def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col):
     fig.show()
 
 
-def calc_and_plot_FEF2575prctFEV1_AR_cpt(
+def calc_plot_cpt_var_given_AR(
     df_sampled,
     df_f3,
     n_samples,
     AR,
-    ecFEF2575prctecFEV1,
     ar_col,
+    y_var,
+    y_col,
     save=False,
     debug=False,
 ):
@@ -47,15 +48,15 @@ def calc_and_plot_FEF2575prctFEV1_AR_cpt(
 
     fig = make_subplots(rows=1, cols=len(AR.bins), shared_yaxes=True)
 
-    cpt_AR_FEF2575prctFEV1 = np.empty([len(ecFEF2575prctecFEV1.bins), len(AR.bins)])
-    cpt_AR_FEF2575prctFEV1[:] = np.nan
+    cpt_y_var_AR = np.empty([len(y_var.bins), len(AR.bins)])
+    cpt_y_var_AR[:] = np.nan
 
     for idx, midbin in enumerate(AR_midbins):
-        values = df_sampled[df_sampled["AR midbin"] == midbin]["ecFEF2575%ecFEV1"]
+        values = df_sampled[df_sampled["AR midbin"] == midbin][y_col]
         fig.add_trace(
             go.Histogram(
                 y=values,
-                ybins=dict(start=0, end=200, size=ecFEF2575prctecFEV1.bin_width),
+                ybins=dict(start=y_var.a, end=y_var.b, size=y_var.bin_width),
                 histnorm="probability",
             ),
             row=1,
@@ -67,13 +68,13 @@ def calc_and_plot_FEF2575prctFEV1_AR_cpt(
 
         # Add gaussian approximation
         p_arr = norm.pdf(
-            ecFEF2575prctecFEV1.midbins,
+            y_var.midbins,
             loc=df_f3.iloc[idx]["mean"],
             scale=df_f3.iloc[idx]["std"],
         )
         p_arr_norm = p_arr / sum(p_arr)
 
-        cpt_AR_FEF2575prctFEV1[:, idx] = p_arr_norm
+        cpt_y_var_AR[:, idx] = p_arr_norm
 
         # The 3 last bins are unreliable (too few data + mean is increase instead of decreasing)
         # Instead use the 4th last bin, i.e. the last reliable bin
@@ -86,8 +87,8 @@ def calc_and_plot_FEF2575prctFEV1_AR_cpt(
             print(idx, idx_to_plot)
         fig.add_trace(
             go.Scatter(
-                y=ecFEF2575prctecFEV1.midbins,
-                x=cpt_AR_FEF2575prctFEV1[:, idx_to_plot],
+                y=y_var.midbins,
+                x=cpt_y_var_AR[:, idx_to_plot],
                 mode="lines",
                 line=dict(color="red"),
             ),
@@ -101,11 +102,11 @@ def calc_and_plot_FEF2575prctFEV1_AR_cpt(
     for j in range(idx + 1, len(AR.bins)):
         if debug:
             print(j, idx)
-        cpt_AR_FEF2575prctFEV1[:, j] = cpt_AR_FEF2575prctFEV1[:, idx - 3]
+        cpt_y_var_AR[:, j] = cpt_y_var_AR[:, idx - 3]
         fig.add_trace(
             go.Scatter(
-                y=ecFEF2575prctecFEV1.midbins,
-                x=cpt_AR_FEF2575prctFEV1[:, j],
+                y=y_var.midbins,
+                x=cpt_y_var_AR[:, j],
                 mode="lines",
                 line=dict(color="red"),
             ),
@@ -114,13 +115,13 @@ def calc_and_plot_FEF2575prctFEV1_AR_cpt(
         )
         fig.update_xaxes(title=f"{AR.midbins[j]}%", row=1, col=j + 1, range=[0, 0.4])
 
-    fig.update_yaxes(title=ecFEF2575prctecFEV1.name, row=1, col=1)
+    fig.update_yaxes(title=y_var.name, row=1, col=1)
     fig.update_layout(
         width=2000,
         height=400,
         font=dict(size=6),
         showlegend=False,
-        title=f"P({ecFEF2575prctecFEV1.name} | {ar_col})",
+        title=f"P({y_var.name} | {ar_col})",
     )
     if save:
         fig.write_image(
@@ -129,10 +130,10 @@ def calc_and_plot_FEF2575prctFEV1_AR_cpt(
     else:
         fig.show()
 
-    return cpt_AR_FEF2575prctFEV1
+    return cpt_y_var_AR
 
 
-def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, title, save=False):
+def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
     fig = go.Figure()
     fig.add_traces(
         go.Scatter(
@@ -190,10 +191,11 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, title, save=False):
     )
     # Add ticks on x axis
     fig.update_xaxes(
-        title="Airway resistance midbin (%)",
+        title=f"{ar_col} midbin (%)",
         tickvals=np.floor(list(df_f3["AR midbin"].values)),
     )
-    fig.update_yaxes(title="ecFEF2575%ecFEV1 (%)")
+    fig.update_yaxes(title=y_col)
+    title = f"F3 - {y_col} statistics per {ar_col} bin"
     fig.update_layout(title=title, width=1100, height=500)
     if save:
         fig.write_image(f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/{title}.pdf")
@@ -202,7 +204,7 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, title, save=False):
     return -1
 
 
-def get_sampled_df_and_statistics_df(df, n_samples, AR):
+def get_sampled_df_and_statistics_df(df, n_samples, AR, y_col="ecFEF2575%ecFEV1"):
     df_sampled = df.copy()
     df_sampled["AR sampled"] = np.nan
 
@@ -229,7 +231,6 @@ def get_sampled_df_and_statistics_df(df, n_samples, AR):
         ),
     )
 
-    y_col = "ecFEF2575%ecFEV1"
     df_f3 = (
         df_sampled.groupby("AR bin")
         .agg(
