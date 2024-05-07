@@ -4,7 +4,7 @@ import pandas as pd
 
 import src.data.helpers as dh
 import src.data.sanity_checks as sanity_checks
-import src.modelling_fev1.ecfev1 as ecfev1
+import src.modelling_fev1.ec_smoothing as ec_smoothing
 import src.modelling_fev1.pred_fev1 as pred_fev1
 import src.modelling_o2.ho2sat as ho2sat
 
@@ -216,7 +216,7 @@ def build_O2_FEV1_df(meas_file=2):
     df_meas = load_measurements(file=meas_file, fef2575=False)
     df_meas = dh.remove_any_nan(df_meas, var_kept)
 
-    df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
+    df_meas = ec_smoothing.calc_smoothed_fe_measures(df_meas)
 
     df_patients = calc_predicted_FEV1_LMS_df(df_patients)
     df_patients = calc_healthy_O2_sat_df(df_patients)
@@ -231,7 +231,7 @@ def build_O2_FEV1_df(meas_file=2):
     return df
 
 
-def build_O2_FEV1_FEF2575_PEF_df(meas_file=2, remove_nan=True):
+def build_O2_FEV1_FEF2575_PEF_df(remove_nan, meas_file=2):
     """
     Drop NaN entries
     Merges patients and measurement dataframes
@@ -245,7 +245,7 @@ def build_O2_FEV1_FEF2575_PEF_df(meas_file=2, remove_nan=True):
     if remove_nan:
         df_meas = dh.remove_any_nan(df_meas, var_kept)
 
-    df_meas = ecfev1.calc_with_smoothed_max_df(df_meas)
+    df_meas = ec_smoothing.calc_smoothed_fe_measures(df_meas)
 
     df_patients = calc_predicted_FEV1_LMS_df(df_patients)
     df_patients = calc_healthy_O2_sat_df(df_patients)
