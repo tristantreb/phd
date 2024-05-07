@@ -4,7 +4,10 @@ import plotly.graph_objects as go
 from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 
 import src.models.builders as mb
+import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
+import src.models.var_builders as var_builders
+from src.inference.inf_algs import apply_custom_bp
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -184,7 +187,9 @@ def plot_histogram_discrete(
 
 
 def infer_AR_IA_HFEV1_HO2sat_get_back_df(
-    df, observed_variables=["ecFEV1", "O2Sat", "ecFEF2575prctecFEV1"]
+    df,
+    ecFEF2575prctecFEV1_cpt=None,
+    observed_variables=["ecFEV1", "O2Sat", "ecFEF2575prctecFEV1"],
 ):
     """
     Infer AR, IA, HFEV1, HO2Sat fo each entry in the dataset, for the given observed variables as evidence
@@ -192,11 +197,38 @@ def infer_AR_IA_HFEV1_HO2sat_get_back_df(
 
     def infer_vars_for_ID(df):
         df.reset_index(inplace=True)
-        _, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, _, IA, _, O2Sat, ecFEF2575prctecFEV1 = (
-            mb.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-                df.Height[0], df.Age[0], df.Sex[0]
-            )
+
+        (
+            HFEV1,
+            ecFEV1,
+            AR,
+            HO2Sat,
+            O2SatFFA,
+            IA,
+            UO2Sat,
+            O2Sat,
+            ecFEF2575prctecFEV1,
+        ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
+            df.Height[0], df.Age[0], df.Sex[0]
         )
+
+        # Update cpt to custom one if provided
+        if ecFEF2575prctecFEV1_cpt is not None:
+            ecFEF2575prctecFEV1.set_cpt(ecFEF2575prctecFEV1_cpt)
+
+        model = graph_builders.fev1_fef2575_o2sat_point_in_time_factor_graph(
+            HFEV1,
+            ecFEV1,
+            AR,
+            HO2Sat,
+            O2SatFFA,
+            IA,
+            UO2Sat,
+            O2Sat,
+            ecFEF2575prctecFEV1,
+            False,
+        )
+        inf_alg = apply_custom_bp(model)
 
         def infer_and_unpack(row):
             evidence = []

@@ -34,7 +34,14 @@ def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col):
 
 
 def calc_and_plot_FEF2575prctFEV1_AR_cpt(
-    df_sampled, df_f3, n_samples, AR, ecFEF2575prctecFEV1, save=False, debug=False
+    df_sampled,
+    df_f3,
+    n_samples,
+    AR,
+    ecFEF2575prctecFEV1,
+    ar_col,
+    save=False,
+    debug=False,
 ):
     AR_midbins = np.sort(df_sampled["AR midbin"].unique())
 
@@ -113,11 +120,11 @@ def calc_and_plot_FEF2575prctFEV1_AR_cpt(
         height=400,
         font=dict(size=6),
         showlegend=False,
-        title=f"P({ecFEF2575prctecFEV1.name} | Airway resistance)",
+        title=f"P({ecFEF2575prctecFEV1.name} | {ar_col})",
     )
     if save:
         fig.write_image(
-            f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/F3 - FEF2575%FEV1 given AR with CPT - {n_samples} samples, {AR.bin_width} bin width.pdf"
+            f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/F3 CPT - ecFEF2575%ecFEV1 given {ar_col} - {n_samples} samples, {AR.bin_width} bin width.pdf"
         )
     else:
         fig.show()
