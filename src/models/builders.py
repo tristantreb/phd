@@ -570,7 +570,7 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctFEV1,
+        ecFEF2575prctecFEV1,
     ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         height, age, sex, ia_prior
     )
@@ -584,7 +584,7 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctFEV1,
+        ecFEF2575prctecFEV1,
         check_model,
     )
     inf_alg = apply_custom_bp(model)
@@ -599,5 +599,5 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctFEV1,
+        ecFEF2575prctecFEV1,
     )
