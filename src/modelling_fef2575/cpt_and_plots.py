@@ -33,7 +33,7 @@ def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col):
     fig.show()
 
 
-def calc_plot_cpt_var_given_AR(
+def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
     df_sampled,
     df_f3,
     n_samples,
@@ -125,7 +125,7 @@ def calc_plot_cpt_var_given_AR(
     )
     if save:
         fig.write_image(
-            f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/F3 CPT - ecFEF2575%ecFEV1 given {ar_col} - {n_samples} samples, {AR.bin_width} bin width.pdf"
+            f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/F3 CPT - {y_col} given {ar_col} - {n_samples} samples, {AR.bin_width} bin width.pdf"
         )
     else:
         fig.show()
@@ -195,7 +195,7 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
         tickvals=np.floor(list(df_f3["AR midbin"].values)),
     )
     fig.update_yaxes(title=y_col)
-    title = f"F3 - {y_col} statistics per {ar_col} bin"
+    title = f"F3 - {y_col} statistics per {ar_col} bin (n={df_f3['count'].sum()})"
     fig.update_layout(title=title, width=1100, height=500)
     if save:
         fig.write_image(f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/{title}.pdf")
@@ -241,6 +241,7 @@ def get_sampled_df_and_statistics_df(df, n_samples, AR, y_col="ecFEF2575%ecFEV1"
             p97=(y_col, lambda x: np.percentile(x, 97)),
             p16=(y_col, lambda x: np.percentile(x, 16)),
             p84=(y_col, lambda x: np.percentile(x, 84)),
+            count=(y_col, "count"),
         )
         .reset_index()
     )
