@@ -52,7 +52,7 @@ def load_patients(part_key=False):
     sanity_checks.data_types(df)
     sanity_checks.must_not_have_nan(df)
     print(
-        "The 4 NaN values belong to IDs ('322', '338', '344', '348') whose height are missing.\nHowever, we don't correct for them as we don't have any measurement corresponding to those IDs for now."
+        "The NaN values belong to IDs ('344') whose height are missing.\nHowever, we don't correct for them as we don't have any measurement corresponding to those IDs for now."
     )
 
     def patients_sanity_checks(x):

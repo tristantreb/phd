@@ -233,15 +233,9 @@ def infer_vars_and_get_back_df(
 
         def infer_and_unpack(row):
             # Build evidence
-            evidence = []
-            if "ecFEV1" in observed_variables:
-                evidence.append([ecFEV1, row["ecFEV1"]])
-            if "O2Sat" in observed_variables:
-                evidence.append([O2Sat, row["O2 Saturation"]])
-            if "ecFEF2575prctecFEV1" in observed_variables:
-                evidence.append(
-                    [ecFEF2575prctecFEV1, row["ecFEF2575"] / row["ecFEV1"] * 100]
-                )
+            evidence = [
+                [obs_var, row[obs_var.get_colname()]] for obs_var in observed_variables
+            ]
 
             res = infer_on_factor_graph(
                 inf_alg,

@@ -292,7 +292,6 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         "height": height,
         "sex": sex,
     }
-
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
