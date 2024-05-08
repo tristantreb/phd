@@ -38,6 +38,26 @@ def name_to_abbr(name: str):
     return abbr
 
 
+def abbr_to_colname_dict():
+    return {
+        "HFEV1": "Predicted FEV1",
+        "ecFEV1": "ecFEV1",
+        "O2Sat": "O2 Saturation",
+        "HO2Sat": "Healthy O2 Saturation",
+        "ecFEF25-75%ecFEV1": "ecFEF2575%ecFEV1",
+        "AR": "AR",
+        "IA": "IA",
+    }
+
+
+def abbr_to_colname(name: str):
+    colname = abbr_to_colname_dict().get(name, "Invalid abbreviation")
+    if colname == "Invalid abbreviation":
+        raise ValueError(f"Invalid abbreviation: {name}")
+
+    return colname
+
+
 ## Discretized PDF with the sampling solution
 # Let Unblocked FEV1 be a continuous random variable following a uniform distribution between a and b
 def get_unblocked_fev1(a, b):
@@ -146,6 +166,18 @@ class VariableNode:
         self.midbins = self.bins + self.bin_width / 2
         self.card = len(self.bins)
         self.cpt = self.set_prior(prior)
+
+    def get_abbr(self):
+        '''
+        Return the abbreviation of the variable's name
+        '''
+        return name_to_abbr(self.name)
+    
+    def get_colname(self):
+        '''
+        Return the column name of the variable's name
+        '''
+        return abbr_to_colname(self.get_abbr())
 
     def get_bins_str(self):
         """
@@ -292,7 +324,7 @@ class VariableNode:
         """
         Returns the distribution's mean given an array of probabilities
         """
-        return np.multiply(p, self.bins + self.bin_width / 2).sum()
+        return np.multiply(p, self.midbins).sum()
 
     def get_mode(self, p):
         """

@@ -188,9 +188,9 @@ def plot_histogram_discrete(
 
 def infer_vars_and_get_back_df(
     df,
+    variables_to_infer,
+    observed_variables,
     ecFEF2575prctecFEV1_cpt=None,
-    variables_to_infer=["AR", "IA", "HFEV1", "HO2Sat", "O2SatFFA", "UO2Sat"],
-    observed_variables=["ecFEV1", "O2Sat", "ecFEF2575prctecFEV1"],
 ):
     """
     Infer AR, IA, HFEV1, HO2Sat fo each entry in the dataset, for the given observed variables as evidence
@@ -231,10 +231,6 @@ def infer_vars_and_get_back_df(
         )
         inf_alg = apply_custom_bp(model)
 
-        variables = _get_vars_for_model(
-            variables_to_infer, AR, IA, HFEV1, HO2Sat, O2SatFFA, UO2Sat
-        )
-
         def infer_and_unpack(row):
             # Build evidence
             evidence = []
@@ -249,11 +245,11 @@ def infer_vars_and_get_back_df(
 
             res = infer_on_factor_graph(
                 inf_alg,
-                variables,
+                variables_to_infer,
                 evidence,
             )
 
-            res_values = (res[var.name].values for var in variables)
+            res_values = (res[var.name].values for var in variables_to_infer)
 
             return row["Date Recorded"], *res_values
 
@@ -261,7 +257,7 @@ def infer_vars_and_get_back_df(
         return res
 
     variables_to_infer_dict = {
-        i + 1: variables_to_infer[i] for i in range(len(variables_to_infer))
+        i + 1: variables_to_infer[i].get_abbr() for i in range(len(variables_to_infer))
     }
     variables_to_infer_dict[0] = "Date Recorded"
 
@@ -274,46 +270,9 @@ def infer_vars_and_get_back_df(
         .drop(columns="level_1")
     )
 
-    # Build model to get variables
-    (
-        HFEV1,
-        _,
-        AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        _,
-        _,
-    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-        160, 10, "Female"
-    )
-
-    model_vars = _get_vars_for_model(
-        variables_to_infer, AR, IA, HFEV1, HO2Sat, O2SatFFA, UO2Sat
-    )
-
-    for model_var, str_var in zip(model_vars, variables_to_infer):
-        res[f"{str_var} mean"] = res[str_var].apply(lambda x: model_var.get_mean(x))
+    for var in variables_to_infer:
+        res[f"{var.get_abbr()} mean"] = res[var.get_abbr()].apply(
+            lambda x: var.get_mean(x)
+        )
 
     return res
-
-
-def _get_vars_for_model(variables, AR, IA, HFEV1, HO2Sat, O2SatFFA, UO2Sat):
-    """
-    Helper function to get the variables for a given model
-    """
-    model_vars = []
-    if "AR" in variables:
-        model_vars.append(AR)
-    if "IA" in variables:
-        model_vars.append(IA)
-    if "HFEV1" in variables:
-        model_vars.append(HFEV1)
-    if "HO2Sat" in variables:
-        model_vars.append(HO2Sat)
-    if "O2SatFFA" in variables:
-        model_vars.append(O2SatFFA)
-    if "UO2Sat" in variables:
-        model_vars.append(UO2Sat)
-    return model_vars
