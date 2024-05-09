@@ -29,7 +29,7 @@ class RedCap:
             dh.get_path_to_main()
             + "DataFiles/BR/REDCapData/IDMappingFiles/PatientIDMappingFile-20240509.xlsx"
         )
-        self.redcapidmap = pd.read_excel(filename)
+        self.redcapidmap = pd.read_excel(filename, dtype={"ID": str, "redcap_id": str})
 
     def load_redcap_dropdown_dictionary(self):
         """
@@ -78,7 +78,7 @@ class RedCap:
             dh.get_path_to_main()
             + "DataFiles/BR/REDCapData/DataExportFiles/AnalysisOfRemoteMoni_DATA_2023-11-29_1445.csv"
         )
-        self.redcap_data = pd.read_csv(filename)
+        self.redcap_data = pd.read_csv(filename, dtype={"study_id": str})
 
     def addDropdownValues(self, replacement_columns):
         # where redcap_repeat_instrument is blank replace with 'patient_info'
@@ -116,7 +116,7 @@ class RedCap:
         # adding hospital and study number to every column
         id_merged = self.redcap_data.merge(
             self.redcapidmap, how="inner", left_on="study_id", right_on="redcap_id"
-        ) 
+        )
         tmpids = id_merged[
             id_merged["redcap_repeat_instrument"] == "patient_info"
         ].filter(["study_id", "hospital", "study_number"])
