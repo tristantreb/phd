@@ -25,13 +25,10 @@ class RedCap:
         """
         Load in latest red cap id map. It contains mapping from patient id values to updated id values
         """
-        # filename = self.blob.get_latest_filename_in_blob_container("REDCapData/IDMappingFiles/")
         filename = (
             dh.get_path_to_main()
-            + "DataFiles/BR/REDCapData/IDMappingFiles/PatientIDMappingFile-20220822.xlsx"
+            + "DataFiles/BR/REDCapData/IDMappingFiles/PatientIDMappingFile-20240509.xlsx"
         )
-        # logging.warning(filename)
-        # self.redcapidmap = self.blob.read_xlsx(filename)
         self.redcapidmap = pd.read_excel(filename)
 
     def load_redcap_dropdown_dictionary(self):
@@ -39,13 +36,10 @@ class RedCap:
         Load in data dictionary for redcap data. Mainly used to replace drop down values with meaningful feature name
         """
 
-        # filename = self.blob.get_latest_filename_in_blob_container("REDCapData/DataDictionary/")
         filename = (
             dh.get_path_to_main()
             + "DataFiles/BR/REDCapData/DataDictionary/AnalysisOfRemoteMonitoringVirt_DataDictionary_2023-11-29.csv"
         )
-        # logging.warning(filename)
-        # self.redcapdict = self.blob.read_csv(filename)
         self.redcapdict = pd.read_csv(filename)
         self.redcapdict_dropdown = self.redcapdict[
             self.redcapdict["Choices, Calculations, OR Slider Labels"].notna()
@@ -117,13 +111,12 @@ class RedCap:
             self.redcap_data[col + "_refactor"] = self.redcap_data[col].map(
                 dd_dict[col]
             )
-        # return redcap_data
 
     def addHospitalData(self):
         # adding hospital and study number to every column
         id_merged = self.redcap_data.merge(
-            self.redcapidmap, how="left", left_on="study_id", right_on="redcap_id"
-        )  # thinki join should be inner
+            self.redcapidmap, how="inner", left_on="study_id", right_on="redcap_id"
+        ) 
         tmpids = id_merged[
             id_merged["redcap_repeat_instrument"] == "patient_info"
         ].filter(["study_id", "hospital", "study_number"])
@@ -139,7 +132,7 @@ class RedCap:
     def outputMLTable(self, df: pd.DataFrame, name: str):
         datestamp = str(datetime.today().strftime("%Y%m%d"))
         df.to_csv(
-            f"{dh.get_path_to_main()}DataFiles/BR/processedRedCapData/{name}_{datestamp}.csv",
+            f"{dh.get_path_to_main()}DataFiles/BR/REDCapData/ProcessedData/{name}_{datestamp}.csv",
             index=False,
         )
 
