@@ -75,7 +75,7 @@ def build_pgmpy_ia_cpt(IA, AR):
     return TabularCPD(
         variable=IA.name,
         variable_card=IA.card,
-        values=IA.cpt,
+        values=IA.cpt.reshape(IA.card, -1),
         evidence=[AR.name],
         evidence_card=[AR.card],
     )
@@ -98,6 +98,16 @@ def build_pgmpy_o2sat_cpt(O2Sat, UO2Sat):
         values=O2Sat.cpt,
         evidence=[UO2Sat.name],
         evidence_card=[UO2Sat.card],
+    )
+
+
+def build_pgmpy_ecfef2575prectecfev1_cpt(ecFEF2575prctecFEV1, AR):
+    return TabularCPD(
+        variable=ecFEF2575prctecFEV1.name,
+        variable_card=ecFEF2575prctecFEV1.card,
+        values=ecFEF2575prctecFEV1.cpt.reshape(ecFEF2575prctecFEV1.card, -1),
+        evidence=[AR.name],
+        evidence_card=[AR.card],
     )
 
 
@@ -225,7 +235,7 @@ def fev1_o2sat_point_in_time_model_2(
     """
     Update: AR causes IA according to a specific factor
     """
-    prior_hfev1 = build_pgmpy_hfev1_prior
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
     cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
     prior_ar = build_pgmpy_ar_prior(AR)
     prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
@@ -259,6 +269,63 @@ def fev1_o2sat_point_in_time_model_2(
     )
 
     model.check_model()
+    return model
+
+
+def fev1_o2sat_fef2575_point_in_time_model(
+    HFEV1,
+    ecFEV1,
+    AR,
+    HO2Sat,
+    O2SatFFA,
+    IA,
+    UO2Sat,
+    O2Sat,
+    ecFEF2575prctecFEV1,
+    check_model=True,
+):
+    """
+    Update: AR causes IA according to a specific factor
+    """
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+    cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
+    prior_ar = build_pgmpy_ar_prior(AR)
+    prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
+    cpt_o2satffa = build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR)
+    cpt_ia = build_pgmpy_ia_cpt(IA, AR)
+    cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
+    cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
+    cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prectecfev1_cpt(
+        ecFEF2575prctecFEV1, AR
+    )
+
+    model = BayesianNetwork(
+        [
+            (HFEV1.name, ecFEV1.name),
+            (AR.name, ecFEV1.name),
+            (HO2Sat.name, O2SatFFA.name),
+            (AR.name, O2SatFFA.name),
+            (AR.name, IA.name),
+            (AR.name, ecFEF2575prctecFEV1.name),
+            (O2SatFFA.name, UO2Sat.name),
+            (IA.name, UO2Sat.name),
+            (UO2Sat.name, O2Sat.name),
+        ]
+    )
+
+    model.add_cpds(
+        cpt_ecfev1,
+        prior_ar,
+        prior_hfev1,
+        prior_ho2sat,
+        cpt_o2satffa,
+        cpt_ia,
+        cpt_uo2sat,
+        cpt_o2sat,
+        cpt_ecFEF2575prctecFEV1,
+    )
+    if check_model:
+        model.check_model()
     return model
 
 
