@@ -16,9 +16,13 @@ import src.data.helpers as dh
 class MeasurementData:
 
     def __init__(self):
-        patient_loc = dh.get_path_to_main() + "DataFiles/BR/PredModInputData.xlsx"
+        # patient_loc = dh.get_path_to_main() + "DataFiles/BR/PredModInputData.xlsx"
+        patient_loc = (
+            dh.get_path_to_main()
+            + "DataFiles/BR/REDCapData/ProcessedData/brPatient_20240509.csv"
+        )
         logging.warning(f"Loading patient data from {patient_loc}")
-        self.brPatient = br.load_patient_df_from_excel()
+        self.brPatient = pd.read_csv(patient_loc)
         self.brphysdata = pd.DataFrame(
             columns=[
                 "SmartCareID",
