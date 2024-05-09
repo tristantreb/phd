@@ -138,7 +138,10 @@ class RedCap:
 
     def outputMLTable(self, df: pd.DataFrame, name: str):
         datestamp = str(datetime.today().strftime("%Y%m%d"))
-        df.to_csv(f"{dh.get_path_to_main()}DataFiles/BR/processedRedCapData/{name}_{datestamp}.csv", index=False)
+        df.to_csv(
+            f"{dh.get_path_to_main()}DataFiles/BR/processedRedCapData/{name}_{datestamp}.csv",
+            index=False,
+        )
 
     def listMLTables(self):
         print(f"Current ML tables are {self.ml_tables.keys()}")
@@ -225,9 +228,12 @@ class RedCap:
         # brPatient["FEV1SetAs"] = round(brPatient["PredictedFEV1"], 1)
         # logging.warning(f"Study numbers = {brPatient.StudyNumber.iloc[:,0].head()}")
         brPatient["StudyEmail"] = brPatient["StudyNumber"]  # .iloc[:,0]
-        brPatient["CalcAgeExact"] = (
-            brPatient["StudyDate"] - brPatient["DOB"]
-        ) / np.timedelta64(365, "D")
+
+        def get_delta_years(row):
+            delta = relativedelta(row["StudyDate"], row["DOB"])
+            return delta.years + delta.months / 12 + delta.days / 365.25
+
+        brPatient["CalcAgeExact"] = brPatient.apply(get_delta_years, axis=1)
         brPatient["CalcAge"] = [
             math.floor(CalcAgeExact) for CalcAgeExact in brPatient["CalcAgeExact"]
         ]
