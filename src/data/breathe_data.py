@@ -1,3 +1,4 @@
+import datetime
 import logging
 from functools import reduce
 
@@ -40,6 +41,8 @@ def load_patients():
     # Use calc age insted of age
     df = df.rename(columns={"CalcAge": "Age"})
 
+    df = _remove_patient(df, "344")
+
     sanity_checks.data_types(df)
     sanity_checks.must_not_have_nan(df)
 
@@ -52,6 +55,18 @@ def load_patients():
 
     logging.info(f"Loaded {len(df)} individuals")
     describe_patients(df)
+    return df
+
+
+def _remove_patient(df, id):
+    """
+    Removes a patient from the patients dataframe
+    """
+    idx = df[df.ID == id].index
+    logging.warning(
+        f"ID {id} - Dropping patient because height not referenced (and no measurement to date - 10.05.2024 - for this individual"
+    )
+    df.drop(idx, inplace=True)
     return df
 
 
@@ -102,6 +117,7 @@ def load_measurements(file=2):
     df_meas_list = []
 
     # FEV1
+    logging.info("Processing FEV1")
     df_fev1 = _get_measure_from_raw_df(
         df_raw, "FEV", "FEV1Recording", type=float, new_col_name="FEV1"
     )
@@ -111,6 +127,7 @@ def load_measurements(file=2):
     df_meas_list.append(df_fev1)
 
     # O2 saturation
+    logging.info("Processing O2 saturation")
     df_o2_sat = _get_measure_from_raw_df(
         df_raw,
         "O2Saturation",
@@ -125,6 +142,8 @@ def load_measurements(file=2):
     )
     df_meas_list.append(df_o2_sat)
 
+    # FEF2575
+    logging.info("Processing FEF2575")
     df_fef2575 = _get_measure_from_raw_df(
         df_raw, "FEV", "FEF2575Recording", type=float, new_col_name="FEF2575"
     )
@@ -132,6 +151,8 @@ def load_measurements(file=2):
     df_fef2575.apply(lambda x: sanity_checks.fef2575(x["FEF2575"], x.ID), axis=1)
     df_meas_list.append(df_fef2575)
 
+    # PEF
+    logging.info("Processing PEF")
     df_pef = _get_measure_from_raw_df(
         df_raw, "FEV", "PEFRecording", type=int, new_col_name="PEF"
     )
@@ -140,6 +161,7 @@ def load_measurements(file=2):
     df_meas_list.append(df_pef)
 
     # Build final dataframe, must have at least 2 elements in list
+
     df_meas = reduce(
         lambda left, right: pd.merge(
             left, right, on=["ID", "Date Recorded"], how="outer"
@@ -147,10 +169,14 @@ def load_measurements(file=2):
         df_meas_list,
     )
 
+    df_meas.apply(
+        lambda x: sanity_checks.fef2575_sup_pef(x["FEF2575"], x["PEF"], x.ID), axis=1
+    )
+
     sanity_checks.data_types(df_meas)
 
-    logging.info("Number of IDs: ", df_meas.ID.nunique())
-    logging.info("Number of rows: ", len(df_meas))
+    logging.info(f"Number of IDs: {df_meas.ID.nunique()}")
+    logging.info(f"Number of rows: {len(df_meas)}")
     logging.info(f"Number of FEV1 recordings: {len(df_fev1)}")
     logging.info(f"Number of FEF2575 recordings: {len(df_fef2575)}")
     logging.info(f"Number of PEF recordings: {len(df_pef)}")
@@ -170,12 +196,28 @@ def _get_measure_from_raw_df(
     return df
 
 
+def _remove_recordings_in_date_range(df, id, column, start_date, end_date):
+    """
+    Removes all recordings in a specific time period (start/end dates included) from a dataframe
+    """
+    idx = df[
+        (df.ID == id)
+        & (df["Date Recorded"] >= start_date)
+        & (df["Date Recorded"] <= end_date)
+    ].index
+    logging.warning(
+        f"Dropping {idx.shape[0]} entries with {column} between {start_date} and {end_date} for ID {id}"
+    )
+    df.drop(idx, inplace=True)
+    return df
+
+
 def _remove_recording(df, id, column, value):
     """
     Removes a recording from a dataframe
     """
     idx = df[(df.ID == id) & (df[column] == value)].index
-    print(
+    logging.warning(
         "Dropping {} entries with {} = {} for ID {}".format(
             idx.shape[0], column, value, id
         )
@@ -193,6 +235,14 @@ def _correct_fev1(df):
     # Let's remove this entry
     # UPDATE: one and only measurement for that ID
     df = _remove_recording(df, "330", "FEV1", 6.0)
+
+    # WARNING:root:r ID 202: FEV1 % Predicted should be in 0-140%, got 147.24696075623552
+    # This is the case for many entries for this ID
+    # Values from 2020-07-17 to 2020-09-22 judged erroneous. I deleted them because there were too many consecutive erroneous values to correct them meaningfully​
+    # 2 values on 2020-09-25 and 2020-10-02 should get corrected by the smoothing​
+    df = _remove_recordings_in_date_range(
+        df, "202", "FEV1", datetime.date(2020, 7, 17), datetime.date(2020, 9, 22)
+    )
     return df
 
 
@@ -231,7 +281,7 @@ def build_O2_FEV1_FEF2575_PEF_df(remove_nan, meas_file=2):
     Computes the following additional variables: Predicted FEV1, FEV1 % Predicted, Healthy O2 Saturation, Avg FEV1 % Predicted, Avg Predicted FEV1
     """
     var_kept = ["O2 Saturation", "FEV1", "FEF2575", "PEF"]
-    print("\n*** Building O2Sat, FEV1, FEF2575 dataframe ***")
+    logging.info("*** Building O2Sat, FEV1, FEF2575 dataframe ***")
 
     df_patients = load_patients()
     df_meas = load_measurements(file=meas_file)
@@ -250,7 +300,9 @@ def build_O2_FEV1_FEF2575_PEF_df(remove_nan, meas_file=2):
     df = calc_FEV1_prct_predicted_df(df)
     df = calc_O2_sat_prct_healthy_df(df)
 
-    print(f"Built data structure with {df.ID.nunique()} IDs and {len(df)} entries")
+    logging.info(
+        f"Built data structure with {df.ID.nunique()} IDs and {len(df)} entries"
+    )
 
     return df
 
@@ -277,7 +329,7 @@ def calc_FEV1_prct_predicted_df(df):
     """
     df["ecFEV1 % Predicted"] = df["ecFEV1"] / df["Predicted FEV1"] * 100
     df.apply(
-        lambda x: sanity_checks.fev1_prct_predicted(x["ecFEV1 % Predicted"], x.ID),
+        lambda x: sanity_checks.ecfev1_prct_predicted(x["ecFEV1 % Predicted"], x.ID),
         axis=1,
     )
     df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
