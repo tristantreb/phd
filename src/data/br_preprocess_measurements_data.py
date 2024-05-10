@@ -19,7 +19,7 @@ class MeasurementData:
         # patient_loc = dh.get_path_to_main() + "DataFiles/BR/PredModInputData.xlsx"
         patient_loc = (
             dh.get_path_to_main()
-            + "DataFiles/BR/REDCapData/ProcessedData/brPatient_20240509.csv"
+            + "DataFiles/BR/REDCapData/ProcessedData/brPatient_20240510.csv"
         )
         logging.warning(f"Loading patient data from {patient_loc}")
         self.brPatient = pd.read_csv(patient_loc)
@@ -495,7 +495,7 @@ class MeasurementData:
         # tmp_df = pd.DataFrame(data=out_dict, index=[0])
 
         # tmp_df.to_excel(
-        #     f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDataDemographicsByPatient-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+        #     f"{dh.get_path_to_main()}/DataFiles/BR/MeasurementData/ProcessedData/BRDataDemographicsByPatient-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
         # )
 
     def handleBreatheDuplicateMeasuresOneSheet(self):
@@ -693,7 +693,7 @@ class MeasurementData:
         self.brphysdata = temp_physdata.drop(columns=["ToRemove"])
         today = datetime.today()
         self.brphysdata.to_csv(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDuplicates-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
+            f"{dh.get_path_to_main()}/DataFiles/BR/MeasurementData/ProcessedData/BRDuplicates-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
         )
 
     def runPreprocess(self):
@@ -776,17 +776,17 @@ class MeasurementData:
     def exportData(self):
         today = datetime.today()
         self.brphysdata.to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            f"{dh.get_path_to_main()}/DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
             index=False,
         )
         self.brphysdata_deleted[
             self.brphysdata_deleted["Reason"] != "NULL Measurement"
         ].to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            f"{dh.get_path_to_main()}/DataFiles/BR/MeasurementData/ProcessedData/BRDeletedMeasurementData-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
             index=False,
         )
         pd.DataFrame.from_dict({"Offset": [self.broffset]}).to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+            f"{dh.get_path_to_main()}/DataFiles/BR/MeasurementData/ProcessedData/BROffset-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
             index=False,
         )
 
