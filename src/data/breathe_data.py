@@ -1,3 +1,4 @@
+import logging
 from functools import reduce
 
 import pandas as pd
@@ -23,37 +24,24 @@ def load_meas_from_excel(filename, str_cols_to_arrays=None):
     return df
 
 
-def load_patient_df_from_excel():
-    df = pd.read_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_patients.xlsx")
-    # ID column as type string
-    df["ID"] = df["ID"].astype(str)
-    return df
-
-
-def load_patients(part_key=False):
+def load_patients():
     """
     Loads Breathe patient data from the excel file and returns a dataframe
-    Columns loaded: ID, Age, Sex, Height, PartitionKey if requested
+    Columns loaded: ID, DOB, Age, Sex, Height
     """
-    print("\n*** Loading patients data ***")
-    if part_key:
-        usecols = "A, J, K, L, D, AD"
-    else:
-        usecols = "A, J, K, L"
+    logging.info("*** Loading patients data ***")
 
-    df = pd.read_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/PredModInputData.xlsx",
-        sheet_name="brPatient",
-        usecols=usecols,
+    df = pd.read_csv(
+        f"{dh.get_path_to_main()}DataFiles/BR/REDCapData/ProcessedData/brPatient_20240510.csv",
+        # usecols="A, E, G, H, Y"
+        usecols=[0, 6, 7, 24],
+        dtype={"ID": str},
     )
-    # Set ID as string
-    df.ID = df.ID.astype(str)
+    # Use calc age insted of age
+    df = df.rename(columns={"CalcAge": "Age"})
 
     sanity_checks.data_types(df)
     sanity_checks.must_not_have_nan(df)
-    print(
-        "The NaN values belong to IDs ('344') whose height are missing.\nHowever, we don't correct for them as we don't have any measurement corresponding to those IDs for now."
-    )
 
     def patients_sanity_checks(x):
         sanity_checks.age(x.Age, x.ID)
@@ -62,9 +50,23 @@ def load_patients(part_key=False):
 
     df.apply(patients_sanity_checks, axis=1)
 
-    print(f"Loaded {len(df)} individuals")
-    # df.to_excel(dh.get_path_to_main() + "ExcelFiles/BR/BR_patients.xlsx", index=False)
+    logging.info(f"Loaded {len(df)} individuals")
+    describe_patients(df)
     return df
+
+
+def describe_patients(df):
+    """
+    Describes the patients dataframe
+    """
+    logging.info(f"IDs: {df.ID.nunique()}")
+    logging.info(f"Sex: {df.Sex.value_counts()}")
+    logging.info(
+        f"Age (yr): min {df.Age.min()}, mean {df.Age.mean():.1f}, max {df.Age.max()}, std {df.Age.std():.1f}"
+    )
+    logging.info(
+        f"Height (cm): min {df.Height.min()}, mean {df.Height.mean():.1f}, max {df.Height.max()}, std {df.Height.std():.1f}"
+    )
 
 
 def load_measurements(file=2, fef2575=True):
@@ -76,7 +78,7 @@ def load_measurements(file=2, fef2575=True):
     if file == 1:
         df_raw = (
             pd.read_excel(
-                f"{dh.get_path_to_main()}ExcelFiles/BR/PredModInputData.xlsx",
+                f"{dh.get_path_to_main()}DataFiles/BR/PredModInputData.xlsx",
                 sheet_name="BRphysdata",
                 usecols="A, E, G, H , J",
             )
@@ -88,7 +90,7 @@ def load_measurements(file=2, fef2575=True):
     elif file == 2:
         df_raw = (
             pd.read_excel(
-                f"{dh.get_path_to_main()}ExcelFiles/BR/BRPhysdata-20240403T193349.xlsx",
+                f"{dh.get_path_to_main()}DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-20240510T160334.xlsx",
                 usecols="A, E, G, H , J",
             )
             .rename(

@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 
 
@@ -146,7 +148,7 @@ def data_types(df):
                     print(
                         f"Warning - Expected {col} to be of type int64, got {df[col].dtype}"
                     )
-            case "DateTime Recorded":
+            case "DateTime Recorded" | "DOB":
                 if df[col].dtype != np.dtype("datetime64[ns]"):
                     print(
                         f"Warning - Expected {col} to be of type datetime64[ns], got {df[col].dtype}"
@@ -185,5 +187,7 @@ def must_not_have_nan(df):
     Checks for NaN values in dataframe
     """
     if df.isna().sum().sum() > 1:
-        print(f"Warning - {df.isna().sum().sum()} NaN values in dataframe")
+        logging.ingo(f"Warning - {df.isna().sum().sum()} NaN values in dataframe")
+    else:
+        logging.info("No NaN values found in dataframe")
     return -1
