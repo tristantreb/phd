@@ -27,7 +27,7 @@ class RedCap:
         """
         filename = (
             dh.get_path_to_main()
-            + "DataFiles/BR/REDCapData/IDMappingFiles/PatientIDMappingFile-20240509.xlsx"
+            + "DataFiles/BR/REDCapData/IDMappingFiles/PatientIDMappingFile-20240510.xlsx"
         )
         self.redcapidmap = pd.read_excel(filename, dtype={"ID": str, "redcap_id": str})
 
@@ -117,6 +117,10 @@ class RedCap:
         id_merged = self.redcap_data.merge(
             self.redcapidmap, how="inner", left_on="study_id", right_on="redcap_id"
         )
+        # Print IDs that are in redcapidmap but not in redcap_data
+        print('IDs in redcapidmap but not in redcap_data', self.redcapidmap[~self.redcapidmap.redcap_id.isin(self.redcap_data.study_id)]['redcap_id'].unique())
+        # Print IDs that are in redcap_data but not in redcapidmap
+        print('IDs in redcap_data but not in redcapidmap', self.redcap_data[~self.redcap_data.study_id.isin(self.redcapidmap.redcap_id)]['study_id'].unique())
         tmpids = id_merged[
             id_merged["redcap_repeat_instrument"] == "patient_info"
         ].filter(["study_id", "hospital", "study_number"])
