@@ -69,34 +69,28 @@ def describe_patients(df):
     )
 
 
-def load_measurements(file=2, fef2575=True):
+def load_measurements(file=2):
     """
     Loads the Breathe data from the excel file and returns a dataframe
-    Only loads FEV1 and O2 Saturation measurements
+    Loads FEV1, O2 saturation, FEF2575 and PEF
     """
-    print("\n*** Loading measurements data ***")
+    logging.info("*** Loading measurements data ***")
     if file == 1:
-        df_raw = (
-            pd.read_excel(
-                f"{dh.get_path_to_main()}DataFiles/BR/PredModInputData.xlsx",
-                sheet_name="BRphysdata",
-                usecols="A, E, G, H , J",
-            )
-            .rename(
-                columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"}
-            )
-            .astype({"ID": str, "DateTime Recorded": "datetime64[ns]"})
+        df_raw = pd.read_excel(
+            f"{dh.get_path_to_main()}DataFiles/BR/PredModInputData.xlsx",
+            sheet_name="BRphysdata",
+            usecols="A, E, G, H , J",
+            dtype={"SmartCareID": str, "Date_TimeRecorded": "datetime64[ns]"},
+        ).rename(
+            columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"}
         )
     elif file == 2:
-        df_raw = (
-            pd.read_excel(
-                f"{dh.get_path_to_main()}DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-20240510T160334.xlsx",
-                usecols="A, E, G, H , J",
-            )
-            .rename(
-                columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"}
-            )
-            .astype({"ID": str, "DateTime Recorded": "datetime64[ns]"})
+        df_raw = pd.read_excel(
+            f"{dh.get_path_to_main()}DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-20240510T160334.xlsx",
+            usecols="A, E, G, H , J",
+            dtype={"SmartCareID": str, "DateTime Recorded": "datetime64[ns]"},
+        ).rename(
+            columns={"SmartCareID": "ID", "Date_TimeRecorded": "DateTime Recorded"}
         )
 
     df_raw["Date Recorded"] = df_raw["DateTime Recorded"].dt.date
@@ -131,21 +125,19 @@ def load_measurements(file=2, fef2575=True):
     )
     df_meas_list.append(df_o2_sat)
 
-    # FEF2575
-    if fef2575:
-        df_fef2575 = _get_measure_from_raw_df(
-            df_raw, "FEV", "FEF2575Recording", type=float, new_col_name="FEF2575"
-        )
-        sanity_checks.same_day_measurements(df_fef2575)
-        df_fef2575.apply(lambda x: sanity_checks.fef2575(x["FEF2575"], x.ID), axis=1)
-        df_meas_list.append(df_fef2575)
+    df_fef2575 = _get_measure_from_raw_df(
+        df_raw, "FEV", "FEF2575Recording", type=float, new_col_name="FEF2575"
+    )
+    sanity_checks.same_day_measurements(df_fef2575)
+    df_fef2575.apply(lambda x: sanity_checks.fef2575(x["FEF2575"], x.ID), axis=1)
+    df_meas_list.append(df_fef2575)
 
-        df_pef = _get_measure_from_raw_df(
-            df_raw, "FEV", "PEFRecording", type=int, new_col_name="PEF"
-        )
-        sanity_checks.same_day_measurements(df_pef)
-        df_pef.apply(lambda x: sanity_checks.pef(x["PEF"], x.ID), axis=1)
-        df_meas_list.append(df_pef)
+    df_pef = _get_measure_from_raw_df(
+        df_raw, "FEV", "PEFRecording", type=int, new_col_name="PEF"
+    )
+    sanity_checks.same_day_measurements(df_pef)
+    df_pef.apply(lambda x: sanity_checks.pef(x["PEF"], x.ID), axis=1)
+    df_meas_list.append(df_pef)
 
     # Build final dataframe, must have at least 2 elements in list
     df_meas = reduce(
@@ -157,13 +149,12 @@ def load_measurements(file=2, fef2575=True):
 
     sanity_checks.data_types(df_meas)
 
-    print("Number of IDs: ", df_meas.ID.nunique())
-    print("Number of rows: ", len(df_meas))
-    print(f"Number of FEV1 recordings: {len(df_fev1)}")
-    if fef2575:
-        print(f"Number of FEF2575 recordings: {len(df_fef2575)}")
-        print(f"Number of PEF recordings: {len(df_pef)}")
-    print(f"Number of O2 Saturation recordings: {len(df_o2_sat)}")
+    logging.info("Number of IDs: ", df_meas.ID.nunique())
+    logging.info("Number of rows: ", len(df_meas))
+    logging.info(f"Number of FEV1 recordings: {len(df_fev1)}")
+    logging.info(f"Number of FEF2575 recordings: {len(df_fef2575)}")
+    logging.info(f"Number of PEF recordings: {len(df_pef)}")
+    logging.info(f"Number of O2 Saturation recordings: {len(df_o2_sat)}")
     return df_meas
 
 
