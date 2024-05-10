@@ -76,7 +76,7 @@ class RedCap:
 
         filename = (
             dh.get_path_to_main()
-            + "DataFiles/BR/REDCapData/DataExportFiles/AnalysisOfRemoteMoni_DATA_2023-11-29_1445.csv"
+            + "DataFiles/BR/REDCapData/DataExportFiles/AnalysisOfRemoteMoni_DATA_2024-05-10_1353.csv"
         )
         self.redcap_data = pd.read_csv(filename, dtype={"study_id": str})
 
@@ -148,7 +148,7 @@ class RedCap:
             # retrieve relevant records
             trcdata = self.redcap_data[
                 self.redcap_data["redcap_repeat_instrument"] == rcinstr
-            ]
+            ].copy()
 
             temptable = (
                 trcdata.filter(["study_id", "ID"]).reset_index().drop(columns=["index"])
@@ -173,7 +173,7 @@ class RedCap:
             mltable_fields += list(tfieldmap.redcap_fieldname.unique())
 
             print(f"{rcinstr} = {mltable_fields}")
-            mltable = trcdata[mltable_fields]
+            mltable = trcdata[mltable_fields].copy()
 
             rename_dict = (
                 tfieldmap[["matlab_column", "redcap_fieldname"]]
