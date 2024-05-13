@@ -137,6 +137,22 @@ def fef2575_sup_pef(fef2575, pef, id):
     return -1
 
 
+def drug_therapies(df):
+    """
+    Drug therapy checks are at the DataFrame level
+    """
+    df = df.copy().reset_index(drop=True)
+    df.sort_values(by=["DrugTherapyStartDate"], ascending=False, inplace=True)
+    if (df.DrugTherapyStartDate >= df.DrugTherapyStopDate).any():
+        raise ValueError(f"Start date after stop date for ID {df.ID[0]}")
+    if df.DrugTherapyStartDate.isnull().any():
+        raise ValueError(f"Null start date for ID {df.ID[0]}")
+    # If the stop of drug n-1 is > start of drug n, then there is an overlap
+    if (df.DrugTherapyStartDate < df.DrugTherapyStopDate.shift(-1)).any():
+        raise ValueError(f"Overlap in drug therapy for ID {df.ID[0]}")
+    return -1
+
+
 def data_types(df):
     for col in df.columns:
         match col:
@@ -207,4 +223,5 @@ def must_not_have_nan(df):
         logging.warning(f"{df.isna().sum().sum()} NaN values in dataframe")
     else:
         logging.info("No NaN values found in dataframe")
+    return -1
     return -1

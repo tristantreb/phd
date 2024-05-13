@@ -34,6 +34,10 @@ def load_excel(file_path, str_cols_to_arrays=None):
     """
     df = pd.read_excel(file_path)
 
+    # If ID in columns set type to str
+    if "ID" in df.columns:
+        df["ID"] = df["ID"].astype(str)
+
     # Convert the given string columns to arrays
     if str_cols_to_arrays:
         for col in str_cols_to_arrays:
