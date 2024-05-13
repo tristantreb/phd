@@ -246,6 +246,142 @@ def _correct_fev1(df):
     return df
 
 
+def load_drug_therapies():
+    drug_df = pd.read_csv(
+        dh.get_path_to_main()
+        + "DataFiles/BR/REDCapData/ProcessedData/brDrugTherapy_20240510.csv",
+        usecols=[0, 3, 4, 5, 6],
+        dtype={
+            "ID": str,
+        },
+    )
+    drug_df["DrugTherapyStartDate"] = pd.to_datetime(
+        drug_df["DrugTherapyStartDate"]
+    ).dt.date
+    drug_df["DrugTherapyStopDate"] = pd.to_datetime(
+        drug_df["DrugTherapyStopDate"]
+    ).dt.date
+
+    def drug_therapy_type_dict():
+        return {
+            1: "Ivacaftor",
+            2: "Trikafta",
+            3: "Orkambi",
+            4: "Symkevi",
+            999: "Unknown",
+        }
+
+    drug_df["DrugTherapyType"] = drug_df["DrugTherapyType"].map(
+        drug_therapy_type_dict()
+    )
+
+    drug_df = drug_df.sort_values(
+        by=["ID", "DrugTherapyStartDate"], ascending=[True, False]
+    )
+
+    drug_df = _correct_drug_therapies(drug_df)
+    drug_df.groupby("ID").apply(sanity_checks.drug_therapies)
+
+    return drug_df
+
+
+def add_drug_therapy_to_df(df):
+    """
+    The input df needs to have an ID column and a Date Recorded column
+    """
+    drug_df = load_drug_therapies()
+
+    df["DrugTherapyType"] = None
+    # More efficient to iterate through drug_df rather than iterate through df
+    for i, row in drug_df.iterrows():
+        mask_ID = df.ID == row.ID
+        if pd.isnull(row.DrugTherapyStopDate):
+            mask_date = df["Date Recorded"] >= row.DrugTherapyStartDate
+        else:
+            # Note: Seried.between in inclusive to the right and to the left
+            mask_date = df["Date Recorded"].between(
+                row.DrugTherapyStartDate, row.DrugTherapyStopDate
+            )
+        df.loc[mask_ID & mask_date, "DrugTherapyType"] = row.DrugTherapyType
+    return df
+
+
+def _correct_drug_therapies(drug_df):
+    idx = drug_df[
+        (drug_df["ID"] == "108")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 4, 1))
+    ].index
+    logging.warning(
+        f"ID 108 - Dropping the Symkevi entry as it's got the same start date as an ongoing Trikafta treatment, but was stopped after 1 month"
+    )
+    drug_df = drug_df.drop(idx)
+
+    idx = drug_df[
+        (drug_df["ID"] == "131")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStopDate == datetime.date(2020, 12, 28))
+    ].index
+    logging.warning(
+        f"ID 131 - Shifting Symkevi stop date by 2 day to avoid overlap with Trikfta start"
+    )
+    # Replace Stop Date by 2020-12-26 for this index
+    drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2020, 12, 26)
+
+    idx = drug_df[
+        (drug_df["ID"] == "234")
+        & (drug_df.DrugTherapyType == "Ivacaftor")
+        & (drug_df.DrugTherapyStopDate == datetime.date(2022, 8, 1))
+    ].index
+    logging.warning(
+        f"ID 234 - Setting Ivacaftor stop date to 2021-06-30 to not overlap with Trikafta start date"
+    )
+    drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2021, 6, 30)
+
+    idx = drug_df[
+        (drug_df["ID"] == "334")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStopDate == datetime.date(2020, 12, 1))
+    ].index
+    logging.warning(
+        f"ID 334 - Changing Symkevi stop date by 3 months to avoid overlap with Trikafta start"
+    )
+    drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2020, 8, 31)
+
+    idx = drug_df[
+        (drug_df["ID"] == "334")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2021, 8, 1))
+    ].index
+    logging.warning(
+        f"ID 334 - Patient alternates between Symkevi and Trikafta as can't tolerate full Trikafta dose. Let's say he is on Trikafta, thus removing the Symkevi entry"
+    )
+    drug_df = drug_df.drop(idx)
+
+    idx = drug_df[
+        (drug_df["ID"] == "335")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 5, 26))
+    ].index
+    logging.warning(
+        f"ID 335 - Symkevi stop date has probably the wrong year, putting 2020 instead of 2022"
+    )
+    drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2020, 10, 15)
+
+    idx = drug_df[
+        (drug_df["ID"] == "413")
+        & (drug_df.DrugTherapyType == "Trikafta")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2021, 7, 5))
+    ].index
+    logging.warning(
+        f"ID 335 - Shift Trikafta stop date to 4 days earlier to avoid overlap with Ivacaftor"
+    )
+    drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2021, 7, 31)
+
+    drug_df = drug_df.reset_index(drop=True)
+    return drug_df
+
+
 def build_O2_FEV1_df(meas_file=2):
     """
     Drop NaN entries
