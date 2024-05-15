@@ -330,23 +330,41 @@ def model_f3(df, AR, ar_col, y_col="ecFEF2575%ecFEV1"):
 
 
 def fit_ia_hist_profile(x, y, IA, debug=False):
-    def exp_func(x, A, K, C):
-        return A * np.exp(K * x) + C
+    # def func(x, A, K):
+    #     return A * np.exp(K * x) + 0.001
+
+    # def objective(params, x, y):
+    #     return np.sum((func(x, *params) - y) ** 2)
+
+    # # Initial guess for parameters
+    # initial_guess = [1, -1]
+
+    # # Minimize the objective function with the constraint
+    # result = minimize(objective, initial_guess, args=(x, y), constraints=())
+    # A, K = result.x
+
+    # if debug:
+    #     print(f"A: {A:.5f}, K: {K:.5f}")x
+
+    # y_fit = func(IA.midbins, A, K)
+
+    def func(x, A, K, C):
+        return A * np.exp(-x / K) + C
 
     def objective(params, x, y):
-        return np.sum((exp_func(x, *params) - y) ** 2)
+        return np.sum((func(x, *params) - y) ** 2)
 
     # Initial guess for parameters
-    initial_guess = [1, -1, 0]
+    initial_guess = [1, 1, 0]
 
     # Minimize the objective function with the constraint
     result = minimize(objective, initial_guess, args=(x, y), constraints=())
     A, K, C = result.x
 
     if debug:
-        print(f"A: {A:.2f}, K: {K:.2f}, C: {C:.2f}")
+        print(f"A: {A:.5f}, K: {K:.5f}, C: {C:.5f}")
 
-    y_fit = exp_func(IA.midbins, A, K, C)
+    y_fit = func(IA.midbins, A, K, C)
     return y_fit
 
 
@@ -378,10 +396,14 @@ def calc_plot_cpt_IA_given_AR(
 
         # Create histogram data for IA, binned by IA bins
         s_ia_hist = df_tmp["IA midbin"].value_counts()
-        s_ia_hist = s_ia_hist / s_ia_hist.sum()
+        # Add 10% of the data distributed evenly on each bin
+        print("dirichlet factor", max(100, round(s_ia_hist.sum() * 0.1 / len(IA.bins))))
+        s_ia_hist_dirichlet = s_ia_hist + round(s_ia_hist.sum() * 0.1 / len(IA.bins))
+        s_ia_hist_norm = s_ia_hist_dirichlet / s_ia_hist_dirichlet.sum()
 
-        x = np.array(s_ia_hist.index)
-        y = s_ia_hist.values
+        x = np.array(s_ia_hist_norm.index)
+        y = s_ia_hist_norm.values
+
         y_fit = fit_ia_hist_profile(x, y, IA, debug)
 
         # If the bin_width used for the fit it greater than the variable's bin_width, use the same distribution for all variables bins contributing to the fit-bins
