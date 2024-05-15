@@ -277,8 +277,9 @@ def load_drug_therapies():
 
     drug_df = drug_df.sort_values(
         by=["ID", "DrugTherapyStartDate"], ascending=[True, False]
-    )
+    ).reset_index(drop=True)
 
+    drug_df = _clean_trikafta_drug_therapies(drug_df)
     drug_df = _correct_drug_therapies(drug_df)
     drug_df.groupby("ID").apply(sanity_checks.drug_therapies)
 
@@ -291,7 +292,7 @@ def add_drug_therapy_to_df(df):
     """
     drug_df = load_drug_therapies()
 
-    df["DrugTherapyType"] = None
+    df["DrugTherapyType"] = "None"
     # More efficient to iterate through drug_df rather than iterate through df
     for i, row in drug_df.iterrows():
         mask_ID = df.ID == row.ID
@@ -306,7 +307,63 @@ def add_drug_therapy_to_df(df):
     return df
 
 
+def _clean_trikafta_drug_therapies(df):
+    """
+    Trikafta is a combination of Symkevi and Ivacaftor
+    Cleaning entries where Trikafta has been added "on-top" without removing the previous treatment
+
+    Ex:
+       ID   Type       StartDate                  StopDate                   Comment
+    [['148' 'Trikafta' datetime.date(2020, 9, 24) NaT                        nan]
+    ['148'  'Symkevi'  datetime.date(2020, 2, 1)  NaT                        nan]]
+    becomes
+    [['148' 'Trikafta' datetime.date(2020, 9, 24) NaT                        nan]
+    ['148'  'Symkevi'  datetime.date(2020, 2, 1)  datetime.date(2020, 9, 23) nan]]
+
+    AND (the below one assumes Symkevi is not continued when Trikafta was stopped)
+
+    [['148' 'Trikafta' datetime.date(2020, 9, 24) datetime.date(2022, 7, 27) nan]
+    ['148'  'Symkevi'  datetime.date(2020, 2, 1)  NaT                        nan]]
+    becomes
+    [['148' 'Trikafta' datetime.date(2020, 9, 24) datetime.date(2022, 7, 27) nan]
+    ['148'  'Symkevi'  datetime.date(2020, 2, 1)  datetime.date(2020, 9, 23) nan]]
+    """
+    df_len = len(df)
+    df = df.sort_values(by=["ID", "DrugTherapyStartDate"], ascending=[True, False])
+    is_trikafta_idx = df[df.DrugTherapyType == "Trikafta"].index
+
+    for idx in is_trikafta_idx:
+        if idx == df_len - 1:
+            continue
+        if (
+            (df.loc[idx, "ID"] == df.loc[idx + 1, "ID"])
+            # & pd.isna(df.loc[idx, "DrugTherapyStopDate"])
+            & pd.isna(df.loc[idx + 1, "DrugTherapyStopDate"])
+            & (
+                df.loc[idx + 1, "DrugTherapyType"]
+                in ["Symkevi", "Ivacaftor", "Orkambi"]
+            )
+        ):
+            if (
+                df.loc[idx, "DrugTherapyStartDate"]
+                != df.loc[idx + 1, "DrugTherapyStartDate"]
+            ):
+                # logging.warning(df[idx : idx + 2].values)
+                df.at[idx + 1, "DrugTherapyStopDate"] = df.loc[
+                    idx, "DrugTherapyStartDate"
+                ] + datetime.timedelta(days=-1)
+            else:
+                logging.warning(
+                    f"ID {df.loc[idx, 'ID']} - Dropping {df.loc[idx + 1, 'DrugTherapyType']} since same start date as Trikafta"
+                )
+                df = df.drop(idx + 1)
+    return df.reset_index(drop=True)
+
+
 def _correct_drug_therapies(drug_df):
+    """
+    Corrects one-off issues in drug therapy entries
+    """
     idx = drug_df[
         (drug_df["ID"] == "108")
         & (drug_df.DrugTherapyType == "Symkevi")
@@ -378,8 +435,122 @@ def _correct_drug_therapies(drug_df):
     )
     drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2021, 7, 31)
 
-    drug_df = drug_df.reset_index(drop=True)
-    return drug_df
+    idx = drug_df[
+        (drug_df["ID"] == "175")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 12, 13))
+    ].index
+    logging.error(
+        f"ID 175 - ?? Symkevi start date is wrong, removing it because no clue about the true date (maybe 2019?)"
+    )
+    drug_df = drug_df.drop(idx)
+
+    idx1 = drug_df[
+        (drug_df["ID"] == "206")
+        & (drug_df.DrugTherapyType == "Trikafta")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2021, 7, 1))
+    ].index
+    idx2 = drug_df[
+        (drug_df["ID"] == "206")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2021, 1, 1))
+    ].index
+    idx3 = drug_df[
+        (drug_df["ID"] == "206")
+        & (drug_df.DrugTherapyType == "Ivacaftor")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 6, 1))
+    ].index
+    logging.error(
+        f"ID 206 - Updating Ivacaftor stop date to not overlap and changing Ivacaftor + Symkevi to Trikafta"
+    )
+    drug_df.loc[idx1, "DrugTherapyStartDate"] = datetime.date(2021, 1, 1)
+    drug_df.loc[idx3, "DrugTherapyStopDate"] = datetime.date(2020, 12, 31)
+    drug_df = drug_df.drop(idx2)
+
+    idx = drug_df[
+        (drug_df["ID"] == "221")
+        & (drug_df.DrugTherapyType == "Trikafta")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2022, 6, 1))
+    ].index
+    logging.warning(
+        f"ID 221 - Trikafta started in 2020, slowly due to developing rash, full dose in 2022. The FEV1 data for this ID doesn't show improvement after Jul 2021 (no data recorded before). I assume the improvement has been seen beforehand, and therefore drop the 2022 Trikafta entry."
+    )
+    drug_df = drug_df.drop(idx)
+
+    idx = drug_df[
+        (drug_df["ID"] == "238")
+        & (drug_df.DrugTherapyType == "Orkambi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2017, 9, 10))
+    ].index
+    logging.warning(f"ID 238 - Set stop date for Orkambi to avoid overlap with Symkevi")
+    drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2020, 1, 19)
+
+    idx = drug_df[
+        (drug_df["ID"] == "247")
+        & (drug_df.DrugTherapyType == "Trikafta")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2018, 7, 1))
+    ].index
+    logging.warning(
+        f"ID 247 - Trikafta prescribed in Jul 2018, and in Feb 2020. We have data only from Jul 2020 onwards. I remove the 2018 entry as it makes no difference and I assumed it was a fixed-time trial"
+    )
+    drug_df = drug_df.drop(idx)
+
+    idx1 = drug_df[
+        (drug_df["ID"] == "322")
+        & (drug_df.DrugTherapyType == "Ivacaftor")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 6, 29))
+    ].index
+    idx2 = drug_df[
+        (drug_df["ID"] == "322")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 12, 1))
+    ].index
+    logging.warning(
+        f"ID 322 - Currently no measures for this ID. Symkevi has started on top of Ivacaftor. Setting end date to Ivacaftor and renaming Symkevi to Trikafta"
+    )
+    drug_df.loc[idx1, "DrugTherapyStopDate"] = datetime.date(2020, 11, 30)
+    drug_df.loc[idx2, "DrugTherapyType"] = "Trikafta"
+
+    idx = drug_df[
+        (drug_df["ID"] == "358")
+        & (drug_df.DrugTherapyType == "Trikafta")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2021, 1, 19))
+    ].index
+    logging.info(f"ID 358 - Removing duplicated Trikafta entry")
+    if len(idx) > 1:
+        drug_df = drug_df.drop(idx[1])
+
+    idx = drug_df[
+        (drug_df["ID"] == "402")
+        & (drug_df.DrugTherapyType == "Trikafta")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2021, 1, 19))
+    ].index
+    logging.info(f"ID 358 - Removing duplicated Trikafta entry")
+    if len(idx) > 1:
+        drug_df = drug_df.drop(idx[1])
+
+    idx = drug_df[(drug_df["ID"] == "426") & drug_df.DrugTherapyType.isna()].index
+    logging.info(
+        f"ID 426 - Currently no measures for this ID. Removing two entries with NaN drug therapy type"
+    )
+    if len(idx) > 0:
+        drug_df = drug_df.drop(idx)
+
+    idx1 = drug_df[
+        (drug_df["ID"] == "462")
+        & (drug_df.DrugTherapyType == "Ivacaftor")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 11, 11))
+    ].index
+    idx2 = drug_df[
+        (drug_df["ID"] == "462")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 11, 11))
+    ].index
+    logging.info(f"ID 462 - Symkevi and Ivacaftor prescribed, renaming it to Trikafta")
+    drug_df.loc[idx1, "DrugTherapyType"] = "Trikafta"
+    drug_df = drug_df.drop(idx2)
+
+    return drug_df.reset_index(drop=True)
 
 
 def build_O2_FEV1_df(meas_file=2):

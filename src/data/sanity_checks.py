@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+import pandas as pd
 
 
 def weight(value, id):
@@ -144,12 +145,18 @@ def drug_therapies(df):
     df = df.copy().reset_index(drop=True)
     df.sort_values(by=["DrugTherapyStartDate"], ascending=False, inplace=True)
     if (df.DrugTherapyStartDate >= df.DrugTherapyStopDate).any():
-        raise ValueError(f"Start date after stop date for ID {df.ID[0]}")
+        logging.error(f"Start date after stop date for ID {df.ID[0]}")
     if df.DrugTherapyStartDate.isnull().any():
-        raise ValueError(f"Null start date for ID {df.ID[0]}")
+        logging.error(f"Null start date for ID {df.ID[0]}")
+    if pd.isnull(df.DrugTherapyStopDate.shift(-1)[0:-1]).any():
+        logging.error(
+            f"Overlap in drug therapy for ID {df.ID[0]}; previous drug therapy not ended"
+        )
     # If the stop of drug n-1 is > start of drug n, then there is an overlap
-    if (df.DrugTherapyStartDate < df.DrugTherapyStopDate.shift(-1)).any():
-        raise ValueError(f"Overlap in drug therapy for ID {df.ID[0]}")
+    elif (df.DrugTherapyStartDate < df.DrugTherapyStopDate.shift(-1)).any():
+        logging.error(
+            f"Overlap in drug therapy for ID {df.ID[0]}; stop date > start date"
+        )
     return -1
 
 
