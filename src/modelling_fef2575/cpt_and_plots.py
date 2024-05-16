@@ -135,8 +135,7 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
     return cpt_y_var_AR
 
 
-def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
-    fig = go.Figure()
+def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
     fig.add_traces(
         go.Scatter(
             x=df_f3["AR midbin"],
@@ -191,6 +190,14 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
             name="97th percentile",
         )
     )
+    return -1
+
+
+def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
+    fig = go.Figure()
+
+    add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3)
+
     # Add ticks on x axis
     fig.update_xaxes(
         title=f"{ar_col} midbin (%)",
