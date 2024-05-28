@@ -262,7 +262,7 @@ def get_sampled_df_and_statistics_df(df, n_samples, AR, y_col="ecFEF2575%ecFEV1"
     return df_sampled, df_f3
 
 
-def get_sampled_df_and_statistics_df_for_IA(df, n_samples, AR, AR_bin_width, IA):
+def get_sampled_df_for_AR_IA(df, n_samples, AR, IA):
     df_sampled = df.copy()
 
     # Renormalise all AR distributions
@@ -283,37 +283,31 @@ def get_sampled_df_and_statistics_df_for_IA(df, n_samples, AR, AR_bin_width, IA)
     print(f'Max sampled AR values: {max(df_sampled["AR sample"]):.2f}')
     print(f'Max sampled IA values: {max(df_sampled["IA sample"]):.2f}')
 
-    df_sampled["AR bin"] = pd.cut(
-        df_sampled["AR sample"],
+    return df_sampled
+
+
+def add_binned_up_var(df_sampled, col, var_name, bin_width):
+    df_sampled[f"{var_name} bin"] = pd.cut(
+        df_sampled[col],
         bins=np.arange(
-            np.floor(min(df_sampled["AR sample"])),
-            np.ceil(max(df_sampled["AR sample"])) + AR_bin_width,
-            AR_bin_width,
+            np.floor(min(df_sampled[col])),
+            np.ceil(max(df_sampled[col])) + bin_width,
+            bin_width,
         ),
     )
-    # ).apply(
-    #     lambda x: f"[{x.left}; {x.right})"
-    # )
 
-    # df_f3 = (
-    #     df_sampled.groupby("AR bin")
-    #     .agg(
-    #         mean=(y_col, "mean"),
-    #         std=(y_col, "std"),
-    #         median=(y_col, "median"),
-    #         p3=(y_col, lambda x: np.percentile(x, 3)),
-    #         p97=(y_col, lambda x: np.percentile(x, 97)),
-    #         p16=(y_col, lambda x: np.percentile(x, 16)),
-    #         p84=(y_col, lambda x: np.percentile(x, 84)),
-    #         count=(y_col, "count"),
-    #     )
-    #     .reset_index()
-    # )
-
-    df_sampled["AR midbin"] = df_sampled["AR bin"].apply(
-        lambda x: x.left + AR_bin_width / 2
+    df_sampled[f"{var_name} midbin"] = df_sampled[f"{var_name} bin"].apply(
+        lambda x: x.left + bin_width / 2
     )
-    # df_f3["AR midbin"] = df_f3["AR bin"].apply(lambda x: x.left + AR.bin_width / 2)
+    return df_sampled
+
+
+def get_sampled_df_and_statistics_df_for_IA(df, n_samples, AR, AR_bin_width, IA):
+    df_sampled = df.copy()
+
+    df_sampled = get_sampled_df_for_AR_IA(df, n_samples, AR, IA)
+
+    df_sampled = add_binned_up_var(df_sampled, "AR sample", "AR", AR_bin_width)
     return df_sampled
 
 
