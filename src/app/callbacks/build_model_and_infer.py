@@ -98,13 +98,13 @@ def model_and_inference_callback(app):
             [None, None, None, None, None, None],  # 6
             [None, None, None, None, posterior, None],  # 7
             [None, None, None, None, None, None],  # 8
-            [None, None, prior, None, None, None],  # 8
+            # [None, None, prior, None, None, None],  # 8
             [None, None, posterior, None, None, None],  # 9
             [None, None, None, None, None, None],  # 10
             [None, None, None, None, posterior, None],  # 11
             [None, None, None, None, None, None],  # 12
-            [None, None, None, None, None, None],  # 13
-            [None, None, None, None, prior, None],  # 14
+            # [None, None, None, None, None, None],  # 13
+            # [None, None, None, None, prior, None],  # 14
         ]
 
         fig = make_subplots(
@@ -120,28 +120,35 @@ def model_and_inference_callback(app):
 
         # HFEV1
         ih.plot_histogram(
-            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, colour="green"
+            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
         )
-
         ih.plot_histogram(
-            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, colour="green"
+            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, HFEV1.name, "green"
         )
 
         # HO2Sat
         ih.plot_histogram(
-            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, colour="blue"
+            fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, None, "blue"
         )
         o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.cpt), 1, 5)
 
         ih.plot_histogram(
-            fig, HO2Sat, res_ho2sat.values, o2sat_min, o2sat_max, 2, 5, colour="blue"
+            fig,
+            HO2Sat,
+            res_ho2sat.values,
+            o2sat_min,
+            o2sat_max,
+            2,
+            5,
+            HO2Sat.name,
+            "blue",
         )
         o2h.add_o2sat_normal_range_line(fig, max(res_ho2sat.values), 2, 5)
 
         # AR
-        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, colour="crimson")
+        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, None, "crimson")
 
-        ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3, colour="crimson")
+        ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 5, 3, AR.name, "crimson")
 
         # O2SatFFA
         ih.plot_histogram(
@@ -152,42 +159,38 @@ def model_and_inference_callback(app):
             o2sat_max,
             7,
             5,
-            colour="blue",
+            O2SatFFA.name,
+            "blue",
         )
         o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
 
         # IA
-        # ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 9, 3)
-        # fig["data"][7]["marker"]["color"] = "crimson"
+        # ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 9, 3, None, "crimson")
         ih.plot_histogram(
-            fig, IA, res_ia.values, ia_min, ia_max, 10, 3, colour="crimson"
+            fig, IA, res_ia.values, ia_min, ia_max, 9, 3, IA.name, "crimson"
         )
 
         # UO2Sat
         ih.plot_histogram(
-            fig, UO2Sat, res_uo2sat.values, o2sat_min, o2sat_max, 12, 5, colour="blue"
-        )
-        o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 12, 5)
-
-        # Put the message up from O2Sat to UO2Sat to see the result from the generative o2sat noise model
-        tmp_UO2Sat = UO2Sat
-        tmp_UO2Sat.name = "Message up from O2Sat"
-        # Given o2sat_obs, get the idx of the bin in which it falls in O2Sat
-        o2sat_obs_idx = np.where(O2Sat.midbins == O2Sat_obs)[0][0]
-        ih.plot_histogram(
             fig,
-            tmp_UO2Sat,
-            O2Sat.cpt[o2sat_obs_idx, :],
+            UO2Sat,
+            res_uo2sat.values,
             o2sat_min,
             o2sat_max,
-            15,
+            11,
             5,
-            colour="blue",
+            UO2Sat.name,
+            "blue",
         )
-        o2h.add_o2sat_normal_range_line(fig, O2Sat.cpt[o2sat_obs_idx, :], 15, 5)
+        o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 11, 5)
 
         fig.update_layout(
-            showlegend=False, height=800, width=1400, font=dict(size=10), bargap=0.01
+            showlegend=False,
+            height=600,
+            width=1400,
+            font=dict(size=10),
+            bargap=0.01,
+            margin=dict(l=0, r=0, b=0, t=0),
         )
         fig.update_traces(marker_line_width=0)
 

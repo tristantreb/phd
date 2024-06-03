@@ -20,11 +20,14 @@ def get_cpt(vars: List[mh.VariableNode]):
     return cpt
 
 
-def save_cpt(vars: List[mh.VariableNode], cpt: np.ndarray):
+def save_cpt(vars: List[mh.VariableNode], cpt: np.ndarray, suffix=None):
     path_to_folder = dh.get_path_to_src() + "/models/cpts/"
     filename = "_".join(
         [f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}" for var in vars]
     )
+
+    if suffix is not None:
+        filename = filename + suffix
 
     assert len(vars) == len(cpt.shape)
 
