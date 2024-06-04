@@ -141,6 +141,9 @@ def query_across_days(
         for shared_var, diff in zip(shared_variables, diffs):
             print(f"Epoch {epoch} - Posteriors' diff for {shared_var.name}: {diff}")
 
+        # Convergence reached when the diff is below the threshold
+        # or when the maximum number of epochs is reached
+        # When convergence is reached, run another epoch to get all posteriors
         if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
                 return df_res_final_epoch, df_res_before_convergence, shared_variables
