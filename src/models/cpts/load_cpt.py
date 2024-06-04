@@ -7,12 +7,15 @@ import src.models.helpers as mh
 from src.models.helpers import name_to_abbr
 
 
-def get_cpt(vars: List[mh.VariableNode]):
+def get_cpt(vars: List[mh.VariableNode], suffix=None):
     path_to_folder = dh.get_path_to_src() + "models/cpts/"
     var_spec = map(
         lambda var: f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}", vars
     )
     filename = "_".join(var_spec)
+
+    if suffix is not None:
+        filename = filename + suffix
 
     cpt = np.load(f"{path_to_folder}{filename}.npy")
 
