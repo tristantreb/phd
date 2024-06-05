@@ -6,7 +6,7 @@ import src.inference.helpers as ih
 import src.modelling_o2.helpers as o2h
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
-from src.inference.inf_algs import apply_pgmpy_bp
+from src.inference.inf_algs import apply_bayes_net_bp
 
 
 def model_and_inference_callback(app):
@@ -57,7 +57,7 @@ def model_and_inference_callback(app):
             HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
         )
 
-        inf_alg = apply_pgmpy_bp(model)
+        inf_alg = apply_bayes_net_bp(model)
 
         # INFERENCE
         print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)

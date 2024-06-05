@@ -388,12 +388,12 @@ def fev1_o2sat_fef2575_two_days_model(
     # HFEV1 and HO2Sat are shared between day 1 and day2
     model = BayesianNetwork(
         [
+            # Day 1
             (HFEV1.name, ecFEV1.name),
-            (AR.name, ecFEV1.name),
             (HO2Sat.name, O2SatFFA.name),
+            (AR.name, ecFEV1.name),
             (AR.name, O2SatFFA.name),
-            (AR.name, IA.name),
-            (AR.name, ecFEF2575prctecFEV1.name),
+            # (AR.name, ecFEF2575prctecFEV1.name),
             (O2SatFFA.name, UO2Sat.name),
             (IA.name, UO2Sat.name),
             (UO2Sat.name, O2Sat.name),
@@ -402,8 +402,7 @@ def fev1_o2sat_fef2575_two_days_model(
             (AR_2.name, ecFEV1_2.name),
             (HO2Sat.name, O2SatFFA_2.name),
             (AR_2.name, O2SatFFA_2.name),
-            (AR_2.name, IA_2.name),
-            (AR_2.name, ecFEF2575prctecFEV1_2.name),
+            # (AR_2.name, ecFEF2575prctecFEV1_2.name),
             (O2SatFFA_2.name, UO2Sat_2.name),
             (IA_2.name, UO2Sat_2.name),
             (UO2Sat_2.name, O2Sat_2.name),
@@ -421,7 +420,7 @@ def fev1_o2sat_fef2575_two_days_model(
         prior_ia,
         cpt_uo2sat,
         cpt_o2sat,
-        cpt_ecFEF2575prctecFEV1,
+        # cpt_ecFEF2575prctecFEV1,
         # Day 2
         cpt_ecfev1_2,
         prior_ar_2,
@@ -429,11 +428,29 @@ def fev1_o2sat_fef2575_two_days_model(
         prior_ia_2,
         cpt_uo2sat_2,
         cpt_o2sat_2,
-        cpt_ecFEF2575prctecfev1_2,
+        # cpt_ecFEF2575prctecfev1_2,
     )
     if check_model:
         model.check_model()
-    return model
+    return (
+        model,
+        HFEV1,
+        HO2Sat,
+        ecFEV1,
+        AR,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        # ecFEF2575prctecFEV1,
+        ecFEV1_2,
+        AR_2,
+        O2SatFFA_2,
+        IA_2,
+        UO2Sat_2,
+        O2Sat_2,
+        # ecFEF2575prctecFEV1_2,
+    )
 
 
 def fev1_o2sat_point_in_time_factor_graph(
