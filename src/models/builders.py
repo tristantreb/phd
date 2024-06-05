@@ -13,7 +13,7 @@ from pgmpy.models import BayesianNetwork
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 import src.models.var_builders as var_builders
-from src.inference.inf_algs import apply_custom_bp, apply_pgmpy_bp
+from src.inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -130,7 +130,7 @@ def build_full_FEV1_side(
 
     model.check_model()
 
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
     return model, inf_alg, HFEV1, LD, UFEV1, SAB, FEV1
 
 
@@ -181,7 +181,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
 
     model.check_model()
 
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
 
     return model, inf_alg, FEV1, HFEV1, AB
 
@@ -261,7 +261,7 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     # model.add_cpds(cpt_fev1, prior_ar, prior_hfev1, prior_ho2sat, cpt_o2_sat_ffa)
 
     model.check_model()
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
     print(f"Time to build model: {time.time() - tic}")
     return (model, inf_alg, HFEV1, ecFEV1, AR)
     # return (model, inf_alg, HFEV1, ecFEV1, HO2Sat, O2SatFFA, AR)
@@ -388,7 +388,7 @@ def build_longitudinal_FEV1_side(
 
     model.check_model()
 
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
     return (
         model,
         inf_alg,
@@ -411,7 +411,7 @@ def fev1_point_in_time_model(height, age, sex):
         AR,
     ) = var_builders.fev1_point_in_time(height, age, sex)
     model = graph_builders.fev1_point_in_time_model(HFEV1, ecFEV1, AR)
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR
 
 
@@ -437,7 +437,7 @@ def o2sat_fev1_point_in_time_model(height, age, sex):
     model = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -465,7 +465,7 @@ def o2sat_fev1_point_in_time_model_cf_priors(height, age, sex, ar_prior, ia_prio
     model = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
 
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
@@ -493,7 +493,7 @@ def o2sat_fev1_point_in_time_model_cf_ia_prior(height, age, sex):
     model = graph_builders.fev1_o2sat_point_in_time_model(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -521,7 +521,7 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
     model = graph_builders.fev1_o2sat_point_in_time_model_2(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
     )
-    inf_alg = apply_pgmpy_bp(model)
+    inf_alg = apply_bayes_net_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -549,7 +549,7 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
     model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
         HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model
     )
-    inf_alg = apply_custom_bp(model)
+    inf_alg = apply_factor_graph_bp(model)
     return model, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat
 
 
@@ -587,7 +587,7 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         ecFEF2575prctecFEV1,
         check_model,
     )
-    inf_alg = apply_custom_bp(model)
+    inf_alg = apply_factor_graph_bp(model)
     return (
         model,
         inf_alg,
@@ -600,4 +600,78 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+    )
+
+
+def o2_sat_fev1_fef2575_two_days_model(height, age, sex, check_model=False):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+    """
+
+    (
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
+        height, age, sex
+    )
+
+    (
+        model,
+        HFEV1,
+        HO2Sat,
+        ecFEV1,
+        AR,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        # ecFEF2575prctecFEV1,
+        ecFEV1_2,
+        AR_2,
+        O2SatFFA_2,
+        IA_2,
+        UO2Sat_2,
+        O2Sat_2,
+        # ecFEF2575prctecFEV1_2,
+    ) = graph_builders.fev1_o2sat_fef2575_two_days_model(
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        check_model,
+    )
+
+    inf_alg = apply_bayes_net_bp(model)
+    return (
+        model,
+        inf_alg,
+        HFEV1,
+        HO2Sat,
+        ecFEV1,
+        AR,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        # ecFEF2575prctecFEV1,
+        ecFEV1_2,
+        AR_2,
+        O2SatFFA_2,
+        IA_2,
+        UO2Sat_2,
+        O2Sat_2,
+        # ecFEF2575prctecFEV1_2,
     )

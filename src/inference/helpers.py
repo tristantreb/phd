@@ -7,7 +7,7 @@ import src.models.builders as mb
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 import src.models.var_builders as var_builders
-from src.inference.inf_algs import apply_custom_bp, apply_pgmpy_bp
+from src.inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -230,7 +230,7 @@ def infer_vars_and_get_back_df(
                 ecFEF2575prctecFEV1,
                 False,
             )
-            inf_alg = apply_custom_bp(model)
+            inf_alg = apply_factor_graph_bp(model)
         else:
             # Else we model AR causing IA with the given CPT
             IA.set_cpt(IA_cpt)
@@ -247,7 +247,7 @@ def infer_vars_and_get_back_df(
                 ecFEF2575prctecFEV1,
                 False,
             )
-            inf_alg = apply_pgmpy_bp(model)
+            inf_alg = apply_bayes_net_bp(model)
 
         def infer_and_unpack(row):
             # Build evidence

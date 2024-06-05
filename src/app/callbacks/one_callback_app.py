@@ -9,7 +9,7 @@ import src.modelling_o2.ia as ia
 import src.models.builders as mb
 import src.models.graph_builders as graph_builders
 import src.models.var_builders as var_builders
-from src.inference.inf_algs import apply_custom_bp
+from src.inference.inf_algs import apply_factor_graph_bp
 
 
 def build_fev1_o2sat_with_factor_graph(app):
@@ -549,7 +549,7 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
         model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
             HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, check_model=False
         )
-        inf_alg = apply_custom_bp(model)
+        inf_alg = apply_factor_graph_bp(model)
 
         # Plot specs before inference
         fev1_min = ecFEV1.a
