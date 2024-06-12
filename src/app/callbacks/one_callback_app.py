@@ -155,7 +155,7 @@ def build_fev1_o2sat_with_factor_graph(app):
         fig.update_layout(
             showlegend=False,
             height=600,
-            width=1400,
+            width=1000,
             font=dict(size=10),
             bargap=0.01,
             margin=dict(l=0, r=0, b=0, t=0),
@@ -336,7 +336,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         fig.update_layout(
             showlegend=False,
             height=600,
-            width=1400,
+            width=1000,
             font=dict(size=10),
             bargap=0.01,
             margin=dict(l=0, r=0, b=0, t=0),
@@ -498,7 +498,7 @@ def build_fev1_o2sat_with_bayes_net(app):
         fig.update_layout(
             showlegend=False,
             height=600,
-            width=1400,
+            width=1000,
             font=dict(size=10),
             bargap=0.01,
             margin=dict(l=0, r=0, b=0, t=0),
