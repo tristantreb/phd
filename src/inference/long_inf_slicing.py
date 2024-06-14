@@ -41,9 +41,22 @@ def get_var_name_list(variables: List[mh.VariableNode] | List[mh.SharedVariableN
     return list(map(lambda v: v.name, variables))
 
 
-def save_res_to_df(df, day, res, variables):
-    new_row = [day] + list(map(lambda v: res[v].values, variables))
-    new_row = pd.DataFrame([new_row], columns=["Day"] + variables)
+def save_res_to_df(df, day, res, variables_to_infer, row, evidence_vars):
+    evidence_vars = list(
+        map(lambda e: mh.abbr_to_colname(mh.name_to_abbr(e)), evidence_vars)
+    )
+    evidence_values = list(row[evidence_vars])
+    inferred_dist = list(map(lambda v: res[v].values, variables_to_infer))
+    new_row = pd.DataFrame(
+        data=[
+            [row["ID"], day, row["Age"], row["Height"], row["Sex"]]
+            + evidence_values
+            + inferred_dist
+        ],
+        columns=["ID", "Day", "Age", "Height", "Sex"]
+        + evidence_vars
+        + variables_to_infer,
+    )
     return pd.concat([df, new_row], ignore_index=True)
 
 
@@ -79,16 +92,14 @@ def query_across_days(
     variables: List[str],
     evidence_variables: List[str],
     diff_threshold,
+    debug=True,
 ):
+    df = df.reset_index(drop=True)
     final_epoch = False
     epoch = 0
 
-    df_res_before_convergence = pd.DataFrame(
-        columns=["Day"] + list(map(lambda v: v.name, shared_variables))
-    )
-    df_res_final_epoch = pd.DataFrame(
-        columns=["Day"] + list(map(lambda v: v.name, variables))
-    )
+    df_res_before_convergence = pd.DataFrame({})
+    df_res_final_epoch = pd.DataFrame({})
 
     # Initialize posteriors distribution to uniform
     posteriors_old = [
@@ -96,35 +107,42 @@ def query_across_days(
     ]
 
     while True:
-        print(f"epoch {epoch}")
+        if debug:
+            print(f"epoch {epoch}")
 
-        for i in range(len(df)):
-            day = df["Date Recorded"].iloc[i].strftime("%Y-%m-%d")
+        for i, row in df.iterrows():
+            day = row["Date Recorded"].strftime("%Y-%m-%d")
             # Get query inputs
-            evidence = build_evidence(df, i, evidence_variables)
+            evidence_dict = build_evidence(df, i, evidence_variables)
             vevidence, vmessage_dict = build_virtual_evidence(shared_variables, day)
 
             if final_epoch:
                 # Query all variables to get all posteriors
                 vars_to_infer = get_var_name_list(shared_variables + variables)
-                query_res = belief_propagation.query(vars_to_infer, evidence, vevidence)
+                query_res = belief_propagation.query(
+                    vars_to_infer, evidence_dict, vevidence
+                )
                 df_res_final_epoch = save_res_to_df(
                     df_res_final_epoch,
                     day,
                     query_res,
                     vars_to_infer,
+                    row,
+                    evidence_variables,
                 )
             else:
                 # Query shared variables to get cross plate message
                 vars_to_infer = get_var_name_list(shared_variables)
                 query_res, query_messages = belief_propagation.query(
-                    vars_to_infer, evidence, vevidence, get_messages=True
+                    vars_to_infer, evidence_dict, vevidence, get_messages=True
                 )
                 df_res_before_convergence = save_res_to_df(
                     df_res_before_convergence,
                     f"{epoch}, {day}",
                     query_res,
                     vars_to_infer,
+                    row,
+                    evidence_variables,
                 )
                 for shared_var in shared_variables:
                     # Get newly computed message from the query output
@@ -139,7 +157,8 @@ def query_across_days(
         posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
 
         for shared_var, diff in zip(shared_variables, diffs):
-            print(f"Epoch {epoch} - Posteriors' diff for {shared_var.name}: {diff}")
+            if debug:
+                print(f"Epoch {epoch} - Posteriors' diff for {shared_var.name}: {diff}")
 
         # Convergence reached when the diff is below the threshold
         # or when the maximum number of epochs is reached
@@ -147,9 +166,10 @@ def query_across_days(
         if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
                 return df_res_final_epoch, df_res_before_convergence, shared_variables
-            print(
-                f"All diffs are below {diff_threshold}, running another epoch to get all posteriors"
-            )
+            if debug:
+                print(
+                    f"All diffs are below {diff_threshold}, running another epoch to get all posteriors"
+                )
             final_epoch = True
         epoch += 1
 
