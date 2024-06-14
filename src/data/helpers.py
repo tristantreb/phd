@@ -65,3 +65,52 @@ def remove_any_nan(df, var_kept):
         print(f"This includes dropping {tmp_len - len(df_tmp)} entries with NaN {var}")
 
     return df_out
+
+
+def drug_therapy_color_dict():
+    return {
+        "Trikafta": "green",
+        "Ivacaftor": "purple",
+        "Symkevi": "purple",
+        "Orkambi": "purple",
+    }
+
+
+def add_drug_therapy_shapes_for_ID(fig, df_for_ID, drug_df):
+    drug_df = drug_df[drug_df["DrugTherapyType"] != "Unknown"]
+    drug_df_for_ID = drug_df[drug_df.ID == df_for_ID.ID[0]]
+    for _, row in drug_df_for_ID.iterrows():
+        start_date = row.DrugTherapyStartDate
+        stop_date = row.DrugTherapyStopDate
+        if pd.isnull(stop_date):
+            stop_date = df_for_ID["Date Recorded"].max()
+
+        fig.add_shape(
+            dict(
+                type="rect",
+                xref="x",
+                # yref="y",
+                yref="paper",
+                x0=start_date,
+                y0=0,
+                x1=stop_date,
+                y1=1,
+                fillcolor=drug_therapy_color_dict()[row.DrugTherapyType],
+                opacity=0.08,
+                layer="below",
+                line_width=0,
+                name=row.DrugTherapyType,
+                # label=dict(text=row.DrugTherapyType, textposition="top center", font=dict(size=20)),
+            )
+        )
+        # Add annotation
+        fig.add_annotation(
+            x=start_date,
+            y=1.02,
+            xref="x",
+            yref="paper",
+            text=row.DrugTherapyType,
+            showarrow=False,
+            font=dict(size=10),
+        )
+    return -1
