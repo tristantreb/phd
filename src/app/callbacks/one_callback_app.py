@@ -171,6 +171,8 @@ def build_fev1_o2sat_with_factor_graph(app):
 def build_fev1_fef2575_o2sat_with_factor_graph(app):
     @app.callback(
         Output("lung-graph", "figure"),
+        Output("FEV1-dist", "figure"),
+        Output("O2-saturation-dist", "figure"),
         Output("FEF25-75-dist", "figure"),
         Output("FEF25-75-prct-FEV1-output", "children"),
         # Inputs
@@ -221,8 +223,16 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
         vars_to_infer = [HFEV1, AR, HO2Sat, IA, O2SatFFA, UO2Sat]
-        evidence = [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]]
+        evidence = []
 
+        if "O2 saturation" in observed_vars_checklist:
+            evidence.append([O2Sat, O2Sat_obs])
+        else:
+            vars_to_infer.append(O2Sat)
+        if "FEV1" in observed_vars_checklist:
+            evidence.append([ecFEV1, FEV1_obs])
+        else: 
+            vars_to_infer.append(ecFEV1)
         if "FEF25-75" in observed_vars_checklist:
             evidence.append([ecFEF2575prctecFEV1, FEF2575prctFEV1_obs])
             fef2575_text = f"FEF25-75 in % of FEV1: {FEF2575prctFEV1_obs:.2f}%"
@@ -238,6 +248,10 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         res_o2satffa = query[O2SatFFA.name]
         res_ia = query[IA.name]
         res_uo2sat = query[UO2Sat.name]
+        if "FEV1" not in observed_vars_checklist:
+            res_ecfev1 = query[ecFEV1.name]
+        if "O2 saturation" not in observed_vars_checklist:
+            res_o2sat = query[O2Sat.name]
         if "FEF25-75" not in observed_vars_checklist:
             res_fef2575 = query[ecFEF2575prctecFEV1.name]
 
@@ -260,8 +274,6 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             [None, None, None, None, None, None],  # 10
             [None, None, None, None, posterior, None],  # 11
             [None, None, None, None, None, None],  # 12
-            # [None, None, None, None, None, None],  # 13
-            # [None, None, None, None, prior, None],  # 14
         ]
 
         fig = make_subplots(
@@ -351,6 +363,50 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         )
         fig.update_traces(marker_line_width=0)
 
+        fig_fev1 = make_subplots(rows=1, cols=1)
+        if "FEV1" not in observed_vars_checklist:
+            ih.plot_histogram(
+                fig_fev1,
+                ecFEV1,
+                res_ecfev1.values,
+                ecFEV1.a,
+                ecFEV1.b,
+                1,
+                1,
+                ecFEV1.name,
+                "green",
+            )
+            fig_fev1.update_layout(
+                showlegend=False,
+                height=100,
+                width=300,
+                font=dict(size=10),
+                bargap=0.01,
+                margin=dict(l=0, r=0, b=0, t=0),
+            )
+
+        fig_o2sat = make_subplots(rows=1, cols=1)
+        if "O2 saturation" not in observed_vars_checklist:
+            ih.plot_histogram(
+                fig_o2sat,
+                O2Sat,
+                res_o2sat.values,
+                o2sat_min,
+                o2sat_max,
+                1,
+                1,
+                O2Sat.name,
+                "blue",
+            )
+            fig_o2sat.update_layout(
+                showlegend=False,
+                height=100,
+                width=300,
+                font=dict(size=10),
+                bargap=0.01,
+                margin=dict(l=0, r=0, b=0, t=0),
+            )
+
         fig_fef2575 = make_subplots(rows=1, cols=1)
         if "FEF25-75" not in observed_vars_checklist:
             ih.plot_histogram(
@@ -362,6 +418,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
                 1,
                 1,
                 ecFEF2575prctecFEV1.name,
+                "green",
             )
             fig_fef2575.update_layout(
                 showlegend=False,
@@ -372,7 +429,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
                 margin=dict(l=0, r=0, b=0, t=0),
             )
 
-        return fig, fig_fef2575, fef2575_text
+        return fig, fig_fev1, fig_o2sat, fig_fef2575, fef2575_text
 
 
 def build_fev1_o2sat_with_bayes_net(app):
