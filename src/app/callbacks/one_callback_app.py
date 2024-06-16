@@ -1,4 +1,7 @@
+from typing import List
+
 import numpy as np
+import plotly.graph_objects as go
 from dash import Input, Output
 from plotly.subplots import make_subplots
 
@@ -168,9 +171,8 @@ def build_fev1_o2sat_with_factor_graph(app):
 def build_fev1_fef2575_o2sat_with_factor_graph(app):
     @app.callback(
         Output("lung-graph", "figure"),
+        Output("FEF25-75-dist", "figure"),
         Output("FEF25-75-prct-FEV1-output", "children"),
-        # Output("FEF25-75-slider", "min"),
-        # Output("FEF25-75-slider", "max"),
         # Inputs
         Input("sex-select", "value"),
         Input("age-input", "value"),
@@ -179,6 +181,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
         Input("O2Sat-slider", "value"),
+        Input("observed-vars-checklist", "value"),
     )
     def content(
         sex,
@@ -187,6 +190,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         FEV1_obs: float,
         FEF2575_obs: float,
         O2Sat_obs: float,
+        observed_vars_checklist: List[str],
     ):
         (
             _,
@@ -216,15 +220,17 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
 
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
-        query = ih.infer_on_factor_graph(
-            inf_alg,
-            [HFEV1, AR, HO2Sat, IA, O2SatFFA, UO2Sat],
-            [
-                [ecFEV1, FEV1_obs],
-                [ecFEF2575prctecFEV1, FEF2575prctFEV1_obs],
-                [O2Sat, O2Sat_obs],
-            ],
-        )
+        vars_to_infer = [HFEV1, AR, HO2Sat, IA, O2SatFFA, UO2Sat]
+        evidence = [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]]
+
+        if "FEF25-75" in observed_vars_checklist:
+            evidence.append([ecFEF2575prctecFEV1, FEF2575prctFEV1_obs])
+            fef2575_text = f"FEF25-75 in % of FEV1: {FEF2575prctFEV1_obs:.2f}%"
+        else:
+            vars_to_infer.append(ecFEF2575prctecFEV1)
+            fef2575_text = None
+
+        query = ih.infer_on_factor_graph(inf_alg, vars_to_infer, evidence)
 
         res_hfev1 = query[HFEV1.name]
         res_ar = query[AR.name]
@@ -232,6 +238,8 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         res_o2satffa = query[O2SatFFA.name]
         res_ia = query[IA.name]
         res_uo2sat = query[UO2Sat.name]
+        if "FEF25-75" not in observed_vars_checklist:
+            res_fef2575 = query[ecFEF2575prctecFEV1.name]
 
         # PLOT
         # Priors take 1x1 cells, posteriors take 2x2 cells
@@ -343,7 +351,28 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         )
         fig.update_traces(marker_line_width=0)
 
-        return fig, f"FEF25-75 in % of FEV1: {FEF2575prctFEV1_obs:.2f}%"
+        fig_fef2575 = make_subplots(rows=1, cols=1)
+        if "FEF25-75" not in observed_vars_checklist:
+            ih.plot_histogram(
+                fig_fef2575,
+                ecFEF2575prctecFEV1,
+                res_fef2575.values,
+                ecFEF2575prctecFEV1.a,
+                ecFEF2575prctecFEV1.b,
+                1,
+                1,
+                ecFEF2575prctecFEV1.name,
+            )
+            fig_fef2575.update_layout(
+                showlegend=False,
+                height=100,
+                width=300,
+                font=dict(size=10),
+                bargap=0.01,
+                margin=dict(l=0, r=0, b=0, t=0),
+            )
+
+        return fig, fig_fef2575, fef2575_text
 
 
 def build_fev1_o2sat_with_bayes_net(app):

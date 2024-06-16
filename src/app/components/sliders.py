@@ -27,7 +27,8 @@ fev1_slider_layout = dbc.Form(
 )
 
 fef2575_slider_layout = dbc.Form(
-    [
+    id="FEF25-75-slider-container",
+    children=[
         dbc.Label("FEF25-75 observed:"),
         dcc.Slider(
             id="FEF25-75-slider",
@@ -43,12 +44,12 @@ fef2575_slider_layout = dbc.Form(
                 5: "5 L/s",
             },
             tooltip={
-                "always_visible": True,
+                # "always_visible": True,
                 "placement": "bottom",
             },
         ),
     ],
-    style={"margin-left": "0px", "margin-right": "0px"},
+    style={"margin-left": "0px", "margin-right": "0px", "display": "none"},
 )
 
 O2Sat_slider_layout = dbc.Form(

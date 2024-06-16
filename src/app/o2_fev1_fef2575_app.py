@@ -1,7 +1,8 @@
 import os
+from typing import List
 
 import dash_bootstrap_components as dbc
-from dash import Dash, dcc, html
+from dash import Dash, Input, Output, dcc, html
 
 import src.app.assets.styles as s
 import src.app.components.sliders as sliders
@@ -34,7 +35,27 @@ app.layout = dbc.Container(
             "What is your lung's health?",
             style={"textAlign": "center", "padding-top": "0px"},
         ),
-        clinical_profile_input_layout,
+        html.Div(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(clinical_profile_input_layout),
+                        dbc.Col(
+                            dcc.Checklist(
+                                id="observed-vars-checklist",
+                                options={
+                                    "FEF25-75": "FEF25-75",
+                                    "FEV1": "FEV1",
+                                    "O2 saturation": "O2 saturation",
+                                },
+                                value=["FEV1", "O2 saturation"],
+                            )
+                        ),
+                    ]
+                )
+            ]
+        ),
+        # clinical_profile_input_layout,
         html.Div(
             "2. Select your FEV1, FEF25-75, and O2 saturation, and analyse your lung's health variables:",
             style={
@@ -63,7 +84,14 @@ app.layout = dbc.Container(
                 dbc.Row(
                     [
                         dbc.Col(sliders.fev1_slider_layout),
-                        dbc.Col(sliders.fef2575_slider_layout),
+                        dbc.Col(
+                            [
+                                dcc.Graph(
+                                    id="FEF25-75-dist", style={"display": "none"}
+                                ),
+                                sliders.fef2575_slider_layout,
+                            ]
+                        ),
                         dbc.Col(sliders.O2Sat_slider_layout),
                     ],
                     style={
@@ -78,6 +106,20 @@ app.layout = dbc.Container(
     style={"padding-left": "20px", "padding-right": "10px"},
     fluid=True,
 )
+
+
+@app.callback(
+    Output("FEF25-75-dist", "style"),
+    Output("FEF25-75-slider-container", "style"),
+    Input("observed-vars-checklist", "value"),
+)
+def show_slider_or_graph_FEF2575(
+    observed_vars_checklist: List[str],
+):
+    if "FEF25-75" in observed_vars_checklist:
+        return {"display": "none"}, {"display": "block"}
+    return {"display": "block"}, {"display": "none"}
+
 
 build_fev1_fef2575_o2sat_with_factor_graph(app)
 
