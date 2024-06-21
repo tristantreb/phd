@@ -1,4 +1,4 @@
-web: gunicorn src.app.o2_fev1_app:server
+web: gunicorn src.app.o2_fev1_fef2575_app:server
 
 # Uncomment this `release` process if you are using a database, so that Django's model
 # migrations are run as part of app deployment, using Heroku's Release Phase feature:
