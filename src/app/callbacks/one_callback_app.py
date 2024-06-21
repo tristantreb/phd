@@ -235,7 +235,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             vars_to_infer.append(ecFEV1)
         if "FEF25-75" in observed_vars_checklist:
             evidence.append([ecFEF2575prctecFEV1, FEF2575prctFEV1_obs])
-            fef2575_text = f"FEF25-75 in % of FEV1: {FEF2575prctFEV1_obs:.2f}%"
+            fef2575_text = f"Obtained FEF25-75 in % of FEV1: {FEF2575prctFEV1_obs:.2f}%"
         else:
             vars_to_infer.append(ecFEF2575prctecFEV1)
             fef2575_text = None
