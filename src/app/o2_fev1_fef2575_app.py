@@ -50,7 +50,7 @@ app.layout = dbc.Container(
                                     "padding-right": "0px",
                                 },
                             ),
-                            width=2,
+                            width=3,
                         ),
                     ]
                 )
@@ -81,7 +81,7 @@ app.layout = dbc.Container(
             id="FEF25-75-prct-FEV1-output",
             style={
                 "font-size": s.font_size(),
-                "margin-left": s.width_px(2 / 6),
+                "margin-left": s.width_px(0.24),
                 "padding-top": "0px",
             },
         ),
