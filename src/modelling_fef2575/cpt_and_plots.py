@@ -10,14 +10,24 @@ import src.data.helpers as dh
 import src.models.helpers as mh
 
 
-def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col):
+def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col, marginals=False):
     # fig = px.scatter(df, x="AR mean", y="FEF2575%PEF", color="IA mean")
     # fig = px.scatter(df, x="AR mean", y="ecFEF2575%ecPEF", color="IA mean")
     # fig = px.scatter(df, x="AR mean", y="ecFEF2575 % Predicted", color="IA mean")
     # fig = px.scatter(df, x="AR sample", y="ecFEF2575%ecFEV1", color="IA mean")
     # fig = px.scatter(df, x="AR mean", y="FEF2575%FEV1", color="IA mean")
     # Update the scale of the figure's color heatmap
-    fig = px.scatter(df, x=AR_col, y=FEF2575_col, color="IA mean")
+    if marginals:
+        fig = px.scatter(
+            df,
+            x=AR_col,
+            y=FEF2575_col,
+            color="IA mean",
+            marginal_x="histogram",
+            marginal_y="histogram",
+        )
+    else:
+        fig = px.scatter(df, x=AR_col, y=FEF2575_col, color="IA mean")
     t1 = 2
     t2 = 8
     colorscale = [
@@ -30,7 +40,7 @@ def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col):
     ]
     fig.update_coloraxes(colorscale=colorscale)
     # fig.update_yaxes(range=[0,150])
-    fig.update_traces(marker=dict(size=3))
+    fig.update_traces(marker=dict(size=3), selector=dict(mode="markers"))
     fig.update_layout(width=1200, height=800)
     fig.show()
 
@@ -213,7 +223,11 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
     return -1
 
 
-def get_sampled_df_and_statistics_df(df, n_samples, AR, y_col="ecFEF2575%ecFEV1"):
+def get_sampled_df_and_statistics_df(
+    df, n_samples, AR, y_col="ecFEF2575%ecFEV1", AR_bin_width=None
+):
+    if AR_bin_width is None:
+        AR_bin_width = AR.bin_width
     df_sampled = df.copy()
     df_sampled["AR sampled"] = np.nan
 
@@ -235,8 +249,8 @@ def get_sampled_df_and_statistics_df(df, n_samples, AR, y_col="ecFEF2575%ecFEV1"
         df_sampled["AR sample"],
         bins=np.arange(
             np.floor(min(df_sampled["AR sample"])),
-            np.ceil(max(df_sampled["AR sample"])) + AR.bin_width,
-            AR.bin_width,
+            np.ceil(max(df_sampled["AR sample"])) + AR_bin_width,
+            AR_bin_width,
         ),
     )
 
@@ -256,9 +270,9 @@ def get_sampled_df_and_statistics_df(df, n_samples, AR, y_col="ecFEF2575%ecFEV1"
     )
 
     df_sampled["AR midbin"] = df_sampled["AR bin"].apply(
-        lambda x: x.left + AR.bin_width / 2
+        lambda x: x.left + AR_bin_width / 2
     )
-    df_f3["AR midbin"] = df_f3["AR bin"].apply(lambda x: x.left + AR.bin_width / 2)
+    df_f3["AR midbin"] = df_f3["AR bin"].apply(lambda x: x.left + AR_bin_width / 2)
     return df_sampled, df_f3
 
 
