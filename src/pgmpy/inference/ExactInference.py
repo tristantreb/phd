@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
 import copy
 import itertools
+from functools import reduce
 
 import networkx as nx
 import numpy as np
 from tqdm.auto import tqdm
 
+from src.pgmpy.factors.discrete import DiscreteFactor
 from src.pgmpy.factors import factor_product
+from src.pgmpy.global_vars import SHOW_PROGRESS
 from src.pgmpy.inference import Inference
 from src.pgmpy.inference.EliminationOrder import (
-    WeightedMinFill,
-    MinNeighbors,
     MinFill,
+    MinNeighbors,
     MinWeight,
+    WeightedMinFill,
 )
-from src.pgmpy.models import JunctionTree, BayesianNetwork
-from src.pgmpy.global_vars import SHOW_PROGRESS
+from src.pgmpy.models import BayesianNetwork, FactorGraph, JunctionTree
 
 DEBUG = False
 # DEBUG = True
+
 
 class VariableElimination(Inference):
     def _get_working_factors(self, evidence):
@@ -196,7 +199,8 @@ class VariableElimination(Inference):
                 for factor, _ in working_factors[var]
                 if not set(factor.variables).intersection(eliminated_variables)
             ]
-            if DEBUG: print(f"factors: {factors}")
+            if DEBUG:
+                print(f"factors: {factors}")
             phi = factor_product(*factors)
             phi = getattr(phi, operation)([var], inplace=False)
             del working_factors[var]
@@ -205,10 +209,12 @@ class VariableElimination(Inference):
             eliminated_variables.add(var)
 
         # Step 4: Prepare variables to be returned.
-        if DEBUG: print("Prepare vars to be returned")
+        if DEBUG:
+            print("Prepare vars to be returned")
         final_distribution = set()
         for node in working_factors:
-            if DEBUG: print(f"node: {node}")
+            if DEBUG:
+                print(f"node: {node}")
             for factor, origin in working_factors[node]:
                 if not set(factor.variables).intersection(eliminated_variables):
                     final_distribution.add((factor, origin))
@@ -852,14 +858,16 @@ class BeliefPropagation(Inference):
         if not is_calibrated:
             self.calibrate()
 
-        if DEBUG: print(f"Query var to list")
+        if DEBUG:
+            print(f"Query var to list")
         if not isinstance(variables, (list, tuple, set)):
             query_variables = [variables]
         else:
             query_variables = list(variables)
         query_variables.extend(evidence.keys() if evidence else [])
 
-        if DEBUG: print(f"Find nodes with query vars")
+        if DEBUG:
+            print(f"Find nodes with query vars")
         # Find a tree T' such that query_variables are a subset of scope(T')
         nodes_with_query_variables = set()
         for var in query_variables:
@@ -868,7 +876,8 @@ class BeliefPropagation(Inference):
             )
         subtree_nodes = nodes_with_query_variables
 
-        if DEBUG: print(f"Conversion to set of tuple")
+        if DEBUG:
+            print(f"Conversion to set of tuple")
         # Conversion of set to tuple just for indexing
         nodes_with_query_variables = tuple(nodes_with_query_variables)
         # As junction tree is a tree, that means that there would be only path between any two nodes in the tree
@@ -904,7 +913,8 @@ class BeliefPropagation(Inference):
         # internal elements within it.
         parent_nodes = set([root_node])
         nodes_traversed = set()
-        if DEBUG: print(f"Compute clique potentials")
+        if DEBUG:
+            print(f"Compute clique potentials")
         while parent_nodes:
             parent_node = parent_nodes.pop()
             for child_node in set(subtree.neighbors(parent_node)) - nodes_traversed:
@@ -921,7 +931,8 @@ class BeliefPropagation(Inference):
         # Sum product variable elimination on the subtree
         variable_elimination = VariableElimination(subtree)
         if operation == "marginalize":
-            if DEBUG: print("Variable elimination marginalize") 
+            if DEBUG:
+                print("Variable elimination marginalize")
             return variable_elimination.query(
                 variables=variables,
                 evidence=evidence,
@@ -991,7 +1002,8 @@ class BeliefPropagation(Inference):
         >>> belief_propagation.query(variables=['J', 'Q'],
         ...                          evidence={'A': 0, 'R': 0, 'G': 0, 'L': 1})
         """
-        if DEBUG: print("Preprocess query")
+        if DEBUG:
+            print("Preprocess query")
         evidence = evidence if evidence is not None else dict()
         orig_model = self.model.copy()
 
@@ -1021,7 +1033,8 @@ class BeliefPropagation(Inference):
             self.model, evidence = self._prune_bayesian_model(variables, evidence)
         self._initialize_structures()
 
-        if DEBUG: print("Run query")
+        if DEBUG:
+            print("Run query")
         # Step 4: Run inference.
         result = self._query(
             variables=variables,
@@ -1147,3 +1160,327 @@ class BeliefPropagation(Inference):
             for var in variables:
                 return_dict[var] = map_query_results[var]
             return return_dict
+
+
+class BeliefPropagationWithMessageParsing(Inference):
+    """
+    Class for performing efficient inference using Belief Propagation method on factor graphs with no loops.
+
+    The message-parsing algorithm recursively parses the factor graph to propagate the
+    model's beliefs to infer the posterior distribution of the queried variable. The recursion
+    stops when reaching an observed variable or a unobserved root/leaf variable.
+
+    It does not work for loopy graphs.
+
+    Parameters
+    ----------
+    model: FactorGraph
+        Model on which to run the inference.
+
+    References
+    ----------
+    Algorithm 2.1 in https://www.mbmlbook.com/LearningSkills_Testing_out_the_model.html
+    by J Winn (Microsoft Research).
+    """
+
+    def __init__(self, model: FactorGraph, check_model=True):
+        assert isinstance(
+            model, FactorGraph
+        ), "Model must be an instance of FactorGraph"
+        if check_model:
+            model.check_model()
+        self.model = model
+
+    class _RecursiveMessageSchedulingQuery(object):
+        """
+        Private class used in `BeliefPropagationWithMessageParsing.query()` to efficiently
+        manage the message scheduling across the different queried variables, in a recursive way.
+
+        Parameters
+        ----------
+        Same as in the query method.
+        """
+
+        def __init__(
+            self,
+            belief_propagation,
+            variables,
+            evidence,
+            virtual_evidence,
+            get_messages,
+        ):
+            self.bp = belief_propagation
+            self.variables = variables
+            self.evidence = evidence
+            self.virtual_evidence = virtual_evidence
+            self.all_messages = {} if get_messages else None
+
+        def run(self):
+            agg_res = {}
+            for variable in self.variables:
+                res = self.schedule_variable_node_messages(
+                    variable,
+                    from_factor=None,
+                )
+                agg_res[variable] = DiscreteFactor([variable], [len(res)], res)
+            if self.all_messages is None:
+                return agg_res
+            else:
+                return agg_res, self.all_messages
+
+        def schedule_variable_node_messages(
+            self,
+            variable,
+            from_factor,
+        ):
+            """
+            Returns the message sent by the variable to the factor requesting it.
+            For that, the variable requests the messages coming from its neighbouring
+            factors, except the one making the request.
+
+            Parameters
+            ----------
+            variable: str
+                The variable node from which to compute the outgoing message
+            from_factor: pgmpy.factors.discrete.DiscreteFactor or None.
+                The factor requesting the message, as part of the recursion.
+                None for the first time this function is called.
+            """
+            if self.evidence is not None and variable in self.evidence.keys():
+                # Is an observed variable
+                return self.bp.model.get_point_mass_message(
+                    variable, self.evidence[variable]
+                )
+
+            virtual_messages = []
+            if (
+                self.virtual_evidence is not None
+                and variable
+                in self.bp._get_virtual_evidence_var_list(self.virtual_evidence)
+            ):
+                virtual_messages = [
+                    cpd.values
+                    for cpd in self.virtual_evidence
+                    if cpd.variables[0] == variable
+                ]
+
+            incoming_factors = [
+                factor
+                for factor in list(self.bp.model.neighbors(variable))
+                if factor != from_factor
+            ]
+
+            if len(incoming_factors) == 0:
+                # Is an unobserved leaf variable
+                message = self.bp.model.get_uniform_message(variable)
+
+                return self.bp.calc_variable_node_message(
+                    variable, [message] + virtual_messages
+                )
+            else:
+                # Else, get the incoming messages from all incoming factors
+                incoming_messages = []
+                for factor in incoming_factors:
+                    incoming_message = self.schedule_factor_node_messages(
+                        factor, variable
+                    )
+
+                    if self.all_messages is not None:
+                        # Store the message if it's not already stored
+                        factor_node_key = f"{factor.variables} -> {variable}"
+                        if factor_node_key not in self.all_messages.keys():
+                            self.all_messages[factor_node_key] = incoming_message
+
+                    incoming_messages.append(incoming_message)
+                return self.bp.calc_variable_node_message(
+                    variable, incoming_messages + virtual_messages
+                )
+
+        def schedule_factor_node_messages(self, factor, from_variable):
+            """
+            Returns the message sent from the factor to the variable requesting it.
+            For that, the factor requests the messages coming from its neighbouring
+            variables, except the one making the request.
+
+            Parameters
+            ----------
+            factor: pgmpy.factors.discrete.DiscreteFactor
+                The factor from which we want to compute the outgoing message.
+            from_variable: str
+                The variable requesting the message, as part of the recursion.
+            """
+            assert from_variable is not None, "from_var must be specified"
+
+            incoming_vars = [var for var in factor.variables if var != from_variable]
+            if len(incoming_vars) == 0:
+                # from_var is a root variable. The factor is its prior
+                return self.bp.calc_factor_node_message(factor, [], from_variable)
+            else:
+                # Else, get the incoming messages from all incoming variables
+                incoming_messages = []
+                for var in incoming_vars:
+                    incoming_message = self.schedule_variable_node_messages(var, factor)
+
+                    if self.all_messages is not None:
+                        # Store the message if it's not already stored
+                        node_factor_key = f"{var} -> {factor.variables}"
+                        if node_factor_key not in self.all_messages.keys():
+                            self.all_messages[node_factor_key] = incoming_message
+
+                    incoming_messages.append(incoming_message)
+                return self.bp.calc_factor_node_message(
+                    factor, incoming_messages, from_variable
+                )
+
+    def query(
+        self, variables, evidence=None, virtual_evidence=None, get_messages=False
+    ):
+        """
+        Computes the posterior distributions for each of the queried variable,
+        given the `evidence`, and the `virtual_evidence`. Optionally also returns
+        the computed messages.
+
+        Parameters
+        ----------
+        variables: list
+            List of variables for which you want to compute the posterior.
+        evidence: dict or None (default: None)
+            A dict key, value pair as {var: state_of_var_observed}.
+            None if no evidence.
+        virtual_evidence: list or None (default: None)
+            A list of pgmpy.factors.discrete.TabularCPD representing the virtual
+            evidences. Each virtual evidence becomes a virtual message that gets added to
+            the list of all computed messages.
+            None if no virtual evidence.
+
+        Returns
+        -------
+        If `get_messages` is False, returns a dict of the variables, posterior distributions
+            pairs: {variable: pgmpy.factors.discrete.DiscreteFactor}.
+        If `get_messages` is True, returns:
+            1. A dict of the variables, posterior distributions pairs:
+            {variable: pgmpy.factors.discrete.DiscreteFactor}
+            2. A dict of all messages sent across the graph, in the form:
+            {"{pgmpy.factors.discrete.DiscreteFactor.variables} -> variable": np.array}, or
+            {"variable -> {pgmpy.factors.discrete.DiscreteFactor.variables}": np.array}.
+
+        Examples
+        --------
+        >>> from pgmpy.factors.discrete import DiscreteFactor
+        >>> from pgmpy.models import FactorGraph
+        >>> from pgmpy.inference import BeliefPropagation
+        >>> factor_graph = FactorGraph()
+        >>> factor_graph.add_nodes_from(["A", "B", "C", "D"])
+        >>> phi1 = DiscreteFactor(["A"], [2], [0.4, 0.6])
+        >>> phi2 = DiscreteFactor(
+        ...     ["B", "A"], [3, 2], [[0.2, 0.05], [0.3, 0.15], [0.5, 0.8]]
+        ... )
+        >>> phi3 = DiscreteFactor(["C", "B"], [2, 3], [[0.4, 0.5, 0.1], [0.6, 0.5, 0.9]])
+        >>> phi4 = DiscreteFactor(
+        ...     ["D", "B"], [3, 3], [[0.1, 0.1, 0.2], [0.3, 0.2, 0.1], [0.6, 0.7, 0.7]]
+        ... )
+        >>> factor_graph.add_factors(phi1, phi2, phi3, phi4)
+        >>> factor_graph.add_edges_from(
+        ...     [
+        ...         (phi1, "A"),
+        ...         ("A", phi2),
+        ...         (phi2, "B"),
+        ...         ("B", phi3),
+        ...         (phi3, "C"),
+        ...         ("B", phi4),
+        ...         (phi4, "D"),
+        ...     ]
+        ... )
+        >>> belief_propagation = BeliefPropagation(factor_graph)
+        >>> belief_propagation.query(variables=['B', 'C'],
+        ...                          evidence={'D': 0},
+        ...                          virtual_evidence=[TabularCPD(['A'], 2, [[0.3], [0.7]])])
+        """
+        common_vars = set(evidence if evidence is not None else []).intersection(
+            set(variables)
+        )
+        if common_vars:
+            raise ValueError(
+                f"Can't have the same variables in both `variables` and `evidence`. Found in both: {common_vars}"
+            )
+
+        # Can't have the same variables in both `evidence` and `virtual_evidence`
+        if evidence is not None and virtual_evidence is not None:
+            self._check_virtual_evidence(virtual_evidence)
+
+            ve_names = self._get_virtual_evidence_var_list(virtual_evidence)
+            common_vars = set(evidence).intersection(set(ve_names))
+            if common_vars:
+                raise ValueError(
+                    f"Can't have the same variables in both `evidence` and `virtual_evidence`. Found in both: {common_vars}"
+                )
+
+        query = self._RecursiveMessageSchedulingQuery(
+            self, variables, evidence, virtual_evidence, get_messages
+        )
+        return query.run()
+
+    def calc_variable_node_message(self, variable, incoming_messages):
+        """
+        The outgoing message is the element wise product of all incoming messages
+
+        If there are no incoming messages, returns a uniform message
+        If there is only one incoming message, returns that message
+        Otherwise, returns the product of all incoming messages
+
+        Parameters
+        ----------
+        variable: str
+            the variable node from which to compute the outgoing message
+        incoming_messages: list
+            list of messages coming to this variable node
+        """
+        if len(incoming_messages) == 1:
+            return incoming_messages[0]
+        else:
+            outgoing_message = reduce(np.multiply, incoming_messages)
+        return outgoing_message / np.sum(outgoing_message)
+
+    @staticmethod
+    def calc_factor_node_message(factor, incoming_messages, target_var):
+        """
+        Returns the outgoing message for a factor node, which is the
+        multiplication of the incoming messages with the factor function (CPT).
+
+        The variables' order in the incoming messages list must match the
+        variable's order in the CPT's dimensions
+
+        Parameters
+        ----------
+        factor: str
+            the factor node from which to compute the outgoing message
+        incoming_messages: list
+            list of messages coming to this factor node
+        target_var: str
+            the variable node to which the outgoing message is being sent to
+        """
+        cpt = factor.values
+
+        assert (
+            len(incoming_messages) == cpt.ndim - 1
+        ), f"Error computing factor node message for {target_var}. The number of incoming messages must equal the card(CPT) - 1"
+
+        if len(incoming_messages) == 0:
+            return cpt
+
+        # Ensure that the target var is on the CPT's 0th axis
+        target_var_idx = factor.variables.index(target_var)
+        if target_var_idx != 0:
+            # Move target var to the 0th axis to allow the reduction
+            cpt = np.moveaxis(cpt, target_var_idx, 0)
+
+        # Invert incoming_messages, so that the first message corresponds to the last
+        # dimension of the CPT
+        incoming_messages = list(reversed(incoming_messages))
+
+        # Reduce the CPT with the inverted list of incoming messages
+        outgoing_message = reduce(
+            lambda cpt_reduced, m: np.matmul(cpt_reduced, m), incoming_messages, cpt
+        )
+        # Normalise
+        return outgoing_message / sum(outgoing_message)
