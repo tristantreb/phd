@@ -36,8 +36,8 @@ def fit_factor_profile(df_to_fit, x, y):
             ],
         )
 
-    # def objective(params, x, y):
-    #     return np.sum((func(x, *params) - y)**2)
+    def objective(params, x, y):
+        return np.sum((func(x, *params) - y)**2)
 
     # Enforce monotonicity constraint
     # constraints = ({'type': 'ineq', 'fun': lambda params: np.diff(func(x_data, *params))})

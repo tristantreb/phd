@@ -9,7 +9,7 @@ def get_IA_breathe_prior():
     Prior for IA learnt on the Breathe dataset
 
     See 2024-02-06_point_in_time_model_validation.ipynb
-    Built for the following parametrisation IA = mh.variableNode("Inactive alveoli (%)", 0, 30, 1, prior={"type": "uniform"})
+    Built for the following parametrisation IA = mh.VariableNode("Inactive alveoli (%)", 0, 30, 1, prior={"type": "uniform"})
     """
     prior = np.array(
         [
@@ -74,15 +74,15 @@ def get_IA_proba(bins, std, debug):
     return p
 
 
-def calc_cpt(IA: mh.variableNode, AR: mh.variableNode, debug=True):
+def calc_cpt(IA: mh.VariableNode, AR: mh.VariableNode, debug=True):
     """
     Computes the CPT for P(IA|AR)
     IA: inactive alveoli
     AR: airway resistance
     """
 
-    nbinsIA = len(IA.bins)
-    nbinsAR = len(AR.bins)
+    nbinsIA = IA.card
+    nbinsAR = AR.card
 
     cpt = np.zeros((nbinsIA, nbinsAR))
 

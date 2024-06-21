@@ -16,6 +16,48 @@ TOL_GLOBAL = 1e-6
 # Switch from 1e-8 to 1e-6 to because got 0.9999999885510139 sum of probabilities for a model with AW
 
 
+def name_to_abbr_dict():
+    return {
+        "Healthy FEV1 (L)": "HFEV1",
+        "ecFEV1 (L)": "ecFEV1",
+        "ecFEF25-75 % ecFEV1 (%)": "ecFEF25-75%ecFEV1",
+        "Airway resistance (%)": "AR",
+        "O2 saturation (%)": "O2Sat",
+        "Healthy O2 saturation (%)": "HO2Sat",
+        "O2 saturation if fully functional alveoli (%)": "O2SatFFA",
+        "Inactive alveoli (%)": "IA",
+        "Underlying O2 saturation (%)": "UO2Sat",
+    }
+
+
+def name_to_abbr(name: str):
+    abbr = name_to_abbr_dict().get(name, "Invalid name")
+    if abbr == "Invalid name":
+        raise ValueError(f"Invalid name: {name}")
+
+    return abbr
+
+
+def abbr_to_colname_dict():
+    return {
+        "HFEV1": "Predicted FEV1",
+        "ecFEV1": "ecFEV1",
+        "O2Sat": "O2 Saturation",
+        "HO2Sat": "Healthy O2 Saturation",
+        "ecFEF25-75%ecFEV1": "ecFEF2575%ecFEV1",
+        "AR": "AR",
+        "IA": "IA",
+    }
+
+
+def abbr_to_colname(name: str):
+    colname = abbr_to_colname_dict().get(name, "Invalid abbreviation")
+    if colname == "Invalid abbreviation":
+        raise ValueError(f"Invalid abbreviation: {name}")
+
+    return colname
+
+
 ## Discretized PDF with the sampling solution
 # Let Unblocked FEV1 be a continuous random variable following a uniform distribution between a and b
 def get_unblocked_fev1(a, b):
@@ -93,7 +135,7 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
     return PDF_X_x_Y(z, x_a, x_b, 1 - y_b, 1 - y_a)
 
 
-class variableNode:
+class VariableNode:
     """
     This variable node class can be used to build Bayesian networks as well as factor graphs.
 
@@ -122,16 +164,36 @@ class variableNode:
         # We're b - TOL_GLOBAL allows to exclude b from the array of bins
         self.bins = np.arange(a, b - self.tol, bin_width)
         self.midbins = self.bins + self.bin_width / 2
-        # bins_arr = [[a, a+bin_width], [a+bin_width, a+2*bin_width], ...
-        self.bins_arr = np.array(
-            list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
-        )
-        # bins_str = ["[a, a+bin_width]", "[a+bin_width, a+2*bin_width]", ...
-        self.bins_str = list(
+        self.card = len(self.bins)
+        self.cpt = self.set_prior(prior)
+
+    def get_abbr(self):
+        '''
+        Return the abbreviation of the variable's name
+        '''
+        return name_to_abbr(self.name)
+    
+    def get_colname(self):
+        '''
+        Return the column name of the variable's name
+        '''
+        return abbr_to_colname(self.get_abbr())
+
+    def get_bins_str(self):
+        """
+        bins_str = ["[a, a+bin_width]", "[a+bin_width, a+2*bin_width]", ...
+        """
+        return list(
             map(lambda x: f"[{round(x,2)}, {round(x + self.bin_width,2)})", self.bins)
         )
 
-        self.cpt = self.set_prior(prior)
+    def get_bins_arr(self):
+        """
+        bins_arr = [[a, a+bin_width], [a+bin_width, a+2*bin_width], ...
+        """
+        return np.array(
+            list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
+        )
 
     def sample(self, n=1, p=None):
         """
@@ -262,7 +324,7 @@ class variableNode:
         """
         Returns the distribution's mean given an array of probabilities
         """
-        return np.multiply(p, self.bins + self.bin_width / 2).sum()
+        return np.multiply(p, self.midbins).sum()
 
     def get_mode(self, p):
         """
@@ -280,8 +342,95 @@ class variableNode:
         # Find the highest negative value of the bins relative to centered bins
         idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
 
-        (lower_idx, upper_idx) = self.bins_arr[idx]
+        (lower_idx, upper_idx) = self.get_bins_arr()[idx]
         return "[{}; {})".format(lower_idx, upper_idx), idx
+
+    def get_point_message(self, obs_val):
+        # Create an array with 1 at the index of the evidence and 0 elsewhere
+        message = np.zeros(self.card)
+        idx = self.get_bin_for_value(obs_val)[1]
+        message[idx] = 1
+        return message
+
+
+class SharedVariableNode(VariableNode):
+    """
+    In longitudinal models, a shared variable is a variable that is
+    connected to a factor belonging to a different time plate.
+    The shared variable is able to store messages coming from that factor,
+    and operate on them to be used as virtual messages in the slicing belief
+    propagation algorithm.
+    """
+
+    def __init__(self, name: str, a, b, bin_width, prior):
+        super().__init__(name, a, b, bin_width, prior)
+        self.name = name
+        self.factor_node_key = ""
+        self.vmessages = {}
+        self.agg_vmessage = np.ones(self.card)
+
+    def set_factor_node_key(self, factor_node_key):
+        """
+        Key to identify the factor -> node message in the graph
+        """
+        self.factor_node_key = factor_node_key
+
+    def add_or_update_message(self, day_key, new_message):
+        assert new_message.shape == (
+            self.card,
+        ), "The message must have the same shape as the variable's cardinality"
+        # Always replace the message for that day, even if it already exists
+        self.vmessages[day_key] = new_message
+
+    def set_agg_virtual_message(self, vmessage, new_message):
+        """
+        The new aggregated message is the multiplication of all messages coming from the factor to the node
+
+        Virtual message: multiplication of all factor to node messages excluding current day message
+        New message: newly computed factor to node message
+        """
+        agg_m = np.multiply(vmessage, new_message)
+        self.agg_vmessage = agg_m / agg_m.sum()
+
+    def reset(self):
+        self.vmessages = {}
+        self.agg_vmessage = np.ones(self.card)
+
+    def get_virtual_message(self, day_key, agg_method=True):
+        """
+        Returns the aggregated message, excluding the message from the current day
+        if applicable (if n_epoch > 0).
+        """
+        if agg_method:
+            agg_m = self.agg_vmessage
+
+            if day_key not in self.vmessages.keys():
+                return agg_m
+
+            # Remove previous today's message from agg_m
+            curr_m = self.vmessages[day_key]
+            agg_m_excl_curr_m = np.divide(
+                agg_m, curr_m, out=np.zeros_like(agg_m), where=curr_m != 0
+            )
+            return agg_m_excl_curr_m / agg_m_excl_curr_m.sum()
+
+        # Multiply all messages together (less efficient)
+        # Remove message with day_key from the list of messages
+        vmessages = self.vmessages.copy()
+        if day_key in self.vmessages.keys():
+            vmessages.pop(day_key)
+
+        if len(vmessages) == 0:
+            return None
+        elif len(vmessages) == 1:
+            return list(vmessages.values())[0]
+        else:
+            agg_message = np.ones(self.card)
+            for vm in vmessages.values():
+                agg_message = np.multiply(agg_message, vm)
+                # Renormalise each time to avoid numerical issues (message going to 0)
+                agg_message = agg_message / agg_message.sum()
+            return agg_message
 
 
 def encode_node_variable(var):
@@ -305,7 +454,7 @@ def decode_node_variable(jsoned_var):
     a = jsoned_var["a"]
     b = jsoned_var["b"]
     bin_width = jsoned_var["bin_width"]
-    class_var = variableNode(name, a, b, bin_width, prior=None)
+    class_var = VariableNode(name, a, b, bin_width, prior=None)
     # Transform list to ndarray
     class_var.cpt = np.array(jsoned_var["cpt"])
     return class_var

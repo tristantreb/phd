@@ -1,9 +1,9 @@
 import dash_bootstrap_components as dbc
 from dash import dcc
-import src.app.assets.styles as s
 
 fev1_slider_layout = dbc.Form(
-    [
+    id="FEV1-slider-container",
+    children=[
         dbc.Label("FEV1 observed:"),
         dcc.Slider(
             id="FEV1-slider",
@@ -19,16 +19,41 @@ fev1_slider_layout = dbc.Form(
                 5: "5 L",
             },
             tooltip={
-                "always_visible": True,
                 "placement": "bottom",
             },
         ),
     ],
-    style={"margin-left": "0px", "margin-right": s.width_px(1/6)},
+    style={"display": "none"},
+)
+
+fef2575_slider_layout = dbc.Form(
+    id="FEF25-75-slider-container",
+    children=[
+        dbc.Label("FEF25-75 observed:"),
+        dcc.Slider(
+            id="FEF25-75-slider",
+            min=0,
+            max=6,
+            step=0.1,
+            value=2,
+            marks={
+                1: "1 L/s",
+                2: "2 L/s",
+                3: "3 L/s",
+                4: "4 L/s",
+                5: "5 L/s",
+            },
+            tooltip={
+                "placement": "bottom",
+            },
+        ),
+    ],
+    style={"display": "none"},
 )
 
 O2Sat_slider_layout = dbc.Form(
-    [
+    id="O2-saturation-slider-container",
+    children=[
         dbc.Label("O2 saturation observed:"),
         dcc.Slider(
             id="O2Sat-slider",
@@ -37,22 +62,9 @@ O2Sat_slider_layout = dbc.Form(
             step=1,
             value=98,
             tooltip={
-                "always_visible": True,
                 "placement": "bottom",
             },
         ),
     ],
-    style={"margin-left": s.width_px(1/6), "margin-right": "0px"},
+    style={"display": "none"},
 )
-
-# o2_fev1_sliders_layout = html.Div(
-#             [
-#                 dbc.Row(
-#                     [
-#                         dbc.Col(fev1_slider_layout),
-#                         dbc.Col(O2Sat_slider_layout),
-#                     ],
-#                     style={"font-size": s.font_size(), "padding-top": "20px", "padding-bottom": "0px"},
-#                 ),
-#             ]
-#         ),

@@ -1,7 +1,6 @@
-import numpy as np
 from scipy.stats import norm
 
-import src.data.sanity_checks as sanity_checks
+import src.modelling_fev1.gli_models_helpers as glih
 
 
 def calc_hfev1_prior(hfev1_bins, height, age, sex):
@@ -10,33 +9,17 @@ def calc_hfev1_prior(hfev1_bins, height, age, sex):
     This model uses the inversed LMS percentile curve function to compute the zscores of each bin given an input array of HFEV1/predictedFEV1 bin values
     """
     # Compute the predicted FEV1 for the individual
-    pred_fev1_arr = calc_predicted_FEV1_LMS_straight(height, age, sex)
+    pred_fev1_arr = calc_predicted_value_LMS_straight(height, age, sex)
     S = pred_fev1_arr["S"]
     M = pred_fev1_arr["M"]
     L = pred_fev1_arr["L"]
 
     # Compute zscores for each bin
-    zscores = get_inverse_lms_pred_fev1_for_zscore(hfev1_bins, S, M, L)
+    zscores = glih.get_inverse_lms_pred_fev1_for_zscore(hfev1_bins, S, M, L)
 
     # Get probabilities for each bin
     p = norm.pdf(zscores)
     return p / p.sum()
-
-
-def calc_FEV1_prct_predicted_df(df):
-    """
-    Returns input DataFrame with FEV1 % Predicted as a new column, after sanity check
-    """
-    df["ecFEV1 % Predicted"] = df["ecFEV1"] / df["Predicted FEV1"] * 100
-    df.apply(
-        lambda x: sanity_checks.fev1_prct_predicted(x["ecFEV1 % Predicted"], x.ID),
-        axis=1,
-    )
-    df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
-    df.apply(
-        lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1
-    )
-    return df
 
 
 def calc_predicted_FEV1_linear(height: int, age: int, sex: str):
@@ -55,83 +38,17 @@ def calc_predicted_FEV1_linear(height: int, age: int, sex: str):
         return {"Predicted FEV1": pred_FEV1, "std": std_dev}
 
 
-def calc_predicted_FEV1_LMS_df(df):
-    """
-    Returns a Series with Predicted FEV1 from a DataFrame with Sex, Height, Age
-    """
-    df["Predicted FEV1"] = df.apply(
-        lambda x: calc_predicted_FEV1_LMS(
-            load_LMS_spline_vals(x.Age, x.Sex),
-            load_LMS_coeffs(x.Sex),
-            x.Height,
-            x.Age,
-            x.Sex,
-        )["M"],
-        axis=1,
-    )
-    df.apply(lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID), axis=1)
-    return df
-
-
-def calc_predicted_FEV1_LMS_straight(height: int, age: int, sex: str):
-    return calc_predicted_FEV1_LMS(
-        load_LMS_spline_vals(age, sex), load_LMS_coeffs(sex), height, age, sex
+def calc_predicted_value_LMS_straight(height: int, age: int, sex: str, debug=False):
+    return glih.calc_predicted_value_LMS(
+        load_FEV1_LMS_spline_vals(age, sex),
+        load_FEV1_LMS_coeffs(sex),
+        height,
+        age,
+        debug,
     )
 
 
-def get_lms_pred_fev1_for_zscore(zscore_arr, M, S, L):
-    return np.exp(np.log(1 + zscore_arr * L * S) / L + np.log(M))
-
-
-def get_inverse_lms_pred_fev1_for_zscore(pred_fev1_arr, S, M, L):
-    return (np.exp(L * np.log(pred_fev1_arr / M)) - 1) / (S * L)
-
-
-def calc_predicted_FEV1_LMS(spline_vals, coeffs, height: int, age: int, sex: str):
-    """
-    Implemented from the GLI reference equations.
-    The GLI's model a location (M), scale (S), shape (L) model to predicted FEV1 given a Z-Score​
-    Equations: https://www.ers-education.org/lr/show-details/?idP=138978
-    Paper: https://www.ersnet.org/science-and-research/ongoing-clinical-research-collaborations/the-global-lung-function-initiative/gli-tools/
-    """
-    # M = exp(a0 + a1*ln(Height) + a2*ln(Age) + a3*AfrAm + a4*NEAsia + a5*SEAsia + Mspline)
-    M = np.exp(
-        coeffs["M"]["Intercept"]
-        + coeffs["M"]["Height"] * np.log(height)
-        + coeffs["M"]["Age"] * np.log(age)
-        + spline_vals["Mspline"]
-    )
-
-    # S =  exp(p0 + p1*ln(Age) + p2*AfrAm + p3*NEAsia + p4*SEAsia + Sspline)
-    S = np.exp(
-        coeffs["S"]["Intercept"]
-        + coeffs["S"]["Age"] * np.log(age)
-        + spline_vals["Sspline"]
-    )
-
-    L = coeffs["L"]["Intercept"] + coeffs["L"]["Age"] * np.log(age)
-
-    # Get lower limit of normal (5th percentile)
-    LLN = get_lms_pred_fev1_for_zscore(-1.645, M, S, L)
-
-    # The Z-score of a value indicates how far from the mean is that value, in units of standard deviation.
-    # In the LMS model, percentile_value(zscore) = exp(ln(1 - z-score *L*S)/L +ln(M))
-    # Hence, the standard deviation is: percentile_value(zscore)
-    n_std = 1
-    sigma_up = get_lms_pred_fev1_for_zscore(n_std, M, S, L) - M
-    sigma_down = M - get_lms_pred_fev1_for_zscore(-n_std, M, S, L)
-
-    return {
-        "M": M,
-        "sigma_up": sigma_up,
-        "sigma_down": sigma_down,
-        "LLN": LLN,
-        "L": L,
-        "S": S,
-    }
-
-
-def load_LMS_spline_vals(age: int, sex: str):
+def load_FEV1_LMS_spline_vals(age: int, sex: str):
     """
     Get the spline values for the M and S curves from the lookup table
     We ignore the Lspline column as it is always 0 for males or females
@@ -153,14 +70,14 @@ def load_LMS_spline_vals(age: int, sex: str):
     # Sspline = df[df.age == age].Sspline.values[0]
 
     if sex == "Male":
-        return _get_male_spline_vals(age)
+        return _get_FEV1_male_spline_vals(age)
     elif sex == "Female":
-        return _get_female_spline_vals(age)
+        return _get_FEV1_female_spline_vals(age)
     else:
         raise ValueError(f"Sex {sex} not in Male/Female")
 
 
-def _get_male_spline_vals(age: int):
+def _get_FEV1_male_spline_vals(age: int):
     """
     Hardcoded values for the spline values for the M and S curves from the lookup table
     """
@@ -264,7 +181,7 @@ def _get_male_spline_vals(age: int):
     return switch_dict.get(age)
 
 
-def _get_female_spline_vals(age: int):
+def _get_FEV1_female_spline_vals(age: int):
     """
     Hardcoded values for the spline values for the M and S curves from the lookup table
     Age between 18 and 60
@@ -366,7 +283,7 @@ def _get_female_spline_vals(age: int):
     return switch_dict.get(age)
 
 
-def load_LMS_coeffs(sex: str):
+def load_FEV1_LMS_coeffs(sex: str):
     """
     Get the coefficients for the L, M and S curves from the lookup table
     """
@@ -395,7 +312,7 @@ def load_LMS_coeffs(sex: str):
                 "Age": 0.0574,
             },
             "S": {"Intercept": -2.3268, "Age": 0.0798},
-            "L": {"Intercept": 0.9966, "Age": 0.085},
+            "L": {"Intercept": 0.8866, "Age": 0.085},
         }
     elif sex == "Female":
         return {
