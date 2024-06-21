@@ -61,6 +61,13 @@ O2Sat_slider_layout = dbc.Form(
             max=100,
             step=1,
             value=98,
+            marks={
+                80: "80%",
+                85: "85%",
+                90: "90%",
+                95: "95%",
+                100: "100%",
+            },
             tooltip={
                 "placement": "bottom",
             },
