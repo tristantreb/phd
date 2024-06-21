@@ -59,7 +59,7 @@ def generate_o2sat_distribution(
 
 
 def generate_underlying_uo2sat_distribution(
-    UO2Sat: mh.variableNode, o2sat_obs, repetitions, std_gauss, show_std=False
+    UO2Sat: mh.VariableNode, o2sat_obs, repetitions, std_gauss, show_std=False
 ):
     """
     Generates the upwards distribution, P(UO2Sat | O2Sat)
@@ -86,7 +86,7 @@ def generate_underlying_uo2sat_distribution(
     return hist, bin_edges, uo2sat_arr
 
 
-def calc_cpt(O2Sat: mh.variableNode, UO2Sat: mh.variableNode):
+def calc_cpt(O2Sat: mh.VariableNode, UO2Sat: mh.VariableNode):
     """
     The CPT is calculated using the generative o2 saturation noise model
     See 2024-01-08_o2sat_noise_model.ipynb
@@ -100,7 +100,7 @@ def calc_cpt(O2Sat: mh.variableNode, UO2Sat: mh.variableNode):
     ## Sampling size
     repetitions = 1000000
 
-    cpt = np.zeros((len(O2Sat.bins), len(UO2Sat.bins)))
+    cpt = np.zeros((O2Sat.card, UO2Sat.card))
 
     for i, o2sat_obs in enumerate(O2Sat.bin):
         # Generate underlying distribution
@@ -119,6 +119,6 @@ def calc_cpt(O2Sat: mh.variableNode, UO2Sat: mh.variableNode):
         # Check that the sum of the column is 1
         assert np.isclose(
             cpt[:, i].sum(), 1, tol=UO2Sat.tol
-        ), f"The sum of probabilities should be 1, got {cpt[:, i].sum()} while calculating P({O2Sat.name}|{UO2Sat.name}={UO2Sat.bins_str[i]})"
+        ), f"The sum of probabilities should be 1, got {cpt[:, i].sum()} while calculating P({O2Sat.name}|{UO2Sat.name}={UO2Sat.get_bins_str()[i]})"
 
     return cpt

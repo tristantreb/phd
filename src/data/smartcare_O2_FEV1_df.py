@@ -2,7 +2,7 @@ import pandas as pd
 
 import src.data.smartcare_measurements as smartcare_measurements
 import src.data.smartcare_patients as smartcare_patients
-import src.modelling_fev1.effort_corrected_fev1 as ecfev1
+import src.modelling_fev1.ec_smoothing as ec_smoothing
 import src.modelling_fev1.pred_fev1 as pred_fev1
 
 datadir = "../../../../SmartCareData/"
@@ -40,7 +40,7 @@ def create():
     df_O2_FEV1.sort_values(["ID", "Date Recorded"], inplace=True)
 
     # Compute effort corrected FEV1
-    df_O2_FEV1 = ecfev1.calc_with_smoothed_max_df(df_O2_FEV1)
+    df_O2_FEV1 = ec_smoothing.calc_smoothed_fe_measures(df_O2_FEV1)
 
     # Compute FEV1 % Predicted
     df_O2_FEV1 = pred_fev1.calc_FEV1_prct_predicted_df(df_O2_FEV1)

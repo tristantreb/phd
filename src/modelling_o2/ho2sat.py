@@ -21,25 +21,3 @@ def calc_healthy_O2_sat(height: int, sex: str):
         }
     else:
         raise ValueError("Sex '{sex}' not in 'Female' or 'Male'")
-
-
-def calc_healthy_O2_sat_df(df):
-    """
-    Returns input DataFrame with added column Healthy O2 Saturation, given Height and Sex
-    """
-    df["Healthy O2 Saturation"] = df.apply(
-        lambda x: calc_healthy_O2_sat(x.Height, x.Sex)["mean"],
-        axis=1,
-    )
-
-    return df
-
-
-def calc_O2_sat_prct_healthy_df(df):
-    """
-    Returns input DataFramce with added column O2 Saturation % Healthy, given O2 Saturation and Healthy O2 Saturation
-    """
-    df["O2 Saturation % Healthy"] = (
-        df["O2 Saturation"] / df["Healthy O2 Saturation"] * 100
-    )
-    return df

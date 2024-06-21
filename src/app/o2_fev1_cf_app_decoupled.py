@@ -8,8 +8,7 @@ import dash_bootstrap_components as dbc
 from dash import Dash, dcc, html
 
 from src.app.callbacks.build_model_and_infer import model_and_inference_callback
-from src.app.callbacks.build_variables import build_variables_with_cf_ia_prior_callback
-from src.app.components.sliders import fev1_slider_layout
+from src.app.callbacks.build_variables import build_variables_with_cf_callback
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
 from src.app.components.sliders import O2Sat_slider_layout, fev1_slider_layout
 
@@ -55,7 +54,7 @@ app.layout = dbc.Container(
 )
 
 
-build_variables_with_cf_ia_prior_callback(app)
+build_variables_with_cf_callback(app)
 model_and_inference_callback(app)
 
 app.run_server(debug=True, port=8051, use_reloader=False)

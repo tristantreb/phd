@@ -4,33 +4,18 @@ import numpy as np
 
 import src.data.helpers as dh
 import src.models.helpers as mh
+from src.models.helpers import name_to_abbr
 
 
-def name_to_abbr(name: str):
-    map = {
-        "Healthy FEV1 (L)": "HFEV1",
-        "ecFEV1 (L)": "ecFEV1",
-        "Airway resistance (%)": "AR",
-        "O2 saturation (%)": "O2Sat",
-        "Healthy O2 saturation (%)": "HO2Sat",
-        "O2 saturation if fully functional alveoli (%)": "O2SatFFA",
-        "Inactive alveoli (%)": "IA",
-        "Underlying O2 saturation (%)": "UO2Sat",
-    }
-
-    abbr = map.get(name, "Invalid name")
-    if abbr == "Invalid name":
-        raise ValueError(f"Invalid name: {name}")
-
-    return abbr
-
-
-def get_cpt(vars: List[mh.variableNode]):
+def get_cpt(vars: List[mh.VariableNode], suffix=None):
     path_to_folder = dh.get_path_to_src() + "models/cpts/"
     var_spec = map(
         lambda var: f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}", vars
     )
     filename = "_".join(var_spec)
+
+    if suffix is not None:
+        filename = filename + suffix
 
     cpt = np.load(f"{path_to_folder}{filename}.npy")
 
@@ -38,11 +23,14 @@ def get_cpt(vars: List[mh.variableNode]):
     return cpt
 
 
-def save_cpt(vars: List[mh.variableNode], cpt: np.ndarray):
+def save_cpt(vars: List[mh.VariableNode], cpt: np.ndarray, suffix=None):
     path_to_folder = dh.get_path_to_src() + "/models/cpts/"
     filename = "_".join(
         [f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}" for var in vars]
     )
+
+    if suffix is not None:
+        filename = filename + suffix
 
     assert len(vars) == len(cpt.shape)
 

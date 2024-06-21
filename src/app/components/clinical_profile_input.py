@@ -1,12 +1,11 @@
 import dash_bootstrap_components as dbc
 from dash import html
+
 import src.app.assets.styles as styles
 
-font_size = styles.font_size()
-
-clinical_profile_box_style = {"width": "250px"}
-input_group_text_style = {"width": "110px", "font-size": font_size}
-select_style = {"font-size": font_size}
+clinical_profile_box_style = {"width": "200px", "font-size": styles.font_size("L")}
+input_group_text_style = {"width": "105px", "font-size": styles.font_size("M")}
+select_style = {"font-size": styles.font_size("M")}
 
 clinical_profile_input_layout = html.Div(
     [
@@ -27,7 +26,6 @@ clinical_profile_input_layout = html.Div(
                     style=select_style,
                 ),
             ],
-
         ),
         dbc.InputGroup(
             [
@@ -43,7 +41,7 @@ clinical_profile_input_layout = html.Div(
                     style=select_style,
                 ),
             ],
-            id="styled-numeric-input",
+            id="styled-numeric-input1",
         ),
         html.Div(id="age-error-message", style={"color": "#dc3545"}),
         dbc.InputGroup(
@@ -60,7 +58,7 @@ clinical_profile_input_layout = html.Div(
                     style=select_style,
                 ),
             ],
-            id="styled-numeric-input-1",
+            id="styled-numeric-input2",
         ),
     ],
     style=clinical_profile_box_style,
