@@ -19,6 +19,7 @@ https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dyli
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE, "./assets/styles.css"])
+server = app.server
 
 app.layout = dbc.Container(
     [
@@ -177,4 +178,4 @@ def show_slider_or_graph_FEF2575(
 build_fev1_fef2575_o2sat_with_factor_graph(app)
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8050)
+    app.run(debug=False, host="0.0.0.0", port=8050)
