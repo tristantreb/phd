@@ -1,13 +1,15 @@
 import os
-from typing import List
 
 import dash_bootstrap_components as dbc
-from dash import Dash, Input, Output, dcc, html
+from dash import Dash, dcc, html
 
 import src.app.assets.styles as s
 import src.app.components.sliders as sliders
 from src.app.callbacks.one_callback_app import (
     build_fev1_fef2575_o2sat_with_factor_graph,
+)
+from src.app.callbacks.show_slider_or_graph import (
+    show_slider_or_graph_for_observed_measures,
 )
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
 from src.app.components.observed_vars_checklist import observed_vars_checklist_layout
@@ -148,35 +150,8 @@ app.layout = dbc.Container(
 )
 
 
-@app.callback(
-    Output("FEV1-dist", "style"),
-    Output("FEV1-slider-container", "style"),
-    Output("O2-saturation-dist", "style"),
-    Output("O2-saturation-slider-container", "style"),
-    Output("FEF25-75-dist", "style"),
-    Output("FEF25-75-slider-container", "style"),
-    Input("observed-vars-checklist", "value"),
-)
-def show_slider_or_graph_FEF2575(
-    observed_vars_checklist: List[str],
-):
-
-    if "FEF25-75" in observed_vars_checklist:
-        fef2575_style = {"display": "none"}, {"display": "block"}
-    else:
-        fef2575_style = {"display": "block"}, {"display": "none"}
-    if "O2 saturation" in observed_vars_checklist:
-        o2sat_style = {"display": "none"}, {"display": "block"}
-    else:
-        o2sat_style = {"display": "block"}, {"display": "none"}
-    if "FEV1" in observed_vars_checklist:
-        fev1_style = {"display": "none"}, {"display": "block"}
-    else:
-        fev1_style = {"display": "block"}, {"display": "none"}
-    return *fev1_style, *o2sat_style, *fef2575_style
-
-
 build_fev1_fef2575_o2sat_with_factor_graph(app)
+show_slider_or_graph_for_observed_measures(app)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8050)
