@@ -19,6 +19,8 @@ https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dyli
 os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.SANDSTONE, "./assets/styles.css"])
+server = app.server
+app.title = "My lungs health"
 
 app.layout = dbc.Container(
     [
@@ -28,7 +30,7 @@ app.layout = dbc.Container(
                     [
                         dbc.Col(
                             html.H2(
-                                "What is your lung's health?",
+                                "What is your lungs health?",
                                 style={
                                     "textAlign": "center",
                                     "padding-left": "100px",
