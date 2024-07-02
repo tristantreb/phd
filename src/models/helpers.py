@@ -168,15 +168,15 @@ class VariableNode:
         self.cpt = self.set_prior(prior)
 
     def get_abbr(self):
-        '''
+        """
         Return the abbreviation of the variable's name
-        '''
+        """
         return name_to_abbr(self.name)
-    
+
     def get_colname(self):
-        '''
+        """
         Return the column name of the variable's name
-        '''
+        """
         return abbr_to_colname(self.get_abbr())
 
     def get_bins_str(self):
@@ -458,3 +458,70 @@ def decode_node_variable(jsoned_var):
     # Transform list to ndarray
     class_var.cpt = np.array(jsoned_var["cpt"])
     return class_var
+
+
+def calc_pgmpy_cpt_X_x_1_minus_Y(
+    X: VariableNode,
+    Y: VariableNode,
+    Z: VariableNode,
+    tol=TOL_GLOBAL,
+    debug=False,
+):
+    """
+    Function specific to Z = X*(1-Y)
+    Y bins must be given in %, not in decimals from the interval [0,1]
+    P(fev1 | unblocked_fev1, small_airway_blockage) can be computed with the closed form solution
+    Creates a 2D array with 3 variables
+    """
+    # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
+    nbinsX = len(X.bins)
+    nbinsY = len(Y.bins)
+    nbinsZ = len(Z.bins)
+    cpt = np.empty((nbinsZ, nbinsX * nbinsY))
+    # print(f"calculating cpt of shape {nbinsZ} x {nbinsX} x {nbinsY} (C x (A x B)) ")
+    for i in range(nbinsX):
+        # Initialize the index of the current bin in the cpt
+        cpt_index = i * (nbinsY - 1)
+        if debug:
+            print("cpt index", cpt_index)
+        # Take a bin in X
+        (a_low, a_up) = X.get_bins_arr()[i]
+        for j in range(nbinsY):
+            # Take a bin in Y
+            (b_low, b_up) = Y.get_bins_arr()[j] / 100
+            # Get the max possible range of for C=X*Y
+            Z_min = a_low * (1 - b_up)
+            Z_max = a_up * (1 - b_low)
+            total = 0
+            abserr = -1
+            for z in range(nbinsZ):
+                # Take a bin in C
+                (Z_low, Z_up) = Z.get_bins_arr()[z]
+                # Get the inner intersection of Z_range and [Z_low, Z_up]
+                # Compute P(C | X, Y)
+                if (
+                    (Z_min - Z_low < tol and Z_max - Z_low > -tol)
+                    or (Z_min - Z_up < tol and Z_max - Z_up > -tol)
+                    or ((Z_min - Z_low >= -tol) and (Z_max - Z_up <= tol))
+                ):
+                    # The intersection is not empty
+                    val, abserr = integrate.quad(
+                        PDF_X_x_1_minus_Y, Z_low, Z_up, args=(a_low, a_up, b_low, b_up)
+                    )
+                    total += val
+                    cpt[z, cpt_index + i + j] = val
+                    if debug:
+                        print(
+                            f"idx {z, cpt_index + i + j}, {cpt_index} + {i} + {j}, Z_low {Z_low}, Z_up {Z_up}, val {val}, Z_min {Z_min}, Z_max {Z_max}"
+                        )
+                else:
+                    # The intersection is empty
+                    cpt[z, cpt_index + i + j] = 0
+                    if debug:
+                        print(f"idx {z, cpt_index + i + j} is empty")
+            if debug:
+                print(f"P(Z|U,B) = {cpt[:, cpt_index + i + j]}")
+            assert (
+                abs(total - 1) < tol
+            ), f"The sum of the probabilities should be 1, got {total}\nDistributions: {X.name} ~ U({a_low}, {a_up}), {Y.name} ~ U({b_low}, {b_up})\nRange over the child bins = [{Z_min}; {Z_max})\nP({Z.name}|{X.name}, {Y.name}) = {cpt[:, cpt_index + i + j]}\n {Z.name} bins: {Z.bins}\n Integral abserr = {abserr}"
+    return cpt

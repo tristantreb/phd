@@ -102,7 +102,8 @@ def calc_cpt(O2Sat: mh.VariableNode, UO2Sat: mh.VariableNode):
 
     cpt = np.zeros((O2Sat.card, UO2Sat.card))
 
-    for i, o2sat_obs in enumerate(O2Sat.bin):
+    for i, o2sat_obs in enumerate(O2Sat.midbins):
+        print("o2sat_obs", o2sat_obs)
         # Generate underlying distribution
         uo2sat_hist, _, _ = generate_underlying_uo2sat_distribution(
             UO2Sat, o2sat_obs, repetitions, std_gauss
@@ -118,7 +119,7 @@ def calc_cpt(O2Sat: mh.VariableNode, UO2Sat: mh.VariableNode):
 
         # Check that the sum of the column is 1
         assert np.isclose(
-            cpt[:, i].sum(), 1, tol=UO2Sat.tol
+            cpt[:, i].sum(), 1, atol=UO2Sat.tol
         ), f"The sum of probabilities should be 1, got {cpt[:, i].sum()} while calculating P({O2Sat.name}|{UO2Sat.name}={UO2Sat.get_bins_str()[i]})"
 
     return cpt
