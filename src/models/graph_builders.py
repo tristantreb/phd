@@ -346,6 +346,7 @@ def fev1_o2sat_fef2575_two_days_model(
     """
     No direct link between AR and IA
     """
+
     ecFEV1_2 = deepcopy(ecFEV1)
     ecFEV1_2.name = f"{ecFEV1.name} day 2"
     AR_2 = deepcopy(AR)

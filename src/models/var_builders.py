@@ -382,7 +382,7 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
     return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, ecFEF2575prctecFEV1
 
 
-def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars_light(
+def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     height, age, sex, ia_prior="uniform"
 ):
     """
@@ -406,12 +406,12 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars_light(
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
-        "Healthy O2 saturation (%)", 90, 100, 1, prior=ho2sat_prior
+        "Healthy O2 saturation (%)", 90, 100, 2, prior=ho2sat_prior
     )
     # Highest drop is 92% (for AR = 90%)
     # Hence the lowest O2SatFFA is 90 * 0.92 = 82.8
     O2SatFFA = VariableNode(
-        "O2 saturation if fully functional alveoli (%)", 80, 100, 1, prior=None
+        "O2 saturation if fully functional alveoli (%)", 80, 100, 2, prior=None
     )
     # O2 sat can't be below 70%.
     # If there's no airway resistance, it should still be possible to reach 70% O2 sat
@@ -422,20 +422,27 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars_light(
         prior = {"type": "custom", "p": get_IA_breathe_prior()}
     else:
         raise ValueError(f"ia_prior {ia_prior} not recognised")
-    IA = VariableNode("Inactive alveoli (%)", 0, 30, 1, prior=prior)
+    IA = VariableNode("Inactive alveoli (%)", 0, 30, 2, prior=prior)
 
     # In reality O2 sat can't be below 70%.
     # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.
     # 82.8-30 = 52.8%
     # TODO: should we hardcode the fact that the sum of AR and IA should not be below 70% O2 Sat?
-    UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 1, prior=None)
-    O2Sat = VariableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
+    UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 2, prior=None)
+    bin_width = 2
+    O2Sat = VariableNode(
+        "O2 saturation (%)",
+        50 - bin_width / 2,
+        100 + bin_width / 2,
+        bin_width,
+        prior=None,
+    )
 
     # Calculate CPTs
     ecFEV1.set_cpt(get_cpt([ecFEV1, HFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
-    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
+    # ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
 
-    return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, ecFEF2575prctecFEV1
+    return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat#, ecFEF2575prctecFEV1

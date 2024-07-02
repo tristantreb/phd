@@ -601,6 +601,51 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         O2Sat,
         ecFEF2575prctecFEV1,
     )
+def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
+    height, age, sex, check_model=False, ia_prior="uniform"
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+    """
+
+    (
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+    ) = var_builders.o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
+        height, age, sex, ia_prior
+    )
+
+    model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        check_model,
+    )
+    inf_alg = apply_factor_graph_bp(model)
+    return (
+        model,
+        inf_alg,
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+    )
 
 
 def o2_sat_fev1_fef2575_two_days_model(height, age, sex, check_model=False):
@@ -675,7 +720,6 @@ def o2_sat_fev1_fef2575_two_days_model(height, age, sex, check_model=False):
         O2Sat_2,
         # ecFEF2575prctecFEV1_2,
     )
-
 
 
 def o2_sat_fev1_fef2575_two_days_model_light(height, age, sex, check_model=False):
