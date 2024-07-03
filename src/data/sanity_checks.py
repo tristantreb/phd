@@ -212,7 +212,7 @@ def same_day_measurements(df, id_col_name="ID"):
 
     def check(df):
         if len(df) > 1:
-            logging.warning(
+            logging.critical(
                 f"{len(df)} measurements recorded on {df['Date Recorded'].values[0]} for ID {df[id_col_name].values[0]}"
             )
         return -1
