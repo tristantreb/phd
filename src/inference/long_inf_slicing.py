@@ -4,12 +4,12 @@ from typing import List
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from pgmpy.factors.discrete import TabularCPD
 from plotly.subplots import make_subplots
 
 import src.data.helpers as dh
 import src.inference.helpers as ih
 import src.models.helpers as mh
+from pgmpy.factors.discrete import TabularCPD
 
 plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
@@ -89,14 +89,25 @@ def query_across_days(
     df,
     belief_propagation,
     shared_variables: List[mh.SharedVariableNode],
-    variables: List[str],
+    variables: List[mh.SharedVariableNode],
     evidence_variables: List[str],
     diff_threshold,
     debug=True,
+    auto_reset_shared_vars=True,
 ):
+    """
+    variables: contains the names of the variables to infer, as defined in the graph
+    evidence_variables: contains names of the observed variables, as defined in the df's columns
+    auto_reset_shared_vars: bool to automatically reset the shared variables after the computations are done
+    """
     df = df.reset_index(drop=True)
     final_epoch = False
     epoch = 0
+
+    # Check that each date in Date Redorded is unique
+    assert df["Date Recorded"].nunique() == len(
+        df
+    ), "Error: Cannot process input df as there are doublons in the Date Recorded column."
 
     df_res_before_convergence = pd.DataFrame({})
     df_res_final_epoch = pd.DataFrame({})
@@ -112,6 +123,9 @@ def query_across_days(
 
         for i, row in df.iterrows():
             day = row["Date Recorded"].strftime("%Y-%m-%d")
+
+            if debug:
+                for shared_var in shared_variables:
             # Get query inputs
             evidence_dict = build_evidence(df, i, evidence_variables)
             vevidence, vmessage_dict = build_virtual_evidence(shared_variables, day)
@@ -119,6 +133,10 @@ def query_across_days(
             if final_epoch:
                 # Query all variables to get all posteriors
                 vars_to_infer = get_var_name_list(shared_variables + variables)
+                if debug:
+                    print(
+                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
+                    )
                 query_res = belief_propagation.query(
                     vars_to_infer, evidence_dict, vevidence
                 )
@@ -133,6 +151,10 @@ def query_across_days(
             else:
                 # Query shared variables to get cross plate message
                 vars_to_infer = get_var_name_list(shared_variables)
+                if debug:
+                    print(
+                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
+                    )
                 query_res, query_messages = belief_propagation.query(
                     vars_to_infer, evidence_dict, vevidence, get_messages=True
                 )
@@ -165,6 +187,9 @@ def query_across_days(
         # When convergence is reached, run another epoch to get all posteriors
         if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
+                if auto_reset_shared_vars:
+                    for shared_var in shared_variables:
+                        shared_var.reset()
                 return df_res_final_epoch, df_res_before_convergence, shared_variables
             if debug:
                 print(
