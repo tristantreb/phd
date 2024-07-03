@@ -27,7 +27,7 @@ class RedCap:
         """
         filename = (
             dh.get_path_to_main()
-            + "DataFiles/BR/REDCapData/IDMappingFiles/PatientIDMappingFile-20240510.xlsx"
+            + "DataFiles/BR/REDCapData/IDMappingFiles/PatientIDMappingFile-20240703.xlsx"
         )
         self.redcapidmap = pd.read_excel(filename, dtype={"ID": str, "redcap_id": str})
 

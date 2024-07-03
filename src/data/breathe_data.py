@@ -18,6 +18,8 @@ def load_meas_from_excel(filename, str_cols_to_arrays=None):
     # Date Redocrded as datetime
     df["Date Recorded"] = df["Date Recorded"].dt.date
 
+    sanity_checks.same_day_measurements(df)
+
     # Convert the given string columns to arrays
     if str_cols_to_arrays:
         for col in str_cols_to_arrays:
@@ -33,7 +35,7 @@ def load_patients():
     logging.info("*** Loading patients data ***")
 
     df = pd.read_csv(
-        f"{dh.get_path_to_main()}DataFiles/BR/REDCapData/ProcessedData/brPatient_20240510.csv",
+        f"{dh.get_path_to_main()}DataFiles/BR/REDCapData/ProcessedData/brPatient_20240703.csv",
         # usecols="A, E, G, H, Y"
         usecols=[0, 6, 7, 24],
         dtype={"ID": str},
@@ -52,6 +54,9 @@ def load_patients():
         sanity_checks.height(x.Height, x.ID)
 
     df.apply(patients_sanity_checks, axis=1)
+
+    # Check that we have only one entry per ID
+    assert df.ID.nunique() == len(df), "Error - Multiple entries for the same ID"
 
     logging.info(f"Loaded {len(df)} individuals")
     describe_patients(df)
@@ -249,7 +254,7 @@ def _correct_fev1(df):
 def load_drug_therapies():
     drug_df = pd.read_csv(
         dh.get_path_to_main()
-        + "DataFiles/BR/REDCapData/ProcessedData/brDrugTherapy_20240510.csv",
+        + "DataFiles/BR/REDCapData/ProcessedData/brDrugTherapy_20240703.csv",
         usecols=[0, 3, 4, 5, 6],
         dtype={
             "ID": str,
@@ -571,7 +576,7 @@ def build_O2_FEV1_df(meas_file=2):
     df_patients = calc_predicted_FEV1_LMS_df(df_patients)
     df_patients = calc_healthy_O2_sat_df(df_patients)
 
-    df = df_meas.merge(df_patients, on="ID", how="left")
+    df = df_meas.merge(df_patients, on="ID", how="inner")
 
     df = calc_FEV1_prct_predicted_df(df)
     df = calc_O2_sat_prct_healthy_df(df)

@@ -126,6 +126,7 @@ def query_across_days(
 
             if debug:
                 for shared_var in shared_variables:
+                    shared_var.reset()
             # Get query inputs
             evidence_dict = build_evidence(df, i, evidence_variables)
             vevidence, vmessage_dict = build_virtual_evidence(shared_variables, day)
