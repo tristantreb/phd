@@ -367,7 +367,7 @@ class SharedVariableNode(VariableNode):
         self.name = name
         self.factor_node_key = ""
         self.vmessages = {}
-        self.agg_vmessage = np.ones(self.card)
+        self.agg_vmessage = np.ones(self.card) / self.card
 
     def set_factor_node_key(self, factor_node_key):
         """
@@ -394,7 +394,7 @@ class SharedVariableNode(VariableNode):
 
     def reset(self):
         self.vmessages = {}
-        self.agg_vmessage = np.ones(self.card)
+        self.agg_vmessage = np.ones(self.card) / self.card
 
     def get_virtual_message(self, day_key, agg_method=True):
         """
