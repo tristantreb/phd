@@ -6,13 +6,13 @@ import time
 
 import numpy as np
 
-# PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
-from pgmpy.factors.discrete import TabularCPD
-from pgmpy.models import BayesianNetwork
-
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 import src.models.var_builders as var_builders
+
+# PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
+from pgmpy.factors.discrete import TabularCPD
+from pgmpy.models import BayesianNetwork
 from src.inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
 
 
@@ -601,6 +601,8 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         O2Sat,
         ecFEF2575prctecFEV1,
     )
+
+
 def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     height, age, sex, check_model=False, ia_prior="uniform"
 ):
@@ -722,7 +724,7 @@ def o2_sat_fev1_fef2575_two_days_model(height, age, sex, check_model=False):
     )
 
 
-def o2_sat_fev1_fef2575_two_days_model_light(height, age, sex, check_model=False):
+def o2_sat_fev1_two_days_model_light(height, age, sex, check_model=False):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
     HFEV1 and HO2Sat are shared across time points.
@@ -737,8 +739,7 @@ def o2_sat_fev1_fef2575_two_days_model_light(height, age, sex, check_model=False
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctecFEV1,
-    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars_light(
+    ) = var_builders.o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
         height, age, sex
     )
 
@@ -752,15 +753,13 @@ def o2_sat_fev1_fef2575_two_days_model_light(height, age, sex, check_model=False
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctecFEV1,
         ecFEV1_2,
         AR_2,
         O2SatFFA_2,
         IA_2,
         UO2Sat_2,
         O2Sat_2,
-        ecFEF2575prctecFEV1_2,
-    ) = graph_builders.fev1_o2sat_fef2575_two_days_model(
+    ) = graph_builders.fev1_o2sat_two_days_model(
         HFEV1,
         ecFEV1,
         AR,
@@ -769,7 +768,6 @@ def o2_sat_fev1_fef2575_two_days_model_light(height, age, sex, check_model=False
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctecFEV1,
         check_model,
     )
 
@@ -785,12 +783,10 @@ def o2_sat_fev1_fef2575_two_days_model_light(height, age, sex, check_model=False
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctecFEV1,
         ecFEV1_2,
         AR_2,
         O2SatFFA_2,
         IA_2,
         UO2Sat_2,
         O2Sat_2,
-        ecFEF2575prctecFEV1_2,
     )

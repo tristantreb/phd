@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 
 import src.models.builders as mb
 import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
 import src.models.var_builders as var_builders
+from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 from src.inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
 
 # Set global value for tolerance.
@@ -51,6 +51,7 @@ def infer(
     evidences: tuple[tuple[mh.VariableNode, float]],
     show_progress=False,
     joint=False,
+    debug=False,
 ):
     """
     Runs an inference query against a given PGMPY inference model, variables, evidences
@@ -60,14 +61,19 @@ def infer(
 
     :return: The result of the inference
     """
+    variables = list(map(lambda v: v.name, variables))
+    if debug:
+        print(f"Variables to infer: {variables}")
 
     evidences_binned = dict()
     for [evidence_var, value] in evidences:
         [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
         evidences_binned.update({evidence_var.name: bin_idx})
+        if debug:
+            print(f"Evidence for {evidence_var.name}: value {value}, idx {bin_idx}")
 
     res = inference_alg.query(
-        variables=list(map(lambda v: v.name, variables)),
+        variables=variables,
         evidence=evidences_binned,
         show_progress=show_progress,
         joint=joint,

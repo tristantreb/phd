@@ -331,6 +331,114 @@ def fev1_o2sat_fef2575_point_in_time_model(
     return model
 
 
+def fev1_o2sat_two_days_model(
+    HFEV1,
+    ecFEV1,
+    AR,
+    HO2Sat,
+    O2SatFFA,
+    IA,
+    UO2Sat,
+    O2Sat,
+    check_model=True,
+):
+    """
+    No direct link between AR and IA
+    """
+
+    ecFEV1_2 = deepcopy(ecFEV1)
+    ecFEV1_2.name = f"{ecFEV1.name} day 2"
+    AR_2 = deepcopy(AR)
+    AR_2.name = f"{AR.name} day 2"
+    O2SatFFA_2 = deepcopy(O2SatFFA)
+    O2SatFFA_2.name = f"{O2SatFFA.name} day 2"
+    IA_2 = deepcopy(IA)
+    IA_2.name = f"{IA.name} day 2"
+    UO2Sat_2 = deepcopy(UO2Sat)
+    UO2Sat_2.name = f"{UO2Sat.name} day 2"
+    O2Sat_2 = deepcopy(O2Sat)
+    O2Sat_2.name = f"{O2Sat.name} day 2"
+
+    # Shared priors
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+    prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
+    # Day 1
+    cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
+    prior_ar = build_pgmpy_ar_prior(AR)
+    cpt_o2satffa = build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR)
+    prior_ia = build_pgmpy_ia_prior(IA)
+    cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
+    cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
+    # Day 2
+    cpt_ecfev1_2 = build_pgmpy_ecfev1_cpt(ecFEV1_2, HFEV1, AR_2)
+    prior_ar_2 = build_pgmpy_ar_prior(AR_2)
+    cpt_o2satffa_2 = build_pgmpy_o2satffa_cpt(O2SatFFA_2, HO2Sat, AR_2)
+    prior_ia_2 = build_pgmpy_ia_prior(IA_2)
+    cpt_uo2sat_2 = build_pgmpy_uo2sat_cpt(UO2Sat_2, O2SatFFA_2, IA_2)
+    cpt_o2sat_2 = build_pgmpy_o2sat_cpt(O2Sat_2, UO2Sat_2)
+
+    # HFEV1 and HO2Sat are shared between day 1 and day2
+    model = BayesianNetwork(
+        [
+            # Day 1
+            (HFEV1.name, ecFEV1.name),
+            (HO2Sat.name, O2SatFFA.name),
+            (AR.name, ecFEV1.name),
+            (AR.name, O2SatFFA.name),
+            (O2SatFFA.name, UO2Sat.name),
+            (IA.name, UO2Sat.name),
+            (UO2Sat.name, O2Sat.name),
+            # Day 2
+            (HFEV1.name, ecFEV1_2.name),
+            (AR_2.name, ecFEV1_2.name),
+            (HO2Sat.name, O2SatFFA_2.name),
+            (AR_2.name, O2SatFFA_2.name),
+            (O2SatFFA_2.name, UO2Sat_2.name),
+            (IA_2.name, UO2Sat_2.name),
+            (UO2Sat_2.name, O2Sat_2.name),
+        ]
+    )
+
+    model.add_cpds(
+        # Shared
+        prior_hfev1,
+        prior_ho2sat,
+        # Day 1
+        cpt_ecfev1,
+        prior_ar,
+        cpt_o2satffa,
+        prior_ia,
+        cpt_uo2sat,
+        cpt_o2sat,
+        # Day 2
+        cpt_ecfev1_2,
+        prior_ar_2,
+        cpt_o2satffa_2,
+        prior_ia_2,
+        cpt_uo2sat_2,
+        cpt_o2sat_2,
+    )
+    if check_model:
+        model.check_model()
+    return (
+        model,
+        HFEV1,
+        HO2Sat,
+        ecFEV1,
+        AR,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEV1_2,
+        AR_2,
+        O2SatFFA_2,
+        IA_2,
+        UO2Sat_2,
+        O2Sat_2,
+    )
+
+
 def fev1_o2sat_fef2575_two_days_model(
     HFEV1,
     ecFEV1,
