@@ -106,7 +106,7 @@ def load_measurements(file=2):
         )
     elif file == 2:
         df_raw = pd.read_excel(
-            f"{dh.get_path_to_main()}DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-20240510T160334.xlsx",
+            f"{dh.get_path_to_main()}DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-20240703T211303.xlsx",
             usecols="A, E, G, H , J",
             dtype={"SmartCareID": str, "DateTime Recorded": "datetime64[ns]"},
         ).rename(

@@ -19,7 +19,7 @@ class MeasurementData:
         # patient_loc = dh.get_path_to_main() + "DataFiles/BR/PredModInputData.xlsx"
         patient_loc = (
             dh.get_path_to_main()
-            + "DataFiles/BR/REDCapData/ProcessedData/brPatient_20240510.csv"
+            + "DataFiles/BR/REDCapData/ProcessedData/brPatient_20240703.csv"
         )
         logging.warning(f"Loading patient data from {patient_loc}")
         self.brPatient = pd.read_csv(patient_loc)
