@@ -400,9 +400,8 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     }
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 1, prior=hfev1_prior)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 1, prior=None)
-    ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
-    AR = VariableNode("Airway resistance (%)", 0, 90, 2, prior={"type": "uniform"})
+    AR = VariableNode("Airway resistance (%)", 0, 90, 10, prior={"type": "uniform"})
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
@@ -443,6 +442,14 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
-    # ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
 
-    return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat#, ecFEF2575prctecFEV1
+    return (
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+    )
