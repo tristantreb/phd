@@ -5,7 +5,7 @@ Each function corresponds to a full set of variables to be plugged into a bayesi
 """
 
 from src.modelling_o2.ia import get_IA_breathe_prior
-from src.models.cpts.load_cpt import get_cpt
+from src.models.cpts.helpers import get_cpt
 from src.models.helpers import SharedVariableNode, VariableNode
 
 
