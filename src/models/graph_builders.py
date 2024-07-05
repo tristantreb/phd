@@ -616,6 +616,7 @@ def fev1_o2sat_point_in_time_factor_graph(
             (IA.name, cpt_uo2sat),
             (cpt_uo2sat, UO2Sat.name),
             (UO2Sat.name, cpt_o2sat),
+            (cpt_o2sat, O2Sat.name),
             (cpt_ecfev1, ecFEV1.name),
         ]
     )
@@ -696,6 +697,7 @@ def fev1_fef2575_o2sat_point_in_time_factor_graph(
             (IA.name, cpt_uo2sat),
             (cpt_uo2sat, UO2Sat.name),
             (UO2Sat.name, cpt_o2sat),
+            (cpt_o2sat, O2Sat.name),
             (cpt_ecfev1, ecFEV1.name),
             (cpt_ecFEF2575prctecFEV1, ecFEF2575prctecFEV1.name),
         ]
