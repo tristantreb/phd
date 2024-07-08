@@ -439,7 +439,8 @@ def fev1_o2sat_two_days_model(
     )
 
 
-def fev1_o2sat_fef2575_two_days_model(
+def fev1_o2sat_n_days_model(
+    n,
     HFEV1,
     ecFEV1,
     AR,
@@ -448,117 +449,97 @@ def fev1_o2sat_fef2575_two_days_model(
     IA,
     UO2Sat,
     O2Sat,
-    ecFEF2575prctecFEV1,
     check_model=True,
 ):
     """
     No direct link between AR and IA
     """
 
-    ecFEV1_2 = deepcopy(ecFEV1)
-    ecFEV1_2.name = f"{ecFEV1.name} day 2"
-    AR_2 = deepcopy(AR)
-    AR_2.name = f"{AR.name} day 2"
-    O2SatFFA_2 = deepcopy(O2SatFFA)
-    O2SatFFA_2.name = f"{O2SatFFA.name} day 2"
-    IA_2 = deepcopy(IA)
-    IA_2.name = f"{IA.name} day 2"
-    UO2Sat_2 = deepcopy(UO2Sat)
-    UO2Sat_2.name = f"{UO2Sat.name} day 2"
-    O2Sat_2 = deepcopy(O2Sat)
-    O2Sat_2.name = f"{O2Sat.name} day 2"
-    ecFEF2575prctecFEV1_2 = deepcopy(ecFEF2575prctecFEV1)
-    ecFEF2575prctecFEV1_2.name = f"{ecFEF2575prctecFEV1.name} day 2"
+    def create_var_for_day(var, day):
+        var_ = deepcopy(var)
+        var_.name = f"{var.name} day {day}"
+        return var_
+
+    AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
+    ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
+    O2SatFFA_vars = [create_var_for_day(O2SatFFA, i) for i in range(1, n + 1)]
+    IA_vars = [create_var_for_day(IA, i) for i in range(1, n + 1)]
+    UO2Sat_vars = [create_var_for_day(UO2Sat, i) for i in range(1, n + 1)]
+    O2Sat_vars = [create_var_for_day(O2Sat, i) for i in range(1, n + 1)]
+
+    # Priors and CPTs
+    AR_priors = [build_pgmpy_ar_prior(AR_) for AR_ in AR_vars]
+    ecFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(ecFEV1_, HFEV1, AR_)
+        for ecFEV1_, AR_ in zip(ecFEV1_vars, AR_vars)
+    ]
+    O2SatFFA_cpts = [
+        build_pgmpy_o2satffa_cpt(O2SatFFA_, HO2Sat, AR_)
+        for O2SatFFA_, AR_ in zip(O2SatFFA_vars, AR_vars)
+    ]
+    IA_priors = [build_pgmpy_ia_prior(IA_) for IA_ in IA_vars]
+    UO2Sat_cpts = [
+        build_pgmpy_uo2sat_cpt(UO2Sat_, O2SatFFA_, IA_)
+        for UO2Sat_, O2SatFFA_, IA_ in zip(UO2Sat_vars, O2SatFFA_vars, IA_vars)
+    ]
+    O2Sat_cpts = [
+        build_pgmpy_o2sat_cpt(O2Sat_, UO2Sat_)
+        for O2Sat_, UO2Sat_ in zip(O2Sat_vars, UO2Sat_vars)
+    ]
 
     # Shared priors
     prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
     prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
-    # Day 1
-    cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
-    prior_ar = build_pgmpy_ar_prior(AR)
-    cpt_o2satffa = build_pgmpy_o2satffa_cpt(O2SatFFA, HO2Sat, AR)
-    prior_ia = build_pgmpy_ia_prior(IA)
-    cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
-    cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
-    cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prectecfev1_cpt(
-        ecFEF2575prctecFEV1, AR
-    )
-    # Day 2
-    cpt_ecfev1_2 = build_pgmpy_ecfev1_cpt(ecFEV1_2, HFEV1, AR_2)
-    prior_ar_2 = build_pgmpy_ar_prior(AR_2)
-    cpt_o2satffa_2 = build_pgmpy_o2satffa_cpt(O2SatFFA_2, HO2Sat, AR_2)
-    prior_ia_2 = build_pgmpy_ia_prior(IA_2)
-    cpt_uo2sat_2 = build_pgmpy_uo2sat_cpt(UO2Sat_2, O2SatFFA_2, IA_2)
-    cpt_o2sat_2 = build_pgmpy_o2sat_cpt(O2Sat_2, UO2Sat_2)
-    cpt_ecFEF2575prctecfev1_2 = build_pgmpy_ecfef2575prectecfev1_cpt(
-        ecFEF2575prctecFEV1_2, AR_2
-    )
 
-    # HFEV1 and HO2Sat are shared between day 1 and day2
-    model = BayesianNetwork(
-        [
-            # Day 1
-            (HFEV1.name, ecFEV1.name),
-            (HO2Sat.name, O2SatFFA.name),
-            (AR.name, ecFEV1.name),
-            (AR.name, O2SatFFA.name),
-            # (AR.name, ecFEF2575prctecFEV1.name),
-            (O2SatFFA.name, UO2Sat.name),
-            (IA.name, UO2Sat.name),
-            (UO2Sat.name, O2Sat.name),
-            # Day 2
-            (HFEV1.name, ecFEV1_2.name),
-            (AR_2.name, ecFEV1_2.name),
-            (HO2Sat.name, O2SatFFA_2.name),
-            (AR_2.name, O2SatFFA_2.name),
-            # (AR_2.name, ecFEF2575prctecFEV1_2.name),
-            (O2SatFFA_2.name, UO2Sat_2.name),
-            (IA_2.name, UO2Sat_2.name),
-            (UO2Sat_2.name, O2Sat_2.name),
+    # Make sure the days are at the same location in all variable lists
+    for i in range(1, n + 1):
+        assert AR_vars[i - 1].name == f"{AR.name} day {i}"
+        assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
+        assert O2SatFFA_vars[i - 1].name == f"{O2SatFFA.name} day {i}"
+        assert IA_vars[i - 1].name == f"{IA.name} day {i}"
+        assert UO2Sat_vars[i - 1].name == f"{UO2Sat.name} day {i}"
+        assert O2Sat_vars[i - 1].name == f"{O2Sat.name} day {i}"
+
+    network = []
+    # HFEV1 and HO2Sat are shared between days
+    for i in range(0, n):
+        network = network + [
+            (HFEV1.name, ecFEV1_vars[i].name),
+            (HO2Sat.name, O2SatFFA_vars[i].name),
+            (AR_vars[i].name, ecFEV1_vars[i].name),
+            (AR_vars[i].name, O2SatFFA_vars[i].name),
+            (O2SatFFA_vars[i].name, UO2Sat_vars[i].name),
+            (IA_vars[i].name, UO2Sat_vars[i].name),
+            (UO2Sat_vars[i].name, O2Sat_vars[i].name),
         ]
-    )
+
+    model = BayesianNetwork(network)
 
     model.add_cpds(
         # Shared
         prior_hfev1,
         prior_ho2sat,
-        # Day 1
-        cpt_ecfev1,
-        prior_ar,
-        cpt_o2satffa,
-        prior_ia,
-        cpt_uo2sat,
-        cpt_o2sat,
-        # cpt_ecFEF2575prctecFEV1,
-        # Day 2
-        cpt_ecfev1_2,
-        prior_ar_2,
-        cpt_o2satffa_2,
-        prior_ia_2,
-        cpt_uo2sat_2,
-        cpt_o2sat_2,
-        # cpt_ecFEF2575prctecfev1_2,
+        # Days priors and CPTs
+        *AR_priors,
+        *ecFEV1_cpts,
+        *O2SatFFA_cpts,
+        *IA_priors,
+        *UO2Sat_cpts,
+        *O2Sat_cpts,
     )
+
     if check_model:
         model.check_model()
     return (
         model,
         HFEV1,
         HO2Sat,
-        ecFEV1,
-        AR,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
-        # ecFEF2575prctecFEV1,
-        ecFEV1_2,
-        AR_2,
-        O2SatFFA_2,
-        IA_2,
-        UO2Sat_2,
-        O2Sat_2,
-        # ecFEF2575prctecFEV1_2,
+        AR_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
     )
 
 

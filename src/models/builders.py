@@ -650,80 +650,6 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     )
 
 
-def o2_sat_fev1_fef2575_two_days_model(height, age, sex, check_model=False):
-    """
-    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
-    HFEV1 and HO2Sat are shared across time points.
-    """
-
-    (
-        HFEV1,
-        ecFEV1,
-        AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
-        ecFEF2575prctecFEV1,
-    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-        height, age, sex
-    )
-
-    (
-        model,
-        HFEV1,
-        HO2Sat,
-        ecFEV1,
-        AR,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
-        # ecFEF2575prctecFEV1,
-        ecFEV1_2,
-        AR_2,
-        O2SatFFA_2,
-        IA_2,
-        UO2Sat_2,
-        O2Sat_2,
-        # ecFEF2575prctecFEV1_2,
-    ) = graph_builders.fev1_o2sat_fef2575_two_days_model(
-        HFEV1,
-        ecFEV1,
-        AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
-        ecFEF2575prctecFEV1,
-        check_model,
-    )
-
-    inf_alg = apply_bayes_net_bp(model)
-    return (
-        model,
-        inf_alg,
-        HFEV1,
-        HO2Sat,
-        ecFEV1,
-        AR,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
-        # ecFEF2575prctecFEV1,
-        ecFEV1_2,
-        AR_2,
-        O2SatFFA_2,
-        IA_2,
-        UO2Sat_2,
-        O2Sat_2,
-        # ecFEF2575prctecFEV1_2,
-    )
-
-
 def o2_sat_fev1_two_days_model_light(height, age, sex, check_model=False):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
@@ -789,4 +715,62 @@ def o2_sat_fev1_two_days_model_light(height, age, sex, check_model=False):
         IA_2,
         UO2Sat_2,
         O2Sat_2,
+    )
+
+
+def o2_sat_fev1_n_days_model_light(n_days, height, age, sex, check_model=False):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+    Build a model with n days
+    """
+
+    (
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+    ) = var_builders.o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
+        height, age, sex
+    )
+
+    (
+        model,
+        HFEV1,
+        HO2Sat,
+        AR_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+    ) = graph_builders.fev1_o2sat_n_days_model(
+        n_days,
+        HFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        check_model,
+    )
+
+    inf_alg = apply_bayes_net_bp(model)
+    return (
+        model,
+        inf_alg,
+        HFEV1,
+        HO2Sat,
+        AR_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
     )
