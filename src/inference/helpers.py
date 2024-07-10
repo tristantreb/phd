@@ -107,6 +107,7 @@ def plot_histogram(
     title=None,
     colour=None,
     annot=True,
+    name=None,
 ):
     fig.add_trace(
         go.Histogram(
@@ -114,6 +115,7 @@ def plot_histogram(
             y=p,
             histfunc="sum",  # Use 'sum' to represent pre-counted data
             xbins=dict(start=xmin, end=xmax, size=Var.bin_width),
+            name=name,
         ),
         row=row,
         col=col,
