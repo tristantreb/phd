@@ -38,6 +38,9 @@ def load_excel(file_path, str_cols_to_arrays=None):
     if "ID" in df.columns:
         df["ID"] = df["ID"].astype(str)
 
+    if "Date Recorded" in df.columns:
+        df["Date Recorded"] = df["Date Recorded"].dt.date
+
     # Convert the given string columns to arrays
     if str_cols_to_arrays:
         for col in str_cols_to_arrays:
