@@ -36,7 +36,9 @@ def build_fev1_o2sat_with_factor_graph(app):
         O2Sat_obs: float,
     ):
         _, inf_alg, HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat = (
-            mb.o2sat_fev1_point_in_time_model_shared_healthy_vars(height, age, sex)
+            mb.o2sat_fev1_point_in_time_model_shared_healthy_vars(
+                height, age, sex, ar_prior="uniform in log space"
+            )
         )
 
         # INFERENCE
@@ -487,7 +489,6 @@ def build_fev1_fef2575_o2sat_with_factor_graph_light(app):
 
         vars_to_infer = [HFEV1, AR, HO2Sat, IA, O2SatFFA, UO2Sat]
         evidence = []
-
         if "O2 saturation" in observed_vars_checklist:
             evidence.append([O2Sat, O2Sat_obs])
         else:
@@ -869,9 +870,11 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
         # Evidences
         Input("FEV1-slider", "value"),
         Input("O2Sat-slider", "value"),
+        Input("observed-vars-checklist", "value"),
         # Var to infer
         Input("var-to-infer-select", "value"),
         Input("ia-prior-select", "value"),
+        Input("ar-prior-select", "value"),
     )
     def content(
         sex,
@@ -879,8 +882,10 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
         height,
         FEV1_obs: float,
         O2Sat_obs: float,
+        observed_vars_checklist: List[str],
         var_to_infer: str,
         ia_prior: str,
+        ar_prior: str,
     ):
         (
             HFEV1,
@@ -892,7 +897,7 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
             UO2Sat,
             O2Sat,
         ) = var_builders.o2sat_fev1_point_in_time_model_shared_healthy_vars(
-            height, age, sex, ia_prior
+            height, age, sex, ia_prior, ar_prior
         )
 
         model = graph_builders.fev1_o2sat_point_in_time_factor_graph(
@@ -924,10 +929,16 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
         # INFERENCE
         print("Inference user input: FEV1 =", FEV1_obs, ", O2Sat =", O2Sat_obs)
 
+        evidence = []
+        if "O2 saturation" in observed_vars_checklist:
+            evidence.append([O2Sat, O2Sat_obs])
+        if "FEV1" in observed_vars_checklist:
+            evidence.append([ecFEV1, FEV1_obs])
+
         query, messages = ih.infer_on_factor_graph(
             inf_alg,
             [var_to_infer],
-            [[ecFEV1, FEV1_obs], [O2Sat, O2Sat_obs]],
+            evidence,
             get_messages=True,
         )
 

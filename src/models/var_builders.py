@@ -4,6 +4,7 @@ Use functions in this file to define the model's variables, their name, discreti
 Each function corresponds to a full set of variables to be plugged into a bayesian network
 """
 
+from src.modelling_ar.ar import get_uniform_prior_in_log_space
 from src.modelling_o2.ia import get_IA_breathe_prior
 from src.models.cpts.helpers import get_cpt
 from src.models.helpers import SharedVariableNode, VariableNode
@@ -269,7 +270,7 @@ def o2sat_fev1_point_in_time_model_ar_ia_factor_test(
 
 
 def o2sat_fev1_point_in_time_model_shared_healthy_vars(
-    height, age, sex, ia_prior="uniform"
+    height, age, sex, ia_prior="uniform", ar_prior="uniform"
 ):
     """
     Point in time model with full FEV1 and O2Sat sides
@@ -287,7 +288,15 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
-    AR = VariableNode("Airway resistance (%)", 0, 90, 2, prior={"type": "uniform"})
+    AR = VariableNode("Airway resistance (%)", 0, 90, 2, prior=None)
+    if ar_prior == "uniform":
+        AR.cpt = AR.set_prior({"type": "uniform"})
+    elif ar_prior == "uniform in log space":
+        AR.cpt = AR.set_prior({"type": "custom", "p": get_uniform_prior_in_log_space(AR)})
+
+    print("type", ar_prior)
+    # print("shape", AR.cpt.shape)
+    # print("prior", AR.cpt)
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
@@ -307,7 +316,7 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
         prior = {"type": "custom", "p": get_IA_breathe_prior()}
     else:
         raise ValueError(f"ia_prior {ia_prior} not recognised")
-    IA = VariableNode("Inactive alveoli (%)", 0, 30, 1, prior=prior)
+    IA = VariableNode("Inactive alveoli (%)", 0, 30, 1, prior)
 
     # In reality O2 sat can't be below 70%.
     # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.

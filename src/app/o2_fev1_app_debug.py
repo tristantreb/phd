@@ -8,6 +8,9 @@ import src.app.components.sliders as sliders
 from src.app.callbacks.one_callback_app import build_fev1_o2sat_with_factor_graph_debug
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
 from src.app.components.inf_settings import inference_settings_layout
+from src.app.components.observed_vars_checklist import (
+    fev1_o2sat_observed_vars_checklist_layout,
+)
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -30,10 +33,19 @@ app.layout = dbc.Container(
             style={"font-size": "12px", "text-align": "right", "padding-right": "0px"},
         ),
         html.H2(
-            "What is your lung's health?",
+            "What is your lung health?",
             style={"textAlign": "center", "padding-top": "0px"},
         ),
-        clinical_profile_input_layout,
+        html.Div(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(clinical_profile_input_layout, width=3),
+                        dbc.Col(fev1_o2sat_observed_vars_checklist_layout),
+                    ]
+                )
+            ]
+        ),
         inference_settings_layout,
         html.Div(
             "3. Select your FEV1 and O2 saturation, and analyse your lung's health variables:",

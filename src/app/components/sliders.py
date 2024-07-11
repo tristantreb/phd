@@ -23,7 +23,7 @@ fev1_slider_layout = dbc.Form(
             },
         ),
     ],
-    style={"display": "none"},
+    style={"display": "block"},
 )
 
 fef2575_slider_layout = dbc.Form(
@@ -48,7 +48,7 @@ fef2575_slider_layout = dbc.Form(
             },
         ),
     ],
-    style={"display": "none"},
+    style={"display": "block"},
 )
 
 O2Sat_slider_layout = dbc.Form(
@@ -73,5 +73,5 @@ O2Sat_slider_layout = dbc.Form(
             },
         ),
     ],
-    style={"display": "none"},
+    style={"display": "block"},
 )
