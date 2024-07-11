@@ -4,7 +4,7 @@ from dash import html
 import src.app.assets.styles as styles
 from src.models.helpers import name_to_abbr_dict
 
-font_size = styles.font_size()
+font_size = styles.font_size("M")
 select_style = {"font-size": font_size}
 input_group_text_style = {"width": "150px", "font-size": font_size}
 
@@ -44,7 +44,23 @@ inference_settings_layout = html.Div(
                         {"label": "uniform", "value": "uniform"},
                         {"label": "from Breathe data", "value": "breathe"},
                     ],
-                    value="breathe",
+                    value="uniform",
+                    style=select_style,
+                ),
+            ],
+        ),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText(
+                    "AR prior", style=input_group_text_style
+                ),
+                dbc.Select(
+                    id="ar-prior-select",
+                    options=[
+                        {"label": "uniform", "value": "uniform"},
+                        {"label": "uniform in log space", "value": "uniform in log space"},
+                    ],
+                    value="uniform",
                     style=select_style,
                 ),
             ],

@@ -12,7 +12,9 @@ from src.app.callbacks.show_slider_or_graph import (
     show_slider_or_graph_for_observed_measures,
 )
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
-from src.app.components.observed_vars_checklist import observed_vars_checklist_layout
+from src.app.components.observed_vars_checklist import (
+    fev1_fef2575_o2sat_observed_vars_checklist_layout,
+)
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -66,7 +68,7 @@ app.layout = dbc.Container(
                 dbc.Row(
                     [
                         dbc.Col(clinical_profile_input_layout, width=3),
-                        dbc.Col(observed_vars_checklist_layout),
+                        dbc.Col(fev1_fef2575_o2sat_observed_vars_checklist_layout),
                     ]
                 )
             ]
