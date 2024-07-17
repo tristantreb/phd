@@ -51,14 +51,19 @@ inference_settings_layout = html.Div(
         ),
         dbc.InputGroup(
             [
-                dbc.InputGroupText(
-                    "AR prior", style=input_group_text_style
-                ),
+                dbc.InputGroupText("AR prior", style=input_group_text_style),
                 dbc.Select(
                     id="ar-prior-select",
                     options=[
                         {"label": "uniform", "value": "uniform"},
-                        {"label": "uniform in log space", "value": "uniform in log space"},
+                        {
+                            "label": "uniform in log space",
+                            "value": "uniform in log space",
+                        },
+                        {
+                            "label": "uniform message to HFEV1",
+                            "value": "uniform message to HFEV1",
+                        },
                     ],
                     value="uniform",
                     style=select_style,

@@ -4,7 +4,10 @@ Use functions in this file to define the model's variables, their name, discreti
 Each function corresponds to a full set of variables to be plugged into a bayesian network
 """
 
-from src.modelling_ar.ar import get_uniform_prior_in_log_space
+from src.modelling_ar.ar import (
+    get_prior_for_uniform_hfev1_message,
+    get_uniform_prior_in_log_space,
+)
 from src.modelling_o2.ia import get_IA_breathe_prior
 from src.models.cpts.helpers import get_cpt
 from src.models.helpers import SharedVariableNode, VariableNode
@@ -292,7 +295,13 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
     if ar_prior == "uniform":
         AR.cpt = AR.set_prior({"type": "uniform"})
     elif ar_prior == "uniform in log space":
-        AR.cpt = AR.set_prior({"type": "custom", "p": get_uniform_prior_in_log_space(AR)})
+        AR.cpt = AR.set_prior(
+            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
+        )
+    elif ar_prior == "uniform message to HFEV1":
+        AR.cpt = AR.set_prior(
+            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
+        )
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
