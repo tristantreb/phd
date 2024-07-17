@@ -294,10 +294,6 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
     elif ar_prior == "uniform in log space":
         AR.cpt = AR.set_prior({"type": "custom", "p": get_uniform_prior_in_log_space(AR)})
 
-    print("type", ar_prior)
-    # print("shape", AR.cpt.shape)
-    # print("prior", AR.cpt)
-
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
         "Healthy O2 saturation (%)", 90, 100, 0.5, prior=ho2sat_prior
