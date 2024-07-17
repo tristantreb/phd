@@ -42,4 +42,6 @@ def get_prior_for_uniform_hfev1_message(AR):
         ]
     )
 
-    return np.polyval(params, AR.midbins)
+    ar_prior = np.polyval(params, AR.midbins)
+    ar_prior = ar_prior / np.sum(ar_prior)
+    return ar_prior
