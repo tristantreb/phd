@@ -251,6 +251,7 @@ def plot_posterior_validation(
     layout = [
         [{"type": "scatter", "rowspan": 1}],
         [{"type": "scatter", "rowspan": 1}],
+        [{"type": "scatter", "rowspan": 1}],
         [{"type": "heatmap", "rowspan": 2}],
         [None],
         [{"type": "heatmap", "rowspan": 2}],
@@ -275,8 +276,17 @@ def plot_posterior_validation(
     plot_scatter(
         fig,
         df_breathe["Date Recorded"],
-        df_breathe["O2 Saturation"],
+        df_breathe["ecFEF2575%ecFEV1"],
         row=2,
+        col=1,
+        colour="black",
+        title="ecFEF2575%ecFEV1",
+    )
+    plot_scatter(
+        fig,
+        df_breathe["Date Recorded"],
+        df_breathe["O2 Saturation"],
+        row=3,
         col=1,
         colour="black",
         title=O2Sat.name,
@@ -284,14 +294,14 @@ def plot_posterior_validation(
 
     df_res_hfev1 = get_heatmap_data(df_res_before_convergence, HFEV1)
     df_res_ho2sat = get_heatmap_data(df_res_before_convergence, HO2Sat)
-    plot_heatmap(fig, df_res_hfev1, HFEV1, row=3, col=1, coloraxis="coloraxis1")
-    plot_heatmap(fig, df_res_ho2sat, HO2Sat, row=5, col=1, coloraxis="coloraxis2")
+    plot_heatmap(fig, df_res_hfev1, HFEV1, row=4, col=1, coloraxis="coloraxis1")
+    plot_heatmap(fig, df_res_ho2sat, HO2Sat, row=6, col=1, coloraxis="coloraxis2")
 
-    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation"
+    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation ({df_breathe.Sex[0]}, {df_breathe.Age[0]}yr, {df_breathe.Height[0]}cm)"
     fig.update_layout(
         title=title,
         width=1200,
-        height=800,
+        height=920,
         font=dict(size=5),
         showlegend=False,
         coloraxis1=dict(
@@ -335,6 +345,7 @@ def plot_query_res(
         [{"type": "heatmap", "rowspan": 2}, {"type": "heatmap", "rowspan": 2}],
         [None, None],
         [{"type": "scatter", "rowspan": 1}, {"type": "scatter", "rowspan": 1}],
+        [{"type": "scatter", "rowspan": 1}, None],
     ]
     fig = make_subplots(
         rows=np.shape(layout)[0],
@@ -395,6 +406,15 @@ def plot_query_res(
     plot_scatter(
         fig,
         df_breathe["Date Recorded"],
+        df_breathe["ecFEF2575%ecFEV1"],
+        row=6,
+        col=1,
+        colour="black",
+        title="ecFEF2575%ecFEV1",
+    )
+    plot_scatter(
+        fig,
+        df_breathe["Date Recorded"],
         df_breathe["O2 Saturation"],
         row=5,
         col=2,
@@ -402,10 +422,10 @@ def plot_query_res(
         title=O2Sat.name,
     )
 
-    title = f"ID {df_breathe.ID[0]} - Longitudinal inference results"
+    title = f"ID {df_breathe.ID[0]} - Longitudinal inference results ({df_breathe.Sex[0]}, {df_breathe.Age[0]}yr, {df_breathe.Height[0]}cm)"
     fig.update_layout(
         title=title,
-        height=900,
+        height=1050,
         width=1300,
         font=dict(size=5),
         showlegend=False,
