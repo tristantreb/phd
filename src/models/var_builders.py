@@ -340,7 +340,7 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
 
 
 def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-    height, age, sex, ia_prior="uniform"
+    height, age, sex, ia_prior="uniform", ar_prior="uniform"
 ):
     """
     Point in time model with full FEV1, FEF25-75 and O2Sat sides
@@ -357,7 +357,17 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
-    AR = VariableNode("Airway resistance (%)", 0, 90, 2, prior={"type": "uniform"})
+    AR = VariableNode("Airway resistance (%)", 0, 90, 2, prior=None)
+    if ar_prior == "uniform":
+        AR.cpt = AR.set_prior({"type": "uniform"})
+    elif ar_prior == "uniform in log space":
+        AR.cpt = AR.set_prior(
+            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
+        )
+    elif ar_prior == "uniform message to HFEV1":
+        AR.cpt = AR.set_prior(
+            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
+        )
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
