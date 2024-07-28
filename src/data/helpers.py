@@ -27,7 +27,7 @@ def compute_avg(df, col_name, unit):
     return df
 
 
-def load_excel(file_path, str_cols_to_arrays=None):
+def load_excel(file_path, str_cols_to_arrays=None, date_cols=[]):
     """
     Load excel file
     Optionally convert string columns to arrays
@@ -38,8 +38,9 @@ def load_excel(file_path, str_cols_to_arrays=None):
     if "ID" in df.columns:
         df["ID"] = df["ID"].astype(str)
 
-    if "Date Recorded" in df.columns:
-        df["Date Recorded"] = df["Date Recorded"].dt.date
+    for col in date_cols:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col]).dt.date
 
     # Convert the given string columns to arrays
     if str_cols_to_arrays:
