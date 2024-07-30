@@ -135,7 +135,7 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
     return PDF_X_x_Y(z, x_a, x_b, 1 - y_b, 1 - y_a)
 
 
-class DiscreteVariableNode(AbstractVariableNode):
+class DiscreteVariableNode:
     def __init__(self, name: str, a, b, interval):
         """
         name: variable's name (e.g. "Healthy FEV1 (L)")
