@@ -1,5 +1,7 @@
 import numpy as np
 
+import src.models.helpers as mh
+
 
 def get_uniform_prior_in_log_space(AR):
     """
@@ -54,8 +56,8 @@ def calc_cpt(
     tol=1e-6,
     debug=False,
 ):
-    
-    return 
+
+    return
 
 
 def calc_cpt_X_plus_k(
