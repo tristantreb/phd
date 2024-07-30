@@ -135,6 +135,24 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
     return PDF_X_x_Y(z, x_a, x_b, 1 - y_b, 1 - y_a)
 
 
+class DiscreteVariableNode(AbstractVariableNode):
+    def __init__(self, name: str, a, b, interval):
+        """
+        name: variable's name (e.g. "Healthy FEV1 (L)")
+        a: lower bound of the variable's domain
+        b: upper bound of the variable's domain
+        bin_width: width of the bins
+        prior: if the prior is None, then the variable is a child variable (and has a CPT)
+        """
+        self.tol = TOL_GLOBAL
+        self.name = name
+        self.a = a
+        self.b = b
+        self.interval = self.interval
+        self.values = np.arange(a, b + interval, interval)
+        self.card = len(self.bins)
+
+
 class VariableNode:
     """
     This variable node class can be used to build Bayesian networks as well as factor graphs.
@@ -544,3 +562,93 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
                 abs(total - 1) < tol
             ), f"The sum of the probabilities should be 1, got {total}\nDistributions: {X.name} ~ U({a_low}, {a_up}), {Y.name} ~ U({b_low}, {b_up})\nRange over the child bins = [{Z_min}; {Z_max})\nP({Z.name}|{X.name}, {Y.name}) = {cpt[:, cpt_index + i + j]}\n {Z.name} bins: {Z.bins}\n Integral abserr = {abserr}"
     return cpt
+
+
+def get_intersecting_bins_idx(intersecting_bin, bin_list, debug=False):
+    """
+    Returns the indices of the bins in bin_list that intersect with bin
+    Assumes that the bins are sorted in increasing order and with constant bin_width
+    """
+    bin_list_width = bin_list[1] - bin_list[0]
+    # Width of intersecting bin can't be 0
+    if intersecting_bin[1] - intersecting_bin[0] == 0:
+        raise ValueError("Intersecting bin width should be non-zero")
+
+    # Checks that the bin falls strictly within the range [bin_list[0]; bin_list[-1]]
+    overlap_error = ValueError(
+        f"Shifted X bin {intersecting_bin} intersects none of the Z bins {bin_list}"
+    )
+    if intersecting_bin[1] < bin_list[0]:
+        raise overlap_error
+    # Raise if X_shifted_bin_low is larger than the largest Z bin
+    if intersecting_bin[0] >= bin_list[-1] + bin_list_width:
+        raise overlap_error
+
+    left_away_error = ValueError("A portion of the scaled X bin is outside the Z bins")
+    if intersecting_bin[0] < bin_list[0]:
+        raise left_away_error
+    if intersecting_bin[1] > bin_list[-1] + bin_list_width:
+        raise left_away_error
+
+    idx1, idxn = np.searchsorted(bin_list, [intersecting_bin[0], intersecting_bin[1]])
+    if debug:
+        print("Idx from searchsorted func", idx1, ",", idxn)
+
+    k1 = idx1 - 1
+    if idx1 <= len(bin_list) - 1 and bin_list[idx1] == intersecting_bin[0]:
+        k1 = idx1
+
+    kn = idxn - 1
+
+    if debug:
+        print(
+            "Bins idx",
+            k1,
+            ",",
+            kn,
+            "corresponding to values",
+            bin_list[k1],
+            bin_list[kn],
+        )
+    return (k1, kn)
+
+
+def get_bin_contribution_to_cpt(shifted_X_bin, Z_bins, debug=False, tol=1e-6):
+    """
+    Returns a vector of probabilities representing the contribution of the shifted X bin to a set of Z_bins (i.e. cpt[:, i, j])
+
+    Each element in Z_bins correspond to the interval [Z_bins[i]; Z_bins[i] + Z_bins_width]
+    """
+
+    shifted_X_binwidth = shifted_X_bin[1] - shifted_X_bin[0]
+    if shifted_X_binwidth == 0:
+        raise ValueError("Shifted X bin width should be non-zero")
+    Z_bins_width = Z_bins[1] - Z_bins[0]
+
+    p_vect = np.zeros(len(Z_bins))
+    (k1, kn) = get_intersecting_bins_idx(shifted_X_bin, Z_bins)
+
+    for k in range(k1, kn + 1):
+        # Find the overlapping region between the shifted X bin and the Z bin
+        # The overlapping region is the intersection of the two intervals
+        # The intersection is the max of the lower bounds and the min of the upper bounds
+        # The intersection is empty if the lower bound is larger than the upper bound
+        intersection = max(shifted_X_bin[0], Z_bins[k]), min(
+            shifted_X_bin[1], Z_bins[k] + Z_bins_width
+        )
+
+        # The probability mass is the length of the intersection divided by the length of the shifted X bin
+        p = (intersection[1] - intersection[0]) / shifted_X_binwidth
+        p_vect[k] = p
+
+        if debug:
+            print(
+                f"k={k}, bin=[{Z_bins[k]};{Z_bins[k] + Z_bins_width}], p={p} (={intersection[1] - intersection[0]}/{shifted_X_binwidth})"
+            )
+    # Raise if sum of probabilities is larger than 1
+    total = np.sum(p_vect)
+    assert (
+        abs(total - 1) < tol
+    ), f"The sum of the probabilities should be 1, got {total}\np_vect={p_vect}"
+
+    return p_vect
