@@ -53,11 +53,35 @@ def calc_cpt(
     AR_next_day: mh.VariableNode,
     AR_curr_day: mh.VariableNode,
     DE: mh.DiscreteVariableNode,
+    shift_p,
+    shift_val,
     tol=1e-6,
     debug=False,
 ):
+    cpt = np.empty([AR_next_day.card, AR_curr_day.card, DE.card])
 
-    return
+    for de in range(DE.card):
+        # For each shift value, get the mapping AR -> AR_next_day for each shifted bin in AR
+        # Weight the result by the probability of that shift
+        # Add it to the CPT for this day
+        for s in range(len(shift_p)):
+            cpt[:, :, de] += shift_p[de, s] * calc_cpt_X_plus_k(
+                AR_curr_day,
+                AR_next_day,
+                shift_val[s],
+                tol=tol,
+                debug=debug,
+            )
+        # Normalise the CPT for this amount of days elapsed
+        total = np.sum(cpt[:, :, de])
+        cpt[:, :, de] /= total
+
+    # Check that the sum of probabilities is 1
+    total = np.sum(cpt)
+    assert (
+        abs(total - 1) < tol
+    ), f"The sum of the probabilities should be 1, got sum(cpt)={total}])"
+    return cpt
 
 
 def calc_cpt_X_plus_k(
@@ -88,31 +112,35 @@ def calc_cpt_X_plus_k(
     nbinsZ = len(Z.bins)
 
     cpt = np.zeros([nbinsZ, nbinsX])
-    if debug:
-        print(f"Shape of cpt: {cpt.shape}")
-
-        # # The drop amount for a Y bin is the average of the function over the bin
-        # # Simplified to avg( f(bin_up) - f(bin_low) )
-        # drop = np.mean([func(Y.bins[j] + Y.bin_width), func(Y.bins[j])])
-        # if debug:
-        #     print(f"Drop for Y bin {j} ([{Y.bins[j]};{Y.bins[j]+Y.bin_width}]): {drop}")
-
-        # For computational efficiency, we want to store least information in memory
-        # Hence, we will compute the shifted bins of X and directly reallocate the probability mass to the overlapping Z bins
 
     for i in range(nbinsX):
-        scaled_X_bin_low = X.bins[i] + k
-        scaled_X_bin_up = (X.bins[i] + X.bin_width) + k
+        shifted_X_bin_low = X.bins[i] + k
+        shifted_X_bin_up = (X.bins[i] + X.bin_width) + k
         if debug:
             print(
-                f"Shifting X bin {i} from [{X.bins[i]};{X.bins[i]+X.bin_width}] to [{scaled_X_bin_low};{scaled_X_bin_up}], drop amount={drop}%"
+                f"Shifting X bin {i} from [{X.bins[i]};{X.bins[i]+X.bin_width}] to [{shifted_X_bin_low};{shifted_X_bin_up}], shift amount={k}%"
             )
+        # If the shifted bin is outside the boundaries of Z, continue:
+        if shifted_X_bin_low >= Z.bins[-1] or shifted_X_bin_up <= Z.bins[0]:
+            if debug:
+                print("Shift outside boundaries")
+            continue
+        # Handle the case where the shifted bin is partially outside the boundaries
+        # Adjust the boundaries of the shifted bin to be within the boundaries of Z
+        if shifted_X_bin_low < Z.bins[0]:
+            if debug:
+                print("Shift partially outside boundaries, adjusting lower boundary")
+            shifted_X_bin_low = Z.bins[0]
+        if shifted_X_bin_up > Z.bins[-1]:
+            if debug:
+                print("Shift partially outside boundaries, adjusting upper boundary")
+            shifted_X_bin_up = Z.bins[-1]
 
-        bin_contribution = get_bin_contribution_to_cpt(
-            [scaled_X_bin_low, scaled_X_bin_up], Z.bins, debug=debug
+        bin_contribution = mh.get_bin_contribution_to_cpt(
+            [shifted_X_bin_low, shifted_X_bin_up], Z.bins, debug=debug
         )
-        if debug:
-            print(f"i={i}/{nbinsX-1}, j={j}/{nbinsY-1}, z={bin_contribution}")
+        # if debug:
+        #     print(f"i={i}/{nbinsX-1}, j={j}/{nbinsY-1}, z={bin_contribution}")
         cpt[:, i] += bin_contribution
 
     # Normalise all cpt(:, i, j) to 1

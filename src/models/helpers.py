@@ -148,9 +148,9 @@ class DiscreteVariableNode:
         self.name = name
         self.a = a
         self.b = b
-        self.interval = self.interval
+        self.interval = interval
         self.values = np.arange(a, b + interval, interval)
-        self.card = len(self.bins)
+        self.card = len(self.values)
 
 
 class VariableNode:
