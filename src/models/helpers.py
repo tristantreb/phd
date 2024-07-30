@@ -332,6 +332,25 @@ class VariableNode:
         """
         return self.bins[np.argmax(p)] + self.bin_width / 2
 
+    def get_std(self, p):
+        """
+        Returns the distribution's standard deviation given an array of probabilities
+        """
+        mean = self.get_mean(p)
+        std = np.sqrt(np.multiply(p, np.power(self.midbins - mean, 2)).sum())
+        return std
+
+    def get_skewness(self, p):
+        """
+        Returns the distribution's skewness given an array of probabilities
+        """
+        mean = self.get_mean(p)
+        std = self.get_std(p)
+        skewness = np.multiply(p, np.power(self.midbins - mean, 3)).sum() / np.power(
+            std, 3
+        )
+        return skewness
+
     def get_bin_for_value(self, obs: float, tol=TOL_GLOBAL):
         """
         Given an observation and an array of bins, this returns the bin that the value falls into
