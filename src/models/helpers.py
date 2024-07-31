@@ -22,6 +22,7 @@ def name_to_abbr_dict():
         "ecFEV1 (L)": "ecFEV1",
         "ecFEF25-75 % ecFEV1 (%)": "ecFEF25-75%ecFEV1",
         "Airway resistance (%)": "AR",
+        "Airway resistance": "AR",
         "O2 saturation (%)": "O2Sat",
         "Healthy O2 saturation (%)": "HO2Sat",
         "O2 saturation if fully functional alveoli (%)": "O2SatFFA",
@@ -31,9 +32,18 @@ def name_to_abbr_dict():
 
 
 def name_to_abbr(name: str):
+    elapsed = False
+    if "day" in name:
+        elapsed = True
+        # Then it's a variable that spans over time
+        name, suffix = str.split(name, " day ")
+        day_n, unit = suffix.split(" (")
+        # unit = unit[0]
     abbr = name_to_abbr_dict().get(name, "Invalid name")
     if abbr == "Invalid name":
         raise ValueError(f"Invalid name: {name}")
+    if elapsed:
+        abbr = f"{abbr}_day{day_n}"
 
     return abbr
 

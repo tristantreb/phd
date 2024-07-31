@@ -80,8 +80,4 @@ def plot_2d_cpt(cpt, cVar, pVar, height=2500, vspace=0.003, invert=False):
         showlegend=False,
         font=dict(size=8),
     )
-    fig.show()
-    # fig.write_image(
-    #     dh.get_path_to_main()
-    #     + f"PlotsBreathe/AR_modelling/{title}.pdf"
-    # )
+    return fig, title
