@@ -28,6 +28,7 @@ def name_to_abbr_dict():
         "O2 saturation if fully functional alveoli (%)": "O2SatFFA",
         "Inactive alveoli (%)": "IA",
         "Underlying O2 saturation (%)": "UO2Sat",
+        "Days elapsed": "DE",
     }
 
 
@@ -57,13 +58,21 @@ def abbr_to_colname_dict():
         "ecFEF25-75%ecFEV1": "ecFEF2575%ecFEV1",
         "AR": "AR",
         "IA": "IA",
+        "DE": "Days Elapsed",
     }
 
 
 def abbr_to_colname(name: str):
+    # elapsed=False
+    # if "_day" in name:
+    #     elapsed = True
+    #     name, day_n = str.split(name, "_day")
+    #     day_n = int(day_n)
     colname = abbr_to_colname_dict().get(name, "Invalid abbreviation")
     if colname == "Invalid abbreviation":
         raise ValueError(f"Invalid abbreviation: {name}")
+    # if elapsed:
+    #     colname = f"{colname} {day_n} days"
 
     return colname
 
@@ -158,7 +167,8 @@ class DiscreteVariableNode:
         self.name = name
         self.a = a
         self.b = b
-        self.interval = interval
+        # In reality it is an interval, but using bin_width to keep the same naming convention as VariableNode
+        self.bin_width = interval
         self.values = np.arange(a, b + interval, interval)
         self.card = len(self.values)
 
