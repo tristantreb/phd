@@ -490,6 +490,13 @@ class SharedVariableNode(VariableNode):
             return agg_message
 
 
+# class InterDaysVariableNode(VariableNode):
+#     def __init__(self, name: str, a, b, bin_width, prior):
+#         super().__init__(name, a, b, bin_width, prior)
+#         self.previous_posterior = None
+#         self.previous_date = None
+
+
 def encode_node_variable(var):
     """
     We must encode variables to JSON format to share them between Dash's callbacks
