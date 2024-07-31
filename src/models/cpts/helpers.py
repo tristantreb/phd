@@ -9,7 +9,7 @@ import src.models.helpers as mh
 from src.models.helpers import name_to_abbr
 
 
-def get_cpt(vars: List[mh.VariableNode], suffix=None):
+def get_cpt(vars: List[mh.VariableNode | mh.DiscreteVariableNode], suffix=None):
     path_to_folder = dh.get_path_to_src() + "models/cpts/"
     var_spec = map(
         lambda var: f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}", vars
@@ -25,7 +25,7 @@ def get_cpt(vars: List[mh.VariableNode], suffix=None):
     return cpt
 
 
-def save_cpt(vars: List[mh.VariableNode], cpt: np.ndarray, suffix=None):
+def save_cpt(vars: List[mh.VariableNode | mh.DiscreteVariableNode], cpt: np.ndarray, suffix=None):
     path_to_folder = dh.get_path_to_src() + "/models/cpts/"
     filename = "_".join(
         [f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}" for var in vars]
