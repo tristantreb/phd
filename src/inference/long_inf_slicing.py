@@ -8,6 +8,7 @@ from plotly.subplots import make_subplots
 
 import src.data.helpers as dh
 import src.inference.helpers as ih
+import src.models.cpts.helpers as cpth
 import src.models.helpers as mh
 from pgmpy.factors.discrete import TabularCPD
 
@@ -70,7 +71,6 @@ def build_evidence(df, i, variables):
 
 def build_virtual_evidence_shared_vars(shared_variables, day):
     vevidence = []
-    vmessage_dict = {}
     for shared_var in shared_variables:
         virtual_message = shared_var.get_virtual_message(day, agg_method=True)
         if virtual_message is not None:
@@ -81,8 +81,7 @@ def build_virtual_evidence_shared_vars(shared_variables, day):
                     virtual_message.reshape(-1, 1),
                 )
             )
-            vmessage_dict[shared_var.name] = virtual_message
-    return vevidence, vmessage_dict
+    return vevidence
 
 
 def build_virtual_evidence_ar(
@@ -99,10 +98,7 @@ def build_virtual_evidence_ar(
 
     # This is the first day, return a uniform message to not influence the inference
     if previous_date is None:
-        message = get_uniform_message(AR.card)
-        vevidence = TabularCPD(AR.name, AR.card, message.reshape(-1, 1))
-        vmessage_dict = {AR.name: message}
-        return vevidence, vmessage_dict
+        return TabularCPD(AR.name, AR.card, get_uniform_message(AR.card).reshape(-1, 1))
 
     # Otherwise use previous day to estimate the next day's AR prior
     days_elapsed = int((date - previous_date).total_seconds() / 3600 / 24)
@@ -126,9 +122,7 @@ def build_virtual_evidence_ar(
                 f"Days elapsed: {days_elapsed} (curr = {date}, prev = {previous_date})"
             )
         ar_prior = np.matmul(previous_posterior_ar, cpt_AR_DE[:, :, -days_elapsed])
-    vevidence = TabularCPD(AR.name, AR.card, ar_prior.reshape(-1, 1))
-    vmessage_dict = {AR.name: ar_prior}
-    return vevidence, vmessage_dict
+    return TabularCPD(AR.name, AR.card, ar_prior.reshape(-1, 1))
 
 
 def query_forwardly_across_days(
@@ -177,16 +171,15 @@ def query_forwardly_across_days(
                     shared_var.reset()
             # Get query inputs
             evidence_dict = build_evidence(df, i, evidence_variables)
-            vevidence, vmessage_dict = build_virtual_evidence_shared_vars(
-                shared_variables, day
-            )
+            vevidence = build_virtual_evidence_shared_vars(shared_variables, day)
 
+            vars_to_infer = get_var_name_list(shared_variables + variables)
             if final_epoch:
                 # Query all variables to get all posteriors
-                vars_to_infer = get_var_name_list(shared_variables + variables)
                 if debug:
+                    vevidence_str = [(cpd.variable, cpd.values) for cpd in vevidence]
                     print(
-                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
+                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
                     )
                 query_res = belief_propagation.query(
                     vars_to_infer, evidence_dict, vevidence
@@ -201,10 +194,10 @@ def query_forwardly_across_days(
                 )
             else:
                 # Query shared variables to get cross plate message
-                vars_to_infer = get_var_name_list(shared_variables)
                 if debug:
+                    vevidence_str = [(cpd.variable, cpd.values) for cpd in vevidence]
                     print(
-                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
+                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
                     )
                 query_res, query_messages = belief_propagation.query(
                     vars_to_infer, evidence_dict, vevidence, get_messages=True
@@ -221,10 +214,15 @@ def query_forwardly_across_days(
                     # Get newly computed message from the query output
                     new_message = query_messages[shared_var.factor_node_key]
                     shared_var.add_or_update_message(day, new_message)
-                    if len(vmessage_dict) == 0:
+                    if len(vevidence) == 0:
                         vmessage = get_uniform_message(shared_var.card)
                     else:
-                        vmessage = vmessage_dict[shared_var.name]
+                        vmessage = [
+                            cpd.values
+                            for cpd in vevidence
+                            if cpd.variable == shared_var.name
+                        ][0]
+                    shared_var.set_agg_virtual_message(vmessage, new_message)
                     shared_var.set_agg_virtual_message(vmessage, new_message)
 
         posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
@@ -250,6 +248,15 @@ def query_forwardly_across_days(
         epoch += 1
 
 
+def initialise_interdays_AR_connexions(variables):
+    AR = variables[0]
+    assert AR.name == "Airway resistance (%)"
+    DE = mh.DiscreteVariableNode("Days elapsed", 1, 3, 1)
+    cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]")
+    prev_ar_posterior = None
+    return AR, cpt_AR_DE, prev_ar_posterior
+
+
 def query_back_and_forth_across_days(
     df_init,
     belief_propagation,
@@ -257,141 +264,10 @@ def query_back_and_forth_across_days(
     variables: List[mh.VariableNode],
     evidence_variables: List[str],
     diff_threshold,
-    debug=True,
-    auto_reset_shared_vars=True,
-):
-    """
-    algorithm to query the point in time model across days, thus making an approximate longitudinal inference
-    the algorithm atlernates forward and backward passes, to ensure that the day-to-day interconnected variables can propagate information backwards as efficiently as possible
-
-    variables: contains the names of the variables to infer, as defined in the graph
-    evidence_variables: contains names of the observed variables, as defined in the df's columns
-    auto_reset_shared_vars: bool to automatically reset the shared variables after the computations are done
-    """
-    df_init = df_init.reset_index(drop=True)
-    final_pass = False
-    passes = 0
-
-    # Check that each date in Date Redorded is unique
-    assert df_init["Date Recorded"].nunique() == len(
-        df_init
-    ), "Error: Cannot process input df as there are doublons in the Date Recorded column."
-
-    df_res_before_convergence = pd.DataFrame({})
-    df_res_final_epoch = pd.DataFrame({})
-
-    # Initialize posteriors distribution to uniform
-    posteriors_old = [
-        get_uniform_message(shared_var.card) for shared_var in shared_variables
-    ]
-
-    while True:
-        forward_pass = passes % 2 == 0
-        if forward_pass:
-            if debug:
-                print(f"Pass {passes} (forward)")
-            df = df_init.sort_values("Date Recorded", ascending=True).reset_index(
-                drop=True
-            )
-        else:
-            if debug:
-                print(f"Pass {passes} (backward)")
-            df = df_init.sort_values("Date Recorded", ascending=False).reset_index(
-                drop=True
-            )
-
-        for i, row in df.iterrows():
-            day = row["Date Recorded"].strftime("%Y-%m-%d")
-
-            # Get query inputs
-            evidence_dict = build_evidence(df, i, evidence_variables)
-            vevidence, vmessage_dict = build_virtual_evidence_shared_vars(
-                shared_variables, day
-            )
-
-            if final_pass:
-                # Query all variables to get all posteriors
-                vars_to_infer = get_var_name_list(shared_variables + variables)
-                if debug:
-                    print(
-                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
-                    )
-                query_res = belief_propagation.query(
-                    vars_to_infer, evidence_dict, vevidence
-                )
-                df_res_final_epoch = save_res_to_df(
-                    df_res_final_epoch,
-                    day,
-                    query_res,
-                    vars_to_infer,
-                    row,
-                    evidence_variables,
-                )
-            else:
-                # Query shared variables to get cross plate message
-                vars_to_infer = get_var_name_list(shared_variables)
-                if debug:
-                    print(
-                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
-                    )
-                query_res, query_messages = belief_propagation.query(
-                    vars_to_infer, evidence_dict, vevidence, get_messages=True
-                )
-                df_res_before_convergence = save_res_to_df(
-                    df_res_before_convergence,
-                    f"{passes}, {day}",
-                    query_res,
-                    vars_to_infer,
-                    row,
-                    evidence_variables,
-                )
-                for shared_var in shared_variables:
-                    # Get newly computed message from the query output
-                    new_message = query_messages[shared_var.factor_node_key]
-                    shared_var.add_or_update_message(day, new_message)
-                    if len(vmessage_dict) == 0:
-                        vmessage = get_uniform_message(shared_var.card)
-                    else:
-                        vmessage = vmessage_dict[shared_var.name]
-                    shared_var.set_agg_virtual_message(vmessage, new_message)
-
-        posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
-
-        for shared_var, diff in zip(shared_variables, diffs):
-            if debug:
-                print(f"Pass {passes} - Posteriors' diff for {shared_var.name}: {diff}")
-
-        # Convergence reached when the diff is below the threshold
-        # or when the maximum number of passes is reached
-        # When convergence is reached, run another epoch to get all posteriors
-        if np.sum(diffs) < diff_threshold or passes > 99:
-            if final_pass:
-                if auto_reset_shared_vars:
-                    for shared_var in shared_variables:
-                        shared_var.reset()
-                return df_res_final_epoch, df_res_before_convergence, shared_variables
-            if passes % 2 == 1:
-                # Convergence must end on a backward pass
-                if debug:
-                    print(
-                        f"Final pass - All diffs are below {diff_threshold}, running another epoch to get all posteriors"
-                    )
-
-                final_pass = True
-        passes += 1
-
-
-def query_back_and_forth_across_days_with_interconnected_ar(
-    df_init,
-    belief_propagation,
-    shared_variables: List[mh.SharedVariableNode],
-    variables: List[mh.VariableNode],
-    evidence_variables: List[str],
-    diff_threshold,
-    cpt_AR_DE: np.ndarray,
-    debug=True,
+    debug=False,
     auto_reset_shared_vars=True,
     max_passes=99,
+    interconnect_AR=False,
 ):
     """
     algorithm to query the point in time model across days, thus making an approximate longitudinal inference
@@ -404,6 +280,7 @@ def query_back_and_forth_across_days_with_interconnected_ar(
     df_init = df_init.reset_index(drop=True)
     final_pass = False
     passes = 0
+    previous_date = None
 
     # Check that each date in Date Redorded is unique
     assert df_init["Date Recorded"].nunique() == len(
@@ -417,65 +294,76 @@ def query_back_and_forth_across_days_with_interconnected_ar(
     posteriors_old = [
         get_uniform_message(shared_var.card) for shared_var in shared_variables
     ]
-    # Specifics to the interdays AR variable
-    AR = variables[0]
-    assert AR.name == "Airway resistance (%)"
 
     # Initialize AR specific variables
-    previous_posterior_ar = None
-    previous_date = None
+    if interconnect_AR:
+        AR, cpt_AR_DE, previous_posterior_ar = initialise_interdays_AR_connexions(
+            variables
+        )
 
     while True:
-        forward_pass = passes % 2 == 0
-        if forward_pass:
+        if final_pass:
             if debug:
-                print(f"Pass {passes} (forward)")
+                print(f"Final pass - pass {passes} (forward)")
             df = df_init.sort_values("Date Recorded", ascending=True).reset_index(
                 drop=True
             )
+            previous_date = None
+            if interconnect_AR:
+                previous_posterior_ar = None
         else:
-            if debug:
-                print(f"Pass {passes} (backward)")
-            df = df_init.sort_values("Date Recorded", ascending=False).reset_index(
-                drop=True
-            )
+            forward_pass = passes % 2 == 0
+            if forward_pass:
+                if debug:
+                    print(f"Pass {passes} (forward)")
+                df = df_init.sort_values("Date Recorded", ascending=True).reset_index(
+                    drop=True
+                )
+            else:
+                if debug:
+                    print(f"Pass {passes} (backward)")
+                df = df_init.sort_values("Date Recorded", ascending=False).reset_index(
+                    drop=True
+                )
+            if passes != 0:
+                # Remove the first element as it's the same as the last element of the previous pass
+                df = df.iloc[1:].reset_index(drop=True)
 
         for i, row in df.iterrows():
-            # While running the back and forth, avoid inferring the same day twice consecutively
-            if i == 0 and passes > 0:
-                if final_pass:
-                    # Save results from the last day of the previous pass into the final epoch df
-                    df_res_final_epoch = save_res_to_df(
-                        df_res_final_epoch,
-                        date_str,
-                        query_res,
-                        vars_to_infer,
-                        row,
-                        evidence_variables,
-                    )
-                continue
             date = row["Date Recorded"]
             date_str = date.strftime("%Y-%m-%d")
 
+            assert (
+                previous_date != date
+            ), "The dates are the same, no inference can be made"
+
             # Get query inputs
             evidence_dict = build_evidence(df, i, evidence_variables)
-            vevidence_shared, vmessage_dict_shared = build_virtual_evidence_shared_vars(
+            vevidence_shared = build_virtual_evidence_shared_vars(
                 shared_variables, date_str
             )
-            # Add vevidence for AR
-            vevidence_ar, vmessage_dict_ar = build_virtual_evidence_ar(
-                AR, cpt_AR_DE, date, previous_date, previous_posterior_ar, debug=debug
-            )
-            vevidence = vevidence_shared.append(vevidence_ar)
-            vmessage_dict = {**vmessage_dict_shared, **vmessage_dict_ar}
+            vevidence = vevidence_shared
+
+            if interconnect_AR:
+                vevidence_ar = build_virtual_evidence_ar(
+                    AR,
+                    cpt_AR_DE,
+                    date,
+                    previous_date,
+                    previous_posterior_ar,
+                    debug=debug,
+                )
+                vevidence = vevidence_shared + [vevidence_ar]
+
+            vars_to_infer = get_var_name_list(shared_variables + variables)
 
             if final_pass:
                 # Query all variables to get all posteriors
-                vars_to_infer = get_var_name_list(shared_variables + variables)
-                # if debug:
-                #     print(
-                #         f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
-                #     )
+                if debug:
+                    vevidence_str = [(cpd.variable, cpd.values) for cpd in vevidence]
+                    print(
+                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
+                    )
                 query_res = belief_propagation.query(
                     vars_to_infer, evidence_dict, vevidence
                 )
@@ -490,11 +378,11 @@ def query_back_and_forth_across_days_with_interconnected_ar(
 
             else:
                 # Query shared variables to get cross plate message
-                vars_to_infer = get_var_name_list(shared_variables + variables)
-                # if debug:
-                #     print(
-                #         f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vmessage_dict}"
-                #     )
+                if debug:
+                    vevidence_str = [(cpd.variable, cpd.values) for cpd in vevidence]
+                    print(
+                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
+                    )
                 query_res, query_messages = belief_propagation.query(
                     vars_to_infer,
                     evidence_dict,
@@ -505,7 +393,7 @@ def query_back_and_forth_across_days_with_interconnected_ar(
                     df_res_before_convergence,
                     f"{passes}, {date_str}",
                     query_res,
-                    get_var_name_list(shared_variables),
+                    vars_to_infer,
                     row,
                     evidence_variables,
                 )
@@ -514,45 +402,47 @@ def query_back_and_forth_across_days_with_interconnected_ar(
                 for shared_var in shared_variables:
                     new_message = query_messages[shared_var.factor_node_key]
                     shared_var.add_or_update_message(date_str, new_message)
-                    if len(vmessage_dict_shared) == 0:
+                    if len(vevidence_shared) == 0:
                         vmessage = get_uniform_message(shared_var.card)
                     else:
-                        vmessage = vmessage_dict_shared[shared_var.name]
+                        vmessage = [
+                            cpd.values
+                            for cpd in vevidence_shared
+                            if cpd.variable == shared_var.name
+                        ][0]
                     shared_var.set_agg_virtual_message(vmessage, new_message)
 
-            # Update AR specific variables
             previous_date = date
-            previous_posterior_ar = query_res[AR.name].values
+            if interconnect_AR:
+                previous_posterior_ar = query_res[AR.name].values
 
         posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
 
         for shared_var, diff in zip(shared_variables, diffs):
-            if debug:
-                print(f"Pass {passes} - Posteriors' diff for {shared_var.name}: {diff}")
+            print(f"Pass {passes} - Posteriors' diff for {shared_var.name}: {diff}")
 
         # Convergence reached when the diff is below the threshold
         # or when the maximum number of passes is reached
         # When convergence is reached, run another epoch to get all posteriors
-        if np.sum(diffs) < diff_threshold or passes > max_passes:
+        if np.sum(diffs) < diff_threshold or passes >= max_passes:
             if final_pass:
                 # Reset vars before returning
                 if auto_reset_shared_vars:
                     for shared_var in shared_variables:
                         shared_var.reset()
                 return df_res_final_epoch, df_res_before_convergence, shared_variables
-            if passes % 2 == 1:
-                # Convergence must end on a backward pass
-                if debug:
-                    if passes > max_passes:
-                        print(
-                            f"Alg. didn't converge - Max number of passes reached: {max_passes}, running another epoch to get all posteriors"
-                        )
-                    else:
-                        print(
-                            f"Alg. converged - All diffs are below {diff_threshold}, running another epoch to get all posteriors"
-                        )
-
-                final_pass = True
+            # if passes % 2 == 1:
+            # Convergence must end on a backward pass
+            if debug:
+                if passes > max_passes:
+                    print(
+                        f"Alg. didn't converge - Max number of passes reached: {max_passes}, running another epoch to get all posteriors"
+                    )
+                else:
+                    print(
+                        f"Alg. converged - All diffs are below {diff_threshold}, running another epoch to get all posteriors"
+                    )
+            final_pass = True
 
         # Update variables for the next pass
         passes += 1
@@ -598,11 +488,10 @@ def plot_heatmap(fig, df, var, row, col, coloraxis):
 
 def plot_posterior_validation(
     df_res_before_convergence,
-    HFEV1,
-    HO2Sat,
+    Var1,
+    Var2,
     df_breathe,
-    ecFEV1,
-    O2Sat,
+    title,
     colorscale,
     save=False,
 ):
@@ -629,7 +518,7 @@ def plot_posterior_validation(
         row=1,
         col=1,
         colour="black",
-        title=ecFEV1.name,
+        title="ecFEV1 (L)",
     )
     plot_scatter(
         fig,
@@ -647,15 +536,14 @@ def plot_posterior_validation(
         row=3,
         col=1,
         colour="black",
-        title=O2Sat.name,
+        title="O2 saturation (%)",
     )
 
-    df_res_hfev1 = get_heatmap_data(df_res_before_convergence, HFEV1)
-    df_res_ho2sat = get_heatmap_data(df_res_before_convergence, HO2Sat)
-    plot_heatmap(fig, df_res_hfev1, HFEV1, row=4, col=1, coloraxis="coloraxis1")
-    plot_heatmap(fig, df_res_ho2sat, HO2Sat, row=6, col=1, coloraxis="coloraxis2")
+    df_res_var1 = get_heatmap_data(df_res_before_convergence, Var1)
+    df_res_var2 = get_heatmap_data(df_res_before_convergence, Var2)
+    plot_heatmap(fig, df_res_var1, Var1, row=4, col=1, coloraxis="coloraxis1")
+    plot_heatmap(fig, df_res_var2, Var2, row=6, col=1, coloraxis="coloraxis2")
 
-    title = f"ID {df_breathe.ID[0]} - Longitudinal inference stability validation ({df_breathe.Sex[0]}, {df_breathe.Age[0]}yr, {df_breathe.Height[0]}cm)"
     fig.update_layout(
         title=title,
         width=1200,
@@ -678,9 +566,7 @@ def plot_posterior_validation(
         ),
     )
     if save:
-        fig.write_image(
-            f"{plotsdir}Healthy_vars_inference_stability_validation/{title}.pdf"
-        )
+        fig.write_image(f"{plotsdir}Validation/{title}.pdf")
     else:
         fig.show()
 
@@ -694,6 +580,7 @@ def plot_query_res(
     IA: mh.VariableNode,
     HFEV1: mh.SharedVariableNode,
     HO2Sat: mh.SharedVariableNode,
+    title: str,
     colorscale=[[0, "lightcyan"], [0.5, "yellow"], [1, "blue"]],
     save=False,
 ):
@@ -780,7 +667,6 @@ def plot_query_res(
         title=O2Sat.name,
     )
 
-    title = f"ID {df_breathe.ID[0]} - Longitudinal inference results ({df_breathe.Sex[0]}, {df_breathe.Age[0]}yr, {df_breathe.Height[0]}cm)"
     fig.update_layout(
         title=title,
         height=1050,
@@ -805,6 +691,6 @@ def plot_query_res(
         ),
     )
     if save:
-        fig.write_image(f"{plotsdir}Healthy_vars_inference_results/{title}.pdf")
+        fig.write_image(f"{plotsdir}Results/{title}.pdf")
     else:
         fig.show()
