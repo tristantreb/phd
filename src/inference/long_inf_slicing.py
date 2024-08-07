@@ -252,7 +252,8 @@ def initialise_interdays_AR_connexions(variables):
     AR = variables[0]
     assert AR.name == "Airway resistance (%)"
     DE = mh.DiscreteVariableNode("Days elapsed", 1, 3, 1)
-    cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]")
+    cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]_samples")
+    # cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]")
     prev_ar_posterior = None
     return AR, cpt_AR_DE, prev_ar_posterior
 
