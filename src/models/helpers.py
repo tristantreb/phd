@@ -236,7 +236,7 @@ class VariableNode:
     def sample(self, n=1, p=None):
         """
         Randomly select a midbins from the variable prior's distribution
-        If the variable was continuous but has been discretised, it returns a random value inside the sampled bins range
+        If the variable was continuous but has been discretised, it returns a random value inside the sampled bin range
         If the variable is inherently dicrete (e.g. O2 saturation), it returns the midbin as it is the actual real value
 
         By default it uses the variable's prior, but it can also use a custom distribution p
