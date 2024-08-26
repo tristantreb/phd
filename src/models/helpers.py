@@ -409,6 +409,36 @@ class VariableNode:
         message[idx] = 1
         return message
 
+    def get_val_at_quantile(self, p, q):
+        """
+        Returns the value at a given quantile q given input probability distribution p
+        Assuming uniform distribution within each bin
+        """
+        # Compute the cumulative distribution function
+        cdf = np.cumsum(p)
+        # Find the index of the first value that is greater than q
+        idx = np.where(cdf >= q, cdf, np.inf).argmin()
+        # Get corresponding bin values
+        val_l, val_r = self.get_bins_arr()[idx]
+        p_l = 0 if idx == 0 else cdf[idx - 1]
+        p_r = cdf[idx]
+
+        def get_interpolated_value(val_l, cdf_l, val_r, cdf_r, q):
+            return val_l + (val_r - val_l) * (q - cdf_l) / (cdf_r - cdf_l)
+
+        return get_interpolated_value(val_l, p_l, val_r, p_r, q)
+
+    def get_IPR(self, p, p1=0.15865, p2=0.84135):
+        """
+        Returns the distribution's interpercentile range (inclusive) given an array of probabilities
+
+        IQR: q1=0.25, q3=0.75
+        1sigma = 68.27%, p1=(100-68.27)/2=15.865%, p2=100-15.865=84.135%
+        2sigma = 95.45%, p1=(100-95.45)/2=2.275%, p2=100-2.275=97.725%
+        3sigma = 99.73%, p1=(100-99.73)/2=0.135%, p2=100-0.135=99.865%
+        """
+        return self.get_val_at_quantile(p, p2) - self.get_val_at_quantile(p, p1)
+
 
 class SharedVariableNode(VariableNode):
     """
