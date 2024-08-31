@@ -43,8 +43,8 @@ def name_to_abbr(name: str):
     abbr = name_to_abbr_dict().get(name, "Invalid name")
     if abbr == "Invalid name":
         raise ValueError(f"Invalid name: {name}")
-    if elapsed:
-        abbr = f"{abbr}_day{day_n}"
+    # if elapsed:
+    #     abbr = f"{abbr}{day_n}"
 
     return abbr
 
