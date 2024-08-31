@@ -248,11 +248,12 @@ def query_forwardly_across_days(
         epoch += 1
 
 
-def initialise_interdays_AR_connexions(variables):
+def initialise_interdays_AR_connexions(variables, suffix=""):
     AR = variables[0]
     assert AR.name == "Airway resistance (%)"
     DE = mh.DiscreteVariableNode("Days elapsed", 1, 3, 1)
-    cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]_samples")
+    cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix=suffix)
+    # cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]_samples")
     # cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]")
     prev_ar_posterior = None
     return AR, cpt_AR_DE, prev_ar_posterior
@@ -299,7 +300,7 @@ def query_back_and_forth_across_days(
     # Initialize AR specific variables
     if interconnect_AR:
         AR, cpt_AR_DE, previous_posterior_ar = initialise_interdays_AR_connexions(
-            variables
+            variables, interconnect_AR
         )
 
     while True:
