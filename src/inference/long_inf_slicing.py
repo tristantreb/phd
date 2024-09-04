@@ -1,4 +1,3 @@
-from functools import reduce
 from typing import List
 
 import numpy as np
@@ -102,6 +101,7 @@ def build_virtual_evidence_ar(
 
     # Otherwise use previous day to estimate the next day's AR prior
     days_elapsed = int((date - previous_date).total_seconds() / 3600 / 24)
+    days_elapsed_idx = np.abs(days_elapsed) - 1
     if days_elapsed == 0:
         raise ValueError("The dates are the same, no inference can be made")
     if abs(days_elapsed) > cpt_AR_DE.shape[2]:
@@ -114,14 +114,14 @@ def build_virtual_evidence_ar(
             print(
                 f"Days elapsed: {days_elapsed} (curr = {date}, prev = {previous_date})"
             )
-        ar_prior = np.matmul(cpt_AR_DE[:, :, days_elapsed], previous_posterior_ar)
+        ar_prior = np.matmul(cpt_AR_DE[:, :, days_elapsed_idx], previous_posterior_ar)
     else:
         # It's a backward pass
         if debug:
             print(
                 f"Days elapsed: {days_elapsed} (curr = {date}, prev = {previous_date})"
             )
-        ar_prior = np.matmul(previous_posterior_ar, cpt_AR_DE[:, :, -days_elapsed])
+        ar_prior = np.matmul(previous_posterior_ar, cpt_AR_DE[:, :, days_elapsed_idx])
     return TabularCPD(AR.name, AR.card, ar_prior.reshape(-1, 1))
 
 
