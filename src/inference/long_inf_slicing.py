@@ -83,46 +83,12 @@ def build_virtual_evidence_shared_vars(shared_variables, day):
     return vevidence
 
 
-def build_virtual_evidence_ar(
-    AR, cpt_AR_DE, date, previous_date, previous_posterior_ar, debug=False
-):
+def build_vevidence_ar(AR, day, prev_day_key=None, next_day_key=None):
     """
-    Given the previously computed AR posterior, return the next AR prior as a virtual message
-    Make sure that AR variable's prior as defined in the model is uniform for the trick to work
+    Builds a virtual evidence for the airway resistance variable given the previous and next days
     """
-    # Ensure that all AR.cpt values are the same
-    assert np.all(
-        np.isclose(AR.cpt, AR.cpt[0])
-    ), "The AR variable's prior must be uniform for the trick to work"
-
-    # This is the first day, return a uniform message to not influence the inference
-    if previous_date is None:
-        return TabularCPD(AR.name, AR.card, get_uniform_message(AR.card).reshape(-1, 1))
-
-    # Otherwise use previous day to estimate the next day's AR prior
-    days_elapsed = int((date - previous_date).total_seconds() / 3600 / 24)
-    days_elapsed_idx = np.abs(days_elapsed) - 1
-    if days_elapsed == 0:
-        raise ValueError("The dates are the same, no inference can be made")
-    if abs(days_elapsed) > cpt_AR_DE.shape[2]:
-        raise ValueError(
-            f"Can't process {days_elapsed} days (curr = {date}, prev = {previous_date})"
-        )
-    elif days_elapsed > 0:
-        # It's a forward pass
-        if debug:
-            print(
-                f"Days elapsed: {days_elapsed} (curr = {date}, prev = {previous_date})"
-            )
-        ar_prior = np.matmul(cpt_AR_DE[:, :, days_elapsed_idx], previous_posterior_ar)
-    else:
-        # It's a backward pass
-        if debug:
-            print(
-                f"Days elapsed: {days_elapsed} (curr = {date}, prev = {previous_date})"
-            )
-        ar_prior = np.matmul(previous_posterior_ar, cpt_AR_DE[:, :, days_elapsed_idx])
-    return TabularCPD(AR.name, AR.card, ar_prior.reshape(-1, 1))
+    prior = AR.get_virtual_message(day, prev_day_key, next_day_key)
+    return TabularCPD(AR.name, AR.card, prior.reshape(-1, 1))
 
 
 def query_forwardly_across_days(
@@ -269,7 +235,7 @@ def query_back_and_forth_across_days(
     """
     df_init = df_init.reset_index(drop=True)
     final_pass = False
-    passes = 0
+    passes = 1
     previous_date = None
 
     # Check that each date in Date Redorded is unique
@@ -294,7 +260,7 @@ def query_back_and_forth_across_days(
             )
             previous_date = None
         else:
-            forward_pass = passes % 2 == 0
+            forward_pass = passes % 2 == 1
             if forward_pass:
                 if debug:
                     print(f"Pass {passes} (forward)")
@@ -307,7 +273,7 @@ def query_back_and_forth_across_days(
                 df = df_init.sort_values("Date Recorded", ascending=False).reset_index(
                     drop=True
                 )
-            if passes != 0:
+            if passes != 1:
                 # Remove the first element as it's the same as the last element of the previous pass
                 df = df.iloc[1:].reset_index(drop=True)
 
@@ -417,19 +383,8 @@ def query_back_and_forth_across_days(
         passes += 1
 
 
-def initialise_interdays_AR_connexions(variables, suffix=""):
-    AR = variables[0]
-    assert AR.name == "Airway resistance (%)"
-    DE = mh.DiscreteVariableNode("Days elapsed", 1, 3, 1)
-    cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix=suffix)
-    # cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]_samples")
-    # cpt_AR_DE = cpth.get_cpt([AR, AR, DE], suffix="_shift_span_[-5;5]")
-    prev_ar_posterior = None
-    return AR, cpt_AR_DE, prev_ar_posterior
-
-
 def query_back_and_forth_across_days_AR(
-    df_init,
+    df,
     belief_propagation,
     shared_variables: List[mh.SharedVariableNode],
     variables: List[mh.VariableNode],
@@ -438,7 +393,7 @@ def query_back_and_forth_across_days_AR(
     debug=False,
     auto_reset_shared_vars=True,
     max_passes=99,
-    interconnect_AR=False,
+    interconnect_AR=True,
 ):
     """
     algorithm to query the point in time model across days, thus making an approximate longitudinal inference
@@ -448,65 +403,45 @@ def query_back_and_forth_across_days_AR(
     evidence_variables: contains names of the observed variables, as defined in the df's columns
     auto_reset_shared_vars: bool to automatically reset the shared variables after the computations are done
     """
-    df_init = df_init.reset_index(drop=True)
-    final_pass = False
-    passes = 0
-    previous_date = None
-
+    df = df.sort_values("Date Recorded", ascending=True).reset_index(drop=True)
     # Check that each date in Date Redorded is unique
-    assert df_init["Date Recorded"].nunique() == len(
-        df_init
+    assert df["Date Recorded"].nunique() == len(
+        df
     ), "Error: Cannot process input df as there are doublons in the Date Recorded column."
+    
+    final_pass = False
+    passes = 1
 
     df_res_before_convergence = pd.DataFrame({})
     df_res_final_epoch = pd.DataFrame({})
 
-    # Initialize posteriors distribution to uniform
+    # Initialize posterior distributions to uniform (for convergence check)
     posteriors_old = [
         get_uniform_message(shared_var.card) for shared_var in shared_variables
     ]
 
-    # Initialize AR specific variables
     if interconnect_AR:
-        AR, cpt_AR_DE, previous_posterior_ar = initialise_interdays_AR_connexions(
-            variables, interconnect_AR
-        )
+        AR = variables[0]
+        assert AR.name == "Airway resistance (%)", "AR must be the first variable"
 
     while True:
-        if final_pass:
-            if debug:
-                print(f"Final pass - pass {passes} (forward)")
-            df = df_init.sort_values("Date Recorded", ascending=True).reset_index(
-                drop=True
-            )
-            previous_date = None
-            if interconnect_AR:
-                previous_posterior_ar = None
-        else:
-            forward_pass = passes % 2 == 0
-            if forward_pass:
-                if debug:
-                    print(f"Pass {passes} (forward)")
-                df = df_init.sort_values("Date Recorded", ascending=True).reset_index(
-                    drop=True
-                )
-            else:
-                if debug:
-                    print(f"Pass {passes} (backward)")
-                df = df_init.sort_values("Date Recorded", ascending=False).reset_index(
-                    drop=True
-                )
-            if passes != 0:
-                # Remove the first element as it's the same as the last element of the previous pass
-                df = df.iloc[1:].reset_index(drop=True)
 
-        for i, row in df.iterrows():
+        for i in range(len(df)):
+            backward_pass = passes % 2 == 0
+            if backward_pass:
+                """
+                NOTE: the last entry will be passed twice, as the last element of the previous pass
+                and the first element of the current pass; similar for the first entry. 
+                This should not be a problem if the whole algorithm is well implemented, because
+                1/ the algorithm is stateful only for the current pass,
+                2/ old states get substituted by new states at each pass (including in the aggregated
+                virtual messages - which is the tricky part !! - see how SharedVariableNode.set_agg_virtual_message
+                and  SharedVariableNode.add_or_update_message are implemented)
+                """
+                i = len(df) - 1 - i
+            row = df.iloc[i]
             date = row["Date Recorded"]
             date_str = date.strftime("%Y-%m-%d")
-
-            assert (
-                previous_date != date
-            ), "The dates are the same, no inference can be made"
 
             # Get query inputs
             evidence_dict = build_evidence(df, i, evidence_variables)
@@ -516,14 +451,15 @@ def query_back_and_forth_across_days_AR(
             vevidence = vevidence_shared
 
             if interconnect_AR:
-                vevidence_ar = build_virtual_evidence_ar(
-                    AR,
-                    cpt_AR_DE,
-                    date,
-                    previous_date,
-                    previous_posterior_ar,
-                    debug=debug,
+                # There is no prev day if it's the first day
+                prev_day = None if i - 1 < 0 else df.loc[i - 1, "Date Recorded"]
+                # During the first pass, the next day posterior is not available
+                next_day = (
+                    None
+                    if (i + 1 >= len(df) or passes == 1)
+                    else df.loc[i + 1, "Date Recorded"]
                 )
+                vevidence_ar = build_vevidence_ar(AR, date, prev_day, next_day)
                 vevidence = vevidence_shared + [vevidence_ar]
 
             vars_to_infer = get_var_name_list(shared_variables + variables)
@@ -583,9 +519,8 @@ def query_back_and_forth_across_days_AR(
                         ][0]
                     shared_var.set_agg_virtual_message(vmessage, new_message)
 
-            previous_date = date
             if interconnect_AR:
-                previous_posterior_ar = query_res[AR.name].values
+                AR.add_or_update_posterior(date_str, query_res[AR.name].values)
 
         posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
 
@@ -601,6 +536,7 @@ def query_back_and_forth_across_days_AR(
                 if auto_reset_shared_vars:
                     for shared_var in shared_variables:
                         shared_var.reset()
+                    AR.reset()
                 return df_res_final_epoch, df_res_before_convergence, shared_variables
             # if passes % 2 == 1:
             # Convergence must end on a backward pass
