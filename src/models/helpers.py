@@ -444,10 +444,10 @@ class VariableNode:
 class SharedVariableNode(VariableNode):
     """
     In longitudinal models, a shared variable is a variable that is
-    connected to a factor belonging to a different time plate.
-    The shared variable is able to store messages coming from that factor,
-    and operate on them to be used as virtual messages in the slicing belief
-    propagation algorithm.
+    connected to a factor belonging to a time plate with a lower time resolution.
+    The shared variable is able to store messages coming from that factor across
+    time (ex: days), and operate on them to be used as virtual messages in the 
+    slicing belief propagation algorithm.
     """
 
     def __init__(self, name: str, a, b, bin_width, prior):
@@ -464,6 +464,9 @@ class SharedVariableNode(VariableNode):
         self.factor_node_key = factor_node_key
 
     def add_or_update_message(self, day_key, new_message):
+        """
+        Save the message for a given day into the variable's dictionary of messages
+        """
         assert new_message.shape == (
             self.card,
         ), "The message must have the same shape as the variable's cardinality"
@@ -472,7 +475,8 @@ class SharedVariableNode(VariableNode):
 
     def set_agg_virtual_message(self, vmessage, new_message):
         """
-        The new aggregated message is the multiplication of all messages coming from the factor to the node
+        The new aggregated virtual message is the multiplication of all messages coming in
+        from the factor nodes to the shared variable node.
 
         Virtual message: multiplication of all factor to node messages excluding current day message
         New message: newly computed factor to node message

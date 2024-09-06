@@ -183,6 +183,7 @@ def query_forwardly_across_days(
                     if len(vevidence) == 0:
                         vmessage = get_uniform_message(shared_var.card)
                     else:
+                        # The virtual message used as evidence already excludes the current day
                         vmessage = [
                             cpd.values
                             for cpd in vevidence
