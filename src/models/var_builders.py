@@ -10,7 +10,12 @@ from src.modelling_ar.ar import (
 )
 from src.modelling_o2.ia import get_IA_breathe_prior
 from src.models.cpts.helpers import get_cpt
-from src.models.helpers import SharedVariableNode, VariableNode
+from src.models.helpers import (
+    DiscreteVariableNode,
+    SharedVariableNode,
+    TemporalVariableNode,
+    VariableNode,
+)
 
 
 def fev1_point_in_time(height, age, sex):
@@ -479,14 +484,12 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     )
 
 
-def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_ar(
-    height, age, sex, ia_prior="uniform"  # , ar_prior="uniform"
+def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
+    height, age, sex, ia_prior="uniform", ar_change_cpt_suffix=""
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
-    The airway resistances are interconnected with the
-
-    There is no factor linking AR and IA in this model. The priors for AR, IA are uniform
+    The airway resistances has day-to-day temporal connection
     """
     hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
     ho2sat_prior = {
@@ -498,19 +501,12 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_ar(
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
-    AR = SharedVariableNode(
-        "Airway resistance (%)", 0, 90, 2, prior={"type": "uniform"}
-    )
-    # if ar_prior == "uniform":
-    #     AR.cpt = AR.set_prior({"type": "uniform"})
-    # elif ar_prior == "uniform in log space":
-    #     AR.cpt = AR.set_prior(
-    #         {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
-    #     )
-    # elif ar_prior == "uniform message to HFEV1":
-    #     AR.cpt = AR.set_prior(
-    #         {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
-    #     )
+
+    DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
+
+    AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
+    AR.set_first_day_prior(get_prior_for_uniform_hfev1_message(AR))
+    AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
