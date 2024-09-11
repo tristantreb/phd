@@ -509,6 +509,14 @@ def query_back_and_forth_across_days_AR(
                 # Get newly computed message from the query output
                 for shared_var in shared_variables:
                     new_message = query_messages[shared_var.factor_node_key]
+                    # If only send uniform messsage down:
+                    if interconnect_AR == "fix message up to HFEV1 to truncated uniform":
+                        # The new message is 0 up to the observed FEV1 value, then uniform
+                        new_message = get_uniform_message(shared_var.card)
+                        ecFEV1_obs = df.loc[i, 'ecFEV1']
+                        idx_obs = shared_var.get_bin_for_value(ecFEV1_obs)[1]
+                        new_message[:idx_obs] = 0
+
                     shared_var.add_or_update_message(date_str, new_message)
                     if len(vevidence_shared) == 0:
                         vmessage = get_uniform_message(shared_var.card)
