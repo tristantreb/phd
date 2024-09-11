@@ -11,7 +11,10 @@ def _effort_corrected_smoothing(df, col, scale, shift):
     df.iloc[no_nan_mask] = smooth.identify_and_replace_outliers_up(
         df[no_nan_mask], f"ec{col}", scale=scale, shift=shift
     ).copy()
-    df[f"ec{col}"][no_nan_mask] = smooth.smooth_vector(
+    # df[f"ec{col}"][no_nan_mask] = smooth.smooth_vector(
+    #     df[f"ec{col}"][no_nan_mask].to_numpy(), "max"
+    # )
+    df[f"ec{col}"][no_nan_mask] = smooth.smooth_vector_conservative(
         df[f"ec{col}"][no_nan_mask].to_numpy(), "max"
     )
 

@@ -44,6 +44,34 @@ def smooth_vector(vector, mode):
     return smoothed_vector
 
 
+def smooth_vector_conservative(vector, mode, t=0.8):
+    """
+    Compute a moving max/mean of size 3 on the input vector
+    If the computed value is < 80% away from the original value, take the original value
+    """
+    # Copy the vector
+    smoothed_vector = vector.copy()
+    # Get the vector length
+    n = len(vector)
+    if n == 1:
+        return vector[0]
+    if n == 2:
+        # return eval("np." + mode)([vector[0], vector[1]])
+        max_idx = np.argmax([vector[0], vector[1]])
+        min_idx = np.argmin([vector[0], vector[1]])
+        # If value 1 is t% away from value 2, take value 1
+        if vector[min_idx] < t * vector[max_idx]:
+            smoothed_vector[min_idx] = vector[max_idx]
+    else:
+        # for i in range(0, n - 1):
+        for i in range(0, n):
+            computed_value = apply_three_day_window(vector, i, mode)
+            if vector[i] < t * computed_value:
+                smoothed_vector[i] = computed_value
+
+    return smoothed_vector
+
+
 def apply_three_day_window(vector, i, mode="max"):
     """
     Vector is an array of non nan values
