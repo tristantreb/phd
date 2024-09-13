@@ -563,6 +563,37 @@ def _correct_drug_therapies(drug_df):
     drug_df.loc[idx1, "DrugTherapyType"] = "Trikafta"
     drug_df = drug_df.drop(idx2)
 
+    idx = drug_df[(drug_df["ID"] == "405") & drug_df.DrugTherapyType.isna()].index
+    logging.info(f"ID 405 - Removing two entries with NaN drug therapy type")
+    if len(idx) > 0:
+        drug_df = drug_df.drop(idx)
+
+    idx1 = drug_df[
+        (drug_df["ID"] == "464")
+        & (drug_df.DrugTherapyType == "Ivacaftor")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 11, 11))
+    ].index
+    idx2 = drug_df[
+        (drug_df["ID"] == "464")
+        & (drug_df.DrugTherapyType == "Symkevi")
+        & (drug_df.DrugTherapyStartDate == datetime.date(2020, 11, 11))
+    ].index
+    logging.warning(
+        f"ID 464 - Symkevi and Ivacaftor started together. Deleting Ivacaftor and renaming Symkevi to Trikafta"
+    )
+    drug_df = drug_df.drop(idx1)
+    drug_df.loc[idx2, "DrugTherapyType"] = "Trikafta"
+
+    idx = drug_df[
+        (drug_df["ID"] == "420")
+        & (drug_df.DrugTherapyType == "Trikafta")
+        & (drug_df.DrugTherapyStopDate == datetime.date(2021, 8, 3))
+    ].index
+    logging.warning(
+        f"ID 420 - Set stop date for Trikafta to avoid overlap with Ivacaftor"
+    )
+    drug_df.loc[idx, "DrugTherapyStopDate"] = datetime.date(2021, 7, 31)
+
     return drug_df.reset_index(drop=True)
 
 

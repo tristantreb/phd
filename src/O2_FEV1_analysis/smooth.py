@@ -63,7 +63,6 @@ def smooth_vector_conservative(vector, mode, t=0.8):
         if vector[min_idx] < t * vector[max_idx]:
             smoothed_vector[min_idx] = vector[max_idx]
     else:
-        # for i in range(0, n - 1):
         for i in range(0, n):
             computed_value = apply_three_day_window(vector, i, mode)
             if vector[i] < t * computed_value:
