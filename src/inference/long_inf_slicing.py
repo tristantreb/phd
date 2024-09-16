@@ -497,14 +497,6 @@ def query_back_and_forth_across_days_AR(
                     vevidence,
                     get_messages=True,
                 )
-                df_res_before_convergence = save_res_to_df(
-                    df_res_before_convergence,
-                    f"{passes}, {date_str}",
-                    query_res,
-                    vars_to_infer,
-                    row,
-                    evidence_variables,
-                )
 
                 # Get newly computed message from the query output
                 for shared_var in shared_variables:
@@ -516,6 +508,7 @@ def query_back_and_forth_across_days_AR(
                         ecFEV1_obs = df.loc[i, 'ecFEV1']
                         idx_obs = shared_var.get_bin_for_value(ecFEV1_obs)[1]
                         new_message[:idx_obs] = 0
+                        new_message /= new_message.sum()
 
                     shared_var.add_or_update_message(date_str, new_message)
                     if len(vevidence_shared) == 0:
@@ -527,6 +520,30 @@ def query_back_and_forth_across_days_AR(
                             if cpd.variable == shared_var.name
                         ][0]
                     shared_var.set_agg_virtual_message(vmessage, new_message)
+
+                # Ensure that the HFEV1 posterior is the same as the agg message multiplied by the prior
+                HFEV1 = shared_variables[0]
+                assert HFEV1.name == "Healthy FEV1 (L)"
+                hfev1_calc = HFEV1.agg_vmessage * HFEV1.cpt
+                hfev1_calc = hfev1_calc/np.sum(hfev1_calc)
+                if interconnect_AR != "fix message up to HFEV1 to truncated uniform":
+                    hfev1_posterior = query_res[HFEV1.name].values
+                    if not(np.allclose(hfev1_posterior, hfev1_calc)):
+                        print(f"Error pass {passes}, day {date_str}: HFEV1 posterior is not consistent with the message passed down")
+                else:
+                    # Replace the query_res for HFEV1 with the calc message using the uniform message up
+                    query_res[HFEV1.name] =TabularCPD(HFEV1.name, HFEV1.card, hfev1_calc.reshape(-1, 1))
+
+                # NOTE: query_res not updated for HO2Sat in case of interconnect_AR == "fix message up to HFEV1 to truncated uniform"
+
+                df_res_before_convergence = save_res_to_df(
+                    df_res_before_convergence,
+                    f"{passes}, {date_str}",
+                    query_res,
+                    vars_to_infer,
+                    row,
+                    evidence_variables,
+                )
 
             if interconnect_AR:
                 AR.add_or_update_posterior(date_str, query_res[AR.name].values)
