@@ -400,8 +400,8 @@ class VariableNode:
         # Find the highest negative value of the bins relative to centered bins
         idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
 
-        (lower_idx, upper_idx) = self.get_bins_arr()[idx]
-        return "[{}; {})".format(lower_idx, upper_idx), idx
+        (lower_val, upper_val) = self.get_bins_arr()[idx]
+        return f"[{lower_val:.2f}; {upper_val:.2f})", idx
 
     def get_point_message(self, obs_val):
         # Create an array with 1 at the index of the evidence and 0 elsewhere

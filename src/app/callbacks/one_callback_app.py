@@ -216,10 +216,12 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
 
         # INFERENCE
         print(
-            "Inference user input: FEV1 =",
+            "Inference user input: HFEV1 =",
             HFEV1_obs,
+            f"bin {HFEV1.get_bin_for_value(HFEV1_obs)[0]}"
             ", FEV1 =",
             FEV1_obs,
+            f"bin {ecFEV1.get_bin_for_value(FEV1_obs)[0]}"
             ", FEF25-75 =",
             FEF2575_obs,
             ", O2Sat =",
