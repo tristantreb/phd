@@ -182,6 +182,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         Input("age-input", "value"),
         Input("height-input", "value"),
         # Evidences
+        Input("HFEV1-slider", "value"),
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
         Input("O2Sat-slider", "value"),
@@ -191,6 +192,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         sex,
         age,
         height,
+        HFEV1_obs: float,
         FEV1_obs: float,
         FEF2575_obs: float,
         O2Sat_obs: float,
@@ -215,6 +217,8 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         # INFERENCE
         print(
             "Inference user input: FEV1 =",
+            HFEV1_obs,
+            ", FEV1 =",
             FEV1_obs,
             ", FEF25-75 =",
             FEF2575_obs,
@@ -224,9 +228,12 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
 
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
-        vars_to_infer = [HFEV1, AR, HO2Sat, IA, O2SatFFA, UO2Sat]
+        vars_to_infer = [AR, HO2Sat, IA, O2SatFFA, UO2Sat]
         evidence = []
-
+        if "HFEV1" in observed_vars_checklist:
+            evidence.append([HFEV1, HFEV1_obs])
+        else:
+            vars_to_infer.append(HFEV1)
         if "O2 saturation" in observed_vars_checklist:
             evidence.append([O2Sat, O2Sat_obs])
         else:
