@@ -1,8 +1,12 @@
 from typing import List
+
 from dash import Input, Output
+
 
 def show_slider_or_graph_for_observed_measures(app):
     @app.callback(
+        Output("HFEV1-dist", "style"),
+        Output("HFEV1-slider-container", "style"),
         Output("FEV1-dist", "style"),
         Output("FEV1-slider-container", "style"),
         Output("O2-saturation-dist", "style"),
@@ -15,16 +19,15 @@ def show_slider_or_graph_for_observed_measures(app):
         observed_vars_checklist: List[str],
     ):
 
-        if "FEF25-75" in observed_vars_checklist:
-            fef2575_style = {"display": "none"}, {"display": "block"}
-        else:
-            fef2575_style = {"display": "block"}, {"display": "none"}
-        if "O2 saturation" in observed_vars_checklist:
-            o2sat_style = {"display": "none"}, {"display": "block"}
-        else:
-            o2sat_style = {"display": "block"}, {"display": "none"}
-        if "FEV1" in observed_vars_checklist:
-            fev1_style = {"display": "none"}, {"display": "block"}
-        else:
-            fev1_style = {"display": "block"}, {"display": "none"}
-        return *fev1_style, *o2sat_style, *fef2575_style
+        def manage_obs_var(obs_var: str):
+            if obs_var in observed_vars_checklist:
+                return {"display": "none"}, {"display": "block"}
+            else:
+                return {"display": "block"}, {"display": "none"}
+
+        hfev1_style = manage_obs_var("HFEV1")
+        fef2575_style = manage_obs_var("FEF25-75")
+        o2sat_style = manage_obs_var("O2 saturation")
+        fev1_style = manage_obs_var("FEV1")
+
+        return *hfev1_style, *fev1_style, *o2sat_style, *fef2575_style

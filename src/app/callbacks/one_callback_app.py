@@ -84,19 +84,17 @@ def build_fev1_o2sat_with_factor_graph(app):
             rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
         )
 
-        fev1_min = ecFEV1.a
-        fev1_max = ecFEV1.b
+        fev_min = ecFEV1.a
+        fev_max = ecFEV1.b
         o2sat_min = 80
         o2sat_max = 100
         ia_min = 0
         ia_max = 90
 
         # HFEV1
+        ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev_min, fev_max, 1, 1, None, "green")
         ih.plot_histogram(
-            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
-        )
-        ih.plot_histogram(
-            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, HFEV1.name, "green"
+            fig, HFEV1, res_hfev1.values, fev_min, fev_max, 2, 1, HFEV1.name, "green"
         )
 
         # HO2Sat
@@ -173,6 +171,7 @@ def build_fev1_o2sat_with_factor_graph(app):
 def build_fev1_fef2575_o2sat_with_factor_graph(app):
     @app.callback(
         Output("lung-graph", "figure"),
+        Output("HFEV1-dist", "figure"),
         Output("FEV1-dist", "figure"),
         Output("O2-saturation-dist", "figure"),
         Output("FEF25-75-dist", "figure"),
@@ -263,8 +262,8 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
         viz_layout = [
-            [prior, None, None, None, prior, None],  # 1
-            [posterior, None, None, None, posterior, None],  # 2
+            [None, None, None, None, prior, None],  # 1
+            [None, None, None, None, posterior, None],  # 2
             [None, None, None, None, None, None],  # 3
             [None, None, prior, None, None, None],  # 4
             [None, None, posterior, None, None, None],  # 5
@@ -282,20 +281,12 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
         )
 
-        fev1_min = ecFEV1.a
-        fev1_max = ecFEV1.b
+        fev_min = ecFEV1.a
+        fev_max = ecFEV1.b
         o2sat_min = 80
         o2sat_max = 100
         ia_min = 0
         ia_max = 90
-
-        # HFEV1
-        ih.plot_histogram(
-            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
-        )
-        ih.plot_histogram(
-            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, HFEV1.name, "green"
-        )
 
         # HO2Sat
         ih.plot_histogram(
@@ -365,6 +356,34 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         )
         fig.update_traces(marker_line_width=0)
 
+        viz_layout = [[prior, None], [posterior, None], [None, None]]
+        fig_hfev1 = make_subplots(
+            rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
+        )
+        if "HFEV1" not in observed_vars_checklist:
+            ih.plot_histogram(
+                fig_hfev1, HFEV1, HFEV1.cpt, fev_min, fev_max, 1, 1, None, "green"
+            )
+            ih.plot_histogram(
+                fig_hfev1,
+                HFEV1,
+                res_hfev1.values,
+                fev_min,
+                fev_max,
+                2,
+                1,
+                HFEV1.name,
+                "green",
+            )
+            fig_hfev1.update_layout(
+                showlegend=False,
+                height=150,
+                width=300,
+                font=dict(size=10),
+                bargap=0.01,
+                margin=dict(l=0, r=0, b=0, t=0),
+            )
+
         fig_fev1 = make_subplots(rows=1, cols=1)
         if "FEV1" not in observed_vars_checklist:
             ih.plot_histogram(
@@ -431,7 +450,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
                 margin=dict(l=0, r=0, b=0, t=0),
             )
 
-        return fig, fig_fev1, fig_o2sat, fig_fef2575, fef2575_text
+        return fig, fig_hfev1, fig_fev1, fig_o2sat, fig_fef2575, fef2575_text
 
 
 def build_fev1_fef2575_o2sat_with_factor_graph_light(app):
@@ -544,19 +563,17 @@ def build_fev1_fef2575_o2sat_with_factor_graph_light(app):
             rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
         )
 
-        fev1_min = ecFEV1.a
-        fev1_max = ecFEV1.b
+        fev_min = ecFEV1.a
+        fev_max = ecFEV1.b
         o2sat_min = 80
         o2sat_max = 100
         ia_min = 0
         ia_max = 90
 
         # HFEV1
+        ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev_min, fev_max, 1, 1, None, "green")
         ih.plot_histogram(
-            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
-        )
-        ih.plot_histogram(
-            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, HFEV1.name, "green"
+            fig, HFEV1, res_hfev1.values, fev_min, fev_max, 2, 1, HFEV1.name, "green"
         )
 
         # HO2Sat
@@ -772,19 +789,17 @@ def build_fev1_o2sat_with_bayes_net(app):
             rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
         )
 
-        fev1_min = ecFEV1.a
-        fev1_max = ecFEV1.b
+        fev_min = ecFEV1.a
+        fev_max = ecFEV1.b
         o2sat_min = 80
         o2sat_max = 100
         ia_min = 0
         ia_max = 90
 
         # HFEV1
+        ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev_min, fev_max, 1, 1, None, "green")
         ih.plot_histogram(
-            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
-        )
-        ih.plot_histogram(
-            fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, HFEV1.name, "green"
+            fig, HFEV1, res_hfev1.values, fev_min, fev_max, 2, 1, HFEV1.name, "green"
         )
 
         # HO2Sat
@@ -906,8 +921,8 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
         inf_alg = apply_factor_graph_bp(model)
 
         # Plot specs before inference
-        fev1_min = ecFEV1.a
-        fev1_max = ecFEV1.b
+        fev_min = ecFEV1.a
+        fev_max = ecFEV1.b
         o2sat_min = 80
         o2sat_max = 100
         ia_min = 0
@@ -915,7 +930,7 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
 
         # Update viz_layout with posterior plot location
         posterior_plot_location_dict = {
-            HFEV1.name: (HFEV1, 2, 1, fev1_min, fev1_max),
+            HFEV1.name: (HFEV1, 2, 1, fev_min, fev_max),
             HO2Sat.name: (HO2Sat, 2, 5, o2sat_min, o2sat_max),
             AR.name: (AR, 5, 3, AR.a, AR.b),
             O2SatFFA.name: (O2SatFFA, 8, 5, o2sat_min, o2sat_max),
@@ -999,21 +1014,19 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
                 return f"{var_name} -> {factor_name}"
 
         # HFEV1 prior
-        ih.plot_histogram(
-            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
-        )
+        ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev_min, fev_max, 1, 1, None, "green")
         # factor - HFEV1
         key = get_key(f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}']", HFEV1.name)
         ih.plot_histogram(
-            fig, HFEV1, messages[key], fev1_min, fev1_max, 4, 1, None, "gray"
+            fig, HFEV1, messages[key], fev_min, fev_max, 4, 1, None, "gray"
         )
         # FEV1 obs
         ih.plot_histogram(
             fig,
             ecFEV1,
             ecFEV1.get_point_message(FEV1_obs),
-            fev1_min,
-            fev1_max,
+            fev_min,
+            fev_max,
             7,
             1,
             None,
@@ -1143,8 +1156,8 @@ def build_fev1_fef2575_o2sat_with_factor_graph_debug(app):
         )
 
         # Plot specs before inference
-        fev1_min = ecFEV1.a
-        fev1_max = ecFEV1.b
+        fev_min = ecFEV1.a
+        fev_max = ecFEV1.b
         o2sat_min = 80
         o2sat_max = 100
         ia_min = 0
@@ -1152,7 +1165,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph_debug(app):
 
         # Update viz_layout with posterior plot location
         posterior_plot_location_dict = {
-            HFEV1.name: (HFEV1, 2, 1, fev1_min, fev1_max),
+            HFEV1.name: (HFEV1, 2, 1, fev_min, fev_max),
             HO2Sat.name: (HO2Sat, 2, 5, o2sat_min, o2sat_max),
             AR.name: (AR, 5, 3, AR.a, AR.b),
             O2SatFFA.name: (O2SatFFA, 8, 5, o2sat_min, o2sat_max),
@@ -1246,21 +1259,19 @@ def build_fev1_fef2575_o2sat_with_factor_graph_debug(app):
                 return f"{var_name} -> {factor_name}"
 
         # HFEV1 prior
-        ih.plot_histogram(
-            fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
-        )
+        ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev_min, fev_max, 1, 1, None, "green")
         # factor - HFEV1
         key = get_key(f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}']", HFEV1.name)
         ih.plot_histogram(
-            fig, HFEV1, messages[key], fev1_min, fev1_max, 4, 1, None, "gray"
+            fig, HFEV1, messages[key], fev_min, fev_max, 4, 1, None, "gray"
         )
         # FEV1 obs
         ih.plot_histogram(
             fig,
             ecFEV1,
             ecFEV1.get_point_message(FEV1_obs),
-            fev1_min,
-            fev1_max,
+            fev_min,
+            fev_max,
             7,
             1,
             None,
