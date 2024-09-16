@@ -7,12 +7,12 @@ hfev1_slider_layout = dbc.Form(
         dbc.Label("HFEV1 observed:"),
         dcc.Slider(
             id="HFEV1-slider",
-            min=1,
+            min=0,
             max=6,
             step=0.1,
             value=4.5,
             marks={
-                # 1: "1 L",
+                1: "1 L",
                 2: "2 L",
                 3: "3 L",
                 4: "4 L",
