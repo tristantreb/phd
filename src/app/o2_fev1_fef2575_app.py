@@ -101,19 +101,18 @@ app.layout = dbc.Container(
                             width=3,
                         ),
                         dbc.Col(
-                            ["nothing"],
+                            [""],
                             width=3,
                         ),
                         dbc.Col(
                             [
-                                "nothing"
-                                # dcc.Loading(
-                                #     children=[
-                                #         dcc.Graph(
-                                #             id="HO2-saturation-dist",
-                                #         )
-                                #     ],
-                                # ),
+                                dcc.Loading(
+                                    children=[
+                                        dcc.Graph(
+                                            id="HO2-saturation-dist",
+                                        )
+                                    ],
+                                ),
                             ],
                             width=3,
                         ),
