@@ -625,7 +625,6 @@ def plot_posterior_validation(
         cols=np.shape(layout)[1],
         specs=layout,
         vertical_spacing=0.01,
-        shared_xaxes=True,
     )
     plot_scatter(
         fig,
@@ -654,10 +653,16 @@ def plot_posterior_validation(
         colour="black",
         title="O2 saturation (%)",
     )
+    common_x_range = [df_breathe["Date Recorded"].min(), df_breathe["Date Recorded"].max()]
+    fig.update_xaxes(range=common_x_range, showticklabels=False, row=1, col=1)
+    fig.update_xaxes(range=common_x_range, showticklabels=False, row=2, col=1)
+    fig.update_xaxes(range=common_x_range, row=3, col=1)
 
     df_res_var1 = get_heatmap_data(df_res_before_convergence, Var1)
     df_res_var2 = get_heatmap_data(df_res_before_convergence, Var2)
     plot_heatmap(fig, df_res_var1, Var1, row=4, col=1, coloraxis="coloraxis1")
+    fig.update_xaxes(showticklabels=False, row=4, col=1)
+    fig.update_xaxes(showticklabels=False, row=5, col=1)
     plot_heatmap(fig, df_res_var2, Var2, row=6, col=1, coloraxis="coloraxis2")
 
     fig.update_layout(
@@ -712,15 +717,17 @@ def plot_query_res(
         rows=np.shape(layout)[0],
         cols=np.shape(layout)[1],
         specs=layout,
-        vertical_spacing=0.05,
+        vertical_spacing=0.02,
     )
     # Priors
     ih.plot_histogram(
-        fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, 1, 1, HFEV1.name, "#636EFA"
+        fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, 1, 1, None, "#636EFA"
     )
+    fig.update_xaxes(showticklabels=False, row=1, col=1)
     ih.plot_histogram(
-        fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, 1, 2, HO2Sat.name, "#636EFA"
+        fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, 1, 2, None, "#636EFA"
     )
+    fig.update_xaxes(showticklabels=False, row=1, col=2)
 
     # Posteriors for shared variables
     hfev1_posterior = df_query_res[HFEV1.name].iloc[-1]
@@ -782,12 +789,18 @@ def plot_query_res(
         colour="black",
         title=O2Sat.name,
     )
+    common_x_range=[df_breathe["Date Recorded"].min(), df_breathe["Date Recorded"].max()]
+    fig.update_xaxes(range=common_x_range, row=4, col=1)
+    fig.update_xaxes(range=common_x_range, row=5, col=1)
+    fig.update_xaxes(range=common_x_range, row=6, col=1)
+    fig.update_xaxes(range=common_x_range, row=4, col=2)
+    fig.update_xaxes(range=common_x_range, row=5, col=2)
 
     fig.update_layout(
         title=title,
         height=1050,
         width=1300,
-        font=dict(size=5),
+        font=dict(size=6),
         showlegend=False,
         coloraxis1=dict(
             colorscale=colorscale,
