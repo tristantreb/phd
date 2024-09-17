@@ -23,7 +23,7 @@ def model_and_inference_callback(app):
         Input("IA", "data"),
         Input("UO2Sat", "data"),
         Input("O2Sat", "data"),
-        # Evidences
+        # Evidence
         Input("FEV1-slider", "value"),
         Input("O2Sat-slider", "value"),
     )
