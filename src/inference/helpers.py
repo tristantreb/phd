@@ -17,27 +17,27 @@ TOL_GLOBAL = 1e-6
 def infer_on_factor_graph(
     inference_alg: BeliefPropagationWithMessageParsing,
     variables: tuple[mh.VariableNode],
-    evidences: tuple[tuple[mh.VariableNode, float]],
+    evidence: tuple[tuple[mh.VariableNode, float]],
     virtual_evidence=None,
     get_messages=False,
 ):
     """
-    Runs an inference query against a given PGMPY inference model, variables, evidences
+    Runs an inference query against a given PGMPY inference model, variables, evidence
     :param inference_alg: The inference algorithm to use
     :param variables: The variables to query
-    :param evidences: The evidences to use
+    :param evidence: The evidence to use
 
     :return: The result of the inference
     """
 
-    evidences_binned = dict()
-    for [evidence_var, value] in evidences:
+    evidence_binned = dict()
+    for [evidence_var, value] in evidence:
         [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
-        evidences_binned.update({evidence_var.name: bin_idx})
+        evidence_binned.update({evidence_var.name: bin_idx})
 
     res = inference_alg.query(
         variables=list(map(lambda v: v.name, variables)),
-        evidence=evidences_binned,
+        evidence=evidence_binned,
         virtual_evidence=virtual_evidence,
         get_messages=get_messages,
     )
@@ -47,16 +47,16 @@ def infer_on_factor_graph(
 def infer(
     inference_alg: BeliefPropagation,
     variables: tuple[mh.VariableNode],
-    evidences: tuple[tuple[mh.VariableNode, float]],
+    evidence: tuple[tuple[mh.VariableNode, float]],
     show_progress=False,
     joint=False,
     debug=False,
 ):
     """
-    Runs an inference query against a given PGMPY inference model, variables, evidences
+    Runs an inference query against a given PGMPY inference model, variables, evidence
     :param inference_alg: The inference algorithm to use
     :param variables: The variables to query
-    :param evidences: The evidences to use
+    :param evidence: The evidence to use
 
     :return: The result of the inference
     """
@@ -64,16 +64,16 @@ def infer(
     if debug:
         print(f"Variables to infer: {variables}")
 
-    evidences_binned = dict()
-    for [evidence_var, value] in evidences:
+    evidence_binned = dict()
+    for [evidence_var, value] in evidence:
         [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
-        evidences_binned.update({evidence_var.name: bin_idx})
+        evidence_binned.update({evidence_var.name: bin_idx})
         if debug:
             print(f"Evidence for {evidence_var.name}: value {value}, idx {bin_idx}")
 
     res = inference_alg.query(
         variables=variables,
-        evidence=evidences_binned,
+        evidence=evidence_binned,
         show_progress=show_progress,
         joint=joint,
     )

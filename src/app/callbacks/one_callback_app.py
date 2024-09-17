@@ -24,7 +24,7 @@ def build_fev1_o2sat_with_factor_graph(app):
         Input("sex-select", "value"),
         Input("age-input", "value"),
         Input("height-input", "value"),
-        # Evidences
+        # Evidence
         Input("FEV1-slider", "value"),
         Input("O2Sat-slider", "value"),
     )
@@ -181,7 +181,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         Input("sex-select", "value"),
         Input("age-input", "value"),
         Input("height-input", "value"),
-        # Evidences
+        # Evidence
         Input("HFEV1-slider", "value"),
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
@@ -218,11 +218,9 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         print(
             "Inference user input: HFEV1 =",
             HFEV1_obs,
-            f"bin {HFEV1.get_bin_for_value(HFEV1_obs)[0]}"
-            ", FEV1 =",
+            f"bin {HFEV1.get_bin_for_value(HFEV1_obs)[0]}" ", FEV1 =",
             FEV1_obs,
-            f"bin {ecFEV1.get_bin_for_value(FEV1_obs)[0]}"
-            ", FEF25-75 =",
+            f"bin {ecFEV1.get_bin_for_value(FEV1_obs)[0]}" ", FEF25-75 =",
             FEF2575_obs,
             ", O2Sat =",
             O2Sat_obs,
@@ -491,7 +489,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph_light(app):
         Input("sex-select", "value"),
         Input("age-input", "value"),
         Input("height-input", "value"),
-        # Evidences
+        # Evidence
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
         Input("O2Sat-slider", "value"),
@@ -749,7 +747,7 @@ def build_fev1_o2sat_with_bayes_net(app):
         Input("sex-select", "value"),
         Input("age-input", "value"),
         Input("height-input", "value"),
-        # Evidences
+        # Evidence
         Input("FEV1-slider", "value"),
         Input("O2Sat-slider", "value"),
     )
@@ -909,7 +907,7 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
         Input("sex-select", "value"),
         Input("age-input", "value"),
         Input("height-input", "value"),
-        # Evidences
+        # Evidence
         Input("FEV1-slider", "value"),
         Input("O2Sat-slider", "value"),
         Input("observed-vars-checklist", "value"),
@@ -1144,7 +1142,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph_debug(app):
         Input("sex-select", "value"),
         Input("age-input", "value"),
         Input("height-input", "value"),
-        # Evidences
+        # Evidence
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
         Input("O2Sat-slider", "value"),
