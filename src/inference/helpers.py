@@ -2,11 +2,8 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-import src.models.graph_builders as graph_builders
 import src.models.helpers as mh
-import src.models.var_builders as var_builders
 from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
-from src.inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -191,115 +188,3 @@ def plot_histogram_discrete(
             col=col,
         )
     return -1
-
-
-def infer_vars_and_get_back_df(
-    df,
-    variables_to_infer,
-    observed_variables,
-    ecFEF2575prctecFEV1_cpt=None,
-    IA_cpt=None,
-):
-    """
-    Infer AR, IA, HFEV1, HO2Sat fo each entry in the dataset, for the given observed variables as evidence
-    """
-
-    def infer_vars_for_ID(df):
-        df.reset_index(inplace=True)
-
-        (
-            HFEV1,
-            ecFEV1,
-            AR,
-            HO2Sat,
-            O2SatFFA,
-            IA,
-            UO2Sat,
-            O2Sat,
-            ecFEF2575prctecFEV1,
-        ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-            df.Height[0], df.Age[0], df.Sex[0]
-        )
-
-        # Update cpt to custom one if provided
-        if ecFEF2575prctecFEV1_cpt is not None:
-            ecFEF2575prctecFEV1.set_cpt(ecFEF2575prctecFEV1_cpt)
-        if IA_cpt is None:
-            model = graph_builders.fev1_fef2575_o2sat_point_in_time_factor_graph(
-                HFEV1,
-                ecFEV1,
-                AR,
-                HO2Sat,
-                O2SatFFA,
-                IA,
-                UO2Sat,
-                O2Sat,
-                ecFEF2575prctecFEV1,
-                False,
-            )
-            inf_alg = apply_factor_graph_bp(model)
-        else:
-            # Else we model AR causing IA with the given CPT
-            IA.set_cpt(IA_cpt)
-            # Since this introduces a loop we have to use a Bayes Net to run the inference
-            model = graph_builders.fev1_o2sat_fef2575_point_in_time_model(
-                HFEV1,
-                ecFEV1,
-                AR,
-                HO2Sat,
-                O2SatFFA,
-                IA,
-                UO2Sat,
-                O2Sat,
-                ecFEF2575prctecFEV1,
-                False,
-            )
-            inf_alg = apply_bayes_net_bp(model)
-
-        def infer_and_unpack(row):
-            # Build evidence
-            evidence = [
-                [obs_var, row[obs_var.get_colname()]] for obs_var in observed_variables
-            ]
-
-            if IA_cpt is None:
-                res = infer_on_factor_graph(
-                    inf_alg,
-                    variables_to_infer,
-                    evidence,
-                )
-            else:
-                # Infer on Bayes net
-                res = infer(
-                    inf_alg,
-                    variables_to_infer,
-                    evidence,
-                )
-
-            res_values = (res[var.name].values for var in variables_to_infer)
-
-            return row["Date Recorded"], *res_values
-
-        res = df.apply(infer_and_unpack, axis=1)
-        return res
-
-    variables_to_infer_dict = {
-        i + 1: variables_to_infer[i].get_abbr() for i in range(len(variables_to_infer))
-    }
-    variables_to_infer_dict[0] = "Date Recorded"
-
-    resraw = df.groupby("ID").apply(infer_vars_for_ID)
-    # resraw = df.iloc[np.r_[10:13, 3000:3007]].groupby("ID").apply(infer_vars_for_ID)
-    res = (
-        resraw.apply(pd.Series)
-        .reset_index()
-        .rename(columns=variables_to_infer_dict)
-        .drop(columns="level_1")
-    )
-
-    for var in variables_to_infer:
-        res[f"{var.get_abbr()} mean"] = res[var.get_abbr()].apply(
-            lambda x: var.get_mean(x)
-        )
-
-    return res
