@@ -146,6 +146,7 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
 
 
 def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
+
     fig.add_traces(
         go.Scatter(
             x=df_f3["AR midbin"],
@@ -153,6 +154,7 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             mode="lines+markers",
             line=dict(color="blue"),
             name="Mean",
+            yaxis="y2",
         )
     )
     fig.add_traces(
@@ -162,6 +164,7 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             mode="lines+markers",
             line=dict(color="purple"),
             name="Median",
+            yaxis="y2",
         )
     )
     fig.add_traces(
@@ -171,6 +174,7 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             mode="lines+markers",
             line=dict(color="red"),
             name="16th percentile",
+            yaxis="y2",
         )
     )
     fig.add_traces(
@@ -180,6 +184,7 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             mode="lines+markers",
             line=dict(color="red"),
             name="84th percentile",
+            yaxis="y2",
         )
     )
     fig.add_traces(
@@ -189,6 +194,7 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             mode="lines+markers",
             line=dict(color="green"),
             name="3th percentile",
+            yaxis="y2",
         )
     )
     fig.add_traces(
@@ -198,6 +204,7 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             mode="lines+markers",
             line=dict(color="green"),
             name="97th percentile",
+            yaxis="y2",
         )
     )
     return -1
@@ -208,6 +215,18 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
 
     add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3)
 
+    # Add histogram of the number of contributing data points (df_f3.count) per AR bin
+    # Add second y axis for this count histogram
+    fig.update_layout()
+    fig.add_traces(
+        go.Bar(
+            x=df_f3["AR midbin"],
+            y=df_f3["count"],
+            marker=dict(color="lightblue"),
+            name="Count",
+        )
+    )
+
     # Add ticks on x axis
     fig.update_xaxes(
         title=f"{ar_col} midbin (%)",
@@ -215,7 +234,28 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
     )
     fig.update_yaxes(title=y_col)
     title = f"F3 - {y_col} statistics per {ar_col} bin (n={df_f3['count'].sum()})"
-    fig.update_layout(title=title, width=1100, height=500)
+    fig.update_layout(
+        title=title,
+        width=1100,
+        height=500,
+        yaxis=dict(
+            title="Count",
+            side="right",
+            showgrid=False,
+            showline=True,
+            showticklabels=True,
+            tickmode="sync"
+        ),
+        yaxis2=dict(
+            title=y_col,
+            overlaying="y",
+            side="left",
+            showgrid=True,
+            showline=True,
+            showticklabels=True,
+        ),
+        legend=dict(orientation="h"),
+    )
     if save:
         fig.write_image(f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/{title}.pdf")
     else:
@@ -325,7 +365,7 @@ def get_sampled_df_and_statistics_df_for_IA(df, n_samples, AR, AR_bin_width, IA)
     return df_sampled
 
 
-def model_f3(df, AR, ar_col, y_col="ecFEF2575%ecFEV1"):
+def model_f3(df, AR, ar_col, y_col="ecFEF2575%ecFEV1", save=True):
     df["ecFEF2575%ecFEVmodel_f31"] = df["ecFEF2575"] / df["ecFEV1"] * 100
 
     # Parameters
@@ -337,9 +377,9 @@ def model_f3(df, AR, ar_col, y_col="ecFEF2575%ecFEV1"):
 
     df_sampled, df_f3 = get_sampled_df_and_statistics_df(df, n_samples, AR)
 
-    plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=True)
+    plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=save)
     cpt_f3 = calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
-        df_sampled, df_f3, n_samples, AR, ar_col, ecFEF2575prctecFEV1, y_col, save=True
+        df_sampled, df_f3, n_samples, AR, ar_col, ecFEF2575prctecFEV1, y_col, save=save
     )
     return cpt_f3, df_f3, df_sampled
 

@@ -6,13 +6,12 @@ from plotly.subplots import make_subplots
 import src.data.helpers as dh
 import src.inference.helpers as ih
 import src.models.helpers as mh
-from src.models.helpers import name_to_abbr
 
 
 def get_cpt(vars: List[mh.VariableNode | mh.DiscreteVariableNode], suffix=None):
     path_to_folder = dh.get_path_to_src() + "models/cpts/"
     var_spec = map(
-        lambda var: f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}", vars
+        lambda var: f"{mh.name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}", vars
     )
     filename = "_".join(var_spec)
 
@@ -25,10 +24,12 @@ def get_cpt(vars: List[mh.VariableNode | mh.DiscreteVariableNode], suffix=None):
     return cpt
 
 
-def save_cpt(vars: List[mh.VariableNode | mh.DiscreteVariableNode], cpt: np.ndarray, suffix=None):
+def save_cpt(
+    vars: List[mh.VariableNode | mh.DiscreteVariableNode], cpt: np.ndarray, suffix=None
+):
     path_to_folder = dh.get_path_to_src() + "/models/cpts/"
     filename = "_".join(
-        [f"{name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}" for var in vars]
+        [f"{mh.name_to_abbr(var.name)}_{var.a}_{var.b}_{var.bin_width}" for var in vars]
     )
 
     if suffix is not None:
@@ -43,7 +44,16 @@ def save_cpt(vars: List[mh.VariableNode | mh.DiscreteVariableNode], cpt: np.ndar
     return
 
 
-def plot_2d_cpt(cpt, cVar, pVar, height=2500, vspace=0.003, invert=False):
+def plot_2d_cpt(
+    cpt,
+    cVar,
+    pVar,
+    height=2500,
+    vspace=0.003,
+    invert=False,
+    p_range=[0, 0.6],
+    y_label_two_lines=False,
+):
     """
     CPT represents P(cVar | pVar)
     The probability distribution of the child variable conditionned on the parent variable
@@ -67,10 +77,14 @@ def plot_2d_cpt(cpt, cVar, pVar, height=2500, vspace=0.003, invert=False):
             fig, cVar, p, cVar.a, cVar.b, i + 1, 1, colour="#0072b2", annot=False
         )
         fig.update_yaxes(
-            title_text=f"{pVar.get_abbr()}={pVar.midbins[idx]:2g}",
+            title_text=(
+                f"{pVar.get_abbr()}<br>{pVar.midbins[idx]:2g}"
+                if y_label_two_lines
+                else f"{pVar.get_abbr()}={pVar.midbins[idx]:2g}"
+            ),
             row=i + 1,
             col=1,
-            range=[0, 0.6],
+            range=p_range,
         )
 
     fig.update_layout(
