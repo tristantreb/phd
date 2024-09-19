@@ -147,22 +147,22 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
 
 def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
 
-    fig.add_traces(
-        go.Scatter(
-            x=df_f3["AR midbin"],
-            y=df_f3["mean"],
-            mode="lines+markers",
-            line=dict(color="blue"),
-            name="Mean",
-            yaxis="y2",
-        )
-    )
+    # fig.add_traces(
+    #     go.Scatter(
+    #         x=df_f3["AR midbin"],
+    #         y=df_f3["mean"],
+    #         mode="lines+markers",
+    #         line=dict(color="blue"),
+    #         name="Mean",
+    #         yaxis="y2",
+    #     )
+    # )
     fig.add_traces(
         go.Scatter(
             x=df_f3["AR midbin"],
             y=df_f3["median"],
             mode="lines+markers",
-            line=dict(color="purple"),
+            line=dict(color="blue"),
             name="Median",
             yaxis="y2",
         )
@@ -172,8 +172,8 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             x=df_f3["AR midbin"],
             y=df_f3["p16"],
             mode="lines+markers",
-            line=dict(color="red"),
-            name="16th percentile",
+            line=dict(color="green"),
+            name="16th and 84th percentiles (1 sigma)",
             yaxis="y2",
         )
     )
@@ -182,8 +182,10 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             x=df_f3["AR midbin"],
             y=df_f3["p84"],
             mode="lines+markers",
-            line=dict(color="red"),
+            line=dict(color="green"),
             name="84th percentile",
+            legendgroup="1 sigma",
+            showlegend=False,
             yaxis="y2",
         )
     )
@@ -192,8 +194,8 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             x=df_f3["AR midbin"],
             y=df_f3["p3"],
             mode="lines+markers",
-            line=dict(color="green"),
-            name="3th percentile",
+            line=dict(color="red"),
+            name="3th and 97th percentiles (2 sigma)",
             yaxis="y2",
         )
     )
@@ -202,8 +204,9 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
             x=df_f3["AR midbin"],
             y=df_f3["p97"],
             mode="lines+markers",
-            line=dict(color="green"),
+            line=dict(color="red"),
             name="97th percentile",
+            showlegend=False,
             yaxis="y2",
         )
     )
@@ -226,11 +229,14 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
             name="Count",
         )
     )
+    fig.data[-1].showlegend = False
 
     # Add ticks on x axis
     fig.update_xaxes(
-        title=f"{ar_col} midbin (%)",
-        tickvals=np.floor(list(df_f3["AR midbin"].values)),
+        title=f"{ar_col}",
+        # tickvals=np.floor(list(df_f3["AR midbin"].values)),
+        tickvals=np.arange(1, 91, 2),
+        # title_standoff=5,
     )
     fig.update_yaxes(title=y_col)
     title = f"F3 - {y_col} statistics per {ar_col} bin (n={df_f3['count'].sum()})"
@@ -244,7 +250,7 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
             showgrid=False,
             showline=True,
             showticklabels=True,
-            tickmode="sync"
+            tickmode="sync",
         ),
         yaxis2=dict(
             title=y_col,
@@ -254,8 +260,9 @@ def plot_F3_mean_and_percentiles_per_AR_bin(df_f3, ar_col, y_col, save=False):
             showline=True,
             showticklabels=True,
         ),
-        legend=dict(orientation="h"),
+        legend=dict(orientation="h", y=1.1),
     )
+
     if save:
         fig.write_image(f"{dh.get_path_to_main()}PlotsBreathe/AR_modelling/{title}.pdf")
     else:
