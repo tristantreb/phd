@@ -211,7 +211,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             O2Sat,
             ecFEF2575prctecFEV1,
         ) = mb.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-            height, age, sex
+            height, age, sex, ia_prior="uniform", ar_prior="uniform"# message to HFEV1"
         )
 
         # INFERENCE

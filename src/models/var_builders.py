@@ -373,6 +373,10 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         AR.cpt = AR.set_prior(
             {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
         )
+    # elif ar_prior == "breathe":
+    #     AR.cpt = AR.set_prior(
+    #         {"type": "custom", "p": get_AR_breathe_prior()}
+    #     )   
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
