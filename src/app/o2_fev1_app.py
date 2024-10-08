@@ -34,7 +34,7 @@ app.layout = dbc.Container(
         ),
         clinical_profile_input_layout,
         html.Div(
-            "2. Select your FEV1 and O2 saturation, and analyse your lung's health variables:",
+            "Select your FEV1 and O2 saturation, and analyse your lung's health variables:",
             style={
                 "textAlign": "left",
                 "padding-top": "20px",
