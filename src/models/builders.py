@@ -526,7 +526,7 @@ def o2sat_fev1_point_in_time_model_cf_priors_2(height, age, sex, ar_prior, cpd_a
 
 
 def o2sat_fev1_point_in_time_model_shared_healthy_vars(
-    height, age, sex, check_model=False, ia_prior="uniform", ar_prior="uniform"
+    height, age, sex, ia_prior="uniform", ar_prior="uniform", check_model=False
 ):
     """
     Longitudinal model with full FEV1 and O2Sat sides.
@@ -554,7 +554,7 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
 
 
 def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-    height, age, sex, check_model=False, ia_prior="uniform", ar_prior="uniform"
+    height, age, sex, ia_prior="uniform", ar_prior="uniform", check_model=False
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.

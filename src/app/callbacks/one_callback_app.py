@@ -186,7 +186,11 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
         Input("O2Sat-slider", "value"),
+        # Vars to observe/infer
         Input("observed-vars-checklist", "value"),
+        # Priors
+        Input("ia-prior-select", "value"),
+        Input("ar-prior-select", "value"),
     )
     def content(
         sex,
@@ -197,6 +201,8 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         FEF2575_obs: float,
         O2Sat_obs: float,
         observed_vars_checklist: List[str],
+        ia_prior: str,
+        ar_prior:str,
     ):
         (
             _,
@@ -211,7 +217,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             O2Sat,
             ecFEF2575prctecFEV1,
         ) = mb.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
-            height, age, sex, ia_prior="uniform", ar_prior="uniform"# message to HFEV1"
+            height, age, sex, ia_prior, ar_prior
         )
 
         # INFERENCE
@@ -913,6 +919,7 @@ def build_fev1_o2sat_with_factor_graph_debug(app):
         Input("observed-vars-checklist", "value"),
         # Var to infer
         Input("var-to-infer-select", "value"),
+        # Priors
         Input("ia-prior-select", "value"),
         Input("ar-prior-select", "value"),
     )
