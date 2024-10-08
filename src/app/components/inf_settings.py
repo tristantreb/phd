@@ -16,10 +16,10 @@ var_to_infer_options = list(
     map(lambda name: {"label": name, "value": name}, name_to_abbr_dict.keys())
 )
 
-inference_settings_layout = html.Div(
+var_to_infer_select_layout = html.Div(
     [
         html.Div(
-            "2. Select the inference settings:",
+            "Select the variable to infer:",
             style={"textAlign": "left", "padding-top": "0px", "padding-bottom": "5px"},
         ),
         dbc.InputGroup(
@@ -32,6 +32,15 @@ inference_settings_layout = html.Div(
                     style=select_style,
                 ),
             ],
+        ),
+    ],
+    style={"width": "430px"},
+)
+priors_settings_layout = html.Div(
+    [
+        html.Div(
+            "Select the priors:",
+            style={"textAlign": "left", "padding-top": "0px", "padding-bottom": "5px"},
         ),
         dbc.InputGroup(
             [

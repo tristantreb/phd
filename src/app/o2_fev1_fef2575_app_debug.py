@@ -5,9 +5,11 @@ from dash import Dash, dcc, html
 
 import src.app.assets.styles as s
 import src.app.components.sliders as sliders
-from src.app.callbacks.one_callback_app import build_fev1_fef2575_o2sat_with_factor_graph_debug
+from src.app.callbacks.one_callback_app import (
+    build_fev1_fef2575_o2sat_with_factor_graph_debug,
+)
 from src.app.components.clinical_profile_input import clinical_profile_input_layout
-from src.app.components.inf_settings import inference_settings_layout
+from src.app.components.inf_settings import var_to_infer_select_layout
 from src.app.components.observed_vars_checklist import (
     fev1_fef2575_o2sat_observed_vars_checklist_layout,
 )
@@ -46,7 +48,7 @@ app.layout = dbc.Container(
                 )
             ]
         ),
-        inference_settings_layout,
+        var_to_infer_select_layout,
         html.Div(
             "3. Select observed values, and view your the state of your lungs health:",
             style={

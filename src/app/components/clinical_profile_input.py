@@ -10,7 +10,7 @@ select_style = {"font-size": styles.font_size("M")}
 clinical_profile_input_layout = html.Div(
     [
         html.Div(
-            "1. Enter your clinical profile:",
+            "Enter your clinical profile:",
             style={"textAlign": "left", "padding-top": "0px", "padding-bottom": "5px"},
         ),
         dbc.InputGroup(
