@@ -4,7 +4,7 @@ import src.app.assets.styles as styles
 
 fev1_o2sat_observed_vars_checklist_layout = html.Div(
     [
-        html.Div("2. Select the observed variables:"),
+        html.Div("Select the observed variables:"),
         dcc.Checklist(
             id="observed-vars-checklist",
             options={
@@ -19,7 +19,7 @@ fev1_o2sat_observed_vars_checklist_layout = html.Div(
 
 fev1_fef2575_o2sat_observed_vars_checklist_layout = html.Div(
     [
-        html.Div("2. Select the observed variables:"),
+        html.Div("Select the observed variables:"),
         dcc.Checklist(
             id="observed-vars-checklist",
             options={

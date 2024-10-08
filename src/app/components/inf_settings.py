@@ -36,6 +36,7 @@ var_to_infer_select_layout = html.Div(
     ],
     style={"width": "430px"},
 )
+
 priors_settings_layout = html.Div(
     [
         html.Div(
@@ -72,6 +73,14 @@ priors_settings_layout = html.Div(
                         {
                             "label": "uniform message to HFEV1",
                             "value": "uniform message to HFEV1",
+                        },
+                        {
+                            "label": "breathe (2 days model, ecFEV1, ecFEF25-75)",
+                            "value": "breathe (2 days model, ecFEV1, ecFEF25-75)",
+                        },
+                        {
+                            "label": "breathe (1 day model, O2Sat, ecFEV1)",
+                            "value": "breathe (1 day model, O2Sat, ecFEV1)",
                         },
                     ],
                     value="uniform",

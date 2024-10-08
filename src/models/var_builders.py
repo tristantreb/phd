@@ -4,6 +4,7 @@ Use functions in this file to define the model's variables, their name, discreti
 Each function corresponds to a full set of variables to be plugged into a bayesian network
 """
 
+from src.modelling_ar import ar
 from src.modelling_ar.ar import (
     get_prior_for_uniform_hfev1_message,
     get_uniform_prior_in_log_space,
@@ -373,10 +374,20 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         AR.cpt = AR.set_prior(
             {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
         )
-    # elif ar_prior == "breathe":
-    #     AR.cpt = AR.set_prior(
-    #         {"type": "custom", "p": get_AR_breathe_prior()}
-    #     )   
+    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75)":
+        AR.cpt = AR.set_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575(),
+            }
+        )
+    elif ar_prior == "breathe (1 day model, O2Sat, ecFEV1)":
+        AR.cpt = AR.set_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
+            }
+        )
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
