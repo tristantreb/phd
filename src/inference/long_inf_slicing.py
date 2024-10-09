@@ -646,9 +646,11 @@ def query_back_and_forth_across_days_joint_samples(
             # then add the corresponding variables to the evidence list
             for (variable_name, date_list) in days_specific_evidence:
                 if date_str in date_list:
-                    print(f"Adding {variable_name} to the evidence list for {date_str}")
+                    if debug:
+                        print(f"Adding {variable_name} to the evidence list for {date_str}")
                     evidence_variables.append(variable_name)
-                    print(f"Removing {variable_name} from the variables list for {date_str}")
+                    if debug:
+                        print(f"Removing {variable_name} from the variables list for {date_str}")
                     vars_to_infer.remove(variable_name)
 
             # Get query inputs
