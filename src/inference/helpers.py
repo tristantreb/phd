@@ -135,7 +135,7 @@ def plot_histogram(
             y=max(p) * 1.1,
             text=f"{Var.get_mean(p):.2f}",
             showarrow=False,
-            font=dict(size=6),
+            font=dict(size=8),
             row=row,
             col=col,
         )
