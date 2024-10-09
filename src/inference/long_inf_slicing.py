@@ -593,6 +593,7 @@ def query_back_and_forth_across_days_joint_samples(
     debug=False,
     auto_reset_shared_vars=True,
     max_passes=99,
+    print_convergence=False
 ):
     """
     algorithm to query the point in time model across days, thus making an approximate longitudinal inference
@@ -728,8 +729,9 @@ def query_back_and_forth_across_days_joint_samples(
 
         posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
 
-        for shared_var, diff in zip(shared_variables, diffs):
-            print(f"Pass {passes} - Posteriors' diff for {shared_var.name}: {diff}")
+        if print_convergence:
+            for shared_var, diff in zip(shared_variables, diffs):
+                print(f"Pass {passes} - Posteriors' diff for {shared_var.name}: {diff}")
 
         # Convergence reached when the diff is below the threshold
         # or when the maximum number of passes is reached
