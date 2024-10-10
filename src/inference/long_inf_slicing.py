@@ -582,7 +582,7 @@ def query_back_and_forth_across_days_AR(
         passes += 1
 
 
-def query_back_and_forth_across_days_joint_samples(
+def query_back_and_forth_across_days_specific_evidence(
     df,
     belief_propagation,
     shared_variables: List[mh.SharedVariableNode],
