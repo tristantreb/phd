@@ -76,6 +76,32 @@ fef2575_slider_layout = dbc.Form(
     style={"display": "block"},
 )
 
+ho2sat_slider_layout = dbc.Form(
+    id="HO2Sat-slider-container",
+    children=[
+        dbc.Label("HO2Sat observed:"),
+        dcc.Slider(
+            id="HO2Sat-slider",
+            min=80,
+            max=100,
+            step=1,
+            value=98,
+            marks={
+                80: "80%",
+                85: "85%",
+                90: "90%",
+                95: "95%",
+                100: "100%",
+            },
+            tooltip={
+                "placement": "bottom",
+            },
+        ),
+    ],
+    style={"display": "block"},
+)
+
+
 O2Sat_slider_layout = dbc.Form(
     id="O2-saturation-slider-container",
     children=[
