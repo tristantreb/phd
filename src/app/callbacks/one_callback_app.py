@@ -172,7 +172,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
     @app.callback(
         Output("lung-graph", "figure"),
         Output("HFEV1-dist", "figure"),
-        Output("HO2-saturation-dist", "figure"),
+        Output("HO2Sat-dist", "figure"),
         Output("FEV1-dist", "figure"),
         Output("O2-saturation-dist", "figure"),
         Output("FEF25-75-dist", "figure"),
@@ -183,6 +183,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         Input("height-input", "value"),
         # Evidence
         Input("HFEV1-slider", "value"),
+        Input("HO2Sat-slider", "value"),
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
         Input("O2Sat-slider", "value"),
@@ -197,12 +198,13 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         age,
         height,
         HFEV1_obs: float,
+        HO2Sat_obs: float,
         FEV1_obs: float,
         FEF2575_obs: float,
         O2Sat_obs: float,
         observed_vars_checklist: List[str],
         ia_prior: str,
-        ar_prior:str,
+        ar_prior: str,
     ):
         (
             _,
@@ -234,12 +236,16 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
 
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
-        vars_to_infer = [AR, HO2Sat, IA, O2SatFFA, UO2Sat]
+        vars_to_infer = [AR, IA, O2SatFFA, UO2Sat]
         evidence = []
         if "HFEV1" in observed_vars_checklist:
             evidence.append([HFEV1, HFEV1_obs])
         else:
             vars_to_infer.append(HFEV1)
+        if "HO2Sat" in observed_vars_checklist:
+            evidence.append([HO2Sat, HO2Sat_obs])
+        else:
+            vars_to_infer.append(HO2Sat)
         if "O2 saturation" in observed_vars_checklist:
             evidence.append([O2Sat, O2Sat_obs])
         else:
@@ -259,8 +265,9 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
 
         if "HFEV1" not in observed_vars_checklist:
             res_hfev1 = query[HFEV1.name]
+        if "HO2Sat" not in observed_vars_checklist:
+            res_ho2sat = query[HO2Sat.name]
         res_ar = query[AR.name]
-        res_ho2sat = query[HO2Sat.name]
         res_o2satffa = query[O2SatFFA.name]
         res_ia = query[IA.name]
         res_uo2sat = query[UO2Sat.name]
@@ -381,31 +388,32 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         fig_ho2sat = make_subplots(
             rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
         )
-        ih.plot_histogram(
-            fig_ho2sat, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 1, None, "blue"
-        )
-        o2h.add_o2sat_normal_range_line(fig_ho2sat, max(HO2Sat.cpt), 1, 1)
+        if "HO2Sat" not in observed_vars_checklist:
+            ih.plot_histogram(
+                fig_ho2sat, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 1, None, "blue"
+            )
+            o2h.add_o2sat_normal_range_line(fig_ho2sat, max(HO2Sat.cpt), 1, 1)
 
-        ih.plot_histogram(
-            fig_ho2sat,
-            HO2Sat,
-            res_ho2sat.values,
-            o2sat_min,
-            o2sat_max,
-            2,
-            1,
-            HO2Sat.name,
-            "blue",
-        )
-        o2h.add_o2sat_normal_range_line(fig_ho2sat, max(res_ho2sat.values), 2, 1)
-        fig_ho2sat.update_layout(
-            showlegend=False,
-            height=150,
-            width=300,
-            font=dict(size=10),
-            bargap=0.01,
-            margin=dict(l=0, r=0, b=0, t=0),
-        )
+            ih.plot_histogram(
+                fig_ho2sat,
+                HO2Sat,
+                res_ho2sat.values,
+                o2sat_min,
+                o2sat_max,
+                2,
+                1,
+                HO2Sat.name,
+                "blue",
+            )
+            o2h.add_o2sat_normal_range_line(fig_ho2sat, max(res_ho2sat.values), 2, 1)
+            fig_ho2sat.update_layout(
+                showlegend=False,
+                height=150,
+                width=300,
+                font=dict(size=10),
+                bargap=0.01,
+                margin=dict(l=0, r=0, b=0, t=0),
+            )
 
         fig_fev1 = make_subplots(rows=1, cols=1)
         if "FEV1" not in observed_vars_checklist:

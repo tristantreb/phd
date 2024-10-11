@@ -110,10 +110,12 @@ app.layout = dbc.Container(
                                 dcc.Loading(
                                     children=[
                                         dcc.Graph(
-                                            id="HO2-saturation-dist",
+                                            id="HO2Sat-dist",
+                                            style={"display": "none"},
                                         )
                                     ],
                                 ),
+                                sliders.ho2sat_slider_layout,
                             ],
                             width=3,
                         ),
