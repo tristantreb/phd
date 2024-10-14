@@ -83,11 +83,13 @@ def build_virtual_evidence_shared_vars(shared_variables, day):
     return vevidence
 
 
-def build_vevidence_ar(AR, day, prev_day_key=None, next_day_key=None):
+def build_vevidence_ar(AR, curr_date, prev_date=None, next_date=None):
     """
     Builds a virtual evidence for the airway resistance variable given the previous and next days
+    
+    Dates are datetime objects
     """
-    prior = AR.get_virtual_message(day, prev_day_key, next_day_key)
+    prior = AR.get_virtual_message(curr_date, prev_date, next_date)
     return TabularCPD(AR.name, AR.card, prior.reshape(-1, 1))
 
 

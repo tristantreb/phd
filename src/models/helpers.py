@@ -446,7 +446,7 @@ class SharedVariableNode(VariableNode):
     In longitudinal models, a shared variable is a variable that is
     connected to a factor belonging to a time plate with a lower time resolution.
     The shared variable is able to store messages coming from that factor across
-    time (ex: days), and operate on them to be used as virtual messages in the 
+    time (ex: days), and operate on them to be used as virtual messages in the
     slicing belief propagation algorithm.
     """
 
@@ -566,7 +566,10 @@ class TemporalVariableNode(VariableNode):
         # The prior must be uniform since the virtual message supersede it.
         super().__init__(name, a, b, bin_width, {"type": "uniform"})
         self.vmessages = {}
+        # The first day prior has to be set as a virtual message
         self.first_day_prior = None
+        # For each new day, the virtual message is the previous/next days'
+        # posteriors multiplied by the change factor, from both sides
         self.change_cpt = None
 
     def set_first_day_prior(self, vector):
@@ -593,7 +596,7 @@ class TemporalVariableNode(VariableNode):
         ), f"CPT second dimension must have the var's cardinality ({self.card}), got {change_cpt.shape[1]}"
         self.change_cpt = change_cpt
 
-    def add_or_update_posterior(self, day_key, new_message):
+    def add_or_update_posterior(self, date_key, new_message):
         """
         Saves the posterior for a given day
         The day key is a string in the format "%Y-%m-%d"
@@ -602,21 +605,23 @@ class TemporalVariableNode(VariableNode):
             self.card,
         ), "The message must have the same shape as the variable's cardinality"
         # Always replace the message for that day, even if it already exists
-        self.vmessages[day_key] = new_message
+        self.vmessages[date_key] = new_message
 
     def reset(self):
         self.vmessages = {}
 
-    def get_virtual_message(self, day, prev_day=None, next_day=None):
+    def get_virtual_message(self, curr_date, prev_date=None, next_date=None):
         """
         The virtual message for the temporal variable on this day is influenced by its directly neighbouring days,
         through the change factor (change_cpt).
         The neigbouring days might not be related to consecutive dates in the calendar.
         The virtual message can be seen as acting as a prior for the variable on this day. That is why a temporal
         variable's prior is set to uniform by the constructor.
+
+        Dates are datetime objects
         """
-        prev_day_key = prev_day.strftime("%Y-%m-%d") if prev_day is not None else None
-        next_day_key = next_day.strftime("%Y-%m-%d") if next_day is not None else None
+        prev_day_key = prev_date.strftime("%Y-%m-%d") if prev_date is not None else None
+        next_day_key = next_date.strftime("%Y-%m-%d") if next_date is not None else None
 
         def calc_days_elapsed(date1, date2):
             assert date1 < date2, "Days order 'date1 < date2' not respected"
@@ -627,8 +632,8 @@ class TemporalVariableNode(VariableNode):
                 )
             return (date2 - date1).days
 
-        # Compute the today's prior
-        if prev_day is None:
+        # Contribution from the previous day
+        if prev_date is None:
             # On day 1, the prior is the first_day_prior
             prev_day_m = self.first_day_prior
         else:
@@ -637,16 +642,16 @@ class TemporalVariableNode(VariableNode):
             # Assert that the message exists
             assert (
                 prev_day_posterior is not None
-            ), f"Posterior for pre day {prev_day} is missing"
+            ), f"Posterior for pre day {prev_date} is missing"
 
             # Compute factor node message
-            de_idx = calc_days_elapsed(prev_day, day) - 1
+            de_idx = calc_days_elapsed(prev_date, curr_date) - 1
             cpt_for_de = self.change_cpt[:, :, de_idx]
             prev_day_m = np.matmul(cpt_for_de, prev_day_posterior)
             prev_day_m *= prev_day_m / prev_day_m.sum()
 
         # Contribution from the next day
-        if next_day is None:
+        if next_date is None:
             # Return uniform message
             next_day_m = np.ones(self.card) / self.card
         else:
@@ -654,10 +659,139 @@ class TemporalVariableNode(VariableNode):
             next_day_posterior = self.vmessages.get(next_day_key)
             assert (
                 next_day_posterior is not None
-            ), f"Posterior for next day {next_day} is missing"
+            ), f"Posterior for next day {next_date} is missing"
 
             # Compute factor node message
-            de_idx = calc_days_elapsed(day, next_day) - 1
+            de_idx = calc_days_elapsed(curr_date, next_date) - 1
+            cpt_for_de = self.change_cpt[:, :, de_idx]
+            next_day_m = np.matmul(next_day_posterior, cpt_for_de)
+
+        vmessage = prev_day_m * next_day_m
+        return vmessage / vmessage.sum()
+
+
+class CutsetConditionedTemporalVariableNode(VariableNode):
+    """
+    In longitudinal models, a temporal variable is a variable that is
+    connected to a factor belonging to a different time plate on the right
+    and on the left (if applicable).
+    The temporal variable is able to store messages coming from that factor,
+    and operate on them to be used as virtual messages in the slicing belief
+    propagation algorithm.
+
+    When the graph is resolved with cutset conditioning, it will be
+    conditioned with different states. Hence, a temporal variable has to
+    duplicate itself for each state of the cutset conditioning.
+
+    The only difference is that the virtual messages dict becomes a list of dicts,
+    the length of the list equals the number of states that the variable can be conditionned upon.
+    """
+
+    def __init__(self, name: str, a, b, bin_width, n_states):
+        # The prior must be uniform since the virtual message supersede it.
+        super().__init__(name, a, b, bin_width, {"type": "uniform"})
+        self.n_states = n_states
+        # There is on set of vmessages per state
+        self.vmessages = [{}] * self.n_states
+        # The first day prior has to be set as a virtual message
+        # Is common to all states
+        self.first_day_prior = None
+        # For each new day, the virtual message is the previous/next days'
+        # posteriors multiplied by the change factor, from both sides
+        # Is common to all states
+        self.change_cpt = None
+
+    def set_first_day_prior(self, vector):
+        """
+        The prior must be of the same card as the var's card
+        """
+        assert (
+            len(vector) == self.card
+        ), f"First day prior must have the var's cardinality ({self.card}), got {len(vector)}"
+        self.first_day_prior = vector
+
+    def set_change_cpt(self, change_cpt):
+        """
+        2 first dimensions must be the same as the variable's cardinality
+        """
+        assert (
+            len(change_cpt.shape) == 3
+        ), f"CPT must have 3 dimensions, got {len(change_cpt.shape)}"
+        assert (
+            change_cpt.shape[0] == self.card
+        ), f"CPT first dimension must have the var's cardinality ({self.card}), got {change_cpt.shape[0]}"
+        assert (
+            change_cpt.shape[1] == self.card
+        ), f"CPT second dimension must have the var's cardinality ({self.card}), got {change_cpt.shape[1]}"
+        self.change_cpt = change_cpt
+
+    def add_or_update_posterior(self, state_n, date_key, new_message):
+        """
+        Saves the posterior for a given day
+        The day key is a string in the format "%Y-%m-%d"
+        """
+        assert new_message.shape == (
+            self.card,
+        ), "The message must have the same shape as the variable's cardinality"
+        # Always replace the message for that day, even if it already exists
+        self.vmessages[state_n][date_key] = new_message
+
+    def reset(self):
+        self.vmessages = {}
+
+    def get_virtual_message(self, state_n, curr_date, prev_date=None, next_date=None):
+        """
+        The virtual message for the temporal variable on this day is influenced by its directly neighbouring days,
+        through the change factor (change_cpt).
+        The neigbouring days might not be related to consecutive dates in the calendar.
+        The virtual message can be seen as acting as a prior for the variable on this day. That is why a temporal
+        variable's prior is set to uniform by the constructor.
+
+        Dates are datetime objects
+        """
+        prev_day_key = prev_date.strftime("%Y-%m-%d") if prev_date is not None else None
+        next_day_key = next_date.strftime("%Y-%m-%d") if next_date is not None else None
+
+        def calc_days_elapsed(date1, date2):
+            assert date1 < date2, "Days order 'date1 < date2' not respected"
+            days_elapsed = (date2 - date1).days
+            if days_elapsed > self.change_cpt.shape[2]:
+                raise ValueError(
+                    f"Can't process {days_elapsed} days (date1 = {date1}, date2 = {date2})"
+                )
+            return (date2 - date1).days
+
+        # Contribution from the previous day
+        if prev_date is None:
+            # On day 1, the prior is the first_day_prior
+            prev_day_m = self.first_day_prior
+        else:
+            # The previous day's posterior updated through the change factor acts as the current days's prior.
+            prev_day_posterior = self.vmessages[state_n].get(prev_day_key)
+            # Assert that the message exists
+            assert (
+                prev_day_posterior is not None
+            ), f"Posterior for pre day {prev_date} is missing"
+
+            # Compute factor node message
+            de_idx = calc_days_elapsed(prev_date, curr_date) - 1
+            cpt_for_de = self.change_cpt[:, :, de_idx]
+            prev_day_m = np.matmul(cpt_for_de, prev_day_posterior)
+            prev_day_m *= prev_day_m / prev_day_m.sum()
+
+        # Contribution from the next day
+        if next_date is None:
+            # Return uniform message
+            next_day_m = np.ones(self.card) / self.card
+        else:
+            # The next day's posterior also propagates a belief to the current day's variable, through the change factor.
+            next_day_posterior = self.vmessages[state_n].get(next_day_key)
+            assert (
+                next_day_posterior is not None
+            ), f"Posterior for next day {next_date} is missing"
+
+            # Compute factor node message
+            de_idx = calc_days_elapsed(curr_date, next_date) - 1
             cpt_for_de = self.change_cpt[:, :, de_idx]
             next_day_m = np.matmul(next_day_posterior, cpt_for_de)
 
