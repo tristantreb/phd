@@ -607,6 +607,7 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
     age,
     sex,
     ia_prior="uniform",
+    ar_prior="uniform",
     ar_change_cpt_suffix="",
     n_cutset_conditioned_states=None,
     check_model=False,
@@ -630,7 +631,13 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
         O2Sat,
         ecFEF2575prctecFEV1,
     ) = var_builders.o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
-        height, age, sex, ia_prior, ar_change_cpt_suffix, n_cutset_conditioned_states
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ar_change_cpt_suffix,
+        n_cutset_conditioned_states,
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_factor_graph(
         HFEV1,

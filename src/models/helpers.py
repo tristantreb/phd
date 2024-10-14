@@ -317,6 +317,9 @@ class VariableNode:
         assert (
             total_p - 1
         ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_p}"
+        assert (
+            len(p) == self.card
+        ), f"Prior must have the var's cardinality ({self.card}), got {len(p)}"
         return p
 
     def _uniform_prior(self):
@@ -572,14 +575,11 @@ class TemporalVariableNode(VariableNode):
         # posteriors multiplied by the change factor, from both sides
         self.change_cpt = None
 
-    def set_first_day_prior(self, vector):
+    def set_first_day_prior(self, prior_dict):
         """
         The prior must be of the same card as the var's card
         """
-        assert (
-            len(vector) == self.card
-        ), f"First day prior must have the var's cardinality ({self.card}), got {len(vector)}"
-        self.first_day_prior = vector
+        self.first_day_prior = self.set_prior(prior_dict)
 
     def set_change_cpt(self, change_cpt):
         """
@@ -701,14 +701,11 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         # Is common to all states
         self.change_cpt = None
 
-    def set_first_day_prior(self, vector):
+    def set_first_day_prior(self, prior_dict):
         """
         The prior must be of the same card as the var's card
         """
-        assert (
-            len(vector) == self.card
-        ), f"First day prior must have the var's cardinality ({self.card}), got {len(vector)}"
-        self.first_day_prior = vector
+        self.first_day_prior = self.set_prior(prior_dict)
 
     def set_change_cpt(self, change_cpt):
         """

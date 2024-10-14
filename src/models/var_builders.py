@@ -12,11 +12,11 @@ from src.modelling_ar.ar import (
 from src.modelling_o2.ia import get_IA_breathe_prior
 from src.models.cpts.helpers import get_cpt
 from src.models.helpers import (
+    CutsetConditionedTemporalVariableNode,
     DiscreteVariableNode,
     SharedVariableNode,
     TemporalVariableNode,
     VariableNode,
-    CutsetConditionedTemporalVariableNode
 )
 
 
@@ -501,7 +501,13 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
 
 
 def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
-    height, age, sex, ia_prior="uniform", ar_change_cpt_suffix="", n_cutset_conditioned_states=None
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ar_change_cpt_suffix="",
+    n_cutset_conditioned_states=None,
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
@@ -526,8 +532,33 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
         )
     else:
         AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
-    AR.set_first_day_prior(get_prior_for_uniform_hfev1_message(AR))
+        
     AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
+
+    if ar_prior == "uniform":
+        AR.set_first_day_prior({"type": "uniform"})
+    elif ar_prior == "uniform in log space":
+        AR.set_first_day_prior(
+            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
+        )
+    elif ar_prior == "uniform message to HFEV1":
+        AR.set_first_day_prior(
+            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
+        )
+    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575(),
+            }
+        )
+    elif ar_prior == "breathe (1 day model, O2Sat, ecFEV1)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
+            }
+        )
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
