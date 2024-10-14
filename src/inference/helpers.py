@@ -2,6 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 import src.models.helpers as mh
+from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 
 # Set global value for tolerance.
@@ -14,7 +15,7 @@ def infer_on_factor_graph(
     inference_alg: BeliefPropagationWithMessageParsing,
     variables: tuple[mh.VariableNode],
     evidence: tuple[tuple[mh.VariableNode, float]],
-    virtual_evidence=None,
+    virtual_evidence=tuple[TabularCPD] or None,
     get_messages=False,
 ):
     """

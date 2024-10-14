@@ -16,6 +16,7 @@ from src.models.helpers import (
     SharedVariableNode,
     TemporalVariableNode,
     VariableNode,
+    CutsetConditionedTemporalVariableNode
 )
 
 
@@ -500,7 +501,7 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
 
 
 def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
-    height, age, sex, ia_prior="uniform", ar_change_cpt_suffix=""
+    height, age, sex, ia_prior="uniform", ar_change_cpt_suffix="", n_cutset_conditioned_states=None
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
@@ -519,7 +520,12 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
 
     DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
 
-    AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
+    if n_cutset_conditioned_states is not None:
+        AR = CutsetConditionedTemporalVariableNode(
+            "Airway resistance (%)", 0, 90, 2, n_cutset_conditioned_states
+        )
+    else:
+        AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
     AR.set_first_day_prior(get_prior_for_uniform_hfev1_message(AR))
     AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
 
