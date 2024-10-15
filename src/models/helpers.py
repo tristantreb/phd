@@ -610,6 +610,15 @@ class TemporalVariableNode(VariableNode):
     def reset(self):
         self.vmessages = {}
 
+    def calc_days_elapsed(self, date1, date2):
+        assert date1 < date2, "Days order 'date1 < date2' not respected"
+        days_elapsed = (date2 - date1).days
+        if days_elapsed > self.change_cpt.shape[2]:
+            raise ValueError(
+                f"Can't process {days_elapsed} days (date1 = {date1}, date2 = {date2})"
+            )
+        return (date2 - date1).days
+
     def get_virtual_message(self, curr_date, prev_date=None, next_date=None):
         """
         The virtual message for the temporal variable on this day is influenced by its directly neighbouring days,
@@ -622,15 +631,6 @@ class TemporalVariableNode(VariableNode):
         """
         prev_day_key = prev_date.strftime("%Y-%m-%d") if prev_date is not None else None
         next_day_key = next_date.strftime("%Y-%m-%d") if next_date is not None else None
-
-        def calc_days_elapsed(date1, date2):
-            assert date1 < date2, "Days order 'date1 < date2' not respected"
-            days_elapsed = (date2 - date1).days
-            if days_elapsed > self.change_cpt.shape[2]:
-                raise ValueError(
-                    f"Can't process {days_elapsed} days (date1 = {date1}, date2 = {date2})"
-                )
-            return (date2 - date1).days
 
         # Contribution from the previous day
         if prev_date is None:
@@ -645,7 +645,7 @@ class TemporalVariableNode(VariableNode):
             ), f"Posterior for pre day {prev_date} is missing"
 
             # Compute factor node message
-            de_idx = calc_days_elapsed(prev_date, curr_date) - 1
+            de_idx = self.calc_days_elapsed(prev_date, curr_date) - 1
             cpt_for_de = self.change_cpt[:, :, de_idx]
             prev_day_m = np.matmul(cpt_for_de, prev_day_posterior)
             prev_day_m *= prev_day_m / prev_day_m.sum()
@@ -735,6 +735,15 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
 
     def reset(self):
         self.vmessages = {}
+
+    def calc_days_elapsed(self, date1, date2):
+        assert date1 < date2, "Days order 'date1 < date2' not respected"
+        days_elapsed = (date2 - date1).days
+        if days_elapsed > self.change_cpt.shape[2]:
+            raise ValueError(
+                f"Can't process {days_elapsed} days (date1 = {date1}, date2 = {date2})"
+            )
+        return (date2 - date1).days
 
     def get_virtual_message(self, state_n, curr_date, prev_date=None, next_date=None):
         """
