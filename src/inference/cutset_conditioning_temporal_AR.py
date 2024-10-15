@@ -28,14 +28,19 @@ def build_vevidence_cutset_conditioned_ar(
     return TabularCPD(AR.name, AR.card, prior.reshape(-1, 1))
 
 
-def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
+def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
     df_for_ID_in,
+    ar_prior,
     ar_change_cpt_suffix,
     debug=False,
     save=False,
     speedup=True,
 ):
-    df_for_ID_in = df_for_ID_in.copy().reset_index(drop=True)
+    df_for_ID_in = (
+        df_for_ID_in.copy()
+        .sort_values(by="Date Recorded", ascending=True)
+        .reset_index(drop=True)
+    )
     id = df_for_ID_in.loc[0, "ID"]
     height = df_for_ID_in.loc[0, "Height"]
     age = df_for_ID_in.loc[0, "Age"]
@@ -86,6 +91,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
         age,
         sex,
         ia_prior="uniform",
+        ar_prior=ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
         n_cutset_conditioned_states=len(H_obs_list),
     )
@@ -96,54 +102,16 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
 
     N = len(df_for_ID_in)
     df_for_ID = df_for_ID_in.copy()
-
-    # Speed up code by removing duplicates and adding them later on
-    if speedup:
-        print(f"{N} entries before speedup")
-        df_for_ID = df_for_ID.sort_values(
-            by=["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1", "idx O2 saturation (%)"],
-            ascending=False,
-        )
-        df_duplicates = (
-            df_for_ID.groupby(
-                ["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1", "idx O2 saturation (%)"]
-            )
-            .size()
-            .reset_index()
-        )
-        df_duplicates.columns = [
-            "idx ecFEV1 (L)",
-            "idx ecFEF2575%ecFEV1",
-            "idx O2 saturation (%)",
-            "n duplicates",
-        ]
-        df_duplicates = df_duplicates.sort_values(
-            by=["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1", "idx O2 saturation (%)"],
-            ascending=False,
-        ).reset_index(drop=True)
-        n_dups = df_duplicates["n duplicates"].values
-        # Keep only the first entry for each pair of ecFEV1 and ecFEF2575%ecFEV1]
-        # Create df_for_ID without duplicates
-        df_for_ID = df_for_ID.drop_duplicates(
-            subset=["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1", "idx O2 saturation (%)"],
-            keep="first",
-        ).reset_index(drop=True)
-        print(f"{len(df_for_ID)} entries after speedup")
-        print(
-            f"Number of duplicates {N - len(df_for_ID)}, speedup removes {(N-len(df_for_ID))/N*100:.2f}% of entries"
-        )
-
     H = len(H_obs_list)
-    N_maybe_no_dups = len(df_for_ID) if speedup else N
-    log_p_D_given_M = np.zeros((N_maybe_no_dups, H))
-    AR_dist_given_M_matrix = np.zeros((N_maybe_no_dups, AR.card, H))
+    log_p_D_given_M = np.zeros((N, H))
+    AR_dist_given_M_matrix = np.zeros((N, AR.card, H))
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
     # For each entry
     tic = time.time()
     for n, row in df_for_ID.iterrows():
         if debug:
-            print(f"Processing row {n+1}/{N_maybe_no_dups}")
+            print(f"Processing row {n+1}/{N}")
 
         # There is no prev day if it's the first day
         prev_date = None if n - 1 < 0 else df.loc[n - 1, "Date Recorded"]
@@ -233,19 +201,27 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
                 p_ecFEF2575
             )  # + np.log(p_O2Sat)
 
+    # Do a backwards sweep to get the AR posteriors
+    for n in range(N - 2, -1, -1):
+        next_date = df.loc[n + 1, "Date Recorded"]
+        curr_date = df.loc[n, "Date Recorded"]
+        de = AR.calc_days_elapsed(curr_date, next_date)
+        if de > 3:
+            ValueError(f"Days elapsed is {de}, should be at most 3")
+
+        for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
+            next_AR = AR_dist_given_M_matrix[n + 1, :, h]
+            next_AR_m = np.matmul(next_AR, AR.change_cpt[:, :, de - 1])
+            next_AR_m = next_AR_m / next_AR_m.sum()
+            curr_AR_posterior = AR_dist_given_M_matrix[n, :, h] * next_AR_m
+            curr_AR_posterior = curr_AR_posterior / curr_AR_posterior.sum()
+            AR_dist_given_M_matrix[n, :, h] = curr_AR_posterior
+
     toc = time.time()
-    print(f"Time for {N_maybe_no_dups} entries: {toc-tic:.2f} s")
+    print(f"Time for {N} entries: {toc-tic:.2f} s")
 
     if debug:
         print("log(P(D|M)), first row", log_p_D_given_M[0, :])
-
-    if speedup:
-        # Put back the duplicates
-        # Repeat each element in the array by the number in the array dups
-        log_p_D_given_M = np.repeat(log_p_D_given_M, n_dups, axis=0)
-        AR_dist_given_M_matrix = np.repeat(AR_dist_given_M_matrix, n_dups, axis=0)
-        if debug:
-            print("P(D|M), first row, after applying duplicates", log_p_D_given_M[:, 0])
 
     # For each HFEV1 model, given HFEV1_obs_list, we compute the log probability of the model given the data
     # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
@@ -266,6 +242,8 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     p_M_given_D = np.exp(log_p_M_given_D_shifted)
     p_M_given_D = p_M_given_D / p_M_given_D.sum()
     AR_dist_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
+
+    # Post process all AR dist matrices
 
     # Reshape P(M|D) into a 2D array for each HFEV1_obs, HO2Sat_obs
     p_M_given_D = p_M_given_D.reshape((len(HFEV1_obs_list), HO2Sat.card))
@@ -319,9 +297,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
         col=1,
     )
 
-    speedup = " (with speedup)" if speedup else ""
-
-    title = f"{id} - Posterior HFEV1 after fusing all P(M_h|D)<br>AR change cpt: {ar_change_cpt_suffix}{speedup}"
+    title = f"{id} - Posterior HFEV1 after fusing all P(M_h|D)<br>AR prior: {ar_prior}<br>AR change CPT: {ar_change_cpt_suffix}"
     fig.update_layout(
         font=dict(size=12),
         height=700,
@@ -359,14 +335,25 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     return
 
 
-def process_id(id):
-    # ar_prior = "breathe (2 days model, ecFEV1, ecFEF25-75)"
-    # ar_prior = "uniform"
+def process_id(inf_settings):
+    print(f"Processing {inf_settings}")
+    
+    ar_prior, id = inf_settings
     ar_change_cpt_suffix = "_shift_span_[-20;20]_joint_sampling_3_days_model"
 
-    dftmp = df[df.ID == id]
-    return compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
-        dftmp, ar_change_cpt_suffix, debug=False, save=True, speedup=True
+    if id == "101":
+        dftmp = df[df["ID"] == "101"].iloc[:591]
+    elif id == "405":
+        dftmp = df[df["ID"] == "405"]
+    elif id == "272":
+        dftmp = df[df["ID"] == "272"].iloc[:417]
+    elif id == "201":
+        dftmp = df[df["ID"] == "201"].iloc[:289]
+    elif id == "203":
+        dftmp = df[df["ID"] == "203"].iloc[:285]
+
+    return compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
+        dftmp, ar_prior, ar_change_cpt_suffix, debug=False, save=True, speedup=True
     )
 
 
@@ -374,18 +361,18 @@ def process_id(id):
 if __name__ == "__main__":
 
     interesting_ids = [
-        "132",
-        "146",
-        "177",
-        "180",
-        "202",
-        "527",
-        "117",
-        "131",
-        "134",
-        "191",
-        "139",
-        "253",
+        # "132",
+        # "146",
+        # "177",
+        # "180",
+        # "202",
+        # "527",
+        # "117",
+        # "131",
+        # "134",
+        # "191",
+        # "139",
+        # "253",
         "101",
         # Also from consec values
         "405",
@@ -394,8 +381,20 @@ if __name__ == "__main__":
         "203",
     ]
 
+    ar_priors = [
+        "uniform",
+        "uniform message to HFEV1",
+        "breathe (2 days model, ecFEV1, ecFEF25-75)",
+    ]
+
+    inf_settings = [
+        list(zip([ar_prior] * len(interesting_ids), interesting_ids))
+        for ar_prior in ar_priors
+    ]
+    inf_settings = list(itertools.chain(*inf_settings))
+
     # num_cores = os.cpu_count()
     with concurrent.futures.ProcessPoolExecutor() as executor:
         # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
         # Map the function to the list of unique IDs
-        list(executor.map(process_id, interesting_ids))
+        list(executor.map(process_id, inf_settings))
