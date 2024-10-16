@@ -126,3 +126,27 @@ O2Sat_slider_layout = dbc.Form(
     ],
     style={"display": "block"},
 )
+
+AR_slider_layout = dbc.Form(
+    id="AR-slider-container",
+    children=[
+        dbc.Label("AR observed:"),
+        dcc.Slider(
+            id="AR-slider",
+            min=0,
+            max=90,
+            step=2,
+            value=30,
+            marks={
+                0: "0",
+                30: "30",
+                60: "60",
+                90: "90",
+            },
+            tooltip={
+                "placement": "bottom",
+            },
+        ),
+    ],
+    style={"display": "block"},
+)
