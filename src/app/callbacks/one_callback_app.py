@@ -173,6 +173,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         Output("lung-graph", "figure"),
         Output("HFEV1-dist", "figure"),
         Output("HO2Sat-dist", "figure"),
+        Output("AR-dist", "figure"),
         Output("FEV1-dist", "figure"),
         Output("O2-saturation-dist", "figure"),
         Output("FEF25-75-dist", "figure"),
@@ -187,6 +188,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         Input("FEV1-slider", "value"),
         Input("FEF25-75-slider", "value"),
         Input("O2Sat-slider", "value"),
+        Input("AR-slider", "value"),
         # Vars to observe/infer
         Input("observed-vars-checklist", "value"),
         # Priors
@@ -202,6 +204,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         FEV1_obs: float,
         FEF2575_obs: float,
         O2Sat_obs: float,
+        AR_obs: float,
         observed_vars_checklist: List[str],
         ia_prior: str,
         ar_prior: str,
@@ -236,7 +239,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
 
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
-        vars_to_infer = [AR, IA, O2SatFFA, UO2Sat]
+        vars_to_infer = [IA, O2SatFFA, UO2Sat]
         evidence = []
         if "HFEV1" in observed_vars_checklist:
             evidence.append([HFEV1, HFEV1_obs])
@@ -246,6 +249,10 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             evidence.append([HO2Sat, HO2Sat_obs])
         else:
             vars_to_infer.append(HO2Sat)
+        if "AR" in observed_vars_checklist:
+            evidence.append([AR, AR_obs])
+        else:
+            vars_to_infer.append(AR)
         if "O2 saturation" in observed_vars_checklist:
             evidence.append([O2Sat, O2Sat_obs])
         else:
@@ -267,7 +274,8 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             res_hfev1 = query[HFEV1.name]
         if "HO2Sat" not in observed_vars_checklist:
             res_ho2sat = query[HO2Sat.name]
-        res_ar = query[AR.name]
+        if "AR" not in observed_vars_checklist:
+            res_ar = query[AR.name]
         res_o2satffa = query[O2SatFFA.name]
         res_ia = query[IA.name]
         res_uo2sat = query[UO2Sat.name]
@@ -284,9 +292,6 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         posterior = {"type": "bar", "rowspan": 2, "colspan": 2}
 
         viz_layout = [
-            [None, None, prior, None, None, None],  # 4
-            [None, None, posterior, None, None, None],  # 5
-            [None, None, None, None, None, None],  # 6
             [None, None, None, None, posterior, None],  # 7
             [None, None, None, None, None, None],  # 8
             [None, None, prior, None, None, None],  # 8
@@ -307,11 +312,6 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
         ia_min = 0
         ia_max = 90
 
-        # AR
-        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 1, 3, None, "crimson")
-
-        ih.plot_histogram(fig, AR, res_ar.values, AR.a, AR.b, 2, 3, AR.name, "crimson")
-
         # O2SatFFA
         ih.plot_histogram(
             fig,
@@ -319,17 +319,17 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             res_o2satffa.values,
             o2sat_min,
             o2sat_max,
-            4,
+            1,
             5,
             O2SatFFA.name,
             "blue",
         )
-        o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 4, 5)
+        o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 1, 5)
 
         # IA
-        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 6, 3, None, "crimson")
+        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 3, 3, None, "crimson")
         ih.plot_histogram(
-            fig, IA, res_ia.values, ia_min, ia_max, 7, 3, IA.name, "crimson"
+            fig, IA, res_ia.values, ia_min, ia_max, 4, 3, IA.name, "crimson"
         )
 
         # UO2Sat
@@ -339,12 +339,12 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             res_uo2sat.values,
             o2sat_min,
             o2sat_max,
-            9,
+            6,
             5,
             UO2Sat.name,
             "blue",
         )
-        o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 9, 5)
+        o2h.add_o2sat_normal_range_line(fig, max(res_uo2sat.values), 6, 5)
 
         fig.update_layout(
             showlegend=False,
@@ -407,6 +407,34 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             )
             o2h.add_o2sat_normal_range_line(fig_ho2sat, max(res_ho2sat.values), 2, 1)
             fig_ho2sat.update_layout(
+                showlegend=False,
+                height=150,
+                width=300,
+                font=dict(size=10),
+                bargap=0.01,
+                margin=dict(l=0, r=0, b=0, t=0),
+            )
+
+        fig_fev1 = make_subplots(rows=1, cols=1)
+
+        viz_layout = [[prior, None], [posterior, None], [None, None]]
+        fig_ar = make_subplots(
+            rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
+        )
+        if "AR" not in observed_vars_checklist:
+            ih.plot_histogram(fig_ar, AR, AR.cpt, AR.a, AR.b, 1, 1, None, "crimson")
+            ih.plot_histogram(
+                fig_ar,
+                AR,
+                res_ar.values,
+                AR.a,
+                AR.b,
+                2,
+                1,
+                AR.name,
+                "crimson",
+            )
+            fig_ar.update_layout(
                 showlegend=False,
                 height=150,
                 width=300,
@@ -485,6 +513,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             fig,
             fig_hfev1,
             fig_ho2sat,
+            fig_ar,
             fig_fev1,
             fig_o2sat,
             fig_fef2575,

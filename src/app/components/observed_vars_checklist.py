@@ -25,6 +25,7 @@ fev1_fef2575_o2sat_observed_vars_checklist_layout = html.Div(
             options={
                 "HFEV1": "HFEV1",
                 "HO2Sat": "HO2Sat",
+                "AR": "AR",
                 "FEV1": "FEV1",
                 "O2 saturation": "O2 saturation",
                 "FEF25-75": "FEF25-75",

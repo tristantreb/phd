@@ -126,6 +126,37 @@ app.layout = dbc.Container(
                         "padding-bottom": "0px",
                     },
                 ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            [""],
+                            width=3,
+                        ),
+                        dbc.Col(
+                            [
+                                dcc.Loading(
+                                    children=[
+                                        dcc.Graph(
+                                            id="AR-dist",
+                                            style={"display": "none"},
+                                        )
+                                    ],
+                                ),
+                                sliders.AR_slider_layout,
+                            ],
+                            width=3,
+                        ),
+                        dbc.Col(
+                            [""],
+                            width=3,
+                        ),
+                    ],
+                    style={
+                        "font-size": s.font_size(),
+                        "padding-top": "20px",
+                        "padding-bottom": "0px",
+                    },
+                ),
             ]
         ),
         dcc.Loading(children=[dcc.Graph(id="lung-graph")]),
