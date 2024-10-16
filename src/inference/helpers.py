@@ -15,7 +15,7 @@ def infer_on_factor_graph(
     inference_alg: BeliefPropagationWithMessageParsing,
     variables: tuple[mh.VariableNode],
     evidence: tuple[tuple[mh.VariableNode, float]],
-    virtual_evidence=tuple[TabularCPD] or None,
+    virtual_evidence=None,
     get_messages=False,
 ):
     """
@@ -23,6 +23,7 @@ def infer_on_factor_graph(
     :param inference_alg: The inference algorithm to use
     :param variables: The variables to query
     :param evidence: The evidence to use
+    :param virtual_evidence: The virtual evidence to use, if exists it's a tuple[TabularCPD] 
 
     :return: The result of the inference
     """
