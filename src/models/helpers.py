@@ -21,14 +21,15 @@ def name_to_abbr_dict():
     return {
         "Healthy FEV1 (L)": "HFEV1",
         "ecFEV1 (L)": "ecFEV1",
+        "Underlying ecFEV1 (L)": "uecFEV1",
         "ecFEF25-75 % ecFEV1 (%)": "ecFEF25-75%ecFEV1",
         "Airway resistance (%)": "AR",
-        "Airway resistance": "AR",
+        # "Airway resistance": "AR",
         "O2 saturation (%)": "O2Sat",
         "Healthy O2 saturation (%)": "HO2Sat",
         "O2 saturation if fully functional alveoli (%)": "O2SatFFA",
         "Inactive alveoli (%)": "IA",
-        "Underlying O2 saturation (%)": "UO2Sat",
+        "Underlying O2 saturation (%)": "uO2Sat",
         "Days elapsed": "DE",
     }
 
@@ -50,10 +51,26 @@ def name_to_abbr(name: str):
     return abbr
 
 
+def abbr_to_name_dict():
+    # inverse of name_to_abbr_dict
+    vals = name_to_abbr_dict().keys()
+    keys = name_to_abbr_dict().values()
+    return dict(zip(keys, vals))
+
+
+def abbr_to_name(abbr: str):
+    # inverse of name_to_abbr
+    name = abbr_to_name_dict().get(abbr, "Invalid abbreviation")
+    if name == "Invalid abbreviation":
+        raise ValueError(f"Invalid abbreviation: {abbr}")
+    return name
+
+
 def abbr_to_colname_dict():
     return {
-        "HFEV1": "Predicted FEV1",
+        "HFEV1": "Healthy FEV1",
         "ecFEV1": "ecFEV1",
+        "uecFEV1": "uecFEV1",
         "O2Sat": "O2 Saturation",
         "HO2Sat": "Healthy O2 Saturation",
         "ecFEF25-75%ecFEV1": "ecFEF2575%ecFEV1",
@@ -234,6 +251,13 @@ class VariableNode:
             list(map(lambda x: [x, round(x, 2) + round(self.bin_width, 2)], self.bins))
         )
 
+    def sample_from_bin(self, bin, n=1):
+        """
+        Sample a set of possible values from a bin
+        """
+        rng = np.random.default_rng()
+        return rng.uniform(bin[0], bin[1], n)
+
     def sample(self, n=1, p=None):
         """
         Randomly select a midbins from the variable prior's distribution
@@ -251,14 +275,18 @@ class VariableNode:
         if self.name == "O2 saturation (%)":
             return midbins
 
-        def sample_from_bin(bin):
+        def sample_from_midbin(self, midbin, n=1):
             """
-            When using a continuour variable discretised with bins, we sample from the bin
+            When using a continuous variable discretised with bins, we sample from the bin
+            TODO: use sample from bin function
             """
-            return np.random.uniform(bin - self.bin_width / 2, bin + self.bin_width / 2)
+            rng = np.random.default_rng()
+            return rng.uniform(
+                midbin - self.bin_width / 2, midbin + self.bin_width / 2, n
+            )
 
         # Otherwise sample from the bins
-        sample = np.array(list(map(sample_from_bin, midbins)))
+        sample = np.array(list(map(sample_from_midbin, midbins)))
         return sample
 
     def get_distribution_as_sample(self, p, p_threshold=0.01, print_sample_size=True):
@@ -443,6 +471,25 @@ class VariableNode:
         """
         return self.get_val_at_quantile(p, p2) - self.get_val_at_quantile(p, p1)
 
+    def bin_up(self, arr, normalise=False):
+        """
+        Bin up the input array into the variable's bins
+        Return a probability distribution
+        """
+        hist, _ = np.histogram(arr, bins=self.bins)
+        # Normalize the histogram if hist is not empty
+        if normalise and sum(hist) > 0:
+            hist = hist / sum(hist)
+        return hist
+
+
+    def get_chained_bins_arr(self):
+        """
+        TODO: Revamp usage of self.bins and self.midbins.
+        self.bins should include the last bin's upper bound
+        use self.card instead of len(self.)
+        """
+    
 
 class SharedVariableNode(VariableNode):
     """
