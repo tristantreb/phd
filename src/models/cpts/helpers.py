@@ -90,6 +90,8 @@ def plot_2d_cpt(
             range=p_range,
         )
 
+    fig.update_xaxes(title_text=cVar.name, row=len(plot_bins), col=1)
+
     fig.update_layout(
         title=title,
         width=500,

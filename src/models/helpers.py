@@ -275,7 +275,7 @@ class VariableNode:
         if self.name == "O2 saturation (%)":
             return midbins
 
-        def sample_from_midbin(self, midbin, n=1):
+        def sample_from_midbin(midbin, n=1):
             """
             When using a continuous variable discretised with bins, we sample from the bin
             TODO: use sample from bin function
@@ -476,18 +476,14 @@ class VariableNode:
         Bin up the input array into the variable's bins
         Return a probability distribution
         """
-        hist, _ = np.histogram(arr, bins=self.bins)
+        hist, _ = np.histogram(arr, bins=self.get_bins_for_hist())
         # Normalize the histogram if hist is not empty
         if normalise and sum(hist) > 0:
             hist = hist / sum(hist)
         return hist
 
-    def get_chained_bins_arr(self):
-        """
-        TODO: Revamp usage of self.bins and self.midbins.
-        self.bins should include the last bin's upper bound
-        use self.card instead of len(self.)
-        """
+    def get_bins_for_hist(self):
+        return np.append(self.bins, self.b)
 
 
 class SharedVariableNode(VariableNode):
