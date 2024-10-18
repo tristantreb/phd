@@ -51,16 +51,16 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
     n_samples,
     AR,
     ar_col,
-    y_var,
+    yVar,
     y_col,
     save=False,
     debug=False,
 ):
     AR_midbins = np.sort(df_sampled["AR midbin"].unique())
 
-    fig = make_subplots(rows=1, cols=len(AR.bins), shared_yaxes=True)
+    fig = make_subplots(rows=1, cols=AR.card, shared_yaxes=True)
 
-    cpt_y_var_AR = np.empty([len(y_var.bins), len(AR.bins)])
+    cpt_y_var_AR = np.empty([yVar.card, AR.card])
     cpt_y_var_AR[:] = np.nan
 
     for idx, midbin in enumerate(AR_midbins):
@@ -68,7 +68,7 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
         fig.add_trace(
             go.Histogram(
                 y=values,
-                ybins=dict(start=y_var.a, end=y_var.b, size=y_var.bin_width),
+                ybins=dict(start=yVar.a, end=yVar.b, size=yVar.bin_width),
                 histnorm="probability",
             ),
             row=1,
@@ -80,7 +80,7 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
 
         # Add gaussian approximation
         p_arr = norm.pdf(
-            y_var.midbins,
+            yVar.midbins,
             loc=df_f3.iloc[idx]["mean"],
             scale=df_f3.iloc[idx]["std"],
         )
@@ -99,7 +99,7 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
             print(idx, idx_to_plot)
         fig.add_trace(
             go.Scatter(
-                y=y_var.midbins,
+                y=yVar.midbins,
                 x=cpt_y_var_AR[:, idx_to_plot],
                 mode="lines",
                 line=dict(color="red"),
@@ -111,13 +111,13 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
         fig.update_xaxes(title=f"{midbin}%<br>({values.shape[0]})", row=1, col=idx + 1)
 
     # Add all remaining CPT entries from idx + 1 to last value
-    for j in range(idx + 1, len(AR.bins)):
+    for j in range(idx + 1, AR.card):
         if debug:
             print(j, idx)
         cpt_y_var_AR[:, j] = cpt_y_var_AR[:, idx - 3]
         fig.add_trace(
             go.Scatter(
-                y=y_var.midbins,
+                y=yVar.midbins,
                 x=cpt_y_var_AR[:, j],
                 mode="lines",
                 line=dict(color="red"),
@@ -127,13 +127,13 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
         )
         fig.update_xaxes(title=f"{AR.midbins[j]}%", row=1, col=j + 1, range=[0, 0.4])
 
-    fig.update_yaxes(title=y_var.name, row=1, col=1)
+    fig.update_yaxes(title=yVar.name, row=1, col=1)
     fig.update_layout(
         width=2000,
         height=400,
         font=dict(size=6),
         showlegend=False,
-        title=f"P({y_var.name} | {ar_col})",
+        title=f"P({yVar.name} | {ar_col})",
     )
     if save:
         fig.write_image(
@@ -433,7 +433,7 @@ def fit_ia_hist_profile(x, y, IA, debug=False):
 def calc_plot_cpt_IA_given_AR(
     df_sampled, AR, AR_bin_width, ar_col, IA, n_samples, save=False, debug=False
 ):
-    cpt_ia_ar = np.zeros([len(IA.bins), len(AR.bins)])
+    cpt_ia_ar = np.zeros([IA.card, AR.card])
 
     ar_groups = np.sort(list(df_sampled["AR midbin"].unique()))
 
@@ -459,8 +459,8 @@ def calc_plot_cpt_IA_given_AR(
         # Create histogram data for IA, binned by IA bins
         s_ia_hist = df_tmp["IA midbin"].value_counts()
         # Add 10% of the data distributed evenly on each bin
-        print("dirichlet factor", max(100, round(s_ia_hist.sum() * 0.1 / len(IA.bins))))
-        s_ia_hist_dirichlet = s_ia_hist + round(s_ia_hist.sum() * 0.1 / len(IA.bins))
+        print("dirichlet factor", max(100, round(s_ia_hist.sum() * 0.1 / IA.card)))
+        s_ia_hist_dirichlet = s_ia_hist + round(s_ia_hist.sum() * 0.1 / IA.card)
         s_ia_hist_norm = s_ia_hist_dirichlet / s_ia_hist_dirichlet.sum()
 
         x = np.array(s_ia_hist_norm.index)
@@ -534,10 +534,10 @@ def calc_plot_cpt_IA_given_AR(
 
 def check_IA_cpt(cpt, IA, AR, debug=False):
     # Check cpt is correct 1: 2 consecutive values are equal and after 66, all are the same
-    idx_sixty_six_from_back = len(AR.bins) - AR.get_bin_for_value(66)[1]
+    idx_sixty_six_from_back = AR.card - AR.get_bin_for_value(66)[1]
     if debug:
         print("CPT is correct if 2 consecutive values are equal")
-        for idx in range(len(AR.bins) - 1):
+        for idx in range(AR.card - 1):
             print(
                 "bin",
                 AR.get_bins_str()[idx],
@@ -559,7 +559,7 @@ def check_IA_cpt(cpt, IA, AR, debug=False):
             )
     else:
         print("CPT is correct if 2 consecutive values are equal")
-        for idx in np.arange(0, len(AR.bins) - 1, 2):
+        for idx in np.arange(0, AR.card - 1, 2):
             assert (
                 cpt[0, idx] - cpt[0, idx + 1] == 0
             ), f"Error at bin {idx}: {cpt[0, idx]} diff from {cpt[0, idx + 1]}"
@@ -573,10 +573,10 @@ def check_IA_cpt(cpt, IA, AR, debug=False):
     # Check that values are decreasing
     print("Check that IA values are decreasing with increasing AR bin")
     if debug:
-        for idx in range(len(IA.bins) - 1):
+        for idx in range(IA.card - 1):
             print("idx", idx, "cpt val", cpt[idx, 0] - cpt[idx + 1, 0])
     else:
-        for idx in range(len(IA.bins) - 1):
+        for idx in range(IA.card - 1):
             assert (
                 cpt[idx, 0] - cpt[idx + 1, 0] > 0
             ), f"Error at bin {idx}: {cpt[idx, 0]} diff from {cpt[idx + 1, 0]}"

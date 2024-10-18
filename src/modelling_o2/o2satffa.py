@@ -74,9 +74,9 @@ def calc_cpt_X_x_funcY(
 
     - What happens when the function is shifted outside the boundary? -> Raise an error as it shouldn't happen by how the model is built
     """
-    nbinsX = len(X.bins)
-    nbinsY = len(Y.bins)
-    nbinsZ = len(Z.bins)
+    nbinsX = X.card
+    nbinsY = Y.card
+    nbinsZ = Z.card
 
     cpt = np.zeros([nbinsZ, nbinsX, nbinsY])
     if debug:
