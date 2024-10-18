@@ -220,7 +220,7 @@ class VariableNode:
         # We're b - TOL_GLOBAL allows to exclude b from the array of bins
         self.bins = np.arange(a, b - self.tol, bin_width)
         self.midbins = self.bins + self.bin_width / 2
-        self.card = len(self.bins)
+        self.card = len(self.midbins)
         self.cpt = self.set_prior(prior)
 
     def get_abbr(self):
@@ -482,14 +482,13 @@ class VariableNode:
             hist = hist / sum(hist)
         return hist
 
-
     def get_chained_bins_arr(self):
         """
         TODO: Revamp usage of self.bins and self.midbins.
         self.bins should include the last bin's upper bound
         use self.card instead of len(self.)
         """
-    
+
 
 class SharedVariableNode(VariableNode):
     """
@@ -866,9 +865,9 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
     Creates a 2D array with 3 variables
     """
     # https://pgmpy.org/factors/discrete.html?highlight=tabular#pgmpy.factors.discrete.CPD.TabularCPD
-    nbinsX = len(X.bins)
-    nbinsY = len(Y.bins)
-    nbinsZ = len(Z.bins)
+    nbinsX = X.card
+    nbinsY = Y.card
+    nbinsZ = Z.card
     cpt = np.empty((nbinsZ, nbinsX * nbinsY))
     # print(f"calculating cpt of shape {nbinsZ} x {nbinsX} x {nbinsY} (C x (A x B)) ")
     for i in range(nbinsX):

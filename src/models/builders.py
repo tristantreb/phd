@@ -67,7 +67,7 @@ def build_full_FEV1_side(
 
     prior_LD = TabularCPD(
         variable=LD.name,
-        variable_card=len(LD.bins),
+        variable_card=len(LD.midbins),
         values=LD.cpt,
         evidence=[],
         evidence_card=[],
@@ -79,10 +79,10 @@ def build_full_FEV1_side(
 
     cpt_UFEV1 = TabularCPD(
         variable=UFEV1.name,
-        variable_card=len(UFEV1.bins),
+        variable_card=len(UFEV1.midbins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, LD, UFEV1),
         evidence=[LD.name, HFEV1.name],
-        evidence_card=[len(LD.bins), HFEV1.card],
+        evidence_card=[len(LD.midbins), HFEV1.card],
     )
 
     # It's not possible to live with >80% of global airway blockage (LD + SAB)
@@ -98,7 +98,7 @@ def build_full_FEV1_side(
 
     prior_SAB = TabularCPD(
         variable=SAB.name,
-        variable_card=len(SAB.bins),
+        variable_card=len(SAB.midbins),
         values=SAB.cpt,
         evidence=[],
         evidence_card=[],
@@ -111,10 +111,10 @@ def build_full_FEV1_side(
 
     cpt_FEV1 = TabularCPD(
         variable=FEV1.name,
-        variable_card=len(FEV1.bins),
+        variable_card=len(FEV1.midbins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(UFEV1, SAB, FEV1),
         evidence=[SAB.name, UFEV1.name],
-        evidence_card=[len(SAB.bins), len(UFEV1.bins)],
+        evidence_card=[len(SAB.midbins), len(UFEV1.midbins)],
     )
 
     model = BayesianNetwork(
@@ -155,15 +155,15 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
 
     cpt_fev1 = TabularCPD(
         variable=FEV1.name,
-        variable_card=len(FEV1.bins),
+        variable_card=len(FEV1.midbins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, AB, FEV1),
         evidence=[HFEV1.name, AB.name],
-        evidence_card=[HFEV1.card, len(AB.bins)],
+        evidence_card=[HFEV1.card, len(AB.midbins)],
     )
 
     prior_ab = TabularCPD(
         variable=AB.name,
-        variable_card=len(AB.bins),
+        variable_card=len(AB.midbins),
         values=AB.cpt,
         evidence=[],
         evidence_card=[],
@@ -308,7 +308,7 @@ def build_longitudinal_FEV1_side(
 
     prior_LD = TabularCPD(
         variable=LD.name,
-        variable_card=len(LD.bins),
+        variable_card=len(LD.midbins),
         values=LD.cpt,
         evidence=[],
         evidence_card=[],
@@ -320,10 +320,10 @@ def build_longitudinal_FEV1_side(
 
     cpt_UFEV1 = TabularCPD(
         variable=UFEV1.name,
-        variable_card=len(UFEV1.bins),
+        variable_card=len(UFEV1.midbins),
         values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(HFEV1, LD, UFEV1),
         evidence=[LD.name, HFEV1.name],
-        evidence_card=[len(LD.bins), HFEV1.card],
+        evidence_card=[len(LD.midbins), HFEV1.card],
     )
 
     # One variable per time point.
@@ -349,7 +349,7 @@ def build_longitudinal_FEV1_side(
 
         prior_SAB_i = TabularCPD(
             variable=SAB_i.name,
-            variable_card=len(SAB_i.bins),
+            variable_card=len(SAB_i.midbins),
             values=SAB_i.cpt,
             evidence=[],
             evidence_card=[],
@@ -362,10 +362,10 @@ def build_longitudinal_FEV1_side(
 
         cpt_FEV1 = TabularCPD(
             variable=FEV1_i.name,
-            variable_card=len(FEV1_i.bins),
+            variable_card=len(FEV1_i.midbins),
             values=mh.calc_pgmpy_cpt_X_x_1_minus_Y(UFEV1, SAB_i, FEV1_i),
             evidence=[SAB_i.name, UFEV1.name],
-            evidence_card=[len(SAB_i.bins), len(UFEV1.bins)],
+            evidence_card=[len(SAB_i.midbins), len(UFEV1.midbins)],
         )
 
         SAB_list.append(SAB_i)
