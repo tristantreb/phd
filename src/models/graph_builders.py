@@ -117,10 +117,18 @@ def build_pgmpy_hfev1_factor_fn(HFEV1):
     return DiscreteFactor([HFEV1.name], [HFEV1.card], HFEV1.cpt)
 
 
-def build_pgmpy_ecfev1_factor_fn(ecFEV1, HFEV1, AR):
+def build_pgmpy_ecfev1_factor_fn(uecFEV1, HFEV1, AR):
     return DiscreteFactor(
-        [ecFEV1.name, HFEV1.name, AR.name],
-        [ecFEV1.card, HFEV1.card, AR.card],
+        [uecFEV1.name, HFEV1.name, AR.name],
+        [uecFEV1.card, HFEV1.card, AR.card],
+        uecFEV1.cpt,
+    )
+
+
+def build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uecFEV1):
+    return DiscreteFactor(
+        [ecFEV1.name, uecFEV1.name],
+        [ecFEV1.card, uecFEV1.card],
         ecFEV1.cpt,
     )
 
@@ -679,6 +687,94 @@ def fev1_fef2575_o2sat_point_in_time_factor_graph(
             (cpt_uo2sat, UO2Sat.name),
             (UO2Sat.name, cpt_o2sat),
             (cpt_o2sat, O2Sat.name),
+            (cpt_ecfev1, ecFEV1.name),
+            (cpt_ecFEF2575prctecFEV1, ecFEF2575prctecFEV1.name),
+        ]
+    )
+
+    if check_model:
+        assert G.check_model() == True
+        print("Model is valid")
+
+    return G
+
+
+def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
+    HFEV1,
+    uecFEV1,
+    ecFEV1,
+    AR,
+    HO2Sat,
+    O2SatFFA,
+    IA,
+    UO2Sat,
+    O2Sat,
+    ecFEF2575prctecFEV1,
+    check_model=True,
+):
+    """
+    AR and IA have no direct link in this model
+    """
+
+    prior_hfev1 = build_pgmpy_hfev1_factor_fn(HFEV1)
+    cpt_uecfev1 = build_pgmpy_ecfev1_factor_fn(uecFEV1, HFEV1, AR)
+    cpt_ecfev1 = build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uecFEV1)
+    cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prctecfev1_factor_fn(
+        ecFEF2575prctecFEV1, AR
+    )
+    prior_ar = build_pgmpy_ar_factor_fn(AR)
+    prior_ho2sat = build_pgmpy_ho2sat_factor_fn(HO2Sat)
+    cpt_o2satffa = build_pgmpy_o2satffa_factor_fn(O2SatFFA, HO2Sat, AR)
+    prior_ia = build_pgmpy_ia_factor_fn(IA)
+    cpt_uo2sat = build_pgmpy_uo2sat_factor_fn(UO2Sat, O2SatFFA, IA)
+    cpt_o2sat = build_pgmpy_o2sat_factor_fn(O2Sat, UO2Sat)
+
+    G = FactorGraph()
+    G.add_nodes_from(
+        [
+            HFEV1.name,
+            uecFEV1.name,
+            ecFEV1.name,
+            AR.name,
+            HO2Sat.name,
+            O2SatFFA.name,
+            IA.name,
+            UO2Sat.name,
+            O2Sat.name,
+            ecFEF2575prctecFEV1.name,
+        ]
+    )
+    G.add_factors(
+        prior_hfev1,
+        cpt_uecfev1,
+        cpt_ecfev1,
+        cpt_ecFEF2575prctecFEV1,
+        prior_ar,
+        prior_ho2sat,
+        cpt_o2satffa,
+        prior_ia,
+        cpt_uo2sat,
+        cpt_o2sat,
+    )
+    G.add_edges_from(
+        [
+            (prior_hfev1, HFEV1.name),
+            (HFEV1.name, cpt_uecfev1),
+            (prior_ar, AR.name),
+            (AR.name, cpt_uecfev1),
+            (AR.name, cpt_ecFEF2575prctecFEV1),
+            (AR.name, cpt_o2satffa),
+            (prior_ho2sat, HO2Sat.name),
+            (HO2Sat.name, cpt_o2satffa),
+            (cpt_o2satffa, O2SatFFA.name),
+            (O2SatFFA.name, cpt_uo2sat),
+            (prior_ia, IA.name),
+            (IA.name, cpt_uo2sat),
+            (cpt_uo2sat, UO2Sat.name),
+            (UO2Sat.name, cpt_o2sat),
+            (cpt_o2sat, O2Sat.name),
+            (cpt_uecfev1, uecFEV1.name),
+            (uecFEV1.name, cpt_ecfev1),
             (cpt_ecfev1, ecFEV1.name),
             (cpt_ecFEF2575prctecFEV1, ecFEF2575prctecFEV1.name),
         ]
