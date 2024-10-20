@@ -7,7 +7,7 @@ hfev1_slider_layout = dbc.Form(
         dbc.Label("HFEV1 observed:"),
         dcc.Slider(
             id="HFEV1-slider",
-            min=0,
+            min=1,
             max=6,
             step=0.1,
             value=4.5,
@@ -32,7 +32,7 @@ fev1_slider_layout = dbc.Form(
         dbc.Label("FEV1 observed:"),
         dcc.Slider(
             id="FEV1-slider",
-            min=0,
+            min=0.1,
             max=6,
             step=0.1,
             value=3,
@@ -57,7 +57,7 @@ fef2575_slider_layout = dbc.Form(
         dbc.Label("FEF25-75 observed:"),
         dcc.Slider(
             id="FEF25-75-slider",
-            min=0,
+            min=0.1,
             max=6,
             step=0.1,
             value=2,

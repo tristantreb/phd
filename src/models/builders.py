@@ -612,12 +612,13 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
 
     (
         HFEV1,
+        uecFEV1,
         ecFEV1,
         AR,
         HO2Sat,
         O2SatFFA,
         IA,
-        UO2Sat,
+        uO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
     ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
@@ -625,12 +626,13 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
+        uecFEV1,
         ecFEV1,
         AR,
         HO2Sat,
         O2SatFFA,
         IA,
-        UO2Sat,
+        uO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
         check_model,
@@ -640,12 +642,13 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         model,
         inf_alg,
         HFEV1,
+        uecFEV1,
         ecFEV1,
         AR,
         HO2Sat,
         O2SatFFA,
         IA,
-        UO2Sat,
+        uO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
     )

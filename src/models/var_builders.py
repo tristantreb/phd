@@ -499,17 +499,29 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.
     # 82.8-30 = 52.8%
     # TODO: should we hardcode the fact that the sum of AR and IA should not be below 70% O2 Sat?
-    UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
+    uO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
     O2Sat = VariableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
     # Calculate CPTs
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix="_std_0.23"))
     uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
-    UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
-    O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
+    uO2Sat.set_cpt(get_cpt([uO2Sat, O2SatFFA, IA]))
+    O2Sat.set_cpt(get_cpt([O2Sat, uO2Sat]))
     ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
 
-    return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, ecFEF2575prctecFEV1
+    return (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        uO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    )
 
 
 def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
