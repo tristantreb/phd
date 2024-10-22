@@ -233,4 +233,4 @@ build_fev1_fef2575_o2sat_with_factor_graph(app)
 show_slider_or_graph_for_observed_measures(app)
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8050)
+    app.run(debug=True, host="0.0.0.0", port=8051)

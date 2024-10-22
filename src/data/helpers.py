@@ -5,11 +5,11 @@ import pandas as pd
 
 
 def get_path_to_src():
-    return os.getcwd().split("src")[0] + "src/"
+    return os.getcwd().split("src")[0] + "/src/"
 
 
 def get_path_to_main():
-    return os.getcwd().split("PhD")[0] + "PhD/"
+    return os.getcwd().split("PhD")[0] + "/PhD/"
 
 
 def compute_avg(df, col_name, unit):
