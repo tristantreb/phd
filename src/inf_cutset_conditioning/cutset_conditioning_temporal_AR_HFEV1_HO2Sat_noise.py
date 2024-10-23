@@ -22,7 +22,6 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     ar_change_cpt_suffix,
     debug=False,
     save=False,
-    speedup=True,
 ):
     df_for_ID_in = (
         df_for_ID_in.copy()
@@ -55,6 +54,13 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     HFEV1_obs_list = HFEV1.midbins[
         HFEV1.midbins - HFEV1.bin_width / 2 >= df_for_ID_in.ecFEV1.max()
     ]
+    # Create tuples of obs (HFEV1, HO2Sat) to observe
+    H_obs_list = [
+        list(zip([HFEV1_obs] * HO2Sat.card, HO2Sat.midbins))
+        for HFEV1_obs in HFEV1_obs_list
+    ]
+    # Flatten the list
+    H_obs_list = list(itertools.chain(*H_obs_list))
 
     (
         _,
@@ -76,16 +82,16 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
         ia_prior="uniform",
         ar_prior=ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
-        n_cutset_conditioned_states=len(HFEV1_obs_list),
+        n_cutset_conditioned_states=len(H_obs_list),
     )
 
     print(
-        f"ID {id} - Number of HFEV1 specific models: {len(HFEV1_obs_list)}, max ecFEV1: {df_for_ID_in.ecFEV1.max()}, first possible bin for HFEV1: {HFEV1.get_bin_for_value(HFEV1_obs_list[0])[0]}"
+        f"ID {id} - Number of HFEV1, HO2Sat specific models: {len(H_obs_list)}, max ecFEV1: {df_for_ID_in.ecFEV1.max()}, first possible bin for HFEV1: {HFEV1.get_bin_for_value(HFEV1_obs_list[0])[0]}"
     )
 
     N = len(df_for_ID_in)
     df_for_ID = df_for_ID_in.copy()
-    H = len(HFEV1_obs_list)
+    H = len(H_obs_list)
     log_p_D_given_M = np.zeros((N, H))
     AR_dist_given_M_matrix = np.zeros((N, AR.card, H))
 
@@ -103,7 +109,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
         # next_date = None if i + 1 >= len(df_for_ID) else df_for_ID.loc[i + 1, "Date Recorded"]
 
         # For each model given an HFEV1 observation
-        for h, HFEV1_obs in enumerate(HFEV1_obs_list):
+        for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
 
             vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar(
                 AR, h, prev_date, None
@@ -113,7 +119,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
             res1 = ih.infer_on_factor_graph(
                 inf_alg,
                 [ecFEV1],
-                [[HFEV1, HFEV1_obs]],
+                [[HFEV1, HFEV1_obs], [HO2Sat, HO2Sat_obs]],
                 [vevidence_ar],
             )
             dist_ecFEV1 = res1[ecFEV1.name].values
@@ -123,7 +129,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
             res2 = ih.infer_on_factor_graph(
                 inf_alg,
                 [ecFEF2575prctecFEV1, AR],
-                [[HFEV1, HFEV1_obs], [ecFEV1, row.ecFEV1]],
+                [[HFEV1, HFEV1_obs], [HO2Sat, HO2Sat_obs], [ecFEV1, row.ecFEV1]],
                 [vevidence_ar],
             )
             dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
@@ -133,7 +139,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
             #     [O2Sat],
             #     [
             #         [HFEV1, HFEV1_obs],
-            #         [ecFEV1, row.ecFEV1],
+            #         [ecFEV1, row.ecFEV1], [HO2Sat, HO2Sat_obs],
             #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
             #     ],
             #     get_messages=True,
@@ -145,7 +151,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
             #     [AR],
             #     [
             #         [HFEV1, HFEV1_obs],
-            #         [ecFEV1, row.ecFEV1],
+            #         [ecFEV1, row.ecFEV1], [HO2Sat, HO2Sat_obs],
             #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
             #         # [O2Sat, row["O2 Saturation"]],
             #     ],
@@ -194,7 +200,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
         if de > 3:
             ValueError(f"Days elapsed is {de}, should be at most 3")
 
-        for h, HFEV1_obs in enumerate(HFEV1_obs_list):
+        for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
             next_AR = AR_dist_given_M_matrix[n + 1, :, h]
             next_AR_m = np.matmul(next_AR, AR.change_cpt[:, :, de - 1])
             next_AR_m = next_AR_m / next_AR_m.sum()
@@ -211,9 +217,12 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     # For each HFEV1 model, given HFEV1_obs_list, we compute the log probability of the model given the data
     # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
     log_p_M_given_D = np.zeros(H)
-    for h, HFEV1_obs in enumerate(HFEV1_obs_list):
+    for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
         log_p_M_hfev1 = np.log(HFEV1.cpt[HFEV1.get_bin_for_value(HFEV1_obs)[1]])
-        log_p_M_given_D[h] = np.sum(log_p_D_given_M[:, h]) + log_p_M_hfev1
+        log_p_M_ho2sat = np.log(HO2Sat.cpt[HO2Sat.get_bin_for_value(HO2Sat_obs)[1]])
+        log_p_M_given_D[h] = (
+            np.sum(log_p_D_given_M[:, h]) + log_p_M_hfev1 + log_p_M_ho2sat
+        )
 
     # Exponentiating very negative numbers gives too small numbers
     # Setting the highest number to 1
@@ -225,16 +234,20 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     p_M_given_D = p_M_given_D / p_M_given_D.sum()
     AR_dist_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
 
+    # Reshape P(M|D) into a 2D array for each HFEV1_obs, HO2Sat_obs
+    p_M_given_D = p_M_given_D.reshape((len(HFEV1_obs_list), HO2Sat.card))
+
     # Fill the p(M|D) array with zeros on the left, where the HFEV1_obs < max ecFEV1
-    print("Shape of P(M|D)", p_M_given_D.shape)
     n_impossible_hfev1_values = HFEV1.card - len(HFEV1_obs_list)
     p_M_given_D_full = p_M_given_D
     if n_impossible_hfev1_values > 0:
         # Use np.vstack for 2D arrays
-        p_M_given_D_full = np.hstack([np.zeros(n_impossible_hfev1_values), p_M_given_D])
+        p_M_given_D_full = np.vstack(
+            [np.zeros((n_impossible_hfev1_values, HO2Sat.card)), p_M_given_D]
+        )
 
     # Get the probability of HFEV1
-    p_HFEV1_given_D = p_M_given_D_full
+    p_HFEV1_given_D = p_M_given_D_full.sum(axis=1)
 
     # Add plot
     layout = [

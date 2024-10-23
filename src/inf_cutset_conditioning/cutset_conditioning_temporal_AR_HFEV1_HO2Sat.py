@@ -11,6 +11,7 @@ import src.data.breathe_data as bd
 import src.data.helpers as dh
 import src.inference.helpers as ih
 import src.modelling_ar.ar as ar
+import src.inf_cutset_conditioning.helpers as cutseth
 import src.models.builders as mb
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
@@ -109,7 +110,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
         # For each model given an HFEV1 observation
         for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
 
-            vevidence_ar = build_vevidence_cutset_conditioned_ar(AR, h, prev_date, None)
+            vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar(AR, h, prev_date, None)
 
             # Getting the joint probabilities of ecFEF2575 and ecFEV1 under the model
             res1 = ih.infer_on_factor_graph(
