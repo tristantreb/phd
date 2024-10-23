@@ -9,32 +9,19 @@ from plotly.subplots import make_subplots
 
 import src.data.breathe_data as bd
 import src.data.helpers as dh
+import src.inf_cutset_conditioning.helpers as cutseth
 import src.inference.helpers as ih
 import src.models.builders as mb
-from pgmpy.factors.discrete import TabularCPD
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
 
-def build_vevidence_cutset_conditioned_ar(
-    AR, state_n, curr_date, prev_date=None, next_date=None
-):
-    """
-    Builds a virtual evidence for the airway resistance variable given the previous and next days
-
-    Dates are datetime objects
-    """
-    prior = AR.get_virtual_message(state_n, curr_date, prev_date, next_date)
-    return TabularCPD(AR.name, AR.card, prior.reshape(-1, 1))
-
-
-def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
+def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     df_for_ID_in,
     ar_prior,
     ar_change_cpt_suffix,
     debug=False,
     save=False,
-    speedup=True,
 ):
     df_for_ID_in = (
         df_for_ID_in.copy()
@@ -52,13 +39,14 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
         HFEV1,
         _,
         _,
+        _,
         HO2Sat,
         _,
         _,
         _,
         _,
         _,
-    ) = mb.o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
+    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         height, age, sex, ar_change_cpt_suffix=ar_change_cpt_suffix
     )
 
@@ -66,18 +54,12 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
     HFEV1_obs_list = HFEV1.midbins[
         HFEV1.midbins - HFEV1.bin_width / 2 >= df_for_ID_in.ecFEV1.max()
     ]
-    # Create tuples of obs (HFEV1, HO2Sat) to observe
-    H_obs_list = [
-        list(zip([HFEV1_obs] * HO2Sat.card, HO2Sat.midbins))
-        for HFEV1_obs in HFEV1_obs_list
-    ]
-    # Flatten the list
-    H_obs_list = list(itertools.chain(*H_obs_list))
 
     (
         _,
         inf_alg,
         HFEV1,
+        uecFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -86,23 +68,23 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
-    ) = mb.o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
+    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         height,
         age,
         sex,
         ia_prior="uniform",
         ar_prior=ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
-        n_cutset_conditioned_states=len(H_obs_list),
+        n_cutset_conditioned_states=len(HFEV1_obs_list),
     )
 
     print(
-        f"ID {id} - Number of HFEV1, HO2Sat specific models: {len(H_obs_list)}, max ecFEV1: {df_for_ID_in.ecFEV1.max()}, first possible bin for HFEV1: {HFEV1.get_bin_for_value(HFEV1_obs_list[0])[0]}"
+        f"ID {id} - Number of HFEV1 specific models: {len(HFEV1_obs_list)}, max ecFEV1: {df_for_ID_in.ecFEV1.max()}, first possible bin for HFEV1: {HFEV1.get_bin_for_value(HFEV1_obs_list[0])[0]}"
     )
 
     N = len(df_for_ID_in)
     df_for_ID = df_for_ID_in.copy()
-    H = len(H_obs_list)
+    H = len(HFEV1_obs_list)
     log_p_D_given_M = np.zeros((N, H))
     AR_dist_given_M_matrix = np.zeros((N, AR.card, H))
 
@@ -120,15 +102,17 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
         # next_date = None if i + 1 >= len(df) else df.loc[i + 1, "Date Recorded"]
 
         # For each model given an HFEV1 observation
-        for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
+        for h, HFEV1_obs in enumerate(HFEV1_obs_list):
 
-            vevidence_ar = build_vevidence_cutset_conditioned_ar(AR, h, prev_date, None)
+            vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar(
+                AR, h, prev_date, None
+            )
 
             # Getting the joint probabilities of ecFEF2575 and ecFEV1 under the model
             res1 = ih.infer_on_factor_graph(
                 inf_alg,
                 [ecFEV1],
-                [[HFEV1, HFEV1_obs], [HO2Sat, HO2Sat_obs]],
+                [[HFEV1, HFEV1_obs]],
                 [vevidence_ar],
             )
             dist_ecFEV1 = res1[ecFEV1.name].values
@@ -138,7 +122,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
             res2 = ih.infer_on_factor_graph(
                 inf_alg,
                 [ecFEF2575prctecFEV1, AR],
-                [[HFEV1, HFEV1_obs], [HO2Sat, HO2Sat_obs], [ecFEV1, row.ecFEV1]],
+                [[HFEV1, HFEV1_obs], [ecFEV1, row.ecFEV1]],
                 [vevidence_ar],
             )
             dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
@@ -148,7 +132,6 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
             #     [O2Sat],
             #     [
             #         [HFEV1, HFEV1_obs],
-            #        [HO2Sat, HO2Sat_obs],
             #         [ecFEV1, row.ecFEV1],
             #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
             #     ],
@@ -161,7 +144,6 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
             #     [AR],
             #     [
             #         [HFEV1, HFEV1_obs],
-            #         [HO2Sat, HO2Sat_obs],
             #         [ecFEV1, row.ecFEV1],
             #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
             #         # [O2Sat, row["O2 Saturation"]],
@@ -192,8 +174,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
             # Save information for this round
             date_str = row["Date Recorded"].strftime("%Y-%m-%d")
             AR.add_or_update_posterior(h, date_str, dist_AR)
-            # Contains the same as AR.vmessages, but asn an array (not dict)
-            # and the order is correct to reverse the speedup
+            # Contains the same as AR.vmessages, but as an array (not dict)
             # I don't know if the dict entries would be sorted.
             AR_dist_given_M_matrix[n, :, h] = dist_AR
 
@@ -209,7 +190,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
         if de > 3:
             ValueError(f"Days elapsed is {de}, should be at most 3")
 
-        for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
+        for h, HFEV1_obs in enumerate(HFEV1_obs_list):
             next_AR = AR_dist_given_M_matrix[n + 1, :, h]
             next_AR_m = np.matmul(next_AR, AR.change_cpt[:, :, de - 1])
             next_AR_m = next_AR_m / next_AR_m.sum()
@@ -218,7 +199,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
             AR_dist_given_M_matrix[n, :, h] = curr_AR_posterior
 
     toc = time.time()
-    print(f"Time for {N} entries: {toc-tic:.2f} s")
+    print(f"ID {id} - Time for {N} entries: {toc-tic:.2f} s")
 
     if debug:
         print("log(P(D|M)), first row", log_p_D_given_M[0, :])
@@ -226,12 +207,9 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
     # For each HFEV1 model, given HFEV1_obs_list, we compute the log probability of the model given the data
     # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
     log_p_M_given_D = np.zeros(H)
-    for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
+    for h, HFEV1_obs in enumerate(HFEV1_obs_list):
         log_p_M_hfev1 = np.log(HFEV1.cpt[HFEV1.get_bin_for_value(HFEV1_obs)[1]])
-        log_p_M_ho2sat = np.log(HO2Sat.cpt[HO2Sat.get_bin_for_value(HO2Sat_obs)[1]])
-        log_p_M_given_D[h] = (
-            np.sum(log_p_D_given_M[:, h]) + log_p_M_hfev1 + log_p_M_ho2sat
-        )
+        log_p_M_given_D[h] = np.sum(log_p_D_given_M[:, h]) + log_p_M_hfev1
 
     # Exponentiating very negative numbers gives too small numbers
     # Setting the highest number to 1
@@ -243,19 +221,16 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
     p_M_given_D = p_M_given_D / p_M_given_D.sum()
     AR_dist_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
 
-    # Post process all AR dist matrices
-
-    # Reshape P(M|D) into a 2D array for each HFEV1_obs, HO2Sat_obs
-    p_M_given_D = p_M_given_D.reshape((len(HFEV1_obs_list), HO2Sat.card))
-
     # Fill the p(M|D) array with zeros on the left, where the HFEV1_obs < max ecFEV1
+    print("Shape of P(M|D)", p_M_given_D.shape)
     n_impossible_hfev1_values = HFEV1.card - len(HFEV1_obs_list)
-    p_M_given_D_full = np.vstack(
-        [np.zeros((n_impossible_hfev1_values, HO2Sat.card)), p_M_given_D]
-    )
+    p_M_given_D_full = p_M_given_D
+    if n_impossible_hfev1_values > 0:
+        # Use np.vstack for 2D arrays
+        p_M_given_D_full = np.hstack([np.zeros(n_impossible_hfev1_values), p_M_given_D])
 
     # Get the probability of HFEV1
-    p_HFEV1_given_D = p_M_given_D_full.sum(axis=1)
+    p_HFEV1_given_D = p_M_given_D_full
 
     # Add plot
     layout = [
@@ -297,9 +272,10 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
         col=1,
     )
 
-    title = f"{id} - Posterior HFEV1 after fusing all P(M_h|D)<br>AR prior: {ar_prior}<br>AR change CPT: {ar_change_cpt_suffix}"
+    title = f"{id} - Posterior HFEV1 after fusing all P(M_h|D), noise<br>AR prior: {ar_prior}<br>AR change CPT: {ar_change_cpt_suffix}"
     fig.update_layout(
         font=dict(size=12),
+        title_font_size=12,
         height=700,
         width=1200,
         title=title,
@@ -316,7 +292,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
     fig.update_yaxes(title_text="p", row=1, col=1)
     fig.update_yaxes(title_text=AR.name, row=2, col=1)
     fig.update_xaxes(
-        title_text="Date",
+        title_text="Date (categorical)",
         row=2,
         col=1,
         nticks=50,
@@ -337,7 +313,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
 
 def process_id(inf_settings):
     print(f"Processing {inf_settings}")
-    
+
     ar_prior, id = inf_settings
     ar_change_cpt_suffix = "_shift_span_[-20;20]_joint_sampling_3_days_model"
 
@@ -352,8 +328,8 @@ def process_id(inf_settings):
     elif id == "203":
         dftmp = df[df["ID"] == "203"].iloc[:285]
 
-    return compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
-        dftmp, ar_prior, ar_change_cpt_suffix, debug=False, save=True, speedup=True
+    return compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
+        dftmp, ar_prior, ar_change_cpt_suffix, debug=False, save=True
     )
 
 
@@ -382,7 +358,7 @@ if __name__ == "__main__":
     ]
 
     ar_priors = [
-        "uniform",
+        # "uniform",
         "uniform message to HFEV1",
         "breathe (2 days model, ecFEV1, ecFEF25-75)",
     ]

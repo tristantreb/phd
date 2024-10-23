@@ -287,7 +287,8 @@ class VariableNode:
 
         # Otherwise sample from the bins
         sample = np.array(list(map(sample_from_midbin, midbins)))
-        return sample
+        # Make sure to return a 1d array
+        return sample.reshape(-1)
 
     def get_distribution_as_sample(self, p, p_threshold=0.01, print_sample_size=True):
         """
@@ -704,7 +705,7 @@ class TemporalVariableNode(VariableNode):
             ), f"Posterior for next day {next_date} is missing"
 
             # Compute factor node message
-            de_idx = calc_days_elapsed(curr_date, next_date) - 1
+            de_idx = self.calc_days_elapsed(curr_date, next_date) - 1
             cpt_for_de = self.change_cpt[:, :, de_idx]
             next_day_m = np.matmul(next_day_posterior, cpt_for_de)
 
