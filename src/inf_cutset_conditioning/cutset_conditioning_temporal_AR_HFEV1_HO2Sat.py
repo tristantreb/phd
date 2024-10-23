@@ -101,10 +101,10 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
             print(f"Processing row {n+1}/{N}")
 
         # There is no prev day if it's the first day
-        prev_date = None if n - 1 < 0 else df.loc[n - 1, "Date Recorded"]
+        prev_date = None if n - 1 < 0 else df_for_ID.loc[n - 1, "Date Recorded"]
         # During the first pass, the next day posterior is not available
         # No next date for now because we just go forward once.
-        # next_date = None if i + 1 >= len(df) else df.loc[i + 1, "Date Recorded"]
+        # next_date = None if i + 1 >= len(df_for_ID) else df_for_ID.loc[i + 1, "Date Recorded"]
 
         # For each model given an HFEV1 observation
         for h, (HFEV1_obs, HO2Sat_obs) in enumerate(H_obs_list):
@@ -190,8 +190,8 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
 
     # Do a backwards sweep to get the AR posteriors
     for n in range(N - 2, -1, -1):
-        next_date = df.loc[n + 1, "Date Recorded"]
-        curr_date = df.loc[n, "Date Recorded"]
+        next_date = df_for_ID.loc[n + 1, "Date Recorded"]
+        curr_date = df_for_ID.loc[n, "Date Recorded"]
         de = AR.calc_days_elapsed(curr_date, next_date)
         if de > 3:
             ValueError(f"Days elapsed is {de}, should be at most 3")

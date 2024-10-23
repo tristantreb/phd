@@ -22,6 +22,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     ar_change_cpt_suffix,
     debug=False,
     save=False,
+    speedup=True,
 ):
     df_for_ID_in = (
         df_for_ID_in.copy()
@@ -93,13 +94,13 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     tic = time.time()
     for n, row in df_for_ID.iterrows():
         if debug:
-            print(f"Processing row {n+1}/{N}")
+            print(f"Processing row {n+1}/{N}, date: {row['Date Recorded']}")
 
         # There is no prev day if it's the first day
-        prev_date = None if n - 1 < 0 else df.loc[n - 1, "Date Recorded"]
+        prev_date = None if n - 1 < 0 else df_for_ID.loc[n - 1, "Date Recorded"]
         # During the first pass, the next day posterior is not available
         # No next date for now because we just go forward once.
-        # next_date = None if i + 1 >= len(df) else df.loc[i + 1, "Date Recorded"]
+        # next_date = None if i + 1 >= len(df_for_ID) else df_for_ID.loc[i + 1, "Date Recorded"]
 
         # For each model given an HFEV1 observation
         for h, HFEV1_obs in enumerate(HFEV1_obs_list):
@@ -174,7 +175,8 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
             # Save information for this round
             date_str = row["Date Recorded"].strftime("%Y-%m-%d")
             AR.add_or_update_posterior(h, date_str, dist_AR)
-            # Contains the same as AR.vmessages, but as an array (not dict)
+            # Contains the same as AR.vmessages, but asn an array (not dict)
+            # and the order is correct to reverse the speedup
             # I don't know if the dict entries would be sorted.
             AR_dist_given_M_matrix[n, :, h] = dist_AR
 
@@ -184,8 +186,8 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
 
     # Do a backwards sweep to get the AR posteriors
     for n in range(N - 2, -1, -1):
-        next_date = df.loc[n + 1, "Date Recorded"]
-        curr_date = df.loc[n, "Date Recorded"]
+        next_date = df_for_ID.loc[n + 1, "Date Recorded"]
+        curr_date = df_for_ID.loc[n, "Date Recorded"]
         de = AR.calc_days_elapsed(curr_date, next_date)
         if de > 3:
             ValueError(f"Days elapsed is {de}, should be at most 3")
@@ -199,7 +201,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
             AR_dist_given_M_matrix[n, :, h] = curr_AR_posterior
 
     toc = time.time()
-    print(f"ID {id} - Time for {N} entries: {toc-tic:.2f} s")
+    print(f"Time for {N} entries: {toc-tic:.2f} s")
 
     if debug:
         print("log(P(D|M)), first row", log_p_D_given_M[0, :])
@@ -275,7 +277,6 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     title = f"{id} - Posterior HFEV1 after fusing all P(M_h|D), noise<br>AR prior: {ar_prior}<br>AR change CPT: {ar_change_cpt_suffix}"
     fig.update_layout(
         font=dict(size=12),
-        title_font_size=12,
         height=700,
         width=1200,
         title=title,
@@ -287,6 +288,8 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
             colorbar_len=0.77,
         ),
     )
+    fig.update_layout(title_font_size=14)
+
     # Add Date on x axis
     fig.update_xaxes(title_text=HFEV1.name, row=1, col=1)
     fig.update_yaxes(title_text="p", row=1, col=1)
@@ -358,9 +361,9 @@ if __name__ == "__main__":
     ]
 
     ar_priors = [
-        # "uniform",
-        "uniform message to HFEV1",
-        "breathe (2 days model, ecFEV1, ecFEF25-75)",
+        "uniform",
+        # "uniform message to HFEV1",
+        # "breathe (2 days model, ecFEV1, ecFEF25-75)",
     ]
 
     inf_settings = [
