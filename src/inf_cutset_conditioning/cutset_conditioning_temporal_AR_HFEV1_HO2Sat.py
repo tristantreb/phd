@@ -17,7 +17,7 @@ import src.models.builders as mb
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
 
-def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_ARfinal(
+def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     df_for_ID_in,
     ar_prior,
     ar_change_cpt_suffix,
@@ -339,6 +339,8 @@ def process_id(inf_settings):
         dftmp = df[df["ID"] == "201"].iloc[:289]
     elif id == "203":
         dftmp = df[df["ID"] == "203"].iloc[:285]
+    elif id == "527":
+        dftmp = df[df["ID"] == "527"]
 
     return compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
         dftmp, ar_prior, ar_change_cpt_suffix, debug=False, save=True
@@ -354,19 +356,19 @@ if __name__ == "__main__":
         # "177",
         # "180",
         # "202",
-        # "527",
+        "527",
         # "117",
         # "131",
         # "134",
         # "191",
         # "139",
         # "253",
-        "101",
-        # Also from consec values
-        "405",
-        "272",
-        "201",
-        "203",
+        # "101",
+        # # Also from consec values
+        # "405",
+        # "272",
+        # "201",
+        # "203",
     ]
 
     ar_priors = [
