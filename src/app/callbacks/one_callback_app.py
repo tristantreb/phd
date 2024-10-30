@@ -520,6 +520,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph(app):
             fef2575_text,
         )
 
+
 def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
     @app.callback(
         Output("lung-graph", "figure"),
@@ -664,7 +665,8 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         o2sat_min = 80
         o2sat_max = 100
         ia_min = 0
-        ia_max = 90
+        ia_max = 30
+        font_size = 12
 
         # uecFEV1
         ih.plot_histogram(
@@ -694,7 +696,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 1, 5)
 
         # IA
-        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 3, 3, None, "crimson")
+        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 3, 3, None, "crimson", xlabels=False)
         ih.plot_histogram(
             fig, IA, res_ia.values, ia_min, ia_max, 4, 3, IA.name, "crimson"
         )
@@ -716,8 +718,10 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         fig.update_layout(
             showlegend=False,
             height=450,
-            width=1000,
-            font=dict(size=10),
+            width=1100,
+            # height=300,
+            # width=900,
+            font=dict(size=font_size),
             bargap=0.01,
             margin=dict(l=0, r=0, b=0, t=0),
         )
@@ -729,7 +733,16 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         )
         if "HFEV1" not in observed_vars_checklist:
             ih.plot_histogram(
-                fig_hfev1, HFEV1, HFEV1.cpt, fev_min, fev_max, 1, 1, None, "green"
+                fig_hfev1,
+                HFEV1,
+                HFEV1.cpt,
+                fev_min,
+                fev_max,
+                1,
+                1,
+                None,
+                "green",
+                xlabels=False,
             )
             ih.plot_histogram(
                 fig_hfev1,
@@ -744,9 +757,9 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             )
             fig_hfev1.update_layout(
                 showlegend=False,
-                height=150,
-                width=300,
-                font=dict(size=10),
+                height=200,
+                width=350,
+                font=dict(size=font_size),
                 bargap=0.01,
                 margin=dict(l=0, r=0, b=0, t=0),
             )
@@ -757,7 +770,16 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         )
         if "HO2Sat" not in observed_vars_checklist:
             ih.plot_histogram(
-                fig_ho2sat, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 1, None, "blue"
+                fig_ho2sat,
+                HO2Sat,
+                HO2Sat.cpt,
+                o2sat_min,
+                o2sat_max,
+                1,
+                1,
+                None,
+                "blue",
+                xlabels=False,
             )
             o2h.add_o2sat_normal_range_line(fig_ho2sat, max(HO2Sat.cpt), 1, 1)
 
@@ -775,9 +797,9 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             o2h.add_o2sat_normal_range_line(fig_ho2sat, max(res_ho2sat.values), 2, 1)
             fig_ho2sat.update_layout(
                 showlegend=False,
-                height=150,
-                width=300,
-                font=dict(size=10),
+                height=200,
+                width=350,
+                font=dict(size=font_size),
                 bargap=0.01,
                 margin=dict(l=0, r=0, b=0, t=0),
             )
@@ -789,7 +811,9 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             rows=np.shape(viz_layout)[0], cols=np.shape(viz_layout)[1], specs=viz_layout
         )
         if "AR" not in observed_vars_checklist:
-            ih.plot_histogram(fig_ar, AR, AR.cpt, AR.a, AR.b, 1, 1, None, "crimson")
+            ih.plot_histogram(
+                fig_ar, AR, AR.cpt, AR.a, AR.b, 1, 1, None, "crimson", xlabels=False
+            )
             ih.plot_histogram(
                 fig_ar,
                 AR,
@@ -803,12 +827,14 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             )
             fig_ar.update_layout(
                 showlegend=False,
-                height=150,
-                width=300,
-                font=dict(size=10),
+                height=200,
+                width=350,
+                font=dict(size=font_size),
                 bargap=0.01,
                 margin=dict(l=0, r=0, b=0, t=0),
             )
+            #  Only 10 labels on xaxis
+            fig_ar.update_xaxes(tickvals=np.linspace(AR.a, AR.b, 10))
 
         fig_fev1 = make_subplots(rows=1, cols=1)
         if "FEV1" not in observed_vars_checklist:
@@ -825,9 +851,9 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             )
             fig_fev1.update_layout(
                 showlegend=False,
-                height=100,
-                width=300,
-                font=dict(size=10),
+                height=150,
+                width=350,
+                font=dict(size=font_size),
                 bargap=0.01,
                 margin=dict(l=0, r=0, b=0, t=0),
             )
@@ -847,9 +873,9 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             )
             fig_o2sat.update_layout(
                 showlegend=False,
-                height=100,
-                width=300,
-                font=dict(size=10),
+                height=150,
+                width=350,
+                font=dict(size=font_size),
                 bargap=0.01,
                 margin=dict(l=0, r=0, b=0, t=0),
             )
@@ -871,7 +897,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
                 showlegend=False,
                 height=100,
                 width=300,
-                font=dict(size=10),
+                font=dict(size=font_size),
                 bargap=0.01,
                 margin=dict(l=0, r=0, b=0, t=0),
             )

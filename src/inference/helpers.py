@@ -23,7 +23,7 @@ def infer_on_factor_graph(
     :param inference_alg: The inference algorithm to use
     :param variables: The variables to query
     :param evidence: The evidence to use
-    :param virtual_evidence: The virtual evidence to use, if exists it's a tuple[TabularCPD] 
+    :param virtual_evidence: The virtual evidence to use, if exists it's a tuple[TabularCPD]
 
     :return: The result of the inference
     """
@@ -105,6 +105,8 @@ def plot_histogram(
     colour=None,
     annot=True,
     name=None,
+    xlabels=True,
+    clean_ticks=False,
 ):
     fig.add_trace(
         go.Histogram(
@@ -120,6 +122,9 @@ def plot_histogram(
     if colour:
         fig.update_traces(marker_color=colour, row=row, col=col)
 
+    # Hide x axis labels
+    if not xlabels:
+        fig.update_xaxes(showticklabels=False, row=row, col=col)
     fig.update_xaxes(
         range=[xmin, xmax],
         nticks=20,
@@ -140,6 +145,8 @@ def plot_histogram(
             row=row,
             col=col,
         )
+    if clean_ticks and Var.name == "Airway resistance (%)":
+        fig.update_xaxes(tickvals=np.linspace(Var.a, Var.b, 10), row=row, col=col)
     return -1
 
 
