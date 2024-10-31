@@ -4,7 +4,7 @@ import src.inference.long_inf_slicing as slicing
 import src.models.builders as mb
 
 
-def sample_jointly_from_AR(df_two_days, date_1, date_2):
+def sample_jointly_from_AR(df_two_days, date_1, date_2, light_model=False):
     df_two_days = df_two_days.copy().reset_index(drop=True)
     height = df_two_days.loc[0, "Height"]
     age = df_two_days.loc[0, "Age"]
@@ -26,6 +26,23 @@ def sample_jointly_from_AR(df_two_days, date_1, date_2):
     ) = mb.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         height, age, sex
     )
+    if light_model:
+        (
+            _,
+            inf_alg,
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            HO2Sat,
+            O2SatFFA,
+            IA,
+            UO2Sat,
+            O2Sat,
+            ecFEF2575prctecFEV1,
+        ) = mb.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
+            height, age, sex
+        )
 
     # Set variables parametrisation
     key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
