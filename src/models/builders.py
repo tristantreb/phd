@@ -718,6 +718,7 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
         ecFEF2575prctecFEV1,
     )
 
+
 def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     height,
     age,
@@ -784,6 +785,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         O2Sat,
         ecFEF2575prctecFEV1,
     )
+
 
 def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     height, age, sex, check_model=False, ia_prior="uniform"
@@ -957,6 +959,7 @@ def o2_sat_fev1_n_days_model_light(n_days, height, age, sex, check_model=False):
         O2Sat_vars,
     )
 
+
 def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
     height,
     age,
@@ -1022,4 +1025,85 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+    )
+
+
+def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light(
+    n,
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ar_change_cpt_suffix="",
+    n_cutset_conditioned_states=None,
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+
+    Must have a corresponding AR change CPT
+    Musn't necessarily use the cutset conditioning
+    """
+
+    (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ar_change_cpt_suffix,
+        n_cutset_conditioned_states,
+    )
+    (
+        model,
+        _,
+        _,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model(
+        n,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        check_model,
+    )
+    inf_alg = apply_factor_graph_bp(model)
+    return (
+        model,
+        inf_alg,
+        HFEV1,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
     )
