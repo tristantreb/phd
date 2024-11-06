@@ -33,6 +33,16 @@ def build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR):
     )
 
 
+def build_pgmpy_ecfev1_noise_cpt(ecFEV1, uecFEV1):
+    return TabularCPD(
+        variable=ecFEV1.name,
+        variable_card=ecFEV1.card,
+        values=ecFEV1.cpt.reshape(ecFEV1.card, -1),
+        evidence=[uecFEV1.name],
+        evidence_card=[uecFEV1.card],
+    )
+
+
 def build_pgmpy_ar_prior(AR):
     return TabularCPD(
         variable=AR.name,
@@ -103,7 +113,7 @@ def build_pgmpy_o2sat_cpt(O2Sat, UO2Sat):
     )
 
 
-def build_pgmpy_ecfef2575prectecfev1_cpt(ecFEF2575prctecFEV1, AR):
+def build_pgmpy_ecfef2575prctecfev1_cpt(ecFEF2575prctecFEV1, AR):
     return TabularCPD(
         variable=ecFEF2575prctecFEV1.name,
         variable_card=ecFEF2575prctecFEV1.card,
@@ -305,7 +315,7 @@ def fev1_o2sat_fef2575_point_in_time_model(
     cpt_ia = build_pgmpy_ia_cpt(IA, AR)
     cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
     cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
-    cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prectecfev1_cpt(
+    cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prctecfev1_cpt(
         ecFEF2575prctecFEV1, AR
     )
 
@@ -828,11 +838,14 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
     ]
     ecFEV1_cpts = [
-        build_pgmpy_ecfev1_cpt(ecFEV1_, uecFEV1_)
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
         for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
-        build_pgmpy_ecfef2575prctecfev1_cpt(ecFEF2575prctecFEV1_, AR_)
+        build_pgmpy_ecfef2575prctecfev1_cpt(
+            ecFEF2575prctecFEV1_,
+            AR_,
+        )
         for ecFEF2575prctecFEV1_, AR_ in zip(ecFEF2575prctecFEV1_vars, AR_vars)
     ]
     O2SatFFA_cpts = [
@@ -858,7 +871,10 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         assert AR_vars[i - 1].name == f"{AR.name} day {i}"
         assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
-        assert ecFEF2575prctecFEV1_vars[i - 1].name == f"{ecFEF2575prctecFEV1.name} day {i}"
+        assert (
+            ecFEF2575prctecFEV1_vars[i - 1].name
+            == f"{ecFEF2575prctecFEV1.name} day {i}"
+        )
         assert O2SatFFA_vars[i - 1].name == f"{O2SatFFA.name} day {i}"
         assert IA_vars[i - 1].name == f"{IA.name} day {i}"
         assert UO2Sat_vars[i - 1].name == f"{UO2Sat.name} day {i}"
