@@ -1074,12 +1074,12 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        ecFEF2575prctecFEV1_vars,
         O2SatFFA_vars,
         IA_vars,
         UO2Sat_vars,
         O2Sat_vars,
-    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model(
+        ecFEF2575prctecFEV1_vars,
+    ) = graph_builders.fev1_o2sat_noise_n_days_model(
         n,
         HFEV1,
         uecFEV1,
@@ -1101,9 +1101,9 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        ecFEF2575prctecFEV1_vars,
         O2SatFFA_vars,
         IA_vars,
         UO2Sat_vars,
         O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
     )

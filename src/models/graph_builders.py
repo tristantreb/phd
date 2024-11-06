@@ -832,7 +832,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
-        build_pgmpy_ecfef2575prectecfev1_cpt(ecFEF2575prctecFEV1_, AR_)
+        build_pgmpy_ecfef2575prctecfev1_cpt(ecFEF2575prctecFEV1_, AR_)
         for ecFEF2575prctecFEV1_, AR_ in zip(ecFEF2575prctecFEV1_vars, AR_vars)
     ]
     O2SatFFA_cpts = [
@@ -858,10 +858,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         assert AR_vars[i - 1].name == f"{AR.name} day {i}"
         assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
-        assert (
-            ecFEF2575prctecFEV1_vars[i - 1].name
-            == f"{ecFEF2575prctecFEV1.name} day {i}"
-        )
+        assert ecFEF2575prctecFEV1_vars[i - 1].name == f"{ecFEF2575prctecFEV1.name} day {i}"
         assert O2SatFFA_vars[i - 1].name == f"{O2SatFFA.name} day {i}"
         assert IA_vars[i - 1].name == f"{IA.name} day {i}"
         assert UO2Sat_vars[i - 1].name == f"{UO2Sat.name} day {i}"
@@ -908,9 +905,9 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        ecFEF2575prctecFEV1_vars,
         O2SatFFA_vars,
         IA_vars,
         UO2Sat_vars,
         O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
     )
