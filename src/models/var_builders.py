@@ -610,13 +610,24 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
     # Calculate CPTs
 
     uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix="_std_0.7_light"))
-    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR], suffix="_light"))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix="_std_0.7"))
+    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
 
-    return HFEV1, uecFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, ecFEF2575prctecFEV1
+    return (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    )
 
 
 def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
@@ -888,7 +899,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
 
     # Calculate CPTs
     uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix="_std_0.7"))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))

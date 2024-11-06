@@ -1079,7 +1079,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         UO2Sat_vars,
         O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
-    ) = graph_builders.fev1_o2sat_noise_n_days_model(
+    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model(
         n,
         HFEV1,
         uecFEV1,
@@ -1093,10 +1093,10 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         ecFEF2575prctecFEV1,
         check_model,
     )
-    inf_alg = apply_factor_graph_bp(model)
+    # inf_alg = apply_bayes_net_bp(model)
     return (
         model,
-        inf_alg,
+        # inf_alg,
         HFEV1,
         AR_vars,
         uecFEV1_vars,
