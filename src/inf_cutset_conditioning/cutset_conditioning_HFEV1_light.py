@@ -15,7 +15,7 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 
 
 def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
-    df_for_ID_in, debug=False, save=False, speedup=True, ar_prior="uniform"
+    df_for_ID_in, debug=False, save=False, speedup=False, ar_prior="uniform"
 ):
     df_for_ID_in = df_for_ID_in.copy().reset_index(drop=True)
     id = df_for_ID_in.loc[0, "ID"]
@@ -28,6 +28,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
         _,
         inf_alg,
         HFEV1,
+        uecFEV1,
         ecFEV1,
         AR,
         _,
@@ -36,7 +37,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
         _,
         _,
         ecFEF2575prctecFEV1,
-) = mb.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
+    ) = mb.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
         height, age, sex, ar_prior=ar_prior
     )
 

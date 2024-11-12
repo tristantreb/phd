@@ -653,6 +653,57 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         ecFEF2575prctecFEV1,
     )
 
+def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
+    height, age, sex, ia_prior="uniform", ar_prior="uniform", check_model=False
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+    """
+
+    (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        uO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
+        height, age, sex, ia_prior, ar_prior
+    )
+    model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        uO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        check_model,
+    )
+    inf_alg = apply_factor_graph_bp(model)
+    return (
+        model,
+        inf_alg,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        uO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    )
+
 
 def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
     height,
@@ -1035,8 +1086,6 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     sex,
     ia_prior="uniform",
     ar_prior="uniform",
-    ar_change_cpt_suffix="",
-    n_cutset_conditioned_states=None,
     check_model=False,
 ):
     """
@@ -1064,8 +1113,6 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         sex,
         ia_prior,
         ar_prior,
-        ar_change_cpt_suffix,
-        n_cutset_conditioned_states,
     )
 
     (
@@ -1081,6 +1128,164 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
     ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model(
+        n,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        check_model,
+    )
+    # inf_alg = apply_bayes_net_bp(model)
+    return (
+        model,
+        # inf_alg,
+        HFEV1,
+        HO2Sat,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
+def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
+    n,
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+
+    Must have a corresponding AR change CPT
+    Musn't necessarily use the cutset conditioning
+    """
+
+    (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+    )
+
+    (
+        model,
+        _,
+        _,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model(
+        n,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        check_model,
+    )
+    # inf_alg = apply_bayes_net_bp(model)
+    return (
+        model,
+        # inf_alg,
+        HFEV1,
+        HO2Sat,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
+def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_temporal_ar_light(
+    n,
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+
+    Must have a corresponding AR change CPT
+    Musn't necessarily use the cutset conditioning
+    """
+
+    (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+    )
+
+    (
+        model,
+        _,
+        _,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
         n,
         HFEV1,
         uecFEV1,
