@@ -311,8 +311,8 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     else:
         fig.show()
 
-    # return fig, p_M_given_D_full, p_M_given_D, AR_dist_given_M_matrix
-    return
+    return fig, p_M_given_D_full, p_M_given_D, AR_dist_given_M_matrix
+    # return
 
 
 def process_id(inf_settings):
