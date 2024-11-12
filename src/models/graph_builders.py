@@ -832,7 +832,31 @@ def fev1_o2sat_fef2575_noise_n_days_model(
     O2Sat_vars = [create_var_for_day(O2Sat, i) for i in range(1, n + 1)]
 
     # Priors and CPTs
-    AR_priors = [build_pgmpy_ar_prior(AR_) for AR_ in AR_vars]
+    # AR first day prior shall be uniform
+    AR_priors = []
+    AR_priors.append(
+        TabularCPD(
+            variable=AR_vars[0].name,
+            variable_card=AR_vars[0].card,
+            values=AR_vars[0].first_day_prior.reshape(AR_vars[0].card, -1),
+            evidence=[],
+            evidence_card=[],
+        )
+    )
+    # For other days the cpt depends the number of days elapsed
+    # For testing, n days elapsed = 1
+    for i in range(1, n):
+        print(f"{AR_vars[i].name}, cpt: {AR_vars[i].change_cpt[:, :, 0].shape}")
+        AR_priors.append(
+            TabularCPD(
+                variable=AR_vars[i].name,
+                variable_card=AR_vars[i].card,
+                values=AR_vars[i].change_cpt[:, :, 0],
+                evidence=[AR_vars[i - 1].name],
+                evidence_card=[AR_vars[i - 1].card],
+            )
+        )
+
     uecFEV1_cpts = [
         build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR_)
         for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
@@ -894,6 +918,8 @@ def fev1_o2sat_fef2575_noise_n_days_model(
             (IA_vars[i].name, UO2Sat_vars[i].name),
             (UO2Sat_vars[i].name, O2Sat_vars[i].name),
         ]
+
+    network = network + [(AR_vars[i - 1].name, AR_vars[i].name) for i in range(1, n)]
 
     model = BayesianNetwork(network)
 
