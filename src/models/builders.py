@@ -1098,6 +1098,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         model,
         # inf_alg,
         HFEV1,
+        HO2Sat,
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
