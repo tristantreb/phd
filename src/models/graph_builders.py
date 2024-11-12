@@ -832,6 +832,139 @@ def fev1_o2sat_fef2575_noise_n_days_model(
     O2Sat_vars = [create_var_for_day(O2Sat, i) for i in range(1, n + 1)]
 
     # Priors and CPTs
+    AR_priors = [build_pgmpy_ar_prior(AR_) for AR_ in AR_vars]
+
+    uecFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR_)
+        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    ]
+    ecFEV1_cpts = [
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
+        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+    ]
+    ecFEF2575prctecFEV1_cpts = [
+        build_pgmpy_ecfef2575prctecfev1_cpt(
+            ecFEF2575prctecFEV1_,
+            AR_,
+        )
+        for ecFEF2575prctecFEV1_, AR_ in zip(ecFEF2575prctecFEV1_vars, AR_vars)
+    ]
+    O2SatFFA_cpts = [
+        build_pgmpy_o2satffa_cpt(O2SatFFA_, HO2Sat, AR_)
+        for O2SatFFA_, AR_ in zip(O2SatFFA_vars, AR_vars)
+    ]
+    IA_priors = [build_pgmpy_ia_prior(IA_) for IA_ in IA_vars]
+    UO2Sat_cpts = [
+        build_pgmpy_uo2sat_cpt(UO2Sat_, O2SatFFA_, IA_)
+        for UO2Sat_, O2SatFFA_, IA_ in zip(UO2Sat_vars, O2SatFFA_vars, IA_vars)
+    ]
+    O2Sat_cpts = [
+        build_pgmpy_o2sat_cpt(O2Sat_, UO2Sat_)
+        for O2Sat_, UO2Sat_ in zip(O2Sat_vars, UO2Sat_vars)
+    ]
+
+    # Shared priors
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+    prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
+
+    # Make sure the days are at the same location in all variable lists
+    for i in range(1, n + 1):
+        assert AR_vars[i - 1].name == f"{AR.name} day {i}"
+        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
+        assert (
+            ecFEF2575prctecFEV1_vars[i - 1].name
+            == f"{ecFEF2575prctecFEV1.name} day {i}"
+        )
+        assert O2SatFFA_vars[i - 1].name == f"{O2SatFFA.name} day {i}"
+        assert IA_vars[i - 1].name == f"{IA.name} day {i}"
+        assert UO2Sat_vars[i - 1].name == f"{UO2Sat.name} day {i}"
+        assert O2Sat_vars[i - 1].name == f"{O2Sat.name} day {i}"
+
+    network = []
+    # HFEV1 and HO2Sat are shared between days
+    for i in range(0, n):
+        network = network + [
+            (HFEV1.name, uecFEV1_vars[i].name),
+            (HO2Sat.name, O2SatFFA_vars[i].name),
+            (AR_vars[i].name, uecFEV1_vars[i].name),
+            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (AR_vars[i].name, ecFEF2575prctecFEV1_vars[i].name),
+            (AR_vars[i].name, O2SatFFA_vars[i].name),
+            (O2SatFFA_vars[i].name, UO2Sat_vars[i].name),
+            (IA_vars[i].name, UO2Sat_vars[i].name),
+            (UO2Sat_vars[i].name, O2Sat_vars[i].name),
+        ]
+
+    model = BayesianNetwork(network)
+
+    model.add_cpds(
+        # Shared
+        prior_hfev1,
+        prior_ho2sat,
+        # Days priors and CPTs
+        *AR_priors,
+        *uecFEV1_cpts,
+        *ecFEV1_cpts,
+        *ecFEF2575prctecFEV1_cpts,
+        *O2SatFFA_cpts,
+        *IA_priors,
+        *UO2Sat_cpts,
+        *O2Sat_cpts,
+    )
+
+    if check_model:
+        model.check_model()
+    return (
+        model,
+        HFEV1,
+        HO2Sat,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
+def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
+    n,
+    HFEV1,
+    uecFEV1,
+    ecFEV1,
+    AR,
+    HO2Sat,
+    O2SatFFA,
+    IA,
+    UO2Sat,
+    O2Sat,
+    ecFEF2575prctecFEV1,
+    check_model=True,
+):
+    """
+    No direct link between AR and IA
+    """
+
+    def create_var_for_day(var, day):
+        var_ = deepcopy(var)
+        var_.name = f"{var.name} day {day}"
+        return var_
+
+    AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
+    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
+    ecFEF2575prctecFEV1_vars = [
+        create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
+    ]
+    O2SatFFA_vars = [create_var_for_day(O2SatFFA, i) for i in range(1, n + 1)]
+    IA_vars = [create_var_for_day(IA, i) for i in range(1, n + 1)]
+    UO2Sat_vars = [create_var_for_day(UO2Sat, i) for i in range(1, n + 1)]
+    O2Sat_vars = [create_var_for_day(O2Sat, i) for i in range(1, n + 1)]
+
+    # Priors and CPTs
     # AR first day prior shall be uniform
     AR_priors = []
     AR_priors.append(
