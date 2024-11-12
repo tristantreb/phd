@@ -15,7 +15,7 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 
 
 def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
-    df_for_ID_in, debug=False, save=False, speedup=False, ar_prior="uniform"
+    df_for_ID_in, debug=False, save=False, ar_prior="uniform"
 ):
     df_for_ID_in = df_for_ID_in.copy().reset_index(drop=True)
     id = df_for_ID_in.loc[0, "ID"]
@@ -42,57 +42,21 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
     )
 
     # HFEV1 can't be above max observed ecFEV1
-    HFEV1_obs_list = HFEV1.midbins[
-        HFEV1.midbins - HFEV1.bin_width / 2 >= df_for_ID_in.ecFEV1.max()
-    ]
-    print(
-        f"ID {id} - Number of HFEV1 specific models: {len(HFEV1_obs_list)}, max ecFEV1: {df_for_ID_in.ecFEV1.max()}, first possible bin for HFEV1: {HFEV1.get_bin_for_value(HFEV1_obs_list[0])[0]}"
-    )
+    HFEV1_obs_list = HFEV1.midbins
+    print(f"ID {id}")
 
     N = len(df_for_ID_in)
     df_for_ID = df_for_ID_in.copy()
 
-    # Speed up code by removing duplicates and adding them later on
-    if speedup:
-        print(f"{N} entries before speedup")
-        df_for_ID = df_for_ID.sort_values(
-            by=["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1"], ascending=False
-        )
-        df_duplicates = (
-            df_for_ID.groupby(["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1"])
-            .size()
-            .reset_index()
-        )
-        df_duplicates.columns = [
-            "idx ecFEV1 (L)",
-            "idx ecFEF2575%ecFEV1",
-            "n duplicates",
-        ]
-        df_duplicates = df_duplicates.sort_values(
-            by=["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1"], ascending=False
-        ).reset_index(drop=True)
-        n_dups = df_duplicates["n duplicates"].values
-        # Keep only the first entry for each pair of ecFEV1 and ecFEF2575%ecFEV1]
-        # Create df_for_ID without duplicates
-        df_for_ID = df_for_ID.drop_duplicates(
-            subset=["idx ecFEV1 (L)", "idx ecFEF2575%ecFEV1"], keep="first"
-        ).reset_index(drop=True)
-        print(f"{len(df_for_ID)} entries after speedup")
-        print(
-            f"Number of duplicates {N - len(df_for_ID)}, speedup removes {(N-len(df_for_ID))/N*100:.2f}% of entries"
-        )
-
     H = len(HFEV1_obs_list)
-    N_maybe_no_dups = len(df_for_ID) if speedup else N
-    log_p_D_given_M = np.zeros((N_maybe_no_dups, H))
-    p_D_given_M = np.zeros((N_maybe_no_dups, H))
-    AR_dist_given_M_matrix = np.zeros((N_maybe_no_dups, AR.card, H))
+    log_p_D_given_M = np.zeros((N, H))
+    AR_dist_given_M_matrix = np.zeros((N, AR.card, H))
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
     # For each entry
     for n, row in df_for_ID.iterrows():
         if debug:
-            print(f"Processing row {n+1}/{N_maybe_no_dups}")
+            print(f"Processing row {n+1}/{N}")
 
         # For each model given an HFEV1 observation
         for h, HFEV1_obs in enumerate(HFEV1_obs_list):
@@ -100,7 +64,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
             # Getting the joint probabilities of ecFEF2575 and ecFEV1 under the model
             res1, _ = ih.infer_on_factor_graph(
                 inf_alg,
-                [ecFEV1, ecFEF2575prctecFEV1],
+                [ecFEV1],
                 [[HFEV1, HFEV1_obs]],
                 get_messages=True,
             )
@@ -116,7 +80,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
             )
             dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
 
-            res3, _ = ih.infer_on_factor_graph(
+            res3 = ih.infer_on_factor_graph(
                 inf_alg,
                 [AR],
                 [
@@ -124,7 +88,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
                     [ecFEV1, row.ecFEV1],
                     [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
                 ],
-                get_messages=True,
+                get_messages=False,
             )
             dist_AR = res3[AR.name].values
 
@@ -145,14 +109,6 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
     if debug:
         print("log(P(D|M)), first row", log_p_D_given_M[0, :])
 
-    if speedup:
-        # Put back the duplicates
-        # Repeat each element in the array by the number in the array dups
-        log_p_D_given_M = np.repeat(log_p_D_given_M, n_dups, axis=0)
-        AR_dist_given_M_matrix = np.repeat(AR_dist_given_M_matrix, n_dups, axis=0)
-        if debug:
-            print("P(D|M), first row, after applying duplicates", log_p_D_given_M[:, 0])
-
     # For each HFEV1 model, given HFEV1_obs_list, we compute the log probability of the model given the data
     # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
     log_p_M_given_D = np.zeros(H)
@@ -169,13 +125,6 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
     p_M_given_D = np.exp(log_p_M_given_D_shifted)
     p_M_given_D = p_M_given_D / p_M_given_D.sum()
 
-    # Fill the p(M|D) array with zeros on the left, where the HFEV1_obs < max ecFEV1
-    p_M_given_D_full = np.zeros(HFEV1.card)
-    HFEV1_obs_idx = [
-        HFEV1.get_bin_for_value(HFEV1_obs)[1] for HFEV1_obs in HFEV1_obs_list
-    ]
-    p_M_given_D_full[HFEV1_obs_idx] = p_M_given_D
-
     # Add plot
     layout = [
         [{"type": "scatter", "rowspan": 1, "colspan": 1}, None, None],
@@ -191,7 +140,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
     )
 
     # Add HFEV1 posterior
-    ih.plot_histogram(fig, HFEV1, p_M_given_D_full, 0, 6, 1, 1, annot=True)
+    ih.plot_histogram(fig, HFEV1, p_M_given_D, 0, 6, 1, 1, annot=True)
 
     # Add heatmap with AR posteriors
     AR_dist_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
@@ -217,9 +166,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
         col=1,
     )
 
-    speedup = " (with speedup)" if speedup else ""
-
-    title = f"{id} - Posterior HFEV1 after fusing all P(M_h|D)<br>AR prior: {ar_prior}{speedup}"
+    title = f"{id} - Posterior HFEV1 after fusing all P(M_h|D)<br>AR prior: {ar_prior}"
     fig.update_layout(
         font=dict(size=12),
         height=700,
@@ -253,7 +200,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
     else:
         fig.show()
 
-    return fig, p_M_given_D_full, p_M_given_D, AR_dist_given_M_matrix
+    return fig, p_M_given_D, AR_dist_given_M_matrix
 
 
 def process_id(id):
@@ -262,7 +209,7 @@ def process_id(id):
 
     dftmp = df[df.ID == id]
     return compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
-        dftmp, debug=False, save=True, speedup=True, ar_prior=ar_prior
+        dftmp, debug=False, save=True, ar_prior=ar_prior
     )
 
 

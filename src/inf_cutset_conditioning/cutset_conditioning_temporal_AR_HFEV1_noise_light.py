@@ -51,9 +51,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     )
 
     # HFEV1 can't be above max observed ecFEV1
-    HFEV1_obs_list = HFEV1.midbins[
-        HFEV1.midbins - HFEV1.bin_width / 2 >= df_for_ID_in.ecFEV1.max()
-    ]
+    HFEV1_obs_list = HFEV1.midbins
 
     (
         _,
@@ -78,9 +76,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
         n_cutset_conditioned_states=len(HFEV1_obs_list),
     )
 
-    print(
-        f"ID {id} - Number of HFEV1 specific models: {len(HFEV1_obs_list)}, max ecFEV1: {df_for_ID_in.ecFEV1.max()}, first possible bin for HFEV1: {HFEV1.get_bin_for_value(HFEV1_obs_list[0])[0]}"
-    )
+    print(f"ID {id}")
 
     N = len(df_for_ID_in)
     df_for_ID = df_for_ID_in.copy()
@@ -224,16 +220,8 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     p_M_given_D = p_M_given_D / p_M_given_D.sum()
     AR_dist_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
 
-    # Fill the p(M|D) array with zeros on the left, where the HFEV1_obs < max ecFEV1
-    print("Shape of P(M|D)", p_M_given_D.shape)
-    n_impossible_hfev1_values = HFEV1.card - len(HFEV1_obs_list)
-    p_M_given_D_full = p_M_given_D
-    if n_impossible_hfev1_values > 0:
-        # Use np.vstack for 2D arrays
-        p_M_given_D_full = np.hstack([np.zeros(n_impossible_hfev1_values), p_M_given_D])
-
     # Get the probability of HFEV1
-    p_HFEV1_given_D = p_M_given_D_full
+    p_HFEV1_given_D = p_M_given_D
 
     # Add plot
     layout = [
@@ -311,7 +299,7 @@ def compute_log_p_D_given_M_per_HFEV1_HO2Sat_obs_temporal_AR(
     else:
         fig.show()
 
-    return fig, p_M_given_D_full, p_M_given_D, AR_dist_given_M_matrix
+    return fig, p_M_given_D, AR_dist_given_M_matrix
     # return
 
 
