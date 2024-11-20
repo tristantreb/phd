@@ -272,8 +272,9 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
     # For each entry
     tic = time.time()
     for n, row in df_for_ID.iterrows():
+        curr_date = df_for_ID.loc[n, "Date Recorded"]
         if debug:
-            print(f"Processing row {n+1}/{N}, date: {row['Date Recorded']}")
+            print(f"Processing row {n+1}/{N}, date: {curr_date}")
 
         # There is no prev day if it's the first day
         prev_date = None if n - 1 < 0 else df_for_ID.loc[n - 1, "Date Recorded"]
@@ -286,11 +287,11 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
         for h, HFEV1_obs in enumerate(HFEV1_obs_list):
 
             vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar(
-                AR, h, prev_date, None
+                AR, h, curr_date, prev_date, next_date=None, debug=debug
             )
 
             print(f"HFEV1_obs: {HFEV1_obs}, vevidence_ar: {vevidence_ar.values}")
-            print(f"AR virtual messages for this state: {AR.vmessages[h]}")
+            # print(f"AR virtual messages for this state: {AR.vmessages[h]}")
 
             # Getting the joint probabilities of ecFEF2575 and ecFEV1 under the model
             res1 = ih.infer_on_factor_graph(
@@ -329,22 +330,23 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
                 [
                     [HFEV1, HFEV1_obs],
                     [ecFEV1, row.ecFEV1],
-                    [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
+                    # [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
                     # [O2Sat, row["O2 Saturation"]],
                 ],
                 get_messages=True,
             )
 
             # Use previously inferred AR, and add message from FEF25-75
-            m_to_factor = ecFEF2575prctecFEV1.get_point_message(row["ecFEF2575%ecFEV1"])
-            factor_to_AR = np.matmul(m_to_factor, ecFEF2575prctecFEV1.cpt)
-            factor_to_AR = factor_to_AR / factor_to_AR.sum()
+            # m_to_factor = ecFEF2575prctecFEV1.get_point_message(row["ecFEF2575%ecFEV1"])
+            # factor_to_AR = np.matmul(m_to_factor, ecFEF2575prctecFEV1.cpt)
+            # factor_to_AR = factor_to_AR / factor_to_AR.sum()
 
-            dist_AR = res2[AR.name].values * factor_to_AR
+            # dist_AR = res2[AR.name].values * factor_to_AR
+            dist_AR = res4[AR.name].values
             dist_AR = dist_AR / dist_AR.sum()
 
             # Assert that res4[AR.name] is the same as dist_AR
-            assert np.allclose(res4[AR.name].values, dist_AR)
+            # assert np.allclose(res4[AR.name].values, dist_AR)
 
             # The probability of the data given the model is the expectation of the data given the model
             idx_obs_ecFEV1 = ecFEV1.get_bin_for_value(row.ecFEV1)[1]
@@ -366,17 +368,20 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
             # I don't know if the dict entries would be sorted.
             AR_dist_given_M_matrix[n, :, h] = dist_AR
 
-            log_p_D_given_M[n, h] = np.log(p_ecFEV1) + np.log(
-                p_ecFEF2575
-            )  # + np.log(p_O2Sat)
+            log_p_D_given_M[n, h] = np.log(p_ecFEV1)  # + np.log(
+            #     p_ecFEF2575
+            # )  # + np.log(p_O2Sat)
 
     # Do a backwards sweep to get the AR posteriors
+    AR_dist_given_M_matrix_forward_swipe = AR_dist_given_M_matrix.copy()
     for n in range(N - 2, -1, -1):
-        if debug:
-            print(f"Computing AR: Processing idx {n}/{N-1}")
         next_date = df_for_ID.loc[n + 1, "Date Recorded"]
         curr_date = df_for_ID.loc[n, "Date Recorded"]
         de = AR.calc_days_elapsed(curr_date, next_date)
+        if debug:
+            print(
+                f"Propagating AR backwards: Processing idx {n}/{N-1}, curr date {curr_date}, next date {next_date}, days elapsed {de}"
+            )
         if de > 3:
             ValueError(f"Days elapsed is {de}, should be at most 3")
 
@@ -384,6 +389,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
             next_AR = AR_dist_given_M_matrix[n + 1, :, h]
             next_AR_m = np.matmul(next_AR, AR.change_cpt[:, :, de - 1])
             next_AR_m = next_AR_m / next_AR_m.sum()
+            print(f"h {h}, next_AR_m: {next_AR_m}")
             curr_AR_posterior = AR_dist_given_M_matrix[n, :, h] * next_AR_m
             curr_AR_posterior = curr_AR_posterior / curr_AR_posterior.sum()
             AR_dist_given_M_matrix[n, :, h] = curr_AR_posterior
@@ -410,6 +416,9 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
     p_M_given_D = np.exp(log_p_M_given_D_shifted)
     p_M_given_D = p_M_given_D / p_M_given_D.sum()
     AR_dist_given_M_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
+    AR_dist_given_M_matrix_forward_swipe = np.matmul(
+        AR_dist_given_M_matrix_forward_swipe, p_M_given_D
+    )
 
     # Get the probability of HFEV1
     p_HFEV1_given_D = p_M_given_D
@@ -490,5 +499,10 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
     else:
         fig.show()
 
-    return fig, p_M_given_D, AR_dist_given_M_matrix
+    return (
+        fig,
+        p_M_given_D,
+        AR_dist_given_M_matrix,
+        AR_dist_given_M_matrix_forward_swipe,
+    )
     # return

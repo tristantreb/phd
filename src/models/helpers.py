@@ -792,7 +792,9 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
             )
         return (date2 - date1).days
 
-    def get_virtual_message(self, state_n, curr_date, prev_date=None, next_date=None, debug=False):
+    def get_virtual_message(
+        self, state_n, curr_date, prev_date=None, next_date=None, debug=False
+    ):
         """
         The virtual message for the temporal variable on this day is influenced by its directly neighbouring days,
         through the change factor (change_cpt).
