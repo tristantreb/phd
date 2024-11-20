@@ -143,9 +143,9 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
     ih.plot_histogram(fig, HFEV1, p_M_given_D, 0, 6, 1, 1, annot=True)
 
     # Add heatmap with AR posteriors
-    AR_dist_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
+    AR_dist_given_M_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
     df1 = pd.DataFrame(
-        data=AR_dist_matrix,
+        data=AR_dist_given_M_matrix,
         columns=AR.get_bins_str(),
         index=df_for_ID_in["Date Recorded"].apply(
             lambda date: date.strftime("%Y-%m-%d")

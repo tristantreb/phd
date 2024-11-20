@@ -4,6 +4,8 @@ Use functions in this file to define the model's variables, their name, discreti
 Each function corresponds to a full set of variables to be plugged into a bayesian network
 """
 
+import numpy as np
+
 from src.modelling_ar import ar
 from src.modelling_ar.ar import (
     get_prior_for_uniform_hfev1_message,
@@ -538,6 +540,10 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
         "sex": sex,
     }
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 1, prior=hfev1_prior)
+    # HFEV1_point_mass_prior = np.zeros(HFEV1.card)
+    # idx_three_point_five = HFEV1.get_bin_for_value(3.5)[1]
+    # HFEV1_point_mass_prior[idx_three_point_five] = 1
+    # HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 1, prior=None)
     uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 1, prior=None)
