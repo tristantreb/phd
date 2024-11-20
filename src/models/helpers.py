@@ -735,7 +735,7 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         super().__init__(name, a, b, bin_width, {"type": "uniform"})
         self.n_states = n_states
         # There is on set of vmessages per state
-        self.vmessages = [{}] * self.n_states
+        self.vmessages = [{} for _ in range(n_states)]
         # The first day prior has to be set as a virtual message
         # Is common to all states
         self.first_day_prior = None
@@ -765,7 +765,7 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         ), f"CPT second dimension must have the var's cardinality ({self.card}), got {change_cpt.shape[1]}"
         self.change_cpt = change_cpt
 
-    def add_or_update_posterior(self, state_n, date_key, new_message):
+    def add_or_update_posterior(self, state_n, date_key, new_message, debug=False):
         """
         Saves the posterior for a given day
         The day key is a string in the format "%Y-%m-%d"
@@ -775,6 +775,10 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         ), "The message must have the same shape as the variable's cardinality"
         # Always replace the message for that day, even if it already exists
         self.vmessages[state_n][date_key] = new_message
+        if debug:
+            print(
+                f"CutsetCondTemporalVarNode: Posterior for {self.name} on {date_key}, state {state_n} has been updated to {new_message}"
+            )
 
     def reset(self):
         self.vmessages = {}
@@ -788,7 +792,7 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
             )
         return (date2 - date1).days
 
-    def get_virtual_message(self, state_n, curr_date, prev_date=None, next_date=None):
+    def get_virtual_message(self, state_n, curr_date, prev_date=None, next_date=None, debug=False):
         """
         The virtual message for the temporal variable on this day is influenced by its directly neighbouring days,
         through the change factor (change_cpt).
