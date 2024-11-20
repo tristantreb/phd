@@ -826,6 +826,11 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         "sex": sex,
     }
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 1, prior=hfev1_prior)
+    HFEV1_point_mass_prior = np.zeros(HFEV1.card)
+    idx_three_point_five = HFEV1.get_bin_for_value(3.5)[1]
+    HFEV1_point_mass_prior[idx_three_point_five] = 1
+    HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
+
     uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 1, prior=None)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 1, prior=None)
     ecFEF2575prctecFEV1 = VariableNode(
