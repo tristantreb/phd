@@ -236,6 +236,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
 
     # HFEV1 can't be above max observed ecFEV1
     HFEV1_obs_list = HFEV1.midbins
+    # HFEV1_obs_list = [3.5]
 
     (
         _,
@@ -266,7 +267,10 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
     df_for_ID = df_for_ID_in.copy()
     H = len(HFEV1_obs_list)
     log_p_D_given_M = np.zeros((N, H))
-    AR_dist_given_M_matrix = np.zeros((N, AR.card, H))
+    AR_given_M_and_past_D = np.zeros((N, AR.card, H))
+    AR_given_M_and_same_day_D = np.zeros((N, AR.card, H))
+    AR_given_M_and_future_D = np.zeros((N, AR.card, H))
+    AR_given_M_and_all_D = np.zeros((N, AR.card, H))
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
     # For each entry
@@ -320,34 +324,31 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
             #         [ecFEV1, row.ecFEV1],
             #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
             #     ],
+            #     [vevidence_ar],
             #     get_messages=True,
             # )
             # dist_O2Sat = res3[O2Sat.name].values
 
-            res4, _ = ih.infer_on_factor_graph(
-                inf_alg,
-                [AR],
-                [
-                    [HFEV1, HFEV1_obs],
-                    [ecFEV1, row.ecFEV1],
-                    # [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
-                    # [O2Sat, row["O2 Saturation"]],
-                ],
-                get_messages=True,
-            )
+            # res4, _ = ih.infer_on_factor_graph(
+            #     inf_alg,
+            #     [AR],
+            #     [
+            #         [HFEV1, HFEV1_obs],
+            #         [ecFEV1, row.ecFEV1],
+            #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
+            #         # [O2Sat, row["O2 Saturation"]],
+            #     ],
+            #     [vevidence_ar],
+            #     get_messages=True,
+            # )
 
-            # Use previously inferred AR, and add message from FEF25-75
+            # Add message from FEF25-75
+            # Doing this to avoid computing another full inference query
             # m_to_factor = ecFEF2575prctecFEV1.get_point_message(row["ecFEF2575%ecFEV1"])
             # factor_to_AR = np.matmul(m_to_factor, ecFEF2575prctecFEV1.cpt)
             # factor_to_AR = factor_to_AR / factor_to_AR.sum()
 
-            # dist_AR = res2[AR.name].values * factor_to_AR
-            dist_AR = res4[AR.name].values
-            dist_AR = dist_AR / dist_AR.sum()
-
-            # Assert that res4[AR.name] is the same as dist_AR
-            # assert np.allclose(res4[AR.name].values, dist_AR)
-
+            # COMPUTE CONTRIBUTION TO THE PROBABILITY OF THE DATA UNDER THE MODEL
             # The probability of the data given the model is the expectation of the data given the model
             idx_obs_ecFEV1 = ecFEV1.get_bin_for_value(row.ecFEV1)[1]
             idx_obs_ecFEF2575 = ecFEF2575prctecFEV1.get_bin_for_value(
@@ -360,20 +361,42 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
             p_ecFEF2575 = dist_ecFEF2575prctecFEV1[idx_obs_ecFEF2575]
             # p_O2Sat = dist_O2Sat[idx_obs_O2Sat]
 
-            # Save information for this round
-            date_str = row["Date Recorded"].strftime("%Y-%m-%d")
-            AR.add_or_update_posterior(h, date_str, dist_AR, debug)
-            # Contains the same as AR.vmessages, but asn an array (not dict)
-            # and the order is correct to reverse the speedup
-            # I don't know if the dict entries would be sorted.
-            AR_dist_given_M_matrix[n, :, h] = dist_AR
-
             log_p_D_given_M[n, h] = np.log(p_ecFEV1)  # + np.log(
             #     p_ecFEF2575
             # )  # + np.log(p_O2Sat)
 
+            # Get the AR with contribution from the past days' data
+            dist_AR = res2[AR.name].values  # * factor_to_AR
+            # dist_AR = res4[AR.name].values
+            dist_AR = dist_AR / dist_AR.sum()
+
+            # Assert that res4[AR.name] is the same as dist_AR
+            # assert np.allclose(res4[AR.name].values, dist_AR)
+
+            date_str = row["Date Recorded"].strftime("%Y-%m-%d")
+            AR.add_or_update_posterior(h, date_str, dist_AR, debug)
+
+            # COMPUTE CONTRIBUTIONS TO THE AR POSTERIORS ON EACH DAY
+            AR_given_M_and_past_D[n, :, h] = dist_AR
+
+            # Get the AR without the contribution from the past days' data
+            # This will be used to get the contribution from the next days' data
+            # Check that wherever vevidence_ar is 0, the res2[AR.name] is also 0
+            vevidence_ar_is_0 = np.where(vevidence_ar.values == 0)
+            assert res2[AR.name].values[vevidence_ar_is_0].sum() == 0
+            AR_without_vevidence = np.where(
+                vevidence_ar.values != 0, res2[AR.name].values / vevidence_ar.values, 0
+            )
+            AR_without_vevidence = AR_without_vevidence / AR_without_vevidence.sum()
+            AR_given_M_and_same_day_D[n, :, h] = AR_without_vevidence
+
     # Do a backwards sweep to get the AR posteriors
-    AR_dist_given_M_matrix_forward_swipe = AR_dist_given_M_matrix.copy()
+    AR_given_M_and_future_D = AR_given_M_and_same_day_D.copy()
+
+    # The AR posterior on the last day only has contribution from past data
+    AR_given_M_and_all_D[N - 1, :, :] = AR_given_M_and_past_D[N - 1, :, :]
+
+    # Hence we can start computing the AR posteriors from the second last day
     for n in range(N - 2, -1, -1):
         next_date = df_for_ID.loc[n + 1, "Date Recorded"]
         curr_date = df_for_ID.loc[n, "Date Recorded"]
@@ -386,13 +409,26 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
             ValueError(f"Days elapsed is {de}, should be at most 3")
 
         for h, HFEV1_obs in enumerate(HFEV1_obs_list):
-            next_AR = AR_dist_given_M_matrix[n + 1, :, h]
+            next_AR = AR_given_M_and_future_D[n + 1, :, h]
+            curr_AR = AR_given_M_and_future_D[n, :, h]
+            past_AR = AR_given_M_and_past_D[n, :, h]
+
+            # Compute contribution from future days' data
             next_AR_m = np.matmul(next_AR, AR.change_cpt[:, :, de - 1])
             next_AR_m = next_AR_m / next_AR_m.sum()
-            print(f"h {h}, next_AR_m: {next_AR_m}")
-            curr_AR_posterior = AR_dist_given_M_matrix[n, :, h] * next_AR_m
+
+            # Compute posterior for past and future data
+
+            curr_AR_posterior = past_AR * next_AR_m
             curr_AR_posterior = curr_AR_posterior / curr_AR_posterior.sum()
-            AR_dist_given_M_matrix[n, :, h] = curr_AR_posterior
+            AR_given_M_and_all_D[n, :, h] = curr_AR_posterior
+            print(f"n {n}, state {HFEV1_obs}, past AR {past_AR}, next AR {next_AR_m}")
+            print("curr AR posterior", curr_AR_posterior)
+
+            # Include future data in current day
+            curr_AR_with_future_D = curr_AR * next_AR_m
+            curr_AR_with_future_D = curr_AR_with_future_D / curr_AR_with_future_D.sum()
+            AR_given_M_and_future_D[n, :, h] = curr_AR_with_future_D
 
     toc = time.time()
     print(f"Time for {N} entries: {toc-tic:.2f} s")
@@ -415,10 +451,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
     # Exponentiate and normalise
     p_M_given_D = np.exp(log_p_M_given_D_shifted)
     p_M_given_D = p_M_given_D / p_M_given_D.sum()
-    AR_dist_given_M_matrix = np.matmul(AR_dist_given_M_matrix, p_M_given_D)
-    AR_dist_given_M_matrix_forward_swipe = np.matmul(
-        AR_dist_given_M_matrix_forward_swipe, p_M_given_D
-    )
+    AR_given_M_and_D = np.matmul(AR_given_M_and_all_D, p_M_given_D)
 
     # Get the probability of HFEV1
     p_HFEV1_given_D = p_M_given_D
@@ -442,7 +475,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
 
     # Add heatmap with AR posteriors
     df1 = pd.DataFrame(
-        data=AR_dist_given_M_matrix,
+        data=AR_given_M_and_D,
         columns=AR.get_bins_str(),
         index=df_for_ID_in["Date Recorded"].apply(
             lambda date: date.strftime("%Y-%m-%d")
@@ -502,7 +535,10 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
     return (
         fig,
         p_M_given_D,
-        AR_dist_given_M_matrix,
-        AR_dist_given_M_matrix_forward_swipe,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
+        AR_given_M_and_same_day_D,
+        AR_given_M_and_past_D,
+        AR_given_M_and_future_D,
     )
     # return
