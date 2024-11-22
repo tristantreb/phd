@@ -806,6 +806,9 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         """
         prev_day_key = prev_date.strftime("%Y-%m-%d") if prev_date is not None else None
         next_day_key = next_date.strftime("%Y-%m-%d") if next_date is not None else None
+        print(
+            f"Get virtual message for {self.name} on {curr_date} with cutset cond. state {state_n}, wrt to prev {prev_day_key} and next {next_day_key}"
+        )
 
         def calc_days_elapsed(date1, date2):
             assert date1 < date2, "Days order 'date1 < date2' not respected"
@@ -820,6 +823,8 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         if prev_date is None:
             # On day 1, the prior is the first_day_prior
             prev_day_m = self.first_day_prior
+            if debug:
+                print(f"No prev day, using first day prior: {prev_day_m}")
         else:
             # The previous day's posterior updated through the change factor acts as the current days's prior.
             prev_day_posterior = self.vmessages[state_n].get(prev_day_key)
@@ -832,12 +837,17 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
             de_idx = calc_days_elapsed(prev_date, curr_date) - 1
             cpt_for_de = self.change_cpt[:, :, de_idx]
             prev_day_m = np.matmul(cpt_for_de, prev_day_posterior)
-            prev_day_m *= prev_day_m / prev_day_m.sum()
+            prev_day_m = prev_day_m / prev_day_m.sum()
+            if debug:
+                print(f"Prev day posterior: {prev_day_posterior}")
+                print(f"Prev day message: {prev_day_m}")
 
         # Contribution from the next day
         if next_date is None:
             # Return uniform message
             next_day_m = np.ones(self.card) / self.card
+            if debug:
+                print("No next day, using uniform message")
         else:
             # The next day's posterior also propagates a belief to the current day's variable, through the change factor.
             next_day_posterior = self.vmessages[state_n].get(next_day_key)
@@ -849,9 +859,15 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
             de_idx = calc_days_elapsed(curr_date, next_date) - 1
             cpt_for_de = self.change_cpt[:, :, de_idx]
             next_day_m = np.matmul(next_day_posterior, cpt_for_de)
+            if debug:
+                print(f"Next day posterior: {next_day_posterior}")
+                print(f"Next day message: {next_day_m}")
 
         vmessage = prev_day_m * next_day_m
-        return vmessage / vmessage.sum()
+        vmessage = vmessage / vmessage.sum()
+        if debug:
+            print(f"Returning virtual message: {vmessage}")
+        return vmessage
 
 
 def calc_pgmpy_cpt_X_x_1_minus_Y(
