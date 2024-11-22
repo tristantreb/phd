@@ -344,9 +344,9 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
 
             # Add message from FEF25-75
             # Doing this to avoid computing another full inference query
-            # m_to_factor = ecFEF2575prctecFEV1.get_point_message(row["ecFEF2575%ecFEV1"])
-            # factor_to_AR = np.matmul(m_to_factor, ecFEF2575prctecFEV1.cpt)
-            # factor_to_AR = factor_to_AR / factor_to_AR.sum()
+            m_to_factor = ecFEF2575prctecFEV1.get_point_message(row["ecFEF2575%ecFEV1"])
+            factor_to_AR = np.matmul(m_to_factor, ecFEF2575prctecFEV1.cpt)
+            factor_to_AR = factor_to_AR / factor_to_AR.sum()
 
             # COMPUTE CONTRIBUTION TO THE PROBABILITY OF THE DATA UNDER THE MODEL
             # The probability of the data given the model is the expectation of the data given the model
@@ -361,17 +361,13 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
             p_ecFEF2575 = dist_ecFEF2575prctecFEV1[idx_obs_ecFEF2575]
             # p_O2Sat = dist_O2Sat[idx_obs_O2Sat]
 
-            log_p_D_given_M[n, h] = np.log(p_ecFEV1)  # + np.log(
-            #     p_ecFEF2575
-            # )  # + np.log(p_O2Sat)
+            log_p_D_given_M[n, h] = np.log(p_ecFEV1) + np.log(
+                p_ecFEF2575
+            )  # + np.log(p_O2Sat)
 
             # Get the AR with contribution from the past days' data
-            dist_AR = res2[AR.name].values  # * factor_to_AR
-            # dist_AR = res4[AR.name].values
+            dist_AR = res2[AR.name].values * factor_to_AR
             dist_AR = dist_AR / dist_AR.sum()
-
-            # Assert that res4[AR.name] is the same as dist_AR
-            # assert np.allclose(res4[AR.name].values, dist_AR)
 
             date_str = row["Date Recorded"].strftime("%Y-%m-%d")
             AR.add_or_update_posterior(h, date_str, dist_AR, debug)
@@ -383,9 +379,9 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
             # This will be used to get the contribution from the next days' data
             # Check that wherever vevidence_ar is 0, the res2[AR.name] is also 0
             vevidence_ar_is_0 = np.where(vevidence_ar.values == 0)
-            assert res2[AR.name].values[vevidence_ar_is_0].sum() == 0
+            assert dist_AR[vevidence_ar_is_0].sum() == 0
             AR_without_vevidence = np.where(
-                vevidence_ar.values != 0, res2[AR.name].values / vevidence_ar.values, 0
+                vevidence_ar.values != 0, dist_AR / vevidence_ar.values, 0
             )
             AR_without_vevidence = AR_without_vevidence / AR_without_vevidence.sum()
             AR_given_M_and_same_day_D[n, :, h] = AR_without_vevidence
@@ -536,9 +532,5 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
         fig,
         p_M_given_D,
         AR_given_M_and_D,
-        AR_given_M_and_all_D,
-        AR_given_M_and_same_day_D,
-        AR_given_M_and_past_D,
-        AR_given_M_and_future_D,
     )
     # return
