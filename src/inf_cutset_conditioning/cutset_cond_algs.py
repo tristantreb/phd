@@ -200,6 +200,31 @@ def compute_log_p_D_given_M_for_noise_model(
     return fig, p_M_given_D, AR_dist_given_M_matrix
 
 
+def run_long_noise_model_through_time(
+    df, ar_prior="uniform", ia_prior="uniform", ar_change_cpt_suffix="", debug=False
+):
+    inf_alg, HFEV1, HFEV1_obs_list, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt = (
+        load_long_noise_model_through_time(df, ar_prior, ia_prior, ar_change_cpt_suffix)
+    )
+
+    (
+        fig,
+        p_M_given_D,
+        AR_given_M_and_D,
+    ) = compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
+        df,
+        inf_alg,
+        HFEV1,
+        HFEV1_obs_list,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+        debug=debug,
+    )
+    return fig, p_M_given_D, AR_given_M_and_D
+
+
 def run_long_noise_model_through_time_light(
     df, ar_prior="uniform", ia_prior="uniform", ar_change_cpt_suffix="", debug=False
 ):
@@ -225,6 +250,55 @@ def run_long_noise_model_through_time_light(
         debug=debug,
     )
     return fig, p_M_given_D, AR_given_M_and_D
+
+
+def load_long_noise_model_through_time(
+    df, ar_prior="uniform", ia_prior="uniform", ar_change_cpt_suffix=""
+):
+    height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
+
+    # Initialize the noise model and its variables
+    _, _, HFEV1, _, _, _, HO2Sat, *_ = (
+        mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+            height, age, sex, ar_change_cpt_suffix=ar_change_cpt_suffix
+        )
+    )
+    HFEV1_obs_list = HFEV1.midbins
+
+    # Full inference model setup
+    (
+        _,
+        inf_alg,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ar_change_cpt_suffix=ar_change_cpt_suffix,
+        n_cutset_conditioned_states=len(HFEV1_obs_list),
+    )
+
+    model_spec_txt = f"AR prior: {ar_prior}<br>AR change CPT: {ar_change_cpt_suffix}"
+    return (
+        inf_alg,
+        HFEV1,
+        HFEV1_obs_list,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+    )
 
 
 def load_long_noise_model_through_time_light(
