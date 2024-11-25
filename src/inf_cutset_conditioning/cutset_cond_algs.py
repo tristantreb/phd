@@ -384,6 +384,19 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
     AR_given_M_and_future_D = np.zeros((N, AR.card, H))
     AR_given_M_and_all_D = np.zeros((N, AR.card, H))
 
+    arr = np.ones(AR.card)
+    arr /= arr.sum()
+    uniform_from_o2_side = {
+        "['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
+    }
+    uniform_from_fef2575 = {
+        "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
+    }
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_dict = {}
+    m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev1_factor_dict = {}
+
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
     # Process each row
     # P(model | data) prop_to P(data | model) * P(model)
@@ -409,25 +422,43 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
 
             # PERFORM INFERENCES
             # Get P(ecFEV1 | model conditionned on HFEV1_obs)
-            res1 = inf_alg.query(
+            precomp_messsages = uniform_from_o2_side | uniform_from_fef2575
+            ref = f"{HFEV1_bin_idx}"
+            if ref in m_from_hfev1_dict:
+                precomp_messsages.update(m_from_hfev1_dict[ref])
+            res1, messages = inf_alg.query(
                 variables=[ecFEV1.name],
                 evidence={HFEV1.name: HFEV1_bin_idx},
                 virtual_evidence=[vevidence_ar],
+                precomp_messages=precomp_messsages,
+                get_messages=True,
             )
             dist_ecFEV1 = res1[ecFEV1.name].values
             p_ecFEV1 = dist_ecFEV1[row["idx ecFEV1 (L)"]]
+            m_from_hfev1_dict.update(
+                {ref: {m_from_hfev1_key: messages[m_from_hfev1_key]}}
+            )
 
             # Get P(ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1)
-            res2 = inf_alg.query(
+            precomp_messsages = uniform_from_o2_side | uniform_from_fef2575
+            ref = f"{HFEV1_bin_idx}_{row['idx ecFEV1 (L)']}"
+            if ref in m_from_fev1_factor_dict:
+                precomp_messsages.update(m_from_fev1_factor_dict[ref])
+            res2, messages = inf_alg.query(
                 variables=[ecFEF2575prctecFEV1.name, AR.name],
                 evidence={
                     HFEV1.name: HFEV1_bin_idx,
                     ecFEV1.name: row["idx ecFEV1 (L)"],
                 },
                 virtual_evidence=[vevidence_ar],
+                precomp_messages=precomp_messsages,
+                get_messages=True,
             )
             dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
             p_ecFEF2575 = dist_ecFEF2575prctecFEV1[row["idx ecFEF2575%ecFEV1"]]
+            m_from_fev1_factor_dict.update(
+                {ref: {m_from_fev_factor_key: messages[m_from_fev_factor_key]}}
+            )
 
             # res3, _ = ih.infer_on_factor_graph(
             #     inf_alg,
