@@ -806,9 +806,10 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         """
         prev_day_key = prev_date.strftime("%Y-%m-%d") if prev_date is not None else None
         next_day_key = next_date.strftime("%Y-%m-%d") if next_date is not None else None
-        print(
-            f"Get virtual message for {self.name} on {curr_date} with cutset cond. state {state_n}, wrt to prev {prev_day_key} and next {next_day_key}"
-        )
+        if debug:
+            print(
+                f"Get virtual message for {self.name} on {curr_date} with cutset cond. state {state_n}, wrt to prev {prev_day_key} and next {next_day_key}"
+            )
 
         def calc_days_elapsed(date1, date2):
             assert date1 < date2, "Days order 'date1 < date2' not respected"
