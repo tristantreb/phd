@@ -269,7 +269,7 @@ def load_long_noise_model_through_time(
             height, age, sex, ar_change_cpt_suffix=ar_change_cpt_suffix
         )
     )
-    HFEV1_obs_list = HFEV1.midbins
+    HFEV1_obs_idx_list = range(HFEV1.card)
 
     # Full inference model setup
     (
@@ -292,14 +292,14 @@ def load_long_noise_model_through_time(
         ia_prior,
         ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
-        n_cutset_conditioned_states=len(HFEV1_obs_list),
+        n_cutset_conditioned_states=len(HFEV1_obs_idx_list),
     )
 
     model_spec_txt = f"AR prior: {ar_prior}<br>AR change CPT: {ar_change_cpt_suffix}"
     return (
         inf_alg,
         HFEV1,
-        HFEV1_obs_list,
+        HFEV1_obs_idx_list,
         AR,
         ecFEV1,
         ecFEF2575prctecFEV1,
@@ -318,7 +318,8 @@ def load_long_noise_model_through_time_light(
             height, age, sex, ar_change_cpt_suffix=ar_change_cpt_suffix
         )
     )
-    HFEV1_obs_list = HFEV1.midbins
+    # All bins are observed
+    HFEV1_obs_idx_list = range(HFEV1.card)
 
     # Full inference model setup
     (
@@ -341,14 +342,14 @@ def load_long_noise_model_through_time_light(
         ia_prior,
         ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
-        n_cutset_conditioned_states=len(HFEV1_obs_list),
+        n_cutset_conditioned_states=len(HFEV1_obs_idx_list),
     )
 
     model_spec_txt = f"AR prior: {ar_prior}<br>AR change CPT: {ar_change_cpt_suffix}"
     return (
         inf_alg,
         HFEV1,
-        HFEV1_obs_list,
+        HFEV1_obs_idx_list,
         AR,
         ecFEV1,
         ecFEF2575prctecFEV1,
@@ -360,7 +361,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
     df,
     inf_alg,
     HFEV1,
-    HFEV1_obs_list,
+    HFEV1_obs_idx_list,
     AR,
     ecFEV1,
     ecFEF2575prctecFEV1,
@@ -376,7 +377,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
 
     N = len(df)
     df_for_ID = df.copy()
-    H = len(HFEV1_obs_list)
+    H = len(HFEV1_obs_idx_list)
     log_p_D_given_M = np.zeros((N, H))
     AR_given_M_and_past_D = np.zeros((N, AR.card, H))
     AR_given_M_and_same_day_D = np.zeros((N, AR.card, H))
@@ -396,38 +397,37 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
             print(f"Row {n + 1}/{N}, Date: {curr_date}, Prev Date: {prev_date}")
 
         # For each model given an HFEV1 observation
-        for h, HFEV1_obs in enumerate(HFEV1_obs_list):
+        for h, HFEV1_bin_idx in enumerate(HFEV1_obs_idx_list):
             vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar(
                 AR, h, curr_date, prev_date, next_date=None, debug=debug
             )
 
             if debug:
-                print(f"HFEV1_obs: {HFEV1_obs}, vevidence_ar: {vevidence_ar.values}")
+                print(
+                    f"HFEV1_obs: {HFEV1_bin_idx}, vevidence_ar: {vevidence_ar.values}"
+                )
 
             # PERFORM INFERENCES
             # Get P(ecFEV1 | model conditionned on HFEV1_obs)
-            res1 = ih.infer_on_factor_graph(
-                inf_alg,
-                [ecFEV1],
-                [[HFEV1, HFEV1_obs]],
-                [vevidence_ar],
+            res1 = inf_alg.query(
+                variables=[ecFEV1.name],
+                evidence={HFEV1.name: HFEV1_bin_idx},
+                virtual_evidence=[vevidence_ar],
             )
             dist_ecFEV1 = res1[ecFEV1.name].values
-            idx_obs_ecFEV1 = ecFEV1.get_bin_for_value(row.ecFEV1)[1]
-            p_ecFEV1 = dist_ecFEV1[idx_obs_ecFEV1]
+            p_ecFEV1 = dist_ecFEV1[row["idx ecFEV1 (L)"]]
 
             # Get P(ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1)
-            res2 = ih.infer_on_factor_graph(
-                inf_alg,
-                [ecFEF2575prctecFEV1, AR],
-                [[HFEV1, HFEV1_obs], [ecFEV1, row.ecFEV1]],
-                [vevidence_ar],
+            res2 = inf_alg.query(
+                variables=[ecFEF2575prctecFEV1.name, AR.name],
+                evidence={
+                    HFEV1.name: HFEV1_bin_idx,
+                    ecFEV1.name: row["idx ecFEV1 (L)"],
+                },
+                virtual_evidence=[vevidence_ar],
             )
             dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
-            idx_obs_ecFEF2575 = ecFEF2575prctecFEV1.get_bin_for_value(
-                row["ecFEF2575%ecFEV1"]
-            )[1]
-            p_ecFEF2575 = dist_ecFEF2575prctecFEV1[idx_obs_ecFEF2575]
+            p_ecFEF2575 = dist_ecFEF2575prctecFEV1[row["idx ecFEF2575%ecFEV1"]]
 
             # res3, _ = ih.infer_on_factor_graph(
             #     inf_alg,
@@ -462,7 +462,8 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
 
             # Add FEF25-75 observation to P(AR|HFEV1, ecFEV1)
             # Done manually for time efficiency
-            m_to_factor = ecFEF2575prctecFEV1.get_point_message(row["ecFEF2575%ecFEV1"])
+            m_to_factor = np.zeros(ecFEF2575prctecFEV1.card)
+            m_to_factor[row["idx ecFEF2575%ecFEV1"]] = 1
             factor_to_AR = np.matmul(m_to_factor, ecFEF2575prctecFEV1.cpt)
             factor_to_AR /= factor_to_AR.sum()
             dist_AR = res2[AR.name].values * factor_to_AR
@@ -500,7 +501,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
         if de > 3:
             ValueError(f"Days elapsed is {de}, should be at most 3")
 
-        for h, HFEV1_obs in enumerate(HFEV1_obs_list):
+        for h, HFEV1_bin_idx in enumerate(HFEV1_obs_idx_list):
             next_AR = AR_given_M_and_future_D[n + 1, :, h]
             curr_AR = AR_given_M_and_future_D[n, :, h]
             past_AR = AR_given_M_and_past_D[n, :, h]
@@ -523,11 +524,11 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
     toc = time.time()
     print(f"Time for {N} entries: {toc-tic:.2f} s")
 
-    # For each HFEV1 model, given HFEV1_obs_list, we compute the log probability of the model given the data
+    # For each HFEV1 model, given HFEV1_obs_idx_list, we compute the log probability of the model given the data
     # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
     log_p_M_given_D = np.zeros(H)
-    for h, HFEV1_obs in enumerate(HFEV1_obs_list):
-        log_p_M_hfev1 = np.log(HFEV1.cpt[HFEV1.get_bin_for_value(HFEV1_obs)[1]])
+    for h, HFEV1_bin_idx in enumerate(HFEV1_obs_idx_list):
+        log_p_M_hfev1 = np.log(HFEV1.cpt[HFEV1_bin_idx])
         log_p_M_given_D[h] = np.sum(log_p_D_given_M[:, h]) + log_p_M_hfev1
 
     # Exponentiating very negative numbers gives too small numbers

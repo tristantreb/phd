@@ -435,11 +435,21 @@ class VariableNode:
         (lower_val, upper_val) = self.get_bins_arr()[idx]
         return f"[{lower_val:.2f}; {upper_val:.2f})", idx
 
+    def get_bin_idx_for_value(self, obs: float, tol=TOL_GLOBAL):
+        """
+        Given an observation and an array of bins, this returns the bin that the value falls into
+        """
+        # Center bins around value observed
+        relative_bins = self.bins - obs - tol
+
+        # Find the highest negative value of the bins relative to centered bins
+        idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
+        return idx
+
     def get_point_message(self, obs_val):
         # Create an array with 1 at the index of the evidence and 0 elsewhere
         message = np.zeros(self.card)
-        idx = self.get_bin_for_value(obs_val)[1]
-        message[idx] = 1
+        message[self.get_bin_idx_for_value(obs_val)] = 1
         return message
 
     def get_val_at_quantile(self, p, q):
