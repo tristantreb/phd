@@ -806,6 +806,129 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
     return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, ecFEF2575prctecFEV1
 
 
+def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ar_change_cpt_suffix="",
+    n_cutset_conditioned_states=None,
+    ecfev1_noise_model_suffix="_std_0.23"
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
+    The airway resistances has day-to-day temporal connection
+    """
+    hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
+    ho2sat_prior = {
+        "type": "default",
+        "height": height,
+        "sex": sex,
+    }
+    HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
+    # HFEV1_point_mass_prior = np.zeros(HFEV1.card)
+    # idx_three_point_five = HFEV1.get_bin_for_value(3.5)[1]
+    # HFEV1_point_mass_prior[idx_three_point_five] = 1
+    # HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
+
+    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
+    # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
+
+    DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
+
+    if n_cutset_conditioned_states is not None:
+        AR = CutsetConditionedTemporalVariableNode(
+            "Airway resistance (%)", 0, 90, 2, n_cutset_conditioned_states
+        )
+    else:
+        AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
+
+    AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
+
+    if ar_prior == "uniform":
+        AR.set_first_day_prior({"type": "uniform"})
+    elif ar_prior == "uniform in log space":
+        AR.set_first_day_prior(
+            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
+        )
+    elif ar_prior == "uniform message to HFEV1":
+        AR.set_first_day_prior(
+            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
+        )
+    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575(),
+            }
+        )
+    elif ar_prior == "breathe (1 day model, O2Sat, ecFEV1)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
+            }
+        )
+
+    # Res 0.5 takes 19s, res 0.2 takes 21s
+    HO2Sat = SharedVariableNode(
+        "Healthy O2 saturation (%)", 90, 100, 0.5, prior=ho2sat_prior
+    )
+    # Highest drop is 92% (for AR = 90%)
+    # Hence the lowest O2SatFFA is 90 * 0.92 = 82.8
+    O2SatFFA = VariableNode(
+        "O2 saturation if fully functional alveoli (%)", 80, 100, 0.5, prior=None
+    )
+    # O2 sat can't be below 70%.
+    # If there's no airway resistance, it should still be possible to reach 70% O2 sat
+    # Hence, min IA is 30% because i
+    if ia_prior == "uniform":
+        prior = {"type": "uniform"}
+    elif ia_prior == "breathe":
+        prior = {"type": "custom", "p": get_IA_breathe_prior()}
+    else:
+        raise ValueError(f"ia_prior {ia_prior} not recognised")
+    IA = VariableNode("Inactive alveoli (%)", 0, 30, 1, prior=prior)
+
+    # In reality O2 sat can't be below 70%.
+    # However, the CPT should account for the fact that the lowest O2 sat is 82.8%.
+    # 82.8-30 = 52.8%
+    # TODO: should we hardcode the fact that the sum of AR and IA should not be below 70% O2 Sat?
+    UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
+    bin_width = 1
+    O2Sat = VariableNode(
+        "O2 saturation (%)",
+        50 - bin_width / 2,
+        100 + bin_width / 2,
+        bin_width,
+        prior=None,
+    )
+
+    # Calculate CPTs
+    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_suffix))
+    O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
+    UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
+    O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
+    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
+
+    return (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    )
+
+
 def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
     height,
     age,
