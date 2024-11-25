@@ -201,7 +201,12 @@ def compute_log_p_D_given_M_for_noise_model(
 
 
 def run_long_noise_model_through_time(
-    df, ar_prior="uniform", ia_prior="uniform", ar_change_cpt_suffix="", debug=False
+    df,
+    ar_prior="uniform",
+    ia_prior="uniform",
+    ar_change_cpt_suffix="",
+    debug=False,
+    save=False,
 ):
     inf_alg, HFEV1, HFEV1_obs_list, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt = (
         load_long_noise_model_through_time(df, ar_prior, ia_prior, ar_change_cpt_suffix)
@@ -221,6 +226,7 @@ def run_long_noise_model_through_time(
         ecFEF2575prctecFEV1,
         model_spec_txt,
         debug=debug,
+        save=save,
     )
     return fig, p_M_given_D, AR_given_M_and_D
 
@@ -363,9 +369,10 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
     save=False,
 ):
     df = df.copy().sort_values(by="Date Recorded").reset_index(drop=True)
-    id = df.iloc[0][["ID"]]
+    id = df.loc[0, "ID"]
 
-    print(f"ID {id}")
+    if debug:
+        print(f"ID {id}")
 
     N = len(df)
     df_for_ID = df.copy()
