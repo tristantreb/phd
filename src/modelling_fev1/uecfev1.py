@@ -25,6 +25,7 @@ def PDF_conv_uni_gausian_additive(z, y1, y2, sigma, abserr_tol=1e-10):
 
 def PDF_conv_uni_gausian_multiplicative(z, y1, y2, abserr_tol=1e-10):
     """
+    A more correct approach is a linear noise: both additive and multiplicative noise are present
     PDF of a convolution of a uniform and a gaussian distribution
 
     Return P(z | y1 < y < y2)
