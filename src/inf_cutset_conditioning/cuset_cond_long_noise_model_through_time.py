@@ -2,7 +2,7 @@ import concurrent.futures
 import itertools
 
 import src.data.breathe_data as bd
-import src.inf_cutset_conditioning.cutset_conditioning_algs as cca
+import src.inf_cutset_conditioning.cutset_cond_algs as cca
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
@@ -26,9 +26,19 @@ def process_id(inf_settings):
     elif id == "527":
         dftmp = df[df["ID"] == "527"]
 
-    return cca.compute_log_p_D_given_M_for_noise_model_with_temporal_AR_light(
-        dftmp, ar_prior, ar_change_cpt_suffix, debug=False, save=True
+    (
+        fig,
+        p_M_given_D,
+        AR_given_M_and_D,
+    ) = cca.run_long_noise_model_through_time(
+    # ) = cca.run_long_noise_model_through_time_light(
+        dftmp,
+        ar_prior=ar_prior,
+        ar_change_cpt_suffix=ar_change_cpt_suffix,
+        debug=False,
+        save=True,
     )
+    return -1
 
 
 # Run the function in parallel using ProcessPoolExecutor
