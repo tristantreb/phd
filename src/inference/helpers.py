@@ -27,11 +27,10 @@ def infer_on_factor_graph(
 
     :return: The result of the inference
     """
-
-    evidence_binned = dict()
-    for [evidence_var, value] in evidence:
-        [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
-        evidence_binned.update({evidence_var.name: bin_idx})
+    evidence_binned = {
+        evidence_var.name: evidence_var.get_bin_for_value(value, evidence_var)
+        for evidence_var, value in evidence
+    }
 
     res = inference_alg.query(
         variables=list(map(lambda v: v.name, variables)),
@@ -62,12 +61,10 @@ def infer(
     if debug:
         print(f"Variables to infer: {variables}")
 
-    evidence_binned = dict()
-    for [evidence_var, value] in evidence:
-        [_bin, bin_idx] = get_bin_for_value(value, evidence_var)
-        evidence_binned.update({evidence_var.name: bin_idx})
-        if debug:
-            print(f"Evidence for {evidence_var.name}: value {value}, idx {bin_idx}")
+    evidence_binned = {
+        evidence_var.name: evidence_var.get_bin_for_value(value, evidence_var)
+        for evidence_var, value in evidence
+    }
 
     res = inference_alg.query(
         variables=variables,
@@ -76,21 +73,6 @@ def infer(
         joint=joint,
     )
     return res
-
-
-# Given an observation and an array of bins, this returns the bin that the value falls into
-def get_bin_for_value(obs: float, var: mh.VariableNode, tol=TOL_GLOBAL):
-    """
-    Obsolete as this function has been added ot the VariableNode class
-    """
-    # Center bins around value observed
-    relative_bins = var.bins - obs - tol
-
-    # Find the highest negative value of the bins relative to centered bins
-    idx = np.where(relative_bins <= 0, relative_bins, -np.inf).argmax()
-
-    (lower_idx, upper_idx) = var.get_bins_arr()[idx]
-    return "[{}; {})".format(lower_idx, upper_idx), idx
 
 
 def plot_histogram(
