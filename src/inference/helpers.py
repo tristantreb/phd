@@ -62,7 +62,7 @@ def infer(
         print(f"Variables to infer: {variables}")
 
     evidence_binned = {
-        evidence_var.name: evidence_var.get_bin_for_value(value, evidence_var)
+        evidence_var.name: evidence_var.get_bin_idx_for_value(value)
         for evidence_var, value in evidence
     }
 

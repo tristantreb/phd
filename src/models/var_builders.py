@@ -431,7 +431,12 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
 
 
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
-    height, age, sex, ia_prior="uniform", ar_prior="uniform", ecfev1_noise_model_cpt_suffix=""
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ecfev1_noise_model_cpt_suffix="",
 ):
     """
     Point in time model with full FEV1, FEF25-75 and O2Sat sides
@@ -527,7 +532,12 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
 
 
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
-    height, age, sex, ia_prior="uniform", ar_prior="uniform"
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ecfev1_noise_model_cpt_suffix="",
 ):
     """
     Point in time model with full FEV1, FEF25-75 and O2Sat sides
@@ -541,10 +551,10 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
         "sex": sex,
     }
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 1, prior=hfev1_prior)
-    HFEV1_point_mass_prior = np.zeros(HFEV1.card)
-    idx_three_point_five = HFEV1.get_bin_for_value(3.5)[1]
-    HFEV1_point_mass_prior[idx_three_point_five] = 1
-    HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
+    # HFEV1_point_mass_prior = np.zeros(HFEV1.card)
+    # idx_three_point_five = HFEV1.get_bin_for_value(3.5)[1]
+    # HFEV1_point_mass_prior[idx_three_point_five] = 1
+    # HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 1, prior=None)
     uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 1, prior=None)
@@ -617,7 +627,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
     # Calculate CPTs
 
     uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix="_std_0.7"))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_cpt_suffix))
     ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
@@ -815,7 +825,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     ar_prior="uniform",
     ar_change_cpt_suffix="",
     n_cutset_conditioned_states=None,
-    ecfev1_noise_model_suffix="_std_0.23"
+    ecfev1_noise_model_suffix="_std_0.23",
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
