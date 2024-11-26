@@ -86,7 +86,7 @@ def build_virtual_evidence_shared_vars(shared_variables, day):
 def build_vevidence_ar(AR, curr_date, prev_date=None, next_date=None):
     """
     Builds a virtual evidence for the airway resistance variable given the previous and next days
-    
+
     Dates are datetime objects
     """
     prior = AR.get_virtual_message(curr_date, prev_date, next_date)
@@ -100,6 +100,7 @@ def query_forwardly_across_days(
     variables: List[mh.VariableNode],
     evidence_variables: List[str],
     diff_threshold,
+    precomp_messages={},
     debug=True,
     auto_reset_shared_vars=True,
 ):
@@ -128,6 +129,9 @@ def query_forwardly_across_days(
         get_uniform_message(shared_var.card) for shared_var in shared_variables
     ]
 
+    m_from_ecfev1_key = "Underlying ecFEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_ecfev1_dict = {}
+
     while True:
         if debug:
             print(f"epoch {epoch}")
@@ -143,6 +147,14 @@ def query_forwardly_across_days(
             vevidence = build_virtual_evidence_shared_vars(shared_variables, day)
 
             vars_to_infer = get_var_name_list(shared_variables + variables)
+
+            # Precomputed messages
+            ref = f"{df.loc[i, 'idx ecFEV1 (L)']}"
+            if ref in m_from_ecfev1_dict:
+                precomp_messages[m_from_ecfev1_key] = m_from_ecfev1_dict[ref][
+                    m_from_ecfev1_key
+                ]
+
             if final_epoch:
                 # Query all variables to get all posteriors
                 if debug:
@@ -150,8 +162,12 @@ def query_forwardly_across_days(
                     print(
                         f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
                     )
-                query_res = belief_propagation.query(
-                    vars_to_infer, evidence_dict, vevidence
+                query_res, messages = belief_propagation.query(
+                    vars_to_infer,
+                    evidence_dict,
+                    vevidence,
+                    precomp_messages=precomp_messages,
+                    get_messages=True,
                 )
                 df_res_final_epoch = save_res_to_df(
                     df_res_final_epoch,
@@ -169,7 +185,7 @@ def query_forwardly_across_days(
                         f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
                     )
                 query_res, query_messages = belief_propagation.query(
-                    vars_to_infer, evidence_dict, vevidence, get_messages=True
+                    vars_to_infer, evidence_dict, vevidence, True, precomp_messages
                 )
                 df_res_before_convergence = save_res_to_df(
                     df_res_before_convergence,
@@ -194,6 +210,11 @@ def query_forwardly_across_days(
                         ][0]
                     shared_var.set_agg_virtual_message(vmessage, new_message)
                     shared_var.set_agg_virtual_message(vmessage, new_message)
+                # Save precomp messages
+                if m_from_ecfev1_key in query_messages:
+                    m_from_ecfev1_dict[ref] = {
+                        m_from_ecfev1_key: query_messages[m_from_ecfev1_key]
+                    }
 
         posteriors_old, diffs = get_diffs(query_res, posteriors_old, shared_variables)
 
@@ -412,7 +433,7 @@ def query_back_and_forth_across_days_AR(
     assert df["Date Recorded"].nunique() == len(
         df
     ), "Error: Cannot process input df as there are doublons in the Date Recorded column."
-    
+
     final_pass = False
     passes = 1
 
@@ -435,7 +456,7 @@ def query_back_and_forth_across_days_AR(
             if backward_pass:
                 """
                 NOTE: the last entry will be passed twice, as the last element of the previous pass
-                and the first element of the current pass; similar for the first entry. 
+                and the first element of the current pass; similar for the first entry.
                 This should not be a problem if the whole algorithm is well implemented, because
                 1/ the algorithm is stateful only for the current pass,
                 2/ old states get substituted by new states at each pass (including in the aggregated
@@ -505,10 +526,13 @@ def query_back_and_forth_across_days_AR(
                 for shared_var in shared_variables:
                     new_message = query_messages[shared_var.factor_node_key]
                     # If only send uniform messsage down:
-                    if interconnect_AR == "fix message up to HFEV1 to truncated uniform":
+                    if (
+                        interconnect_AR
+                        == "fix message up to HFEV1 to truncated uniform"
+                    ):
                         # The new message is 0 up to the observed FEV1 value, then uniform
                         new_message = get_uniform_message(shared_var.card)
-                        ecFEV1_obs = df.loc[i, 'ecFEV1']
+                        ecFEV1_obs = df.loc[i, "ecFEV1"]
                         idx_obs = shared_var.get_bin_for_value(ecFEV1_obs)[1]
                         new_message[:idx_obs] = 0
                         new_message /= new_message.sum()
@@ -528,14 +552,18 @@ def query_back_and_forth_across_days_AR(
                 HFEV1 = shared_variables[0]
                 assert HFEV1.name == "Healthy FEV1 (L)"
                 hfev1_calc = HFEV1.agg_vmessage * HFEV1.cpt
-                hfev1_calc = hfev1_calc/np.sum(hfev1_calc)
+                hfev1_calc = hfev1_calc / np.sum(hfev1_calc)
                 if interconnect_AR != "fix message up to HFEV1 to truncated uniform":
                     hfev1_posterior = query_res[HFEV1.name].values
-                    if not(np.allclose(hfev1_posterior, hfev1_calc)):
-                        print(f"Error pass {passes}, day {date_str}: HFEV1 posterior is not consistent with the message passed down")
+                    if not (np.allclose(hfev1_posterior, hfev1_calc)):
+                        print(
+                            f"Error pass {passes}, day {date_str}: HFEV1 posterior is not consistent with the message passed down"
+                        )
                 else:
                     # Replace the query_res for HFEV1 with the calc message using the uniform message up
-                    query_res[HFEV1.name] =TabularCPD(HFEV1.name, HFEV1.card, hfev1_calc.reshape(-1, 1))
+                    query_res[HFEV1.name] = TabularCPD(
+                        HFEV1.name, HFEV1.card, hfev1_calc.reshape(-1, 1)
+                    )
 
                 # NOTE: query_res not updated for HO2Sat in case of interconnect_AR == "fix message up to HFEV1 to truncated uniform"
 
@@ -595,7 +623,7 @@ def query_back_and_forth_across_days_specific_evidence(
     debug=False,
     auto_reset_shared_vars=True,
     max_passes=99,
-    print_convergence=False
+    print_convergence=False,
 ):
     """
     algorithm to query the point in time model across days, thus making an approximate longitudinal inference
@@ -610,7 +638,7 @@ def query_back_and_forth_across_days_specific_evidence(
     assert df["Date Recorded"].nunique() == len(
         df
     ), "Error: Cannot process input df as there are doublons in the Date Recorded column."
-    
+
     final_pass = False
     passes = 1
 
@@ -629,7 +657,7 @@ def query_back_and_forth_across_days_specific_evidence(
             if backward_pass:
                 """
                 NOTE: the last entry will be passed twice, as the last element of the previous pass
-                and the first element of the current pass; similar for the first entry. 
+                and the first element of the current pass; similar for the first entry.
                 This should not be a problem if the whole algorithm is well implemented, because
                 1/ the algorithm is stateful only for the current pass,
                 2/ old states get substituted by new states at each pass (including in the aggregated
@@ -645,15 +673,19 @@ def query_back_and_forth_across_days_specific_evidence(
             evidence_variables = evidence_variables_in.copy()
 
             # Process evidence that is specific to a partiular day
-            # If the current day is in the list of days with specific evidence, 
+            # If the current day is in the list of days with specific evidence,
             # then add the corresponding variables to the evidence list
-            for (variable_name, date_list) in days_specific_evidence:
+            for variable_name, date_list in days_specific_evidence:
                 if date_str in date_list:
                     if debug:
-                        print(f"Adding {variable_name} to the evidence list for {date_str}")
+                        print(
+                            f"Adding {variable_name} to the evidence list for {date_str}"
+                        )
                     evidence_variables.append(variable_name)
                     if debug:
-                        print(f"Removing {variable_name} from the variables list for {date_str}")
+                        print(
+                            f"Removing {variable_name} from the variables list for {date_str}"
+                        )
                     vars_to_infer.remove(variable_name)
 
             # Get query inputs
@@ -715,8 +747,10 @@ def query_back_and_forth_across_days_specific_evidence(
                 HFEV1 = shared_variables[0]
                 assert HFEV1.name == "Healthy FEV1 (L)"
                 hfev1_calc = HFEV1.agg_vmessage * HFEV1.cpt
-                hfev1_calc = hfev1_calc/np.sum(hfev1_calc)
-                query_res[HFEV1.name] =TabularCPD(HFEV1.name, HFEV1.card, hfev1_calc.reshape(-1, 1))
+                hfev1_calc = hfev1_calc / np.sum(hfev1_calc)
+                query_res[HFEV1.name] = TabularCPD(
+                    HFEV1.name, HFEV1.card, hfev1_calc.reshape(-1, 1)
+                )
 
                 # NOTE: query_res not updated for HO2Sat in case of interconnect_AR == "fix message up to HFEV1 to truncated uniform"
 
@@ -851,7 +885,10 @@ def plot_posterior_validation(
         colour="black",
         title="O2 saturation (%)",
     )
-    common_x_range = [df_breathe["Date Recorded"].min(), df_breathe["Date Recorded"].max()]
+    common_x_range = [
+        df_breathe["Date Recorded"].min(),
+        df_breathe["Date Recorded"].max(),
+    ]
     fig.update_xaxes(range=common_x_range, showticklabels=False, row=1, col=1)
     fig.update_xaxes(range=common_x_range, showticklabels=False, row=2, col=1)
     fig.update_xaxes(range=common_x_range, row=3, col=1)
@@ -918,9 +955,7 @@ def plot_query_res(
         vertical_spacing=0.02,
     )
     # Priors
-    ih.plot_histogram(
-        fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, 1, 1, None, "#636EFA"
-    )
+    ih.plot_histogram(fig, HFEV1, HFEV1.cpt, HFEV1.a, HFEV1.b, 1, 1, None, "#636EFA")
     fig.update_xaxes(showticklabels=False, row=1, col=1)
     ih.plot_histogram(
         fig, HO2Sat, HO2Sat.cpt, HO2Sat.a, HO2Sat.b, 1, 2, None, "#636EFA"
@@ -987,7 +1022,10 @@ def plot_query_res(
         colour="black",
         title=O2Sat.name,
     )
-    common_x_range=[df_breathe["Date Recorded"].min(), df_breathe["Date Recorded"].max()]
+    common_x_range = [
+        df_breathe["Date Recorded"].min(),
+        df_breathe["Date Recorded"].max(),
+    ]
     fig.update_xaxes(range=common_x_range, row=4, col=1)
     fig.update_xaxes(range=common_x_range, row=5, col=1)
     fig.update_xaxes(range=common_x_range, row=6, col=1)
