@@ -28,7 +28,7 @@ def infer_on_factor_graph(
     :return: The result of the inference
     """
     evidence_binned = {
-        evidence_var.name: evidence_var.get_bin_for_value(value, evidence_var)
+        evidence_var.name: evidence_var.get_bin_idx_for_value(value)
         for evidence_var, value in evidence
     }
 

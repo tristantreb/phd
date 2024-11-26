@@ -431,7 +431,7 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
 
 
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
-    height, age, sex, ia_prior="uniform", ar_prior="uniform"
+    height, age, sex, ia_prior="uniform", ar_prior="uniform", ecfev1_noise_model_cpt_suffix=""
 ):
     """
     Point in time model with full FEV1, FEF25-75 and O2Sat sides
@@ -505,6 +505,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     O2Sat = VariableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
     # Calculate CPTs
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_cpt_suffix))
     uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
