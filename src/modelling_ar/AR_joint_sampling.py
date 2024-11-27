@@ -43,12 +43,6 @@ def sample_jointly_from_AR(df_two_days, date_1, date_2, light_model=False, debug
             height, age, sex
         )
 
-    # Set variables parametrisation
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
-    key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
-    HFEV1.set_factor_node_key(key_hfev1)
-    HO2Sat.set_factor_node_key(key_ho2sat)
-
     # Since O2 sat side is unobserved, we can set a uniform precomputed messaged for it
     arr = np.ones(AR.card)
     arr /= arr.sum()
