@@ -513,7 +513,7 @@ class SharedVariableNode(VariableNode):
         self.vmessages = {}
         self.agg_vmessage = np.ones(self.card) / self.card
 
-    def set_factor_node_key(self, factor_node_key):
+    def set_factor_to_node_key(self, factor_node_key):
         """
         Key to identify the factor -> node message in the graph
         """
@@ -554,7 +554,7 @@ class SharedVariableNode(VariableNode):
 
             if day_key not in self.vmessages.keys():
                 return agg_m
-            
+
             # Remove previous today's message from agg_m
             curr_m = self.vmessages[day_key]
             agg_m_excl_curr_m = np.divide(
