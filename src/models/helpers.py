@@ -554,7 +554,7 @@ class SharedVariableNode(VariableNode):
 
             if day_key not in self.vmessages.keys():
                 return agg_m
-
+            
             # Remove previous today's message from agg_m
             curr_m = self.vmessages[day_key]
             agg_m_excl_curr_m = np.divide(
