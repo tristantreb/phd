@@ -608,7 +608,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     sex,
     ia_prior="uniform",
     ar_prior="uniform",
-    ecfev1_noise_model_cpt_suffix="",
+    ecfev1_noise_model_cpt_suffix="_std_0.23",
     check_model=False,
 ):
     """

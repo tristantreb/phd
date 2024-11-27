@@ -102,7 +102,7 @@ def query_forwardly_across_days(
     diff_threshold,
     days_specific_evidence: List[tuple[str, List[pd.Timestamp]]],
     precomp_messages={},
-    debug=True,
+    debug=False,
     auto_reset_shared_vars=True,
 ):
     """
@@ -169,8 +169,9 @@ def query_forwardly_across_days(
 
             # Precomputed messages
             ref = f"{df.loc[i, 'idx ecFEV1 (L)']}"
+            m_from_ecfev1 = {}
             if ref in m_from_ecfev1_dict:
-                precomp_messages[m_from_ecfev1_key] = m_from_ecfev1_dict[ref][
+                m_from_ecfev1[m_from_ecfev1_key] = m_from_ecfev1_dict[ref][
                     m_from_ecfev1_key
                 ]
 
@@ -185,7 +186,7 @@ def query_forwardly_across_days(
                     vars_to_infer,
                     evidence_dict,
                     vevidence,
-                    precomp_messages=precomp_messages,
+                    precomp_messages=precomp_messages | m_from_ecfev1,
                 )
                 df_res_final_epoch = save_res_to_df(
                     df_res_final_epoch,
@@ -200,7 +201,7 @@ def query_forwardly_across_days(
                 if debug:
                     vevidence_str = [(cpd.variable, cpd.values) for cpd in vevidence]
                     print(
-                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
+                        f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}, precomp_messages: {precomp_messages}"
                     )
                 query_res, query_messages = belief_propagation.query(
                     vars_to_infer, evidence_dict, vevidence, True, precomp_messages
