@@ -166,7 +166,7 @@ def calc_cpt(
     tol=1e-6,
     debug=False,
 ):
-    cpt = np.empty([AR_next_day.card, AR_curr_day.card, DE.card])
+    cpt = np.zeros([AR_next_day.card, AR_curr_day.card, DE.card])
 
     for de in range(DE.card):
         # For each shift value, get the mapping AR -> AR_next_day for each shifted bin in AR

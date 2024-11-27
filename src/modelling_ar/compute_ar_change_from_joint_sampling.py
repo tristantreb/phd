@@ -21,7 +21,7 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
     print(f"Processing ID {id} with {len(df_for_ID)} entries")
 
     res = pd.DataFrame()
-    for n_idx_offset in list(np.arange(1, max_offset + 1)):
+    for n_idx_offset in list(np.arange(2, max_offset + 1)):
         print(f"ID: {id}, offset: {n_idx_offset}")
 
         for i, row in df_for_ID.iterrows():
@@ -31,7 +31,7 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
                 break
             # print(f"ID: {id}, idx: {i}, offset: {n_idx_offset}")
             # Find idx of max ecFEV1
-            idx_max_ecFEV1 = idx_max_FEV1 = df_for_ID.sort_values(
+            idx_max_ecFEV1 = df_for_ID.sort_values(
                 # by=["ecFEV1", "ecFEF2575", "O2 Saturation"], ascending=False
                 by=["ecFEV1", "ecFEF2575%ecFEV1"],
                 ascending=False,
@@ -44,7 +44,7 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
                 # df_two_days = df_for_ID.iloc[idx_two_days]
                 # Check that IQR reduces when adding the max ecFEV1: use ID 134
                 df_two_days = df_for_ID.iloc[
-                    idx_two_days + [idx_max_ecFEV1.item()]
+                    idx_two_days + [int(idx_max_ecFEV1)]
                 ].reset_index(drop=True)
             else:
                 df_two_days = df_for_ID.iloc[idx_two_days].reset_index(drop=True)
@@ -77,7 +77,7 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
                 ],
             )
             res = pd.concat([res, new_row])
-        return res
+    return res
 
 
 def process_id(id):

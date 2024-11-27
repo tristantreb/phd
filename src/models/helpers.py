@@ -898,7 +898,7 @@ def calc_pgmpy_cpt_X_x_1_minus_Y(
     nbinsX = X.card
     nbinsY = Y.card
     nbinsZ = Z.card
-    cpt = np.empty((nbinsZ, nbinsX * nbinsY))
+    cpt = np.zeros((nbinsZ, nbinsX * nbinsY))
     # print(f"calculating cpt of shape {nbinsZ} x {nbinsX} x {nbinsY} (C x (A x B)) ")
     for i in range(nbinsX):
         # Initialize the index of the current bin in the cpt
