@@ -42,61 +42,61 @@ def process_id(inf_settings):
 
 
 # Run the function in parallel using ProcessPoolExecutor
-# if __name__ == "__main__":
+if __name__ == "__main__":
 
-#     interesting_ids = [
-#         # "132",
-#         # "146",
-#         # "177",
-#         # "180",
-#         # "202",
-#         # "527",
-#         # "117",
-#         # "131",
-#         # "134",
-#         # "191",
-#         # "139",
-#         # "253",
-#         "101",
-#         # # Also from consec values
-#         # "405",
-#         # "272",
-#         # "201",
-#         # "203",
-#     ]
+    interesting_ids = [
+        # "132",
+        # "146",
+        # "177",
+        # "180",
+        # "202",
+        # "527",
+        # "117",
+        # "131",
+        # "134",
+        # "191",
+        # "139",
+        # "253",
+        "101",
+        # # Also from consec values
+        # "405",
+        # "272",
+        # "201",
+        # "203",
+    ]
 
-#     ar_priors = [
-#         "uniform",
-#         "uniform message to HFEV1",
-#         "breathe (2 days model, ecFEV1, ecFEF25-75)",
-#     ]
+    ar_priors = [
+        "uniform",
+        "uniform message to HFEV1",
+        "breathe (2 days model, ecFEV1, ecFEF25-75)",
+    ]
 
-#     inf_settings = [
-#         list(zip([ar_prior] * len(interesting_ids), interesting_ids))
-#         for ar_prior in ar_priors
-#     ]
-#     inf_settings = list(itertools.chain(*inf_settings))
+    inf_settings = [
+        list(zip([ar_prior] * len(interesting_ids), interesting_ids))
+        for ar_prior in ar_priors
+    ]
+    inf_settings = list(itertools.chain(*inf_settings))
 
-#     # num_cores = os.cpu_count()
-#     with concurrent.futures.ProcessPoolExecutor() as executor:
-#         # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
-#         # Map the function to the list of unique IDs
-#         list(executor.map(process_id, inf_settings))
+    # num_cores = os.cpu_count()
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
+        # Map the function to the list of unique IDs
+        list(executor.map(process_id, inf_settings))
 
-def main():
-    process_id(("uniform", "101"))
-    return -1
+# def main():
+#     process_id(("uniform", "101"))
+#     return -1
 
-main()
+# main()
 
-import cProfile
-import pstats
+# import cProfile
+# import pstats
 
-prof = cProfile.Profile()
-prof.run("main()")
-prof.dump_stats("cuset_cond_profiling.prof")
+# prof = cProfile.Profile()
+# prof.run("main()")
+# prof.dump_stats("cuset_cond_profiling.prof")
 
-stream = open("cuset_cond_profiling.txt", "w")
-stats = pstats.Stats("cuset_cond_profiling.prof", stream=stream)
-stats.sort_stats("cumtime")
-stats.print_stats()
+# stream = open("cuset_cond_profiling.txt", "w")
+# stats = pstats.Stats("cuset_cond_profiling.prof", stream=stream)
+# stats.sort_stats("cumtime")
+# stats.print_stats()
