@@ -60,7 +60,7 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
 
     fig = make_subplots(rows=1, cols=AR.card, shared_yaxes=True)
 
-    cpt_y_var_AR = np.empty([yVar.card, AR.card])
+    cpt_y_var_AR = np.zeros([yVar.card, AR.card])
     cpt_y_var_AR[:] = np.nan
 
     for idx, midbin in enumerate(AR_midbins):
