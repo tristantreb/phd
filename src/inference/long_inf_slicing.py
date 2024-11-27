@@ -98,18 +98,22 @@ def query_forwardly_across_days(
     belief_propagation,
     shared_variables: List[mh.SharedVariableNode],
     variables: List[mh.VariableNode],
-    evidence_variables: List[str],
+    evidence_variables_in: List[str],
     diff_threshold,
+    days_specific_evidence: List[tuple[str, List[pd.Timestamp]]],
     precomp_messages={},
     debug=True,
     auto_reset_shared_vars=True,
 ):
     """
-    THIS IMPLEMENTATION IS RIGHT FOR THE FIRST ITERATION, THEN IT IS WRONG BECAUSE THERE IS NO MESSAGE COMING FROM THE RIGHT SIDE
-    algorithm to query the point in time model forwardly across days, thus making an approximate longitudinal inference
+    Longitudinal data query.
+    Each entry is independent.
 
-    variables: contains the names of the variables to infer, as defined in the graph
+    shared_variables: variables that are shared across days, meaning there is only 1 variable for all days
+    variables: 1 variable per day
     evidence_variables: contains names of the observed variables, as defined in the df's columns
+    precomp_messages: allows to load precomputed messages in the graph for faster computations
+    days_specific_evidence: allows to observe a variable only on one or several days
     auto_reset_shared_vars: bool to automatically reset the shared variables after the computations are done
     """
     df = df.reset_index(drop=True)
@@ -137,16 +141,31 @@ def query_forwardly_across_days(
             print(f"epoch {epoch}")
 
         for i, row in df.iterrows():
-            day = row["Date Recorded"].strftime("%Y-%m-%d")
-
-            if debug:
-                for shared_var in shared_variables:
-                    shared_var.reset()
-            # Get query inputs
-            evidence_dict = build_evidence(df, i, evidence_variables)
-            vevidence = build_virtual_evidence_shared_vars(shared_variables, day)
+            date = row["Date Recorded"]
+            date_str = row["Date Recorded"].strftime("%Y-%m-%d")
 
             vars_to_infer = get_var_name_list(shared_variables + variables)
+            evidence_variables = evidence_variables_in.copy()
+
+            # Process day specific (virtual) evidence
+            for variable_name, date_list in days_specific_evidence:
+                if date in date_list:
+                    if debug:
+                        print(
+                            f"Adding {variable_name} to the evidence list for {date_str}"
+                        )
+                    evidence_variables.append(variable_name)
+                    # If var is in the variables to infer, remove it
+                    if variable_name in vars_to_infer:
+                        if debug:
+                            print(
+                                f"Removing {variable_name} from the variables list for {date_str}"
+                            )
+                        vars_to_infer.remove(variable_name)
+
+            # Get query inputs
+            evidence_dict = build_evidence(df, i, evidence_variables)
+            vevidence = build_virtual_evidence_shared_vars(shared_variables, date_str)
 
             # Precomputed messages
             ref = f"{df.loc[i, 'idx ecFEV1 (L)']}"
@@ -162,20 +181,19 @@ def query_forwardly_across_days(
                     print(
                         f"Querying all variables: {vars_to_infer} with evidence: {evidence_dict} and virtual evidence: {vevidence_str}"
                     )
-                query_res, messages = belief_propagation.query(
+                query_res = belief_propagation.query(
                     vars_to_infer,
                     evidence_dict,
                     vevidence,
                     precomp_messages=precomp_messages,
-                    get_messages=True,
                 )
                 df_res_final_epoch = save_res_to_df(
                     df_res_final_epoch,
-                    day,
+                    date_str,
                     query_res,
                     vars_to_infer,
                     row,
-                    evidence_variables,
+                    evidence_variables_in,
                 )
             else:
                 # Query shared variables to get cross plate message
@@ -189,16 +207,18 @@ def query_forwardly_across_days(
                 )
                 df_res_before_convergence = save_res_to_df(
                     df_res_before_convergence,
-                    f"{epoch}, {day}",
+                    f"{epoch}, {date_str}",
                     query_res,
                     vars_to_infer,
                     row,
-                    evidence_variables,
+                    # TODO: Using evidence_variables_in instead of evidence_variables
+                    # because code not updated to handle day specific evidence
+                    evidence_variables_in,
                 )
                 for shared_var in shared_variables:
                     # Get newly computed message from the query output
                     new_message = query_messages[shared_var.factor_node_key]
-                    shared_var.add_or_update_message(day, new_message)
+                    shared_var.add_or_update_message(date_str, new_message)
                     if len(vevidence) == 0:
                         vmessage = get_uniform_message(shared_var.card)
                     else:
@@ -225,6 +245,7 @@ def query_forwardly_across_days(
         # Convergence reached when the diff is below the threshold
         # or when the maximum number of epochs is reached
         # When convergence is reached, run another epoch to get all posteriors
+        # if epoch > 10:
         if np.sum(diffs) < diff_threshold or epoch > 99:
             if final_epoch:
                 if auto_reset_shared_vars:
@@ -251,6 +272,7 @@ def query_back_and_forth_across_days(
     max_passes=99,
 ):
     """
+    UNVALIDATED CODE!!
     algorithm to query the point in time model across days, thus making an approximate longitudinal inference
     the algorithm atlernates forward and backward passes, as a first step towards back building an algorithm that can handle inter-day dependencies
 
@@ -421,6 +443,8 @@ def query_back_and_forth_across_days_AR(
     interconnect_AR=True,
 ):
     """
+    UNVALIDATED CODE!!
+
     algorithm to query the point in time model across days, thus making an approximate longitudinal inference
     the algorithm atlernates forward and backward passes, to ensure that the day-to-day interconnected variables can propagate information backwards as efficiently as possible
 
@@ -626,6 +650,8 @@ def query_back_and_forth_across_days_specific_evidence(
     print_convergence=False,
 ):
     """
+    UNVALIDATED CODE!!
+
     algorithm to query the point in time model across days, thus making an approximate longitudinal inference
     the algorithm atlernates forward and backward passes, to ensure that the day-to-day interconnected variables can propagate information backwards as efficiently as possible
 
