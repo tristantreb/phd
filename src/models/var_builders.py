@@ -340,7 +340,7 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars(
     UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
     O2Sat = VariableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
@@ -427,7 +427,7 @@ def o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
     UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
     O2Sat = VariableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
@@ -450,7 +450,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     sex,
     ia_prior="uniform",
     ar_prior="uniform",
-    ecfev1_noise_model_cpt_suffix="",
+    ecfev1_noise_model_cpt_suffix="_std_add_mult",
 ):
     """
     Point in time model with full FEV1, FEF25-75 and O2Sat sides
@@ -523,7 +523,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
     O2Sat = VariableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
@@ -645,7 +645,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
         prior=None,
     )
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
@@ -729,7 +729,7 @@ def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
         prior=None,
     )
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
@@ -841,7 +841,7 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
     UO2Sat = VariableNode("Underlying O2 saturation (%)", 50, 100, 0.5, prior=None)
     O2Sat = VariableNode("O2 saturation (%)", 49.5, 100.5, 1, prior=None)
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{ecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
@@ -959,7 +959,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         prior=None,
     )
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
@@ -1090,7 +1090,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         prior=None,
     )
 
-    # Set shared vars factor to node keys. 
+    # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
     key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
