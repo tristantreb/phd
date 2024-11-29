@@ -608,7 +608,8 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     sex,
     ia_prior="uniform",
     ar_prior="uniform",
-    ecfev1_noise_model_cpt_suffix="_std_0.23",
+    ecfev1_noise_model_cpt_suffix="_std_0.23",\
+    ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise",
     check_model=False,
 ):
     """
@@ -628,7 +629,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         O2Sat,
         ecFEF2575prctecFEV1,
     ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
-        height, age, sex, ia_prior, ar_prior, ecfev1_noise_model_cpt_suffix
+        height, age, sex, ia_prior, ar_prior, ecfev1_noise_model_cpt_suffix, ar_fef2575_cpt_suffix
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
