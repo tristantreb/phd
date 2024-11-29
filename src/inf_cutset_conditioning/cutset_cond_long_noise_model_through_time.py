@@ -2,28 +2,21 @@ import concurrent.futures
 import itertools
 
 import src.data.breathe_data as bd
+import src.data.helpers as dh
 import src.inf_cutset_conditioning.cutset_cond_algs as cca
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
 
 def process_id(inf_settings):
-    print(f"Processing {inf_settings}")
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
 
-    if id == "101":
-        dftmp = df[df["ID"] == "101"].iloc[:591]
-    elif id == "405":
-        dftmp = df[df["ID"] == "405"]
-    elif id == "272":
-        dftmp = df[df["ID"] == "272"].iloc[:417]
-    elif id == "201":
-        dftmp = df[df["ID"] == "201"].iloc[:289]
-    elif id == "203":
-        dftmp = df[df["ID"] == "203"].iloc[:285]
-    elif id == "527":
-        dftmp = df[df["ID"] == "527"]
+    dftmp, start_idx, end_idx = dh.find_longest_consec_series(df[df.ID == id])
+
+    print(
+        f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
+    )
 
     (
         fig,
@@ -44,36 +37,36 @@ def process_id(inf_settings):
 if __name__ == "__main__":
 
     interesting_ids = [
-        # "132",
-        # "146",
-        # "177",
-        # "180",
-        # "202",
-        # "527",
-        # "117",
-        # "131",
-        # "134",
-        # "191",
-        # "139",
-        # "253",
-        "101",
+        "132",
+        "146",
+        "177",
+        "180",
+        "202",
+        "527",
+        "117",
+        "131",
+        "134",
+        "191",
+        "139",
+        "253",
+        # "101",
         # # Also from consec values
-        "405",
-        "272",
-        "201",
-        "203",
+        # "405",
+        # "272",
+        # "201",
+        # "203",
         # "527",
     ]
 
     ar_priors = [
-        "uniform",
+        # "uniform",
         "uniform message to HFEV1",
         "breathe (2 days model, ecFEV1, ecFEF25-75)",
     ]
 
     ar_change_cpt_suffix = [
         "_shift_span_[-20;20]_joint_sampling_3_days_model",
-        # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
+        "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card

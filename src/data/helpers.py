@@ -118,3 +118,29 @@ def add_drug_therapy_shapes_for_ID(fig, df_for_ID, drug_df):
             font=dict(size=10),
         )
     return -1
+
+
+def find_longest_consec_series(df_for_ID):
+
+    df_for_ID = df_for_ID.reset_index(drop=True)
+    df_for_ID["Prev day"] = df_for_ID["Date Recorded"].shift(1)
+    df_for_ID["Days elapsed"] = df_for_ID["Date Recorded"] - df_for_ID["Prev day"]
+
+    # Get first idx where Days elapsed is greater than 1
+    idx = df_for_ID[df_for_ID["Days elapsed"] > pd.Timedelta(days=3)].index
+    # Add the first idx
+    idx = idx.insert(0, 0)
+    # Add last idx
+    idx = idx.insert(len(idx), len(df_for_ID))
+
+    # Make the difference between the idxs
+    diff = np.diff(idx)
+
+    # Get the longest series of consecutive measurements
+    idx_max_diff = np.argmax(diff)
+    start_idx = idx[idx_max_diff]
+
+    end_idx = idx[idx_max_diff + 1]
+
+    df_for_ID[start_idx:end_idx]
+    return df_for_ID[start_idx:end_idx], start_idx, end_idx
