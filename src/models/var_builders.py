@@ -496,6 +496,13 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
                 "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
             }
         )
+    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75, add mult noise)":
+        AR.cpt = AR.set_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575_ecfev1addmultnoise(),
+            }
+        )
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(

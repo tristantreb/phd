@@ -82,6 +82,10 @@ priors_settings_layout = html.Div(
                             "label": "breathe (1 day model, O2Sat, ecFEV1)",
                             "value": "breathe (1 day model, O2Sat, ecFEV1)",
                         },
+                        {
+                            "label": "breathe (2 days model, ecFEV1, ecFEF25-75, add mult noise)",
+                            "value": "breathe (2 days model, ecFEV1, ecFEF25-75, add mult noise)",
+                        }
                     ],
                     value="uniform",
                     style=select_style,
