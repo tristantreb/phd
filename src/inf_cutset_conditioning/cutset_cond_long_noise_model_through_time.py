@@ -10,8 +10,7 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 def process_id(inf_settings):
     print(f"Processing {inf_settings}")
 
-    ar_prior, id = inf_settings
-    ar_change_cpt_suffix = "_shift_span_[-20;20]_joint_sampling_3_days_model"
+    ar_change_cpt_suffix, ar_prior, id = inf_settings
 
     if id == "101":
         dftmp = df[df["ID"] == "101"].iloc[:591]
@@ -31,7 +30,7 @@ def process_id(inf_settings):
         p_M_given_D,
         AR_given_M_and_D,
     ) = cca.run_long_noise_model_through_time(
-    # ) = cca.run_long_noise_model_through_time_light(
+        # ) = cca.run_long_noise_model_through_time_light(
         dftmp,
         ar_prior=ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
@@ -59,10 +58,11 @@ if __name__ == "__main__":
         # "253",
         "101",
         # # Also from consec values
-        # "405",
-        # "272",
-        # "201",
-        # "203",
+        "405",
+        "272",
+        "201",
+        "203",
+        # "527",
     ]
 
     ar_priors = [
@@ -71,16 +71,19 @@ if __name__ == "__main__":
         "breathe (2 days model, ecFEV1, ecFEF25-75)",
     ]
 
-    inf_settings = [
-        list(zip([ar_prior] * len(interesting_ids), interesting_ids))
-        for ar_prior in ar_priors
+    ar_change_cpt_suffix = [
+        "_shift_span_[-20;20]_joint_sampling_3_days_model",
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
     ]
-    inf_settings = list(itertools.chain(*inf_settings))
+
+    # Zip the three elements together, to create a list of tuples of size card x card x card
+    inf_settings = list(
+        itertools.product(ar_change_cpt_suffix, ar_priors, interesting_ids)
+    )
 
     # num_cores = os.cpu_count()
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
-        # Map the function to the list of unique IDs
         list(executor.map(process_id, inf_settings))
 
 # def main():

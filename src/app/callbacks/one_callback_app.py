@@ -562,6 +562,11 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         ia_prior: str,
         ar_prior: str,
     ):
+
+        # ecfev1_noise_model_cpt_suffix="_std_0.043_mult"
+        # ecfev1_noise_model_cpt_suffix="_std_0.23"
+        ecfev1_noise_model_cpt_suffix = "_std_0.068"
+
         (
             _,
             inf_alg,
@@ -576,7 +581,12 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             O2Sat,
             ecFEF2575prctecFEV1,
         ) = mb.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
-            height, age, sex, ia_prior, ar_prior, ecfev1_noise_model_cpt_suffix="_std_0.23"
+            height,
+            age,
+            sex,
+            ia_prior,
+            ar_prior,
+            ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_cpt_suffix,
         )
 
         # INFERENCE
@@ -696,7 +706,9 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 1, 5)
 
         # IA
-        ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 3, 3, None, "crimson", xlabels=False)
+        ih.plot_histogram(
+            fig, IA, IA.cpt, ia_min, ia_max, 3, 3, None, "crimson", xlabels=False
+        )
         ih.plot_histogram(
             fig, IA, res_ia.values, ia_min, ia_max, 4, 3, IA.name, "crimson"
         )

@@ -661,7 +661,13 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
 
 
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
-    height, age, sex, ia_prior="uniform", ar_prior="uniform", ecfev1_noise_model_cpt_suffix="_std_0.23", check_model=False
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ecfev1_noise_model_cpt_suffix="_std_0.23",
+    check_model=False,
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
@@ -785,6 +791,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     ar_prior="uniform",
     ar_change_cpt_suffix="",
     n_cutset_conditioned_states=None,
+    ecfev1_noise_model_suffix="_std_0.23",
     check_model=False,
 ):
     """
@@ -814,6 +821,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         ar_prior,
         ar_change_cpt_suffix,
         n_cutset_conditioned_states,
+        ecfev1_noise_model_suffix,
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
@@ -1195,12 +1203,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
         O2Sat,
         ecFEF2575prctecFEV1,
     ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
-        height,
-        age,
-        sex,
-        ia_prior,
-        ar_prior,
-        ecfev1_noise_model_cpt_suffix
+        height, age, sex, ia_prior, ar_prior, ecfev1_noise_model_cpt_suffix
     )
 
     (
