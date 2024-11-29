@@ -615,9 +615,7 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
         col=1,
     )
 
-    title = (
-        f"{id} - Posterior HFEV1 after fusing all P(M_h|D), noise<br>{model_spec_txt}"
-    )
+    title = f"{id} - Results after fusing all P(M_h|D) {len(df)} entries<br>{model_spec_txt}"
     fig.update_layout(
         font=dict(size=12),
         height=700,

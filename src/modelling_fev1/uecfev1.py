@@ -23,22 +23,21 @@ def PDF_conv_uni_gausian_additive(z, y1, y2, sigma, abserr_tol=1e-10):
     return A * B * val
 
 
-def PDF_conv_uni_gausian_multiplicative(z, y1, y2, abserr_tol=1e-10):
+def PDF_conv_uni_gausian_add_mult(z, y1, y2, abserr_tol=1e-10):
     """
     A more correct approach is a linear noise: both additive and multiplicative noise are present
     PDF of a convolution of a uniform and a gaussian distribution
 
     Return P(z | y1 < y < y2)
+
+    std_ecfev1(ecfev1) = ax + b
+    a = 0.00510174, multiplicative noise
+    b = 0.03032977, additive noise
     """
     A = 1 / (y2 - y1)
 
     def sigma_fn(fev1):
-        if fev1 <= 2:
-            return 0.03440651
-        elif fev1 > 2 and fev1 < 3:
-            return 0.04515183
-        else:
-            return 0.05417496
+        return 0.00510174 * fev1 + 0.03032977
 
     def conv_fn(y, z):
         return np.exp(-1 / 2 * (z - y) ** 2 / sigma_fn(z) ** 2) / (
