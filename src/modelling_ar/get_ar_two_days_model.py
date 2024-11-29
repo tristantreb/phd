@@ -28,6 +28,6 @@ if __name__ == "__main__":
 
     final_results = pd.concat(results, ignore_index=True)
     final_results.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/Refining_F3/infer_AR_using_two_days_model_ecFEV1_ecfev1noiseaddmult.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/Refining_F3/infer_AR_using_two_days_model_ecFEV1_ecFEF2575_ecfev1noiseaddmult.xlsx",
         index=False
     )

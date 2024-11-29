@@ -451,6 +451,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     ia_prior="uniform",
     ar_prior="uniform",
     ecfev1_noise_model_cpt_suffix="_std_add_mult",
+    ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise",
 ):
     """
     Point in time model with full FEV1, FEF25-75 and O2Sat sides
@@ -536,7 +537,9 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
-    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
+    ecFEF2575prctecFEV1.set_cpt(
+        get_cpt([ecFEF2575prctecFEV1, AR], suffix=ar_fef2575_cpt_suffix)
+    )
 
     return (
         HFEV1,
