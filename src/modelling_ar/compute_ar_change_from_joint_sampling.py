@@ -21,7 +21,7 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
     print(f"Processing ID {id} with {len(df_for_ID)} entries")
 
     res = pd.DataFrame()
-    for n_idx_offset in list(np.arange(2, max_offset + 1)):
+    for n_idx_offset in list(np.arange(1, max_offset + 1)):
         print(f"ID: {id}, offset: {n_idx_offset}")
 
         for i, row in df_for_ID.iterrows():
@@ -95,6 +95,6 @@ if __name__ == "__main__":
 
     final_result = pd.concat(results, ignore_index=True)
     final_result.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/Refining_F3/AR_joint_samples_diff_for_change_factor_ecfev1noisestd0.23.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/AR_joint_samples_diffs/AR_joint_samples_diff_for_change_factor_ecfev1noiseaddmult.xlsx",
         index=False,
     )
