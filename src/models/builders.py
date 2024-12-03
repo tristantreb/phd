@@ -793,6 +793,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     ar_change_cpt_suffix=None,
     n_cutset_conditioned_states=None,
     ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
     check_model=False,
 ):
     """
@@ -823,6 +824,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         ar_change_cpt_suffix,
         n_cutset_conditioned_states,
         ecfev1_noise_model_suffix,
+        fef2575_cpt_suffix
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,

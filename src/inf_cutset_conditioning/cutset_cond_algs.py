@@ -204,14 +204,15 @@ def run_long_noise_model_through_time(
     df,
     ar_prior="uniform",
     ia_prior="uniform",
-    ar_change_cpt_suffix="",
-    ecfev1_noise_model_suffix="",
+    ar_change_cpt_suffix=None,
+    ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
     debug=False,
     save=False,
 ):
     inf_alg, HFEV1, HFEV1_obs_list, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt = (
         load_long_noise_model_through_time(
-            df, ar_prior, ia_prior, ar_change_cpt_suffix, ecfev1_noise_model_suffix
+            df, ar_prior, ia_prior, ar_change_cpt_suffix, ecfev1_noise_model_suffix, fef2575_cpt_suffix
         )
     )
 
@@ -267,6 +268,7 @@ def load_long_noise_model_through_time(
     ia_prior="uniform",
     ar_change_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
 ):
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
@@ -278,6 +280,7 @@ def load_long_noise_model_through_time(
             sex,
             ar_change_cpt_suffix=ar_change_cpt_suffix,
             ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix=fef2575_cpt_suffix
         )
     )
     HFEV1_obs_idx_list = range(HFEV1.card)

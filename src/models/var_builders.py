@@ -877,6 +877,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     ar_change_cpt_suffix=None,
     n_cutset_conditioned_states=None,
     ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
@@ -989,7 +990,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
-    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
+    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix))
 
     return (
         HFEV1,
