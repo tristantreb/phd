@@ -23,7 +23,11 @@ def sample_jointly_from_AR(df_two_days, date_1, date_2, light_model=False, debug
         O2Sat,
         ecFEF2575prctecFEV1,
     ) = mb.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
-        height, age, sex
+        height,
+        age,
+        sex,
+        ecfev1_noise_model_cpt_suffix="_std_0.068",
+        ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise",
     )
     if light_model:
         (

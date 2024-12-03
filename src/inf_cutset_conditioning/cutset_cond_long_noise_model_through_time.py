@@ -27,6 +27,8 @@ def process_id(inf_settings):
         dftmp,
         ar_prior=ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
+        ecfev1_noise_model_suffix="_std_0.068",
+        # ecfev1_noise_model_suffix="_std_add_mult",
         debug=False,
         save=True,
     )
@@ -49,24 +51,26 @@ if __name__ == "__main__":
         "191",
         "139",
         "253",
-        # "101",
+        "101",
         # # Also from consec values
-        # "405",
-        # "272",
-        # "201",
-        # "203",
-        # "527",
+        "405",
+        "272",
+        "201",
+        "203",
+        "527",
     ]
 
     ar_priors = [
         # "uniform",
-        "uniform message to HFEV1",
-        "breathe (2 days model, ecFEV1, ecFEF25-75)",
+        # "uniform message to HFEV1",
+        # "breathe (2 days model, ecFEV1, ecFEF25-75)",
+        "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
     ]
 
     ar_change_cpt_suffix = [
-        "_shift_span_[-20;20]_joint_sampling_3_days_model",
-        "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model",
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
+        "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise"
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card

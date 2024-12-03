@@ -874,9 +874,9 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     sex,
     ia_prior="uniform",
     ar_prior="uniform",
-    ar_change_cpt_suffix="",
+    ar_change_cpt_suffix=None,
     n_cutset_conditioned_states=None,
-    ecfev1_noise_model_suffix="_std_0.23",
+    ecfev1_noise_model_suffix=None,
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
@@ -932,6 +932,13 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
             {
                 "type": "custom",
                 "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
+            }
+        )
+    elif ar_prior == "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575_ecfev1addmultnoise(),
             }
         )
 
