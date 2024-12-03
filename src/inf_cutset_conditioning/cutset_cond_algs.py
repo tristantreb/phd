@@ -205,11 +205,14 @@ def run_long_noise_model_through_time(
     ar_prior="uniform",
     ia_prior="uniform",
     ar_change_cpt_suffix="",
+    ecfev1_noise_model_suffix="",
     debug=False,
     save=False,
 ):
     inf_alg, HFEV1, HFEV1_obs_list, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt = (
-        load_long_noise_model_through_time(df, ar_prior, ia_prior, ar_change_cpt_suffix)
+        load_long_noise_model_through_time(
+            df, ar_prior, ia_prior, ar_change_cpt_suffix, ecfev1_noise_model_suffix
+        )
     )
 
     (
@@ -259,10 +262,13 @@ def run_long_noise_model_through_time_light(
 
 
 def load_long_noise_model_through_time(
-    df, ar_prior="uniform", ia_prior="uniform", ar_change_cpt_suffix=""
+    df,
+    ar_prior="uniform",
+    ia_prior="uniform",
+    ar_change_cpt_suffix=None,
+    ecfev1_noise_model_suffix=None,
 ):
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
-    ecfev1_noise_model_suffix = "_std_0.068"
 
     # Initialize the noise model and its variables
     _, _, HFEV1, _, _, _, HO2Sat, *_ = (
@@ -296,8 +302,9 @@ def load_long_noise_model_through_time(
         sex,
         ia_prior,
         ar_prior,
-        ar_change_cpt_suffix=ar_change_cpt_suffix,
-        n_cutset_conditioned_states=len(HFEV1_obs_idx_list),
+        ar_change_cpt_suffix,
+        len(HFEV1_obs_idx_list),
+        ecfev1_noise_model_suffix,
     )
 
     model_spec_txt = f"AR prior: {ar_prior}, ecFEV1 noise model {ecfev1_noise_model_suffix}<br>AR change CPT: {ar_change_cpt_suffix}"

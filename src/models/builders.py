@@ -790,9 +790,9 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     sex,
     ia_prior="uniform",
     ar_prior="uniform",
-    ar_change_cpt_suffix="",
+    ar_change_cpt_suffix=None,
     n_cutset_conditioned_states=None,
-    ecfev1_noise_model_suffix="_std_0.23",
+    ecfev1_noise_model_suffix=None,
     check_model=False,
 ):
     """

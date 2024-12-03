@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 import src.data.breathe_data as bd
-import src.data.helpers as dh
+import src.data.helpers as dh 
 import src.modelling_ar.AR_joint_sampling as model_ar
 
 df_obs = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
@@ -72,7 +72,7 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
                     "ID",
                     "Date Recorded",
                     "Days elapsed",
-                    "AR samples shift",
+                    "AR samples shcptift",
                     "Offset",
                 ],
             )
@@ -95,6 +95,6 @@ if __name__ == "__main__":
 
     final_result = pd.concat(results, ignore_index=True)
     final_result.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/AR_joint_samples_diffs/AR_joint_samples_diff_for_change_factor_ecfev1noiseaddmult.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/AR_joint_samples_diffs/AR_joint_samples_diff_for_change_factor_ecfev1noise0.068.xlsx",
         index=False,
     )
