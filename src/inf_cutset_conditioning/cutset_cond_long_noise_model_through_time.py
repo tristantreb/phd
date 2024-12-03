@@ -18,6 +18,10 @@ def process_id(inf_settings):
         f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
     )
 
+    # ecfev1_noise_model_suffix = "_std_0.068"
+    ecfev1_noise_model_suffix = "_std_0.23"
+    # ecfev1_noise_model_suffix = "_std_add_mult"
+
     (
         fig,
         p_M_given_D,
@@ -27,9 +31,9 @@ def process_id(inf_settings):
         dftmp,
         ar_prior=ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
-        ecfev1_noise_model_suffix="_std_0.068",
-        # ecfev1_noise_model_suffix="_std_add_mult",
-        debug=False,
+        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        fef2575_cpt_suffix="",
+        debug=False, 
         save=True,
     )
     return -1
@@ -39,38 +43,39 @@ def process_id(inf_settings):
 if __name__ == "__main__":
 
     interesting_ids = [
-        "132",
-        "146",
-        "177",
-        "180",
-        "202",
-        "527",
-        "117",
-        "131",
-        "134",
-        "191",
-        "139",
-        "253",
+        # "132",
+        # "146",
+        # "177",
+        # "180",
+        # "202",
+        # "527",
+        # "117",
+        # "131",
+        # "134",
+        # "191",
+        # "139",
+        # "253",
         "101",
-        # # Also from consec values
-        "405",
-        "272",
-        "201",
-        "203",
-        "527",
+        # Also from consec values
+        # "405",
+        # "272",
+        # "201",
+        # "203",
+        # "527",
     ]
 
     ar_priors = [
         # "uniform",
         # "uniform message to HFEV1",
-        # "breathe (2 days model, ecFEV1, ecFEF25-75)",
-        "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
+        "breathe (2 days model, ecFEV1, ecFEF25-75)",
+        # "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
     ]
 
     ar_change_cpt_suffix = [
-        # "_shift_span_[-20;20]_joint_sampling_3_days_model",
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model", 
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
-        "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise"
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise"
+        "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068"
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
