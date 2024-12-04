@@ -202,6 +202,7 @@ def compute_log_p_D_given_M_for_noise_model(
 
 def run_long_noise_model_through_time(
     df,
+    type="fev1, fef2575",
     ar_prior="uniform",
     ia_prior="uniform",
     ar_change_cpt_suffix=None,
@@ -212,26 +213,48 @@ def run_long_noise_model_through_time(
 ):
     inf_alg, HFEV1, HFEV1_obs_list, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt = (
         load_long_noise_model_through_time(
-            df, ar_prior, ia_prior, ar_change_cpt_suffix, ecfev1_noise_model_suffix, fef2575_cpt_suffix
+            df,
+            ar_prior,
+            ia_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix,
         )
     )
 
-    (
-        fig,
-        p_M_given_D,
-        AR_given_M_and_D,
-    ) = compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
-        df,
-        inf_alg,
-        HFEV1,
-        HFEV1_obs_list,
-        AR,
-        ecFEV1,
-        ecFEF2575prctecFEV1,
-        model_spec_txt,
-        debug=debug,
-        save=save,
-    )
+    if type == "fev1, fef2575":
+        (
+            fig,
+            p_M_given_D,
+            AR_given_M_and_D,
+        ) = calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
+            df,
+            inf_alg,
+            HFEV1,
+            HFEV1_obs_list,
+            AR,
+            ecFEV1,
+            ecFEF2575prctecFEV1,
+            model_spec_txt,
+            debug=debug,
+            save=save,
+        )
+    elif type == "fev1":
+        (
+            fig,
+            p_M_given_D,
+            AR_given_M_and_D,
+        ) = calc_log_p_D_given_M_and_AR_for_ID_obs_fev1(
+            df,
+            inf_alg,
+            HFEV1,
+            HFEV1_obs_list,
+            AR,
+            ecFEV1,
+            model_spec_txt,
+            debug=debug,
+            save=save,
+        )
     return fig, p_M_given_D, AR_given_M_and_D
 
 
@@ -248,7 +271,7 @@ def run_long_noise_model_through_time_light(
         fig,
         p_M_given_D,
         AR_given_M_and_D,
-    ) = compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
+    ) = calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
         df,
         inf_alg,
         HFEV1,
@@ -280,7 +303,7 @@ def load_long_noise_model_through_time(
             sex,
             ar_change_cpt_suffix=ar_change_cpt_suffix,
             ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
-            fef2575_cpt_suffix=fef2575_cpt_suffix
+            fef2575_cpt_suffix=fef2575_cpt_suffix,
         )
     )
     HFEV1_obs_idx_list = range(HFEV1.card)
@@ -372,7 +395,7 @@ def load_long_noise_model_through_time_light(
     )
 
 
-def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
+def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
     df,
     inf_alg,
     HFEV1,
@@ -391,13 +414,11 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
         print(f"ID {id}")
 
     N = len(df)
-    df_for_ID = df.copy()
+    df = df.copy()
     H = len(HFEV1_obs_idx_list)
     log_p_D_given_M = np.zeros((N, H))
     AR_given_M_and_past_D = np.zeros((N, AR.card, H))
     AR_given_M_and_same_day_D = np.zeros((N, AR.card, H))
-    AR_given_M_and_future_D = np.zeros((N, AR.card, H))
-    AR_given_M_and_all_D = np.zeros((N, AR.card, H))
 
     arr = np.ones(AR.card)
     arr /= arr.sum()
@@ -417,8 +438,8 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
     # P(model | data) prop_to P(data | model) * P(model)
     # P(data | model) = P(ecFEV1, ecFEF2575 | HFEV1) = P(ecFEV1 | HFEV1) * P( ecFEF2575 | HFEV1, ecFEV1)
     tic = time.time()
-    for n, row in df_for_ID.iterrows():
-        curr_date = df_for_ID.loc[n, "Date Recorded"]
+    for n, row in df.iterrows():
+        curr_date = df.loc[n, "Date Recorded"]
         # There is no prev day if it's the first day
         prev_date = df.iloc[n - 1]["Date Recorded"] if n > 0 else None
         if debug:
@@ -448,11 +469,12 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
                 precomp_messages=precomp_messsages,
                 get_messages=True,
             )
-            dist_ecFEV1 = res1[ecFEV1.name].values
-            p_ecFEV1 = dist_ecFEV1[row["idx ecFEV1 (L)"]]
             m_from_hfev1_dict.update(
                 {ref: {m_from_hfev1_key: messages[m_from_hfev1_key]}}
             )
+            dist_ecFEV1 = res1[ecFEV1.name].values
+            p_ecFEV1 = dist_ecFEV1[row["idx ecFEV1 (L)"]]
+            log_p_D_given_M[n, h] = np.log(p_ecFEV1)
 
             # Get P(ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1)
             precomp_messsages = uniform_from_o2_side | uniform_from_fef2575
@@ -467,44 +489,15 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
                 },
                 virtual_evidence=[vevidence_ar],
                 precomp_messages=precomp_messsages,
+                # precomp_messages={},
                 get_messages=True,
             )
-            dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
-            p_ecFEF2575 = dist_ecFEF2575prctecFEV1[row["idx ecFEF2575%ecFEV1"]]
             m_from_fev1_factor_dict.update(
                 {ref: {m_from_fev_factor_key: messages[m_from_fev_factor_key]}}
             )
-
-            # res3, _ = ih.infer_on_factor_graph(
-            #     inf_alg,
-            #     [O2Sat],
-            #     [
-            #         [HFEV1, HFEV1_obs],
-            #         [ecFEV1, row.ecFEV1],
-            #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
-            #     ],
-            #     [vevidence_ar],
-            #     get_messages=True,
-            # )
-            # dist_O2Sat = res3[O2Sat.name].values
-
-            # res4, _ = ih.infer_on_factor_graph(
-            #     inf_alg,
-            #     [AR],
-            #     [
-            #         [HFEV1, HFEV1_obs],
-            #         [ecFEV1, row.ecFEV1],
-            #         [ecFEF2575prctecFEV1, row["ecFEF2575%ecFEV1"]],
-            #         # [O2Sat, row["O2 Saturation"]],
-            #     ],
-            #     [vevidence_ar],
-            #     get_messages=True,
-            # )
-
-            # Get the log probability of the data under the model
-            log_p_D_given_M[n, h] = np.log(p_ecFEV1) + np.log(
-                p_ecFEF2575
-            )  # + np.log(p_O2Sat)
+            dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
+            p_ecFEF2575 = dist_ecFEF2575prctecFEV1[row["idx ecFEF2575%ecFEV1"]]
+            log_p_D_given_M[n, h] += np.log(p_ecFEF2575)
 
             # Add FEF25-75 observation to P(AR|HFEV1, ecFEV1)
             # Done manually for time efficiency
@@ -529,46 +522,19 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
             AR_without_vevidence /= AR_without_vevidence.sum()
             AR_given_M_and_same_day_D[n, :, h] = AR_without_vevidence
 
-    # Do a backwards sweep to get the AR posteriors
-    AR_given_M_and_future_D = AR_given_M_and_same_day_D.copy()
-
-    # The AR posterior on the last day only has contribution from past data
-    AR_given_M_and_all_D[N - 1, :, :] = AR_given_M_and_past_D[N - 1, :, :]
-
-    # Hence we can start computing the AR posteriors from the second last day
-    for n in range(N - 2, -1, -1):
-        next_date = df_for_ID.loc[n + 1, "Date Recorded"]
-        curr_date = df_for_ID.loc[n, "Date Recorded"]
-        de = AR.calc_days_elapsed(curr_date, next_date)
-        if debug:
-            print(
-                f"Propagating AR backwards: Processing idx {n}/{N-1}, curr date {curr_date}, next date {next_date}, days elapsed {de}"
-            )
-        if de > 3:
-            ValueError(f"Days elapsed is {de}, should be at most 3")
-
-        for h, HFEV1_bin_idx in enumerate(HFEV1_obs_idx_list):
-            next_AR = AR_given_M_and_future_D[n + 1, :, h]
-            curr_AR = AR_given_M_and_future_D[n, :, h]
-            past_AR = AR_given_M_and_past_D[n, :, h]
-
-            # Compute contribution from future days' data
-            next_AR_m = np.matmul(next_AR, AR.change_cpt[:, :, de - 1])
-            next_AR_m = next_AR_m / next_AR_m.sum()
-
-            # Compute posterior for past and future data
-
-            curr_AR_posterior = past_AR * next_AR_m
-            curr_AR_posterior = curr_AR_posterior / curr_AR_posterior.sum()
-            AR_given_M_and_all_D[n, :, h] = curr_AR_posterior
-
-            # Include future data in current day
-            curr_AR_with_future_D = curr_AR * next_AR_m
-            curr_AR_with_future_D = curr_AR_with_future_D / curr_AR_with_future_D.sum()
-            AR_given_M_and_future_D[n, :, h] = curr_AR_with_future_D
-
     toc = time.time()
     print(f"Time for {N} entries: {toc-tic:.2f} s")
+
+    AR_given_M_and_all_D = run_backward_sweep_to_get_ar_posteriors(
+        df,
+        N,
+        H,
+        HFEV1_obs_idx_list,
+        AR,
+        AR_given_M_and_past_D,
+        AR_given_M_and_same_day_D,
+        debug,
+    )
 
     # For each HFEV1 model, given HFEV1_obs_idx_list, we compute the log probability of the model given the data
     # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
@@ -585,9 +551,147 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
     AR_given_M_and_D = np.matmul(AR_given_M_and_all_D, p_M_given_D)
 
     # Get the probability of HFEV1
-    p_HFEV1_given_D = p_M_given_D
+    fig = plot_cutset_cond_results(
+        df, HFEV1, p_M_given_D, AR, AR_given_M_and_D, model_spec_txt, save
+    )
 
-    # Add plot
+    return (
+        fig,
+        p_M_given_D,
+        AR_given_M_and_D,
+    )
+
+
+def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1(
+    df,
+    inf_alg,
+    HFEV1,
+    HFEV1_obs_idx_list,
+    AR,
+    ecFEV1,
+    model_spec_txt,
+    debug=False,
+    save=False,
+):
+    df = df.copy().sort_values(by="Date Recorded").reset_index(drop=True)
+    id = df.loc[0, "ID"]
+
+    if debug:
+        print(f"ID {id}")
+
+    N = len(df)
+    df = df.copy()
+    H = len(HFEV1_obs_idx_list)
+    log_p_D_given_M = np.zeros((N, H))
+    AR_given_M_and_past_D = np.zeros((N, AR.card, H))
+    AR_given_M_and_same_day_D = np.zeros((N, AR.card, H))
+
+    arr = np.ones(AR.card)
+    arr /= arr.sum()
+    uniform_from_o2_side = {
+        "['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
+    }
+    uniform_from_fef2575 = {
+        "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
+    }
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_dict = {}
+
+    # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
+    # Process each row
+    # P(model | data) prop_to P(data | model) * P(model)
+    # P(data | model) = P(ecFEV1, ecFEF2575 | HFEV1) = P(ecFEV1 | HFEV1) * P( ecFEF2575 | HFEV1, ecFEV1)
+    tic = time.time()
+    for n, row in df.iterrows():
+        curr_date = df.loc[n, "Date Recorded"]
+        # There is no prev day if it's the first day
+        prev_date = df.iloc[n - 1]["Date Recorded"] if n > 0 else None
+        if debug:
+            print(f"Row {n + 1}/{N}, Date: {curr_date}, Prev Date: {prev_date}")
+
+        # For each model given an HFEV1 observation
+        for h, HFEV1_bin_idx in enumerate(HFEV1_obs_idx_list):
+            vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar(
+                AR, h, curr_date, prev_date, next_date=None, debug=debug
+            )
+
+            if debug:
+                print(
+                    f"HFEV1_obs: {HFEV1_bin_idx}, vevidence_ar: {vevidence_ar.values}"
+                )
+
+            # PERFORM INFERENCES
+            # Get P(ecFEV1 | model conditionned on HFEV1_obs)
+            precomp_messsages = uniform_from_o2_side | uniform_from_fef2575
+            ref = f"{HFEV1_bin_idx}"
+            if ref in m_from_hfev1_dict:
+                precomp_messsages.update(m_from_hfev1_dict[ref])
+            res1, messages = inf_alg.query(
+                variables=[ecFEV1.name, AR.name],
+                evidence={HFEV1.name: HFEV1_bin_idx},
+                virtual_evidence=[vevidence_ar],
+                precomp_messages=precomp_messsages,
+                get_messages=True,
+            )
+            m_from_hfev1_dict.update(
+                {ref: {m_from_hfev1_key: messages[m_from_hfev1_key]}}
+            )
+            dist_ecFEV1 = res1[ecFEV1.name].values
+            p_ecFEV1 = dist_ecFEV1[row["idx ecFEV1 (L)"]]
+            log_p_D_given_M[n, h] = np.log(p_ecFEV1)
+
+            # Compute AR
+            dist_AR = res1[AR.name].values
+            dist_AR /= dist_AR.sum()
+            AR_given_M_and_past_D[n, :, h] = dist_AR
+
+            # Add the AR dist to be used for as next day's AR vevidence
+            date_str = row["Date Recorded"].strftime("%Y-%m-%d")
+            AR.add_or_update_posterior(h, date_str, dist_AR, debug)
+
+            # Get the AR without the contribution from the past days' data
+            # This will be used to get the contribution from the next days' data
+            # Check that wherever vevidence_ar is 0, the res2[AR.name] is also 0
+            AR_without_vevidence = np.divide(
+                dist_AR, vevidence_ar.values, where=vevidence_ar.values != 0
+            )
+            AR_without_vevidence /= AR_without_vevidence.sum()
+            AR_given_M_and_same_day_D[n, :, h] = AR_without_vevidence
+
+    toc = time.time()
+    print(f"Time for {N} entries: {toc-tic:.2f} s")
+
+    AR_given_M_and_all_D = run_backward_sweep_to_get_ar_posteriors(
+        df,
+        N,
+        H,
+        HFEV1_obs_idx_list,
+        AR,
+        AR_given_M_and_past_D,
+        AR_given_M_and_same_day_D,
+        debug,
+    )
+
+    p_M_given_D, AR_given_M_and_D = fuse_results_from_conditioned_models(
+        HFEV1, H, HFEV1_obs_idx_list, log_p_D_given_M, AR_given_M_and_all_D
+    )
+
+    # Get the probability of HFEV1
+    fig = plot_cutset_cond_results(
+        df, HFEV1, p_M_given_D, AR, AR_given_M_and_D, model_spec_txt, save
+    )
+
+    return (
+        fig,
+        p_M_given_D,
+        AR_given_M_and_D,
+    )
+
+
+def plot_cutset_cond_results(
+    df, HFEV1, p_HFEV1_given_D, AR, AR_given_M_and_D, model_spec_txt, save
+):
+    id = df.loc[0, "ID"]
     layout = [
         [{"type": "scatter", "rowspan": 1, "colspan": 1}, None, None],
         [{"type": "heatmap", "rowspan": 3, "colspan": 3}, None, None],
@@ -660,9 +764,77 @@ def compute_log_p_D_given_M_for_noise_model_with_temporal_AR(
         )
     else:
         fig.show()
+    return fig
 
-    return (
-        fig,
-        p_M_given_D,
-        AR_given_M_and_D,
-    )
+
+def run_backward_sweep_to_get_ar_posteriors(
+    df,
+    N,
+    H,
+    HFEV1_obs_idx_list,
+    AR,
+    AR_given_M_and_past_D,
+    AR_given_M_and_same_day_D,
+    debug,
+):
+    AR_given_M_and_future_D = np.zeros((N, AR.card, H))
+    AR_given_M_and_all_D = np.zeros((N, AR.card, H))
+
+    # Do a backwards sweep to get the AR posteriors
+    AR_given_M_and_future_D = AR_given_M_and_same_day_D.copy()
+
+    # The AR posterior on the last day only has contribution from past data
+    AR_given_M_and_all_D[N - 1, :, :] = AR_given_M_and_past_D[N - 1, :, :]
+
+    # Hence we can start computing the AR posteriors from the second last day
+    for n in range(N - 2, -1, -1):
+        next_date = df.loc[n + 1, "Date Recorded"]
+        curr_date = df.loc[n, "Date Recorded"]
+        de = AR.calc_days_elapsed(curr_date, next_date)
+        if debug:
+            print(
+                f"Propagating AR backwards: Processing idx {n}/{N-1}, curr date {curr_date}, next date {next_date}, days elapsed {de}"
+            )
+        if de > 3:
+            ValueError(f"Days elapsed is {de}, should be at most 3")
+
+        for h, HFEV1_bin_idx in enumerate(HFEV1_obs_idx_list):
+            next_AR = AR_given_M_and_future_D[n + 1, :, h]
+            curr_AR = AR_given_M_and_future_D[n, :, h]
+            past_AR = AR_given_M_and_past_D[n, :, h]
+
+            # Compute contribution from future days' data
+            next_AR_m = np.matmul(next_AR, AR.change_cpt[:, :, de - 1])
+            next_AR_m = next_AR_m / next_AR_m.sum()
+
+            # Compute posterior for past and future data
+
+            curr_AR_posterior = past_AR * next_AR_m
+            curr_AR_posterior = curr_AR_posterior / curr_AR_posterior.sum()
+            AR_given_M_and_all_D[n, :, h] = curr_AR_posterior
+
+            # Include future data in current day
+            curr_AR_with_future_D = curr_AR * next_AR_m
+            curr_AR_with_future_D = curr_AR_with_future_D / curr_AR_with_future_D.sum()
+            AR_given_M_and_future_D[n, :, h] = curr_AR_with_future_D
+
+    return AR_given_M_and_all_D
+
+
+def fuse_results_from_conditioned_models(
+    HFEV1, H, HFEV1_obs_idx_list, log_p_D_given_M, AR_given_M_and_all_D
+):
+    # For each HFEV1 model, given HFEV1_obs_idx_list, we compute the log probability of the model given the data
+    # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
+    log_p_M_given_D = np.zeros(H)
+    for h, HFEV1_bin_idx in enumerate(HFEV1_obs_idx_list):
+        log_p_M_hfev1 = np.log(HFEV1.cpt[HFEV1_bin_idx])
+        log_p_M_given_D[h] = np.sum(log_p_D_given_M[:, h]) + log_p_M_hfev1
+
+    # Exponentiating very negative numbers gives too small numbers
+    # Setting the highest number to 1 to prevent numerical issues
+    log_p_M_given_D -= log_p_M_given_D.max()
+    p_M_given_D = np.exp(log_p_M_given_D)
+    p_M_given_D /= p_M_given_D.sum()
+    AR_given_M_and_D = np.matmul(AR_given_M_and_all_D, p_M_given_D)
+    return p_M_given_D, AR_given_M_and_D
