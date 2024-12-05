@@ -1,6 +1,8 @@
 import concurrent.futures
 import itertools
 
+import numpy as np
+
 import src.data.breathe_data as bd
 import src.data.helpers as dh
 import src.inf_cutset_conditioning.cutset_cond_algs as cca
@@ -22,18 +24,29 @@ def process_id(inf_settings):
     # ecfev1_noise_model_suffix = "_std_0.23"
     # ecfev1_noise_model_suffix = "_std_add_mult"
 
-    # type="fev1, fef2575"
-    type="fev1"
+    ecfef2575_cols = [
+        "ecFEF2575%ecFEV1",
+        "idx ecFEF2575%ecFEV1",
+        "idx ecFEF25-75 % ecFEV1 (%)",
+    ]
+    ecfev1_cols = [
+        "ecFEV1",
+        "idx ecFEV1 (L)",
+    ]
+    # Obs FEV1 and FEF25-75
+    # Obs FEV1
+    # dftmp[ecfef2575_cols] = np.nan
+    # Obs no data
+    dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
     _ = cca.run_long_noise_model_through_time(
         # ) = cca.run_long_noise_model_through_time_light(
         dftmp,
-        type,
         ar_prior=ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix="",
-        debug=False, 
+        debug=False,
         save=True,
     )
     return -1
@@ -67,12 +80,12 @@ if __name__ == "__main__":
     ar_priors = [
         # "uniform",
         # "uniform message to HFEV1",
-        # "breathe (2 days model, ecFEV1, ecFEF25-75)", 
+        # "breathe (2 days model, ecFEV1, ecFEF25-75)",
         "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
     ]
 
     ar_change_cpt_suffix = [
-        # "_shift_span_[-20;20]_joint_sampling_3_days_model", 
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model",
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise"
         "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068"
