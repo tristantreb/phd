@@ -435,7 +435,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
     m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_hfev1_dict = {}
     m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
-    m_from_fev1_factor_dict = {}
+    m_from_fev_factor_dict = {}
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
     # Process each row
@@ -474,7 +474,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
                     uniform_from_o2_side | uniform_from_fef2575,
                     m_from_hfev1_dict,
                     m_from_hfev1_key,
-                    m_from_fev1_factor_dict,
+                    m_from_fev_factor_dict,
                     m_from_fev_factor_key,
                 )
             )
@@ -556,7 +556,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1(
     m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_hfev1_dict = {}
     m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
-    m_from_fev1_factor_dict = {}
+    m_from_fev_factor_dict = {}
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
     # Process each row
@@ -593,7 +593,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1(
                 uniform_from_o2_side | uniform_from_fef2575,
                 m_from_hfev1_dict,
                 m_from_hfev1_key,
-                m_from_fev1_factor_dict,
+                m_from_fev_factor_dict,
                 m_from_fev_factor_key,
             )
 
@@ -649,35 +649,40 @@ def get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
     ecFEF2575prctecFEV1,
     AR,
     vevidence_ar,
-    precomp_messsages,
+    precomp_messages,
     m_from_hfev1_dict,
     m_from_hfev1_key,
-    m_from_fev1_factor_dict,
+    m_from_fev_factor_dict,
     m_from_fev_factor_key,
 ):
 
     # Get P(ecFEV1 | model conditionned on HFEV1_obs)
-    precomp_messsages1 = precomp_messsages
+    precomp_messages1 = precomp_messages
     ref = f"{HFEV1_bin_idx}"
+    add_ref = True
     if ref in m_from_hfev1_dict:
-        precomp_messsages1.update(m_from_hfev1_dict[ref])
+        precomp_messages1.update(m_from_hfev1_dict[ref])
+        add_ref = False
     res1, messages = bp.query(
         variables=[ecFEV1.name],
         evidence={HFEV1.name: HFEV1_bin_idx},
         virtual_evidence=[vevidence_ar],
-        precomp_messages=precomp_messsages1,
+        precomp_messages=precomp_messages1,
         get_messages=True,
     )
-    m_from_hfev1_dict.update({ref: {m_from_hfev1_key: messages[m_from_hfev1_key]}})
+    if add_ref:
+        m_from_hfev1_dict.update({ref: {m_from_hfev1_key: messages[m_from_hfev1_key]}})
     dist_ecFEV1 = res1[ecFEV1.name].values
     p_ecFEV1 = dist_ecFEV1[data["idx ecFEV1 (L)"]]
     log_p_D_given_M = np.log(p_ecFEV1)
 
     # Get P(ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1)
-    precomp_messsages2 = precomp_messsages
+    precomp_messages2 = precomp_messages
     ref = f"{HFEV1_bin_idx}_{data['idx ecFEV1 (L)']}"
-    if ref in m_from_fev1_factor_dict:
-        precomp_messsages2.update(m_from_fev1_factor_dict[ref])
+    add_ref = True
+    if ref in m_from_fev_factor_dict:
+        precomp_messages2.update(m_from_fev_factor_dict[ref])
+        add_ref = False
     res2, messages = bp.query(
         variables=[ecFEF2575prctecFEV1.name, AR.name],
         evidence={
@@ -685,12 +690,13 @@ def get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
             ecFEV1.name: data["idx ecFEV1 (L)"],
         },
         virtual_evidence=[vevidence_ar],
-        precomp_messages=precomp_messsages2,
+        precomp_messages=precomp_messages2,
         get_messages=True,
     )
-    m_from_fev1_factor_dict.update(
-        {ref: {m_from_fev_factor_key: messages[m_from_fev_factor_key]}}
-    )
+    if add_ref:
+        m_from_fev_factor_dict.update(
+            {ref: {m_from_fev_factor_key: messages[m_from_fev_factor_key]}}
+        )
     dist_ecFEF2575prctecFEV1 = res2[ecFEF2575prctecFEV1.name].values
     p_ecFEF2575 = dist_ecFEF2575prctecFEV1[data["idx ecFEF2575%ecFEV1"]]
     log_p_D_given_M += np.log(p_ecFEF2575)
@@ -715,35 +721,40 @@ def get_AR_and_p_log_D_given_M_obs_fev1(
     ecFEV1,
     AR,
     vevidence_ar,
-    precomp_messsages,
+    precomp_messages,
     m_from_hfev1_dict,
     m_from_hfev1_key,
-    m_from_fev1_factor_dict,
+    m_from_fev_factor_dict,
     m_from_fev_factor_key,
 ):
 
     # Get P(ecFEV1 | model conditionned on HFEV1_obs)
-    precomp_messsages1 = precomp_messsages
+    precomp_messages1 = precomp_messages
     ref = f"{HFEV1_bin_idx}"
+    add_ref = True
     if ref in m_from_hfev1_dict:
-        precomp_messsages.update(m_from_hfev1_dict[ref])
+        precomp_messages.update(m_from_hfev1_dict[ref])
+        add_ref = False
     res1, messages = bp.query(
         variables=[ecFEV1.name],
         evidence={HFEV1.name: HFEV1_bin_idx},
         virtual_evidence=[vevidence_ar],
-        precomp_messages=precomp_messsages1,
+        precomp_messages=precomp_messages1,
         get_messages=True,
     )
-    m_from_hfev1_dict.update({ref: {m_from_hfev1_key: messages[m_from_hfev1_key]}})
+    if add_ref:
+        m_from_hfev1_dict.update({ref: {m_from_hfev1_key: messages[m_from_hfev1_key]}})
     dist_ecFEV1 = res1[ecFEV1.name].values
     p_ecFEV1 = dist_ecFEV1[data["idx ecFEV1 (L)"]]
     log_p_D_given_M = np.log(p_ecFEV1)
 
     # Get AR
-    precomp_messsages2 = precomp_messsages
+    precomp_messages2 = precomp_messages
     ref = f"{HFEV1_bin_idx}_{data['idx ecFEV1 (L)']}"
-    if ref in m_from_fev1_factor_dict:
-        precomp_messsages.update(m_from_fev1_factor_dict[ref])
+    add_ref = True
+    if ref in m_from_fev_factor_dict:
+        precomp_messages.update(m_from_fev_factor_dict[ref])
+        add_ref = False
     res2, messages = bp.query(
         variables=[AR.name],
         evidence={
@@ -751,12 +762,13 @@ def get_AR_and_p_log_D_given_M_obs_fev1(
             ecFEV1.name: data["idx ecFEV1 (L)"],
         },
         virtual_evidence=[vevidence_ar],
-        precomp_messages=precomp_messsages2,
+        precomp_messages=precomp_messages2,
         get_messages=True,
     )
-    m_from_fev1_factor_dict.update(
-        {ref: {m_from_fev_factor_key: messages[m_from_fev_factor_key]}}
-    )
+    if add_ref:
+        m_from_fev_factor_dict.update(
+            {ref: {m_from_fev_factor_key: messages[m_from_fev_factor_key]}}
+        )
 
     dist_AR = res2[AR.name].values
     dist_AR /= dist_AR.sum()
