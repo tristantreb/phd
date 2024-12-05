@@ -22,14 +22,10 @@ def process_id(inf_settings):
     # ecfev1_noise_model_suffix = "_std_0.23"
     # ecfev1_noise_model_suffix = "_std_add_mult"
 
-    # type="fev1, fef2575"
-    type="fev1"
+    type="fev1, fef2575"
+    # type="fev1"
 
-    (
-        fig,
-        p_M_given_D,
-        AR_given_M_and_D,
-    ) = cca.run_long_noise_model_through_time(
+    _ = cca.run_long_noise_model_through_time(
         # ) = cca.run_long_noise_model_through_time_light(
         dftmp,
         type,
@@ -37,7 +33,6 @@ def process_id(inf_settings):
         ar_change_cpt_suffix=ar_change_cpt_suffix,
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix="",
-        # obs_fef2575=True,
         debug=False, 
         save=True,
     )
@@ -48,25 +43,25 @@ def process_id(inf_settings):
 if __name__ == "__main__":
 
     interesting_ids = [
-        "132",
-        "146",
-        "177",
-        "180",
-        "202",
-        "527",
-        "117",
-        "131",
-        "134",
-        "191",
-        "139",
-        "253",
+        # "132",
+        # "146",
+        # "177",
+        # "180",
+        # "202",
+        # "527",
+        # "117",
+        # "131",
+        # "134",
+        # "191",
+        # "139",
+        # "253",
         "101",
         # Also from consec values
-        "405",
-        "272",
-        "201",
-        "203",
-        "527",
+        # "405",
+        # "272",
+        # "201",
+        # "203",
+        # "527",
     ]
 
     ar_priors = [
