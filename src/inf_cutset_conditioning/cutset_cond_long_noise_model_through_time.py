@@ -22,8 +22,8 @@ def process_id(inf_settings):
     # ecfev1_noise_model_suffix = "_std_0.23"
     # ecfev1_noise_model_suffix = "_std_add_mult"
 
-    type="fev1, fef2575"
-    # type="fev1"
+    # type="fev1, fef2575"
+    type="fev1"
 
     _ = cca.run_long_noise_model_through_time(
         # ) = cca.run_long_noise_model_through_time_light(
