@@ -52,9 +52,10 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
             day_1 = df_two_days.loc[0, "Date Recorded"]
             day_2 = df_two_days.loc[1, "Date Recorded"]
 
-            ar_shift = model_ar.sample_jointly_from_AR(
+            ar_day1_dist, ar_day1_sample, ar_day2_dist, ar_day2_sample = model_ar.sample_jointly_from_AR(
                 df_two_days, day_1, day_2, debug=False
             )
+            ar_shift = ar_day2_sample - ar_day1_sample
             days_elapsed = (day_2 - day_1).days
 
             # Add row to table with format: ID, date, days elapsed, AR shift, offset
@@ -65,6 +66,10 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
                         df_two_days.loc[0, "Date Recorded"],
                         days_elapsed,
                         ar_shift,
+                        ar_day1_dist,
+                        ar_day1_sample,
+                        ar_day2_dist,
+                        ar_day2_sample,
                         n_idx_offset,
                     ]
                 ],
@@ -72,7 +77,11 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
                     "ID",
                     "Date Recorded",
                     "Days elapsed",
-                    "AR samples shcptift",
+                    "AR samples shift",
+                    "AR day 1",
+                    "Day 1 AR sample",
+                    "AR day 2",
+                    "Day 2 AR sample",
                     "Offset",
                 ],
             )

@@ -110,6 +110,5 @@ def sample_jointly_from_AR(df_two_days, date_1, date_2, light_model=False, debug
         print(
             f"Day 2 ecFEV1 obs: {df_two_days.loc[1, 'ecFEV1']}, ecFEF2575 obs: {df_two_days.loc[1, 'ecFEF2575%ecFEV1']}, AR: {ar_day2_sample}, AR dist {ar_day2_dist}"
         )
-    ar_shift = ar_day2_sample - ar_day1_sample
 
-    return ar_shift
+    return ar_day1_dist, ar_day1_sample, ar_day2_dist, ar_day2_sample
