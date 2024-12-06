@@ -1075,12 +1075,20 @@ def plot_cutset_cond_results(
         columns=AR.get_bins_str(),
         index=df["Date Recorded"].apply(lambda date: date.strftime("%Y-%m-%d")),
     )
+    # colorscale = [
+    #     [0, "white"],
+    #     [0.01, "red"],
+    #     [0.05, "yellow"],
+    #     [0.1, "cyan"],
+    #     [0.6, "blue"],
+    #     [1, "black"],
+    # ]
     colorscale = [
-        [0, "white"],
-        [0.01, "red"],
-        [0.05, "yellow"],
-        [0.1, "cyan"],
-        [0.6, "blue"],
+        # [0, "white"],
+        # [0.01, "red"],
+        # [0.05, "yellow"],
+        [0, "cyan"],
+        [0.5, "blue"],
         [1, "black"],
     ]
 
