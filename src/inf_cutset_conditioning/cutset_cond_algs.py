@@ -228,6 +228,7 @@ def run_long_noise_model_through_time(
         log_p_D_given_M,
         AR_given_M_and_D,
         AR_given_M_and_all_D,
+        res_dict,
     ) = calc_log_p_D_given_M_and_AR_for_ID_any_obs(
         df,
         inf_alg,
@@ -258,7 +259,14 @@ def run_long_noise_model_through_time(
     #         debug=debug,
     #         save=save,
     #     )
-    return fig, p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D
+    return (
+        fig,
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
+        res_dict,
+    )
 
 
 def run_long_noise_model_through_time_light(
@@ -420,6 +428,9 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     df = df.copy()
     H = len(HFEV1_obs_idx_list)
     log_p_D_given_M = np.zeros((N, H))
+    res_dict = {}
+    res_dict.update({"vevidence_ar": np.zeros((N, AR.card, H))})
+    res_dict.update({"ecFEV1": np.zeros((N, ecFEV1.card, H))})
     AR_given_M_and_past_D = np.zeros((N, AR.card, H))
     AR_given_M_and_same_day_D = np.zeros((N, AR.card, H))
 
@@ -453,6 +464,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
             vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar(
                 AR, h, curr_date, prev_date, next_date=None, debug=debug
             )
+            res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values
 
             if debug:
                 print(
@@ -486,44 +498,43 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
             ):
                 if debug:
                     print("Only ecFEV1 observed")
-                log_p_D_given_M_for_row, dist_AR = (
-                    get_AR_and_p_log_D_given_M_obs_fev1(
-                        row,
-                        inf_alg,
-                        HFEV1,
-                        HFEV1_bin_idx,
-                        ecFEV1,
-                        AR,
-                        vevidence_ar,
-                        uniform_from_o2_side | uniform_from_fef2575,
-                        m_from_hfev1_dict,
-                        m_from_hfev1_key,
-                        m_from_fev_factor_dict,
-                        m_from_fev_factor_key,
-                    )
+                log_p_D_given_M_for_row, dist_AR, dist_ecFEV1 = get_AR_and_p_log_D_given_M_obs_fev1(
+                    row,
+                    inf_alg,
+                    HFEV1,
+                    HFEV1_bin_idx,
+                    ecFEV1,
+                    AR,
+                    vevidence_ar,
+                    uniform_from_o2_side | uniform_from_fef2575,
+                    m_from_hfev1_dict,
+                    m_from_hfev1_key,
+                    m_from_fev_factor_dict,
+                    m_from_fev_factor_key,
                 )
             elif np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
                 row["idx ecFEF25-75 % ecFEV1 (%)"]
             ):
                 if debug:
                     print("No data observed")
-                log_p_D_given_M_for_row, dist_AR = (
-                    get_AR_and_p_log_D_given_M_no_obs(
-                        inf_alg,
-                        HFEV1,
-                        HFEV1_bin_idx,
-                        AR,
-                        vevidence_ar,
-                        uniform_from_o2_side | uniform_from_fef2575,
-                        m_from_hfev1_dict,
-                        m_from_hfev1_key,
-                    )
+                log_p_D_given_M_for_row, dist_AR = get_AR_and_p_log_D_given_M_no_obs(
+                    inf_alg,
+                    HFEV1,
+                    HFEV1_bin_idx,
+                    AR,
+                    vevidence_ar,
+                    uniform_from_o2_side | uniform_from_fef2575,
+                    m_from_hfev1_dict,
+                    m_from_hfev1_key,
                 )
             else:
-                raise ValueError(f"Unexpected combination of observed variables for row\n{row}")
+                raise ValueError(
+                    f"Unexpected combination of observed variables for row\n{row}"
+                )
 
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
             AR_given_M_and_past_D[n, :, h] = dist_AR
+            res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
 
             # Add the AR dist to be used for as next day's AR vevidence
             date_str = row["Date Recorded"].strftime("%Y-%m-%d")
@@ -562,7 +573,14 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
         df, HFEV1, p_M_given_D, AR, AR_given_M_and_D, model_spec_txt, save
     )
 
-    return (fig, p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D)
+    return (
+        fig,
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
+        res_dict,
+    )
 
 
 def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
@@ -938,7 +956,7 @@ def get_AR_and_p_log_D_given_M_obs_fev1(
 
     dist_AR = res2[AR.name].values
     dist_AR /= dist_AR.sum()
-    return log_p_D_given_M, dist_AR
+    return log_p_D_given_M, dist_AR, dist_ecFEV1
 
 
 def get_AR_and_p_log_D_given_M_no_obs(
@@ -1075,22 +1093,22 @@ def plot_cutset_cond_results(
         columns=AR.get_bins_str(),
         index=df["Date Recorded"].apply(lambda date: date.strftime("%Y-%m-%d")),
     )
-    # colorscale = [
-    #     [0, "white"],
-    #     [0.01, "red"],
-    #     [0.05, "yellow"],
-    #     [0.1, "cyan"],
-    #     [0.6, "blue"],
-    #     [1, "black"],
-    # ]
     colorscale = [
-        # [0, "white"],
-        # [0.01, "red"],
-        # [0.05, "yellow"],
-        [0, "cyan"],
-        [0.5, "blue"],
+        [0, "white"],
+        [0.01, "red"],
+        [0.05, "yellow"],
+        [0.1, "cyan"],
+        [0.6, "blue"],
         [1, "black"],
     ]
+    # colorscale = [
+    #     # [0, "white"],
+    #     # [0.01, "red"],
+    #     # [0.05, "yellow"],
+    #     [0, "cyan"],
+    #     [0.5, "blue"],
+    #     [1, "black"],
+    # ]
 
     fig.add_trace(
         go.Heatmap(z=df1.T, x=df1.index, y=df1.columns, coloraxis="coloraxis1"),
