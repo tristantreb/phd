@@ -584,13 +584,14 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 0, 6, 0.05, prior=hfev1_prior)
     
     def get_prior_p_in_log(var):
-        prior = np.log(HFEV1.get_distribution_as_sample(HFEV1.cpt, 0.001))
+        prior = np.log(HFEV1.get_distribution_as_sample(HFEV1.cpt, 0.0000001))
         hist, _ = np.histogram(
                 prior, bins=np.arange(HFEV1.a, HFEV1.b + HFEV1.bin_width / 2, HFEV1.bin_width)
             )
         return hist
     
-    HFEV1.cpt = get_prior_p_in_log(HFEV1)
+    log_probs = get_prior_p_in_log(HFEV1)
+    HFEV1.cpt = log_probs / np.sum(log_probs)
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
