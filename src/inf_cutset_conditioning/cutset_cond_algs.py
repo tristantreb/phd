@@ -431,6 +431,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     res_dict = {}
     res_dict.update({"vevidence_ar": np.zeros((N, AR.card, H))})
     res_dict.update({"ecFEV1": np.zeros((N, ecFEV1.card, H))})
+    res_dict.update({"ecFEF2575%ecFEV1": np.zeros((N, ecFEF2575prctecFEV1.card, H))})
     AR_given_M_and_past_D = np.zeros((N, AR.card, H))
     AR_given_M_and_same_day_D = np.zeros((N, AR.card, H))
 
@@ -476,14 +477,38 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
             ):
                 if debug:
                     print("Both ecFEV1 and ecFEF25-75 observed")
-                log_p_D_given_M_for_row, dist_AR = (
-                    get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                (
+                    log_p_D_given_M_for_row,
+                    dist_AR,
+                    dist_ecFEV1,
+                    dist_ecFEF2575prctecFEV1,
+                ) = get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                    row,
+                    inf_alg,
+                    HFEV1,
+                    HFEV1_bin_idx,
+                    ecFEV1,
+                    ecFEF2575prctecFEV1,
+                    AR,
+                    vevidence_ar,
+                    uniform_from_o2_side | uniform_from_fef2575,
+                    m_from_hfev1_dict,
+                    m_from_hfev1_key,
+                    m_from_fev_factor_dict,
+                    m_from_fev_factor_key,
+                )
+            elif not np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print("Only ecFEV1 observed")
+                log_p_D_given_M_for_row, dist_AR, dist_ecFEV1 = (
+                    get_AR_and_p_log_D_given_M_obs_fev1(
                         row,
                         inf_alg,
                         HFEV1,
                         HFEV1_bin_idx,
                         ecFEV1,
-                        ecFEF2575prctecFEV1,
                         AR,
                         vevidence_ar,
                         uniform_from_o2_side | uniform_from_fef2575,
@@ -493,25 +518,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                         m_from_fev_factor_key,
                     )
                 )
-            elif not np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
-                row["idx ecFEF25-75 % ecFEV1 (%)"]
-            ):
-                if debug:
-                    print("Only ecFEV1 observed")
-                log_p_D_given_M_for_row, dist_AR, dist_ecFEV1 = get_AR_and_p_log_D_given_M_obs_fev1(
-                    row,
-                    inf_alg,
-                    HFEV1,
-                    HFEV1_bin_idx,
-                    ecFEV1,
-                    AR,
-                    vevidence_ar,
-                    uniform_from_o2_side | uniform_from_fef2575,
-                    m_from_hfev1_dict,
-                    m_from_hfev1_key,
-                    m_from_fev_factor_dict,
-                    m_from_fev_factor_key,
-                )
+                dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
             elif np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
                 row["idx ecFEF25-75 % ecFEV1 (%)"]
             ):
@@ -527,6 +534,8 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                     m_from_hfev1_dict,
                     m_from_hfev1_key,
                 )
+                dist_ecFEV1 = np.zeros(ecFEV1.card)
+                dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
             else:
                 raise ValueError(
                     f"Unexpected combination of observed variables for row\n{row}"
@@ -535,6 +544,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
             AR_given_M_and_past_D[n, :, h] = dist_AR
             res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
+            res_dict["ecFEF2575%ecFEV1"][n, :, h] = dist_ecFEF2575prctecFEV1
 
             # Add the AR dist to be used for as next day's AR vevidence
             date_str = row["Date Recorded"].strftime("%Y-%m-%d")
@@ -894,7 +904,7 @@ def get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
     dist_AR = res2[AR.name].values * factor_to_AR
     dist_AR /= dist_AR.sum()
 
-    return log_p_D_given_M, dist_AR
+    return log_p_D_given_M, dist_AR, dist_ecFEV1, dist_ecFEF2575prctecFEV1
 
 
 def get_AR_and_p_log_D_given_M_obs_fev1(
