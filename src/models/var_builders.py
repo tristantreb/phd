@@ -20,6 +20,7 @@ from src.models.helpers import (
     TemporalVariableNode,
     VariableNode,
     abbr_to_name,
+    get_p_in_log,
 )
 
 
@@ -561,6 +562,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         ecFEF2575prctecFEV1,
     )
 
+
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
     height,
     age,
@@ -582,16 +584,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
         "sex": sex,
     }
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 0, 6, 0.05, prior=hfev1_prior)
-    
-    def get_prior_p_in_log(var):
-        prior = np.log(HFEV1.get_distribution_as_sample(HFEV1.cpt, 0.0000001))
-        hist, _ = np.histogram(
-                prior, bins=np.arange(HFEV1.a, HFEV1.b + HFEV1.bin_width / 2, HFEV1.bin_width)
-            )
-        return hist
-    
-    log_probs = get_prior_p_in_log(HFEV1)
-    HFEV1.cpt = log_probs / np.sum(log_probs)
+    HFEV1.cpt = get_p_in_log(HFEV1, HFEV1.cpt)
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
@@ -1004,7 +997,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     ar_change_cpt_suffix=None,
     n_cutset_conditioned_states=None,
     ecfev1_noise_model_suffix=None,
-    fef2575_cpt_suffix=None
+    fef2575_cpt_suffix=None,
 ):
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
@@ -1117,7 +1110,9 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
-    ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix))
+    ecFEF2575prctecFEV1.set_cpt(
+        get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix)
+    )
 
     return (
         HFEV1,
