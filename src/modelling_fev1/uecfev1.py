@@ -12,6 +12,7 @@ def PDF_conv_uni_gausian_additive(z, y1, y2, sigma, abserr_tol=1e-10):
     B = 1 / (sigma * np.sqrt(2 * np.pi))
 
     def conv_fn(y, z, sigma):
+        # return 1 / y * np.exp(-1 / 2 * (z - y) ** 2 / sigma**2)
         return 1 / y * np.exp(-1 / 2 * (z - y) ** 2 / sigma**2)
 
     val, abserr = integrate.quad(conv_fn, y1, y2, args=(z, sigma))

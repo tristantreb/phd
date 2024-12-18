@@ -1036,3 +1036,11 @@ def get_bin_contribution_to_cpt(shifted_X_bin, Z_bins, debug=False, tol=1e-6):
     ), f"The sum of the probabilities should be 1, got {total}\np_vect={p_vect}"
 
     return p_vect
+
+
+def get_p_in_log(var, p):
+    prior = np.log(var.sample(50000, p))
+    hist, _ = np.histogram(
+        prior, bins=np.arange(var.a, var.b + var.bin_width / 2, var.bin_width)
+    )
+    return hist / np.sum(hist)

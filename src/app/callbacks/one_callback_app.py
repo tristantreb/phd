@@ -974,6 +974,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
         # ecfev1_noise_model_cpt_suffix="_std_0.043_mult"
         # ecfev1_noise_model_cpt_suffix="_std_0.23"
         ecfev1_noise_model_cpt_suffix = "_std_0.068"
+        # ecfev1_noise_model_cpt_suffix = "_std_0.068_log"
         # ecfev1_noise_model_cpt_suffix = "_std_add_mult"
 
         ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise"
@@ -1168,6 +1169,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
                 "green",
                 xlabels=False,
             )
+            fig_hfev1.update_xaxes(type="log")
             ih.plot_histogram(
                 fig_hfev1,
                 HFEV1,
