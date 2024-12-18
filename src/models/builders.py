@@ -660,6 +660,64 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         ecFEF2575prctecFEV1,
     )
 
+def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ecfev1_noise_model_cpt_suffix="_std_add_mult",
+    ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise",
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+    """
+
+    (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        uO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
+        height, age, sex, ia_prior, ar_prior, ecfev1_noise_model_cpt_suffix, ar_fef2575_cpt_suffix
+    )
+    model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        uO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        check_model,
+    )
+    inf_alg = apply_factor_graph_bp(model)
+    return (
+        model,
+        inf_alg,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        uO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    )
+
 
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
     height,
