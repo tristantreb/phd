@@ -1,0 +1,276 @@
+import itertools
+import time
+
+import numpy as np
+
+import src.inf_cutset_conditioning.cutset_cond_algs as cca
+import src.inf_cutset_conditioning.helpers as cutseth
+import src.models.builders as mb
+import src.models.helpers as mh
+
+
+def run_long_noise_model_through_time(
+    df,
+    ar_prior="uniform",
+    ia_prior="uniform",
+    ar_change_cpt_suffix=None,
+    ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
+    debug=False,
+    save=False,
+):
+    inf_alg, HFEV1, h_s_obs_states, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt = (
+        load_long_noise_model_through_time(
+            df,
+            ar_prior,
+            ia_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix,
+        )
+    )
+
+    # if type == "fev1, fef2575":
+    (
+        fig,
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
+        res_dict,
+    ) = calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
+        df,
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+        debug=debug,
+        save=save,
+    )
+    # elif type == "fev1":
+    #     (
+    #         fig,
+    #         p_M_given_D,
+    #         log_p_D_given_M,
+    #         AR_given_M_and_D,
+    #         AR_given_M_and_all_D,
+    #     ) = calc_log_p_D_given_M_and_AR_for_ID_obs_fev1(
+    #         df,
+    #         inf_alg,
+    #         HFEV1,
+    #         HFEV1_obs_list,
+    #         AR,
+    #         ecFEV1,
+    #         model_spec_txt,
+    #         debug=debug,
+    #         save=save,
+    #     )
+    return (
+        fig,
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
+        res_dict,
+    )
+
+
+def load_long_noise_model_through_time(
+    df,
+    ar_prior="uniform",
+    ia_prior="uniform",
+    ar_change_cpt_suffix=None,
+    ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
+):
+    height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
+
+    # Initialize the noise model and its variables
+    _, _, HFEV1, _, _, _, HO2Sat, *_ = (
+        mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+            height,
+            age,
+            sex,
+            ar_change_cpt_suffix=ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix=fef2575_cpt_suffix,
+        )
+    )
+
+    S = mh.DiscreteVariableNode("AR change gaussian std", 1, 9, 2)
+    S_obs_idx_list = range(S.card)
+
+    HFEV1_obs_idx_list = range(HFEV1.card)
+
+    h_s_obs_states = itertools.product(HFEV1_obs_idx_list, S_obs_idx_list)
+
+    # Full inference model setup
+    (
+        _,
+        inf_alg,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ar_change_cpt_suffix,
+        len(h_s_obs_states),
+        ecfev1_noise_model_suffix,
+    )
+
+    model_spec_txt = f"AR prior: {ar_prior}, ecFEV1 noise model {ecfev1_noise_model_suffix}<br>AR change CPT: {ar_change_cpt_suffix}"
+    return (
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+    )
+
+
+def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
+    df,
+    inf_alg,
+    HFEV1,
+    h_s_obs_states,
+    AR,
+    ecFEV1,
+    ecFEF2575prctecFEV1,
+    model_spec_txt,
+    debug=False,
+    save=False,
+):
+    df = df.copy().sort_values(by="Date Recorded").reset_index(drop=True)
+    id = df.loc[0, "ID"]
+
+    if debug:
+        print(f"ID {id}")
+
+    N = len(df)
+    df = df.copy()
+    H = len(h_s_obs_states)
+    log_p_D_given_M = np.zeros((N, H))
+    res_dict = {}
+    res_dict.update({"vevidence_ar": np.zeros((N, AR.card, H))})
+    res_dict.update({"ecFEV1": np.zeros((N, ecFEV1.card, H))})
+    res_dict.update({"ecFEF2575%ecFEV1": np.zeros((N, ecFEF2575prctecFEV1.card, H))})
+    # AR_given_M_and_past_D = np.zeros((N, AR.card, H))
+    # AR_given_M_and_same_day_D = np.zeros((N, AR.card, H))
+
+    arr = np.ones(AR.card)
+    arr /= arr.sum()
+    uniform_from_o2_side = {
+        "['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
+    }
+    uniform_from_fef2575 = {
+        "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
+    }
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_dict = {}
+    m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev_factor_dict = {}
+
+    # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
+    # Process each row
+    # P(model | data) prop_to P(data | model) * P(model)
+    # P(data | model) = P(ecFEV1, ecFEF2575 | HFEV1) = P(ecFEV1 | HFEV1) * P( ecFEF2575 | HFEV1, ecFEV1)
+    tic = time.time()
+    for n, row in df.iterrows():
+        curr_date = df.loc[n, "Date Recorded"]
+        # There is no prev day if it's the first day
+        prev_date = df.iloc[n - 1]["Date Recorded"] if n > 0 else None
+        if debug:
+            print(f"Row {n + 1}/{N}, Date: {curr_date}, Prev Date: {prev_date}")
+
+        # For each model given an HFEV1 observation
+        for h, h_s_obs_state in enumerate(h_s_obs_states):
+            HFEV1_bin_idx, S_obs_idx = h_s_obs_state
+
+            vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar_with_std(
+                AR, h, curr_date, S_obs_idx, prev_date, next_date=None, debug=debug
+            )
+            res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values
+
+            if debug:
+                print(
+                    f"HFEV1_obs: {HFEV1_bin_idx}, vevidence_ar: {vevidence_ar.values}"
+                )
+
+            if not np.isnan(row["idx ecFEV1 (L)"]) and not np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print("Both ecFEV1 and ecFEF25-75 observed")
+                (
+                    log_p_D_given_M_for_row,
+                    dist_AR,
+                    dist_ecFEV1,
+                    dist_ecFEF2575prctecFEV1,
+                ) = cca.get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                    row,
+                    inf_alg,
+                    HFEV1,
+                    HFEV1_bin_idx,
+                    ecFEV1,
+                    ecFEF2575prctecFEV1,
+                    AR,
+                    vevidence_ar,
+                    uniform_from_o2_side | uniform_from_fef2575,
+                    m_from_hfev1_dict,
+                    m_from_hfev1_key,
+                    m_from_fev_factor_dict,
+                    m_from_fev_factor_key,
+                )
+            else:
+                raise ValueError("Both ecFEV1 and ecFEF25-75 must be observed")
+
+            log_p_D_given_M[n, h] = log_p_D_given_M_for_row
+            # AR_given_M_and_past_D[n, :, h] = dist_AR
+            res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
+            res_dict["ecFEF2575%ecFEV1"][n, :, h] = dist_ecFEF2575prctecFEV1
+
+            # Add the AR dist to be used for as next day's AR vevidence
+            date_str = row["Date Recorded"].strftime("%Y-%m-%d")
+            AR.add_or_update_posterior(h, date_str, dist_AR, debug)
+
+    toc = time.time()
+    print(f"{id} - Time for {N} entries: {toc-tic:.2f} s")
+
+    # For each HFEV1 model, given HFEV1_obs_idx_list, we compute the log probability of the model given the data
+    # log(P(M|D)) = 1/N * sum_n log(P(D|M)) + Cn_avg + log(P(M))
+    log_p_M_given_D = np.zeros(H)
+    for h, h_s_obs_state in enumerate(h_s_obs_states):
+        HFEV1_bin_idx, _ = h_s_obs_state
+        log_p_M_hfev1 = np.log(HFEV1.cpt[HFEV1_bin_idx])
+        # Prior for the std dev of AR change is uniform, hence can be ignored
+
+        # Do nan sums to remove contributions from days without data
+        log_p_M_given_D[h] = np.nansum(log_p_D_given_M[:, h]) + log_p_M_hfev1
+
+    # Exponentiating very negative numbers gives too small numbers
+    # Setting the highest number to 1 to prevent numerical issues
+    log_p_M_given_D -= log_p_M_given_D.max()
+    p_M_given_D = np.exp(log_p_M_given_D)
+    p_M_given_D /= p_M_given_D.sum()
+
+    return (
+        p_M_given_D,
+        log_p_D_given_M,
+        res_dict,
+    )

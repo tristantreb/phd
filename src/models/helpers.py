@@ -879,6 +879,69 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         if debug:
             print(f"Returning virtual message: {vmessage}")
         return vmessage
+    
+
+    def get_virtual_message_with_std(
+        self, state_n, curr_date, std_idx=None, prev_date=None, next_date=None, debug=False
+    ):
+        """
+        Function substituting to get_virtual_message in a specific configuration where the ar change factor
+        is essentially gaussian noise with a given standard deviation.
+
+        The virtual message for the temporal variable on this day is influenced by its directly neighbouring days,
+        through the change factor (change_cpt).
+        The neigbouring days might not be related to consecutive dates in the calendar.
+        The virtual message can be seen as acting as a prior for the variable on this day. That is why a temporal
+        variable's prior is set to uniform by the constructor.
+
+        Dates are datetime objects
+        """
+        prev_day_key = prev_date.strftime("%Y-%m-%d") if prev_date is not None else None
+        next_day_key = next_date.strftime("%Y-%m-%d") if next_date is not None else None
+        if debug:
+            print(
+                f"Get virtual message for {self.name} on {curr_date} with cutset cond. state {state_n}, wrt to prev {prev_day_key} and next {next_day_key}"
+            )
+
+        def calc_days_elapsed(date1, date2):
+            assert date1 < date2, "Days order 'date1 < date2' not respected"
+            days_elapsed = (date2 - date1).days
+            if days_elapsed > self.change_cpt.shape[2]:
+                raise ValueError(
+                    f"Can't process {days_elapsed} days (date1 = {date1}, date2 = {date2})"
+                )
+            return (date2 - date1).days
+        
+        # current - prev must be consecutive
+        assert calc_days_elapsed(prev_date, curr_date) == 1, "Previous day and current day must be consecutive"
+
+        # Contribution from the previous day
+        if std_idx is None:
+            # On day 1, the prior is the first_day_prior
+            prev_day_m = self.first_day_prior
+            if debug:
+                print(f"No prev day, using first day prior: {prev_day_m}")
+        else:
+            # The previous day's posterior updated through the change factor acts as the current days's prior.
+            prev_day_posterior = self.vmessages[state_n].get(prev_day_key)
+            # Assert that the message exists
+            assert (
+                prev_day_posterior is not None
+            ), f"Posterior for pre day {prev_date} is missing"
+
+            # Compute factor node message
+            cpt_for_std = self.change_cpt[:, :, std_idx]
+            prev_day_m = np.matmul(cpt_for_std, prev_day_posterior)
+            prev_day_m = prev_day_m / prev_day_m.sum()
+            if debug:
+                print(f"Prev day posterior: {prev_day_posterior}")
+                print(f"Prev day message: {prev_day_m}")
+
+        vmessage = prev_day_m
+        vmessage = vmessage / vmessage.sum()
+        if debug:
+            print(f"Returning virtual message: {vmessage}")
+        return vmessage
 
 
 def calc_pgmpy_cpt_X_x_1_minus_Y(

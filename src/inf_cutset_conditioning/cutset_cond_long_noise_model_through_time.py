@@ -5,7 +5,8 @@ import numpy as np
 
 import src.data.breathe_data as bd
 import src.data.helpers as dh
-import src.inf_cutset_conditioning.cutset_cond_algs as cca
+import src.inf_cutset_conditioning.cutset_cond_algs_gauss_ar_change as cca
+# import src.inf_cutset_conditioning.cutset_cond_algs as cca
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
@@ -34,10 +35,11 @@ def process_id(inf_settings):
         "idx ecFEV1 (L)",
     ]
     # Obs FEV1 and FEF25-75
+    #
     # Obs FEV1
     # dftmp[ecfef2575_cols] = np.nan
     # Obs no data
-    dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
+    # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
     _ = cca.run_long_noise_model_through_time(
         # ) = cca.run_long_noise_model_through_time_light(
@@ -68,13 +70,13 @@ if __name__ == "__main__":
         # "191",
         # "139",
         # "253",
-        "101",
+        # "101",
         # Also from consec values
         # "405",
         # "272",
         # "201",
         # "203",
-        # "527",
+        "527",
     ]
 
     ar_priors = [
