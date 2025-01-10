@@ -31,6 +31,7 @@ def name_to_abbr_dict():
         "Inactive alveoli (%)": "IA",
         "Underlying O2 saturation (%)": "uO2Sat",
         "Days elapsed": "DE",
+        "AR change factor shape": "S",
     }
 
 
@@ -881,8 +882,8 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         return vmessage
     
 
-    def get_virtual_message_with_std(
-        self, state_n, curr_date, std_idx=None, prev_date=None, next_date=None, debug=False
+    def get_virtual_message_with_shape_factor(
+        self, state_n, curr_date, shape_factor=None, prev_date=None, next_date=None, debug=False
     ):
         """
         Function substituting to get_virtual_message in a specific configuration where the ar change factor
@@ -916,7 +917,7 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         assert calc_days_elapsed(prev_date, curr_date) == 1, "Previous day and current day must be consecutive"
 
         # Contribution from the previous day
-        if std_idx is None:
+        if shape_factor is None:
             # On day 1, the prior is the first_day_prior
             prev_day_m = self.first_day_prior
             if debug:
@@ -930,7 +931,7 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
             ), f"Posterior for pre day {prev_date} is missing"
 
             # Compute factor node message
-            cpt_for_std = self.change_cpt[:, :, std_idx]
+            cpt_for_std = self.change_cpt[:, :, shape_factor]
             prev_day_m = np.matmul(cpt_for_std, prev_day_posterior)
             prev_day_m = prev_day_m / prev_day_m.sum()
             if debug:

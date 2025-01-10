@@ -1020,8 +1020,6 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
 
-    DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
-
     if n_cutset_conditioned_states is not None:
         AR = CutsetConditionedTemporalVariableNode(
             "Airway resistance (%)", 0, 90, 2, n_cutset_conditioned_states
@@ -1029,7 +1027,12 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     else:
         AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
 
-    AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
+    if ar_change_cpt_suffix == "_shape_factor":
+        S = DiscreteVariableNode("AR change factor shape", 2, 10, 2)
+        AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
+    else:
+        DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
+        AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
 
     if ar_prior == "uniform":
         AR.set_first_day_prior({"type": "uniform"})
@@ -1160,8 +1163,6 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     )
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
 
-    DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
-
     if n_cutset_conditioned_states is not None:
         AR = CutsetConditionedTemporalVariableNode(
             "Airway resistance (%)", 0, 90, 10, n_cutset_conditioned_states
@@ -1169,7 +1170,12 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     else:
         AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 10)
 
-    AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
+    if ar_change_cpt_suffix == "_shape_factor":
+        S = DiscreteVariableNode("AR change factor shape", 2, 10, 2)
+        AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
+    else:
+        DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
+        AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
 
     if ar_prior == "uniform":
         AR.set_first_day_prior({"type": "uniform"})
