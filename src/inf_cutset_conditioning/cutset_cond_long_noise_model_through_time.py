@@ -5,7 +5,7 @@ import numpy as np
 
 import src.data.breathe_data as bd
 import src.data.helpers as dh
-import src.inf_cutset_conditioning.cutset_cond_algs_gauss_ar_change as cca
+import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca
 # import src.inf_cutset_conditioning.cutset_cond_algs as cca
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
