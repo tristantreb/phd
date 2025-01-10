@@ -32,11 +32,8 @@ def run_long_noise_model_through_time(
 
     # if type == "fev1, fef2575":
     (
-        fig,
         p_M_given_D,
         log_p_D_given_M,
-        AR_given_M_and_D,
-        AR_given_M_and_all_D,
         res_dict,
     ) = calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
         df,
@@ -69,11 +66,8 @@ def run_long_noise_model_through_time(
     #         save=save,
     #     )
     return (
-        fig,
         p_M_given_D,
         log_p_D_given_M,
-        AR_given_M_and_D,
-        AR_given_M_and_all_D,
         res_dict,
     )
 
@@ -100,8 +94,8 @@ def load_long_noise_model_through_time(
         )
     )
 
-    S = mh.DiscreteVariableNode("AR change gaussian std", 1, 9, 2)
-    S_obs_idx_list = range(S.card)
+    B = mh.DiscreteVariableNode("AR change factor", 2, 10, 2)
+    S_obs_idx_list = range(B.card)
 
     HFEV1_obs_idx_list = range(HFEV1.card)
 
@@ -202,8 +196,10 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
         for h, h_s_obs_state in enumerate(h_s_obs_states):
             HFEV1_bin_idx, S_obs_idx = h_s_obs_state
 
-            vevidence_ar = cutseth.build_vevidence_cutset_conditioned_ar_with_std(
-                AR, h, curr_date, S_obs_idx, prev_date, next_date=None, debug=debug
+            vevidence_ar = (
+                cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
+                    AR, h, curr_date, S_obs_idx, prev_date, next_date=None, debug=debug
+                )
             )
             res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values
 

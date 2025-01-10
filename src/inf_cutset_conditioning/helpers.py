@@ -3,7 +3,12 @@ from pgmpy.factors.discrete import TabularCPD
 
 
 def build_vevidence_cutset_conditioned_ar(
-    AR: mh.VariableNode, state_n: int, curr_date, prev_date=None, next_date=None, debug=False
+    AR: mh.VariableNode,
+    state_n: int,
+    curr_date,
+    prev_date=None,
+    next_date=None,
+    debug=False,
 ):
     """
     Builds a virtual evidence for the airway resistance variable given the previous and next days
@@ -14,14 +19,21 @@ def build_vevidence_cutset_conditioned_ar(
     return TabularCPD(AR.name, AR.card, prior.reshape(-1, 1))
 
 
-def build_vevidence_cutset_conditioned_ar_with_std(
-    AR: mh.VariableNode, state_n: int, curr_date, std_idx, prev_date=None, next_date=None, debug=False
+def build_vevidence_cutset_conditioned_ar_with_shape_factor(
+    AR: mh.VariableNode,
+    state_n: int,
+    curr_date,
+    shape_factor,
+    prev_date=None,
+    next_date=None,
+    debug=False,
 ):
     """
     Builds a virtual evidence for the airway resistance variable given the previous and next days
 
     Dates are datetime objects
     """
-    prior = AR.get_virtual_message_with_std(state_n, curr_date, std_idx, prev_date, next_date, debug)
+    prior = AR.get_virtual_message_with_shape_factor(
+        state_n, curr_date, shape_factor, prev_date, next_date, debug
+    )
     return TabularCPD(AR.name, AR.card, prior.reshape(-1, 1))
-
