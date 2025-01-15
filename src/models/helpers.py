@@ -880,10 +880,15 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         if debug:
             print(f"Returning virtual message: {vmessage}")
         return vmessage
-    
 
     def get_virtual_message_with_shape_factor(
-        self, state_n, curr_date, shape_factor=None, prev_date=None, next_date=None, debug=False
+        self,
+        state_n,
+        curr_date,
+        shape_factor,
+        prev_date=None,
+        next_date=None,
+        debug=False,
     ):
         """
         Function substituting to get_virtual_message in a specific configuration where the ar change factor
@@ -912,17 +917,19 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
                     f"Can't process {days_elapsed} days (date1 = {date1}, date2 = {date2})"
                 )
             return (date2 - date1).days
-        
-        # current - prev must be consecutive
-        assert calc_days_elapsed(prev_date, curr_date) == 1, "Previous day and current day must be consecutive"
 
         # Contribution from the previous day
-        if shape_factor is None:
+        if prev_date is None:
             # On day 1, the prior is the first_day_prior
             prev_day_m = self.first_day_prior
             if debug:
                 print(f"No prev day, using first day prior: {prev_day_m}")
         else:
+            # current - prev must be consecutive
+            assert (
+                calc_days_elapsed(prev_date, curr_date) == 1
+            ), "Previous day and current day must be consecutive"
+
             # The previous day's posterior updated through the change factor acts as the current days's prior.
             prev_day_posterior = self.vmessages[state_n].get(prev_day_key)
             # Assert that the message exists

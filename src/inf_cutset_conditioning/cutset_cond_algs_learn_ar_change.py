@@ -19,7 +19,7 @@ def run_long_noise_model_through_time(
     debug=False,
     save=False,
 ):
-    inf_alg, HFEV1, h_s_obs_states, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt = (
+    inf_alg, HFEV1, h_s_obs_states, AR, ecFEV1, ecFEF2575prctecFEV1, model_spec_txt, S = (
         load_long_noise_model_through_time(
             df,
             ar_prior,
@@ -44,6 +44,7 @@ def run_long_noise_model_through_time(
         ecFEV1,
         ecFEF2575prctecFEV1,
         model_spec_txt,
+        S,
         debug=debug,
         save=save,
     )
@@ -94,12 +95,12 @@ def load_long_noise_model_through_time(
         )
     )
 
-    B = mh.DiscreteVariableNode("AR change factor", 2, 10, 2)
-    S_obs_idx_list = range(B.card)
+    S = mh.DiscreteVariableNode("AR change factor shape", 2, 10, 2)
+    S_obs_idx_list = range(S.card)
 
     HFEV1_obs_idx_list = range(HFEV1.card)
 
-    h_s_obs_states = itertools.product(HFEV1_obs_idx_list, S_obs_idx_list)
+    h_s_obs_states = list(itertools.product(HFEV1_obs_idx_list, S_obs_idx_list))
 
     # Full inference model setup
     (
@@ -135,6 +136,7 @@ def load_long_noise_model_through_time(
         ecFEV1,
         ecFEF2575prctecFEV1,
         model_spec_txt,
+        S
     )
 
 
@@ -147,6 +149,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
     ecFEV1,
     ecFEF2575prctecFEV1,
     model_spec_txt,
+    S,
     debug=False,
     save=False,
 ):
@@ -264,6 +267,9 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
     log_p_M_given_D -= log_p_M_given_D.max()
     p_M_given_D = np.exp(log_p_M_given_D)
     p_M_given_D /= p_M_given_D.sum()
+
+    # Put p_M_given_D in 2 dimensions, one for hfev1, one for s
+    p_M_given_D = p_M_given_D.reshape((HFEV1.card, S.card))
 
     return (
         p_M_given_D,
