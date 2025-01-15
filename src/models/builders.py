@@ -629,7 +629,13 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         O2Sat,
         ecFEF2575prctecFEV1,
     ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
-        height, age, sex, ia_prior, ar_prior, ecfev1_noise_model_cpt_suffix, ar_fef2575_cpt_suffix
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ecfev1_noise_model_cpt_suffix,
+        ar_fef2575_cpt_suffix,
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
@@ -660,6 +666,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         ecFEF2575prctecFEV1,
     )
 
+
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
     height,
     age,
@@ -687,7 +694,13 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
         O2Sat,
         ecFEF2575prctecFEV1,
     ) = var_builders.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
-        height, age, sex, ia_prior, ar_prior, ecfev1_noise_model_cpt_suffix, ar_fef2575_cpt_suffix
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ecfev1_noise_model_cpt_suffix,
+        ar_fef2575_cpt_suffix,
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
@@ -882,7 +895,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         ar_change_cpt_suffix,
         n_cutset_conditioned_states,
         ecfev1_noise_model_suffix,
-        fef2575_cpt_suffix
+        fef2575_cpt_suffix,
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
@@ -1162,6 +1175,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     sex,
     ia_prior="uniform",
     ar_prior="uniform",
+    ar_change_cpt_suffix="",
     check_model=False,
 ):
     """
@@ -1170,6 +1184,8 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
 
     Must have a corresponding AR change CPT
     Musn't necessarily use the cutset conditioning
+
+    FEV1 noise model suffix fixed to 0.7, high noise to compensate low granularity for the temporal ARs
     """
 
     (
@@ -1189,6 +1205,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         sex,
         ia_prior,
         ar_prior,
+        ar_change_cpt_suffix,
     )
 
     (
