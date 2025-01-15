@@ -942,10 +942,13 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
     UO2Sat,
     O2Sat,
     ecFEF2575prctecFEV1,
+    ar_change_cpt_state=-1,
     check_model=True,
 ):
     """
     No direct link between AR and IA
+
+    The AR change factor is fixed to the cpt[:, :, 0] for all days
     """
 
     def create_var_for_day(var, day):
@@ -984,7 +987,7 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
             TabularCPD(
                 variable=AR_vars[i].name,
                 variable_card=AR_vars[i].card,
-                values=AR_vars[i].change_cpt[:, :, 0],
+                values=AR_vars[i].change_cpt[:, :, ar_change_cpt_state],
                 evidence=[AR_vars[i - 1].name],
                 evidence_card=[AR_vars[i - 1].card],
             )

@@ -1027,6 +1027,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     else:
         AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
 
+    # Select change CPT depending on the suffix
     if ar_change_cpt_suffix == "_shape_factor":
         S = DiscreteVariableNode("AR change factor shape", 2, 10, 2)
         AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
@@ -1143,6 +1144,8 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     """
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
     The airway resistances has day-to-day temporal connection
+
+    FEV1 noise model suffix fixed to 0.7, high noise to compensate low granularity for the temporal ARs
     """
     hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
     ho2sat_prior = {

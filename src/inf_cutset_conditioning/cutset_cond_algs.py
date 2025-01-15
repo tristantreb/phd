@@ -655,22 +655,25 @@ def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
                 )
 
             # Perform inference
-            log_p_ecfev1_fef2575_given_M, dist_AR = (
-                get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
-                    row,
-                    inf_alg,
-                    HFEV1,
-                    HFEV1_bin_idx,
-                    ecFEV1,
-                    ecFEF2575prctecFEV1,
-                    AR,
-                    vevidence_ar,
-                    uniform_from_o2_side | uniform_from_fef2575,
-                    m_from_hfev1_dict,
-                    m_from_hfev1_key,
-                    m_from_fev_factor_dict,
-                    m_from_fev_factor_key,
-                )
+            (
+                log_p_ecfev1_fef2575_given_M,
+                dist_AR,
+                dist_ecFEV1,
+                dist_ecFEF2575prctecFEV1,
+            ) = get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                row,
+                inf_alg,
+                HFEV1,
+                HFEV1_bin_idx,
+                ecFEV1,
+                ecFEF2575prctecFEV1,
+                AR,
+                vevidence_ar,
+                uniform_from_o2_side | uniform_from_fef2575,
+                m_from_hfev1_dict,
+                m_from_hfev1_key,
+                m_from_fev_factor_dict,
+                m_from_fev_factor_key,
             )
             log_p_D_given_M[n, h] = log_p_ecfev1_fef2575_given_M
             AR_given_M_and_past_D[n, :, h] = dist_AR
