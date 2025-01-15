@@ -1,6 +1,28 @@
 import numpy as np
+import scipy.integrate as integrate
 
 import src.models.helpers as mh
+
+
+def PDF_conv_uni_laplace_additive(z, y1, y2, s, abserr_tol=1e-10):
+    """
+    PDF of a convolution of a uniform and a gaussian distribution
+
+    Return P(z | y1 < y < y2)
+    """
+    A = 1 / (y2 - y1)
+    B = 1 / (2 * s)
+
+    def conv_fn(y, z, s):
+        return 1 / y * np.exp(np.abs(z - y) / s)
+
+    val, abserr = integrate.quad(conv_fn, y1, y2, args=(z, s))
+    if abserr > abserr_tol:
+        raise ValueError(
+            f"Absolute error after solving the integral is too high {abserr}"
+        )
+
+    return A * B * val
 
 
 def get_breathe_prior_from_1_day_model_o2sat_ecFEV1():
