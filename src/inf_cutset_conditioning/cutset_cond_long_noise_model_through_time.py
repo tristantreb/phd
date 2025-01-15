@@ -5,7 +5,8 @@ import numpy as np
 
 import src.data.breathe_data as bd
 import src.data.helpers as dh
-import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca
+import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca_ar_change
+
 # import src.inf_cutset_conditioning.cutset_cond_algs as cca
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
@@ -41,7 +42,7 @@ def process_id(inf_settings):
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
-    _ = cca.run_long_noise_model_through_time(
+    _ = cca_ar_change.run_long_noise_model_through_time(
         # ) = cca.run_long_noise_model_through_time_light(
         dftmp,
         ar_prior=ar_prior,
@@ -89,8 +90,9 @@ if __name__ == "__main__":
     ar_change_cpt_suffix = [
         # "_shift_span_[-20;20]_joint_sampling_3_days_model",
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
-        # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise"
-        "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068"
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise",
+        # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068",
+        "_shape_factor",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card

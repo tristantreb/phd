@@ -120,14 +120,14 @@ def add_drug_therapy_shapes_for_ID(fig, df_for_ID, drug_df):
     return -1
 
 
-def find_longest_consec_series(df_for_ID):
+def find_longest_consec_series(df_for_ID, n_days=3):
 
     df_for_ID = df_for_ID.reset_index(drop=True)
     df_for_ID["Prev day"] = df_for_ID["Date Recorded"].shift(1)
     df_for_ID["Days elapsed"] = df_for_ID["Date Recorded"] - df_for_ID["Prev day"]
 
     # Get first idx where Days elapsed is greater than 1
-    idx = df_for_ID[df_for_ID["Days elapsed"] > pd.Timedelta(days=3)].index
+    idx = df_for_ID[df_for_ID["Days elapsed"] > pd.Timedelta(days=n_days)].index
     # Add the first idx
     idx = idx.insert(0, 0)
     # Add last idx
