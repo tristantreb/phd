@@ -469,7 +469,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
 
             if debug:
                 print(
-                    f"HFEV1_obs: {HFEV1_bin_idx}, vevidence_ar: {vevidence_ar.values}"
+                    f"HFEV1_obs_idx: {HFEV1_bin_idx}, vevidence_ar: {vevidence_ar.values}"
                 )
 
             if not np.isnan(row["idx ecFEV1 (L)"]) and not np.isnan(
