@@ -1176,6 +1176,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     ia_prior="uniform",
     ar_prior="uniform",
     ar_change_cpt_suffix="",
+    ar_change_cpt_state=0,
     check_model=False,
 ):
     """
@@ -1232,7 +1233,8 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
-        check_model,
+        ar_change_cpt_state=ar_change_cpt_state,
+        check_model=check_model,
     )
     # inf_alg = apply_bayes_net_bp(model)
     return (
