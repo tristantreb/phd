@@ -38,26 +38,36 @@ def run_long_noise_model_through_time(
     )
 
     # Must have both ecfev1 and fef2575 observations
-    (p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D, res_dict) = (
-        calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
-            df,
-            inf_alg,
-            HFEV1,
-            h_s_obs_states,
-            AR,
-            ecFEV1,
-            ecFEF2575prctecFEV1,
-            model_spec_txt,
-            S,
-            debug=debug,
-            save=save,
-        )
+    # (p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D, res_dict) = (
+    #     calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
+    #         df,
+    #         inf_alg,
+    #         HFEV1,
+    #         h_s_obs_states,
+    #         AR,
+    #         ecFEV1,
+    #         ecFEF2575prctecFEV1,
+    #         model_spec_txt,
+    #         S,
+    #         debug=debug,
+    #         save=save,
+    #     )
+    # )
+
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+        df,
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        S,
+        debug=debug,
     )
+
     return (
-        p_M_given_D,
-        log_p_D_given_M,
-        AR_given_M_and_D,
-        AR_given_M_and_all_D,
+        log_p_S_given_D,
         res_dict,
     )
 
@@ -584,7 +594,6 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
 
     return (
         log_p_S_given_D,
-        log_p_D_given_M,
         res_dict,
     )
 
@@ -596,6 +605,9 @@ def fuse_results_to_compute_P_S_given_D(
 ):
     # P(S|D) = sum_h ( P(D|S, H) P(H) )
     # P(D|S, H) = P(D|M)
+
+    # Multiply the data over all days
+    log_p_D_given_M = log_p_D_given_M.sum(axis=0)
 
     # Exit log space without having 0s
     max = log_p_D_given_M.max()

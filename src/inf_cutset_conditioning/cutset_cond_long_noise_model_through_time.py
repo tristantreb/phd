@@ -15,7 +15,7 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 def process_id(inf_settings):
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
-    n_days_consec = 1
+    n_days_consec = 2
     ecfev1_noise_model_suffix = "_std_0.068"
     # ecfev1_noise_model_suffix = "_std_0.23"
     # ecfev1_noise_model_suffix = "_std_add_mult"
@@ -45,10 +45,11 @@ def process_id(inf_settings):
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
     (
-        p_M_given_D,
-        log_p_D_given_M,
-        AR_given_M_and_D,
-        AR_given_M_and_all_D,
+        # p_M_given_D,
+        # log_p_D_given_M,
+        # AR_given_M_and_D,
+        # AR_given_M_and_all_D,
+        log_p_S_given_D,
         res_dict,
     ) = cca_ar_change.run_long_noise_model_through_time(
         # ) = cca.run_long_noise_model_through_time_light(
@@ -61,36 +62,33 @@ def process_id(inf_settings):
         save=True,
     )
 
-    p_S_given_D = p_M_given_D.sum(axis=0) # P(HFEV1)
+    print(f"id {id}, log_p_S_given_D: {log_p_S_given_D}")
 
-    print(f"id {id}, p_M_given_D: {p_M_given_D}")
-    print(f"id {id}, p_S_given_D: {p_S_given_D}")
-
-    return -1
+    return {id: log_p_S_given_D}
 
 
 # Run the function in parallel using ProcessPoolExecutor
 if __name__ == "__main__":
 
     interesting_ids = [
-        # # "132",
-        # "146",
-        # "177",
-        # "180",
-        # # "202",
-        # # "527",
-        # "117",
-        # # "131",
-        # # "134",
-        # # "191",
-        # "139",
-        # # "253",
-        # "101",
-        # # Also from consec values
-        # "405",
-        # "272",
-        # "201",
-        # "203",
+        "132",
+        "146",
+        "177",
+        "180",
+        "202",
+        "527",
+        "117",
+        "131",
+        "134",
+        "191",
+        "139",
+        "253",
+        "101",
+        # Also from consec values
+        "405",
+        "272",
+        "201",
+        "203",
         "527",
     ]
 
@@ -117,7 +115,12 @@ if __name__ == "__main__":
     # num_cores = os.cpu_count()
     # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        list(executor.map(process_id, inf_settings))
+        log_p_S_given_D_list = list(executor.map(process_id, inf_settings))
+
+    # Join the list of dictionaries into a single dictionary
+    log_p_S_given_D = {k: v for d in log_p_S_given_D_list for k, v in d.items()}
+    print(log_p_S_given_D)
+
 
 # def main():
 #     process_id(("uniform", "101"))
