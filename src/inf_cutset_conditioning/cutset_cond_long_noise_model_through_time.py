@@ -15,16 +15,18 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 def process_id(inf_settings):
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
+    n_days_consec = 1
+    ecfev1_noise_model_suffix = "_std_0.068"
+    # ecfev1_noise_model_suffix = "_std_0.23"
+    # ecfev1_noise_model_suffix = "_std_add_mult"
 
-    dftmp, start_idx, end_idx = dh.find_longest_consec_series(df[df.ID == id])
+    dftmp, start_idx, end_idx = dh.find_longest_consec_series(
+        df[df.ID == id], n_days=n_days_consec
+    )
 
     print(
         f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
     )
-
-    ecfev1_noise_model_suffix = "_std_0.068"
-    # ecfev1_noise_model_suffix = "_std_0.23"
-    # ecfev1_noise_model_suffix = "_std_add_mult"
 
     ecfef2575_cols = [
         "ecFEF2575%ecFEV1",
@@ -42,7 +44,13 @@ def process_id(inf_settings):
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
-    _ = cca_ar_change.run_long_noise_model_through_time(
+    (
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
+        res_dict,
+    ) = cca_ar_change.run_long_noise_model_through_time(
         # ) = cca.run_long_noise_model_through_time_light(
         dftmp,
         ar_prior=ar_prior,
@@ -52,6 +60,12 @@ def process_id(inf_settings):
         debug=False,
         save=True,
     )
+
+    p_S_given_D = p_M_given_D.sum(axis=0) # P(HFEV1)
+
+    print(f"id {id}, p_M_given_D: {p_M_given_D}")
+    print(f"id {id}, p_S_given_D: {p_S_given_D}")
+
     return -1
 
 
@@ -59,20 +73,20 @@ def process_id(inf_settings):
 if __name__ == "__main__":
 
     interesting_ids = [
-        # "132",
+        # # "132",
         # "146",
         # "177",
         # "180",
-        # "202",
-        # "527",
+        # # "202",
+        # # "527",
         # "117",
-        # "131",
-        # "134",
-        # "191",
+        # # "131",
+        # # "134",
+        # # "191",
         # "139",
-        # "253",
+        # # "253",
         # "101",
-        # Also from consec values
+        # # Also from consec values
         # "405",
         # "272",
         # "201",
