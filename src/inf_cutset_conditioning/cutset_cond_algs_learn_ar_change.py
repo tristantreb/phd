@@ -88,27 +88,45 @@ def run_long_noise_model_through_time_light(
         df, ar_prior, ia_prior, ar_change_cpt_suffix
     )
 
-    (p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D, res_dict) = (
-        calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
-            df,
-            inf_alg,
-            HFEV1,
-            h_s_obs_states,
-            AR,
-            ecFEV1,
-            ecFEF2575prctecFEV1,
-            model_spec_txt,
-            S,
-            debug=debug,
-        )
+    # (p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D, res_dict) = (
+    #     calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
+    #         df,
+    #         inf_alg,
+    #         HFEV1,
+    #         h_s_obs_states,
+    #         AR,
+    #         ecFEV1,
+    #         ecFEF2575prctecFEV1,
+    #         model_spec_txt,
+    #         S,
+    #         debug=debug,
+    #     )
+    # )
+
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+        df,
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        S,
+        debug=debug,
     )
+
     return (
-        p_M_given_D,
-        log_p_D_given_M,
-        AR_given_M_and_D,
-        AR_given_M_and_all_D,
+        log_p_S_given_D,
         res_dict,
     )
+
+    # return (
+    #     p_M_given_D,
+    #     log_p_D_given_M,
+    #     AR_given_M_and_D,
+    #     AR_given_M_and_all_D,
+    #     res_dict,
+    # )
 
 
 def load_long_noise_model_through_time(

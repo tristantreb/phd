@@ -1253,6 +1253,91 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     )
 
 
+def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light_factor_graph(
+    n,
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ar_change_cpt_suffix="",
+    ar_change_cpt_state=0,
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+
+    Must have a corresponding AR change CPT
+    Musn't necessarily use the cutset conditioning
+
+    FEV1 noise model suffix fixed to 0.7, high noise to compensate low granularity for the temporal ARs
+    """
+
+    (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+    ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ar_change_cpt_suffix,
+    )
+
+    (
+        model,
+        _,
+        # _,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        # O2SatFFA_vars,
+        # IA_vars,
+        # UO2Sat_vars,
+        # O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    ) = graph_builders.fev1_fef2575_o2sat_n_days_noise_factor_graph(
+        n,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        # HO2Sat,
+        # O2SatFFA,
+        # IA,
+        # UO2Sat,
+        # O2Sat,
+        ecFEF2575prctecFEV1,
+        ar_change_cpt_state=ar_change_cpt_state,
+        check_model=check_model,
+    )
+    inf_alg = apply_factor_graph_bp(model)
+    return (
+        model,
+        inf_alg,
+        HFEV1,
+        # HO2Sat,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        # O2SatFFA_vars,
+        # IA_vars,
+        # UO2Sat_vars,
+        # O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
 def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
     n,
     height,

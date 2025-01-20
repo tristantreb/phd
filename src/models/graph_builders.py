@@ -982,7 +982,9 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
     # For other days the cpt depends the number of days elapsed
     # For testing, n days elapsed = 1
     for i in range(1, n):
-        print(f"{AR_vars[i].name}, cpt: {AR_vars[i].change_cpt[:, :, ar_change_cpt_state].shape}")
+        print(
+            f"{AR_vars[i].name}, cpt: {AR_vars[i].change_cpt[:, :, ar_change_cpt_state].shape}"
+        )
         AR_priors.append(
             TabularCPD(
                 variable=AR_vars[i].name,
@@ -1087,5 +1089,192 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
         IA_vars,
         UO2Sat_vars,
         O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
+def fev1_fef2575_o2sat_n_days_noise_factor_graph(
+    n,
+    HFEV1,
+    uecFEV1,
+    ecFEV1,
+    AR,
+    # HO2Sat,
+    # O2SatFFA,
+    # IA,
+    # UO2Sat,
+    # O2Sat,
+    ecFEF2575prctecFEV1,
+    ar_change_cpt_state=-1,
+    check_model=True,
+):
+    """
+    AR and IA have no direct link in this model
+    """
+
+    def create_var_for_day(var, day):
+        var_ = deepcopy(var)
+        var_.name = f"{var.name} day {day}"
+        return var_
+
+    AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
+    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
+    ecFEF2575prctecFEV1_vars = [
+        create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
+    ]
+    # O2SatFFA_vars = [create_var_for_day(O2SatFFA, i) for i in range(1, n + 1)]
+    # IA_vars = [create_var_for_day(IA, i) for i in range(1, n + 1)]
+    # UO2Sat_vars = [create_var_for_day(UO2Sat, i) for i in range(1, n + 1)]
+    # O2Sat_vars = [create_var_for_day(O2Sat, i) for i in range(1, n + 1)]
+
+    # Priors and CPTs
+    # AR first day prior shall be uniform
+    AR_priors = []
+    AR_priors.append(
+        DiscreteFactor(
+            [AR_vars[0].name],
+            [AR_vars[0].card],
+            AR_vars[0].first_day_prior.reshape(AR_vars[0].card, -1),
+        )
+    )
+    # For other days the cpt depends the number of days elapsed
+    # For testing, n days elapsed = 1
+    for i in range(1, n):
+        AR_priors.append(
+            DiscreteFactor(
+                [AR_vars[i].name, AR_vars[i - 1].name],
+                [AR_vars[i].card, AR_vars[i - 1].card],
+                AR_vars[i].change_cpt[:, :, ar_change_cpt_state],
+            )
+        )
+
+    uecFEV1_cpts = [
+        build_pgmpy_ecfev1_factor_fn(uecFEV1_, HFEV1, AR_)
+        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    ]
+    ecFEV1_cpts = [
+        build_pgmpy_ecfev1_noise_factor_fn(ecFEV1_, uecFEV1_)
+        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+    ]
+    ecFEF2575prctecFEV1_cpts = [
+        build_pgmpy_ecfef2575prctecfev1_factor_fn(
+            ecFEF2575prctecFEV1_,
+            AR_,
+        )
+        for ecFEF2575prctecFEV1_, AR_ in zip(ecFEF2575prctecFEV1_vars, AR_vars)
+    ]
+    # O2SatFFA_cpts = [
+    #     build_pgmpy_o2satffa_factor_fn(O2SatFFA_, HO2Sat, AR_)
+    #     for O2SatFFA_, AR_ in zip(O2SatFFA_vars, AR_vars)
+    # ]
+    # IA_priors = [build_pgmpy_ia_factor_fn(IA_) for IA_ in IA_vars]
+    # UO2Sat_cpts = [
+    #     build_pgmpy_uo2sat_factor_fn(UO2Sat_, O2SatFFA_, IA_)
+    #     for UO2Sat_, O2SatFFA_, IA_ in zip(UO2Sat_vars, O2SatFFA_vars, IA_vars)
+    # ]
+    # O2Sat_cpts = [
+    #     build_pgmpy_o2sat_factor_fn(O2Sat_, UO2Sat_)
+    #     for O2Sat_, UO2Sat_ in zip(O2Sat_vars, UO2Sat_vars)
+    # ]
+
+    # Make sure the days are at the same location in all variable lists
+    for i in range(1, n + 1):
+        assert AR_vars[i - 1].name == f"{AR.name} day {i}"
+        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
+        assert (
+            ecFEF2575prctecFEV1_vars[i - 1].name
+            == f"{ecFEF2575prctecFEV1.name} day {i}"
+        )
+        # assert O2SatFFA_vars[i - 1].name == f"{O2SatFFA.name} day {i}"
+        # assert IA_vars[i - 1].name == f"{IA.name} day {i}"
+        # assert UO2Sat_vars[i - 1].name == f"{UO2Sat.name} day {i}"
+        # assert O2Sat_vars[i - 1].name == f"{O2Sat.name} day {i}"
+
+    prior_hfev1 = build_pgmpy_hfev1_factor_fn(HFEV1)
+    # prior_ho2sat = build_pgmpy_ho2sat_factor_fn(HO2Sat)
+
+    G = FactorGraph()
+    nodes = []
+    for i in range(0, n):
+        nodes += [
+            uecFEV1_vars[i].name,
+            ecFEV1_vars[i].name,
+            AR_vars[i].name,
+            # O2SatFFA_vars[i].name,
+            # IA_vars[i].name,
+            # UO2Sat_vars[i].name,
+            # O2Sat_vars[i].name,
+            ecFEF2575prctecFEV1_vars[i].name,
+        ]
+    G.add_nodes_from(
+        [
+            HFEV1.name,
+            # HO2Sat.name,
+        ]
+        + nodes
+    )
+    G.add_factors(
+        prior_hfev1,
+        # prior_ho2sat,
+        *uecFEV1_cpts,
+        *ecFEV1_cpts,
+        *ecFEF2575prctecFEV1_cpts,
+        *AR_priors,
+        # *O2SatFFA_cpts,
+        # *IA_priors,
+        # *UO2Sat_cpts,
+        # *O2Sat_cpts,
+    )
+    inner_links = []
+    for i in range(0, n):
+        inner_links += [
+            (HFEV1.name, uecFEV1_cpts[i]),
+            (AR_priors[i], AR_vars[i].name),
+            (AR_vars[i].name, uecFEV1_cpts[i]),
+            (AR_vars[i].name, ecFEF2575prctecFEV1_cpts[i]),
+            # (AR_vars[i].name, O2SatFFA_cpts[i]),
+            # (HO2Sat.name, O2SatFFA_cpts[i]),
+            # (O2SatFFA_cpts[i], O2SatFFA_vars[i].name),
+            # (O2SatFFA_vars[i].name, UO2Sat_cpts[i]),
+            # (IA_priors[i], IA_vars[i].name),
+            # (IA_vars[i].name, UO2Sat_cpts[i]),
+            # (UO2Sat_cpts[i], UO2Sat_vars[i].name),
+            # (UO2Sat_vars[i].name, O2Sat_cpts[i]),
+            # (O2Sat_cpts[i], O2Sat_vars[i].name),
+            (uecFEV1_cpts[i], uecFEV1_vars[i].name),
+            (uecFEV1_vars[i].name, ecFEV1_cpts[i]),
+            (ecFEV1_cpts[i], ecFEV1_vars[i].name),
+            (ecFEF2575prctecFEV1_cpts[i], ecFEF2575prctecFEV1_vars[i].name),
+        ]
+    between_days_links = []
+    for i in range(1, n):
+        between_days_links += [(AR_vars[i - 1].name, AR_priors[i])]
+
+    G.add_edges_from(
+        [
+            (prior_hfev1, HFEV1.name),
+            # (prior_ho2sat, HO2Sat.name),
+        ]
+        + inner_links
+        + between_days_links
+    )
+
+    if check_model:
+        assert G.check_model() == True
+        print("Model is valid")
+
+    return (
+        G,
+        HFEV1,
+        # HO2Sat,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        # O2SatFFA_vars,
+        # IA_vars,
+        # UO2Sat_vars,
+        # O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
     )
