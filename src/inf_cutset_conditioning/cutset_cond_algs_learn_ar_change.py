@@ -559,7 +559,7 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
 
             vevidence_ar = (
                 cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
-                    AR, h, curr_date, S_obs_idx, prev_date, next_date=None, debug=debug
+                    AR, h, curr_date, S_obs_idx, prev_date, next_date=None, n_days_consec=2, debug=debug
                 )
             )
             res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values

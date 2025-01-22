@@ -888,6 +888,7 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         shape_factor,
         prev_date=None,
         next_date=None,
+        n_days=1,
         debug=False,
     ):
         """
@@ -927,8 +928,8 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
         else:
             # current - prev must be consecutive
             assert (
-                calc_days_elapsed(prev_date, curr_date) == 1
-            ), "Previous day and current day must be consecutive"
+                calc_days_elapsed(prev_date, curr_date) <= n_days
+            ), f"Previous day and current day must be consecutive, they were {calc_days_elapsed(prev_date, curr_date)} days apart"
 
             # The previous day's posterior updated through the change factor acts as the current days's prior.
             prev_day_posterior = self.vmessages[state_n].get(prev_day_key)
