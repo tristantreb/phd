@@ -1,0 +1,789 @@
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '132'), with 3 entries (start_index, end_index): (0, 3)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '146'), with 42 entries (start_index, end_index): (146, 188)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '177'), with 16 entries (start_index, end_index): (156, 172)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '180'), with 41 entries (start_index, end_index): (0, 41)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '202'), with 1 entries (start_index, end_index): (0, 1)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '117'), with 64 entries (start_index, end_index): (64, 128)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '131'), with 4 entries (start_index, end_index): (4, 8)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '134'), with 18 entries (start_index, end_index): (1, 19)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '191'), with 13 entries (start_index, end_index): (32, 45)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '139'), with 20 entries (start_index, end_index): (74, 94)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '253'), with 7 entries (start_index, end_index): (3, 10)
+202 - Time for 1 entries: 6.11 s
+id 202, log_p_S_given_D: [-16.35187117 -16.35187117 -16.35187117 -16.35187117 -16.35187117]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '101'), with 592 entries (start_index, end_index): (0, 592)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '405'), with 1035 entries (start_index, end_index): (0, 1035)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '272'), with 205 entries (start_index, end_index): (0, 205)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '201'), with 221 entries (start_index, end_index): (62, 283)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '203'), with 87 entries (start_index, end_index): (44, 131)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+527 - Time for 4 entries: 21.08 s
+id 527, log_p_S_given_D: [-25.61140428 -26.45188809 -27.07217318 -27.5425883  -27.91407348]
+527 - Time for 4 entries: 13.03 s
+id 527, log_p_S_given_D: [-25.61140428 -26.45188809 -27.07217318 -27.5425883  -27.91407348]
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 54, in process_id
+    ) = cca_ar_change.run_long_noise_model_through_time(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 57, in run_long_noise_model_through_time
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 561, in calc_log_p_S_given_D_for_ID_ecfev1_fef2575
+    cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/helpers.py", line 36, in build_vevidence_cutset_conditioned_ar_with_shape_factor
+    prior = AR.get_virtual_message_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/models/helpers.py", line 930, in get_virtual_message_with_shape_factor
+    calc_days_elapsed(prev_date, curr_date) == 1
+AssertionError: Previous day and current day must be consecutive
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 118, in <module>
+    log_p_S_given_D_list = list(executor.map(process_id, inf_settings))
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 575, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 458, in result
+    return self.__get_result()
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+AssertionError: Previous day and current day must be consecutive
+(phd) (base) ➜  phd git:(main) ✗ python src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '132'), with 3 entries (start_index, end_index): (0, 3)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '146'), with 42 entries (start_index, end_index): (146, 188)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '177'), with 16 entries (start_index, end_index): (156, 172)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '180'), with 41 entries (start_index, end_index): (0, 41)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '202'), with 1 entries (start_index, end_index): (0, 1)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '117'), with 64 entries (start_index, end_index): (64, 128)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '131'), with 4 entries (start_index, end_index): (4, 8)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '134'), with 18 entries (start_index, end_index): (1, 19)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '191'), with 13 entries (start_index, end_index): (32, 45)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '139'), with 20 entries (start_index, end_index): (74, 94)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '253'), with 7 entries (start_index, end_index): (3, 10)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '101'), with 592 entries (start_index, end_index): (0, 592)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '405'), with 1035 entries (start_index, end_index): (0, 1035)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '272'), with 205 entries (start_index, end_index): (0, 205)
+202 - Time for 1 entries: 5.88 s
+id 202, log_p_S_given_D: [-16.35187117 -16.35187117 -16.35187117 -16.35187117 -16.35187117]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '201'), with 221 entries (start_index, end_index): (62, 283)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '203'), with 87 entries (start_index, end_index): (44, 131)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 54, in process_id
+    ) = cca_ar_change.run_long_noise_model_through_time(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 57, in run_long_noise_model_through_time
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 561, in calc_log_p_S_given_D_for_ID_ecfev1_fef2575
+    cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/helpers.py", line 37, in build_vevidence_cutset_conditioned_ar_with_shape_factor
+    prior = AR.get_virtual_message_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/models/helpers.py", line 931, in get_virtual_message_with_shape_factor
+    calc_days_elapsed(prev_date, curr_date) == n_days
+AssertionError: Previous day and current day must be consecutive
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 118, in <module>
+    log_p_S_given_D_list = list(executor.map(process_id, inf_settings))
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 575, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 458, in result
+    return self.__get_result()
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+AssertionError: Previous day and current day must be consecutive
+(phd) (base) ➜  phd git:(main) ✗ python src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '132'), with 3 entries (start_index, end_index): (0, 3)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '146'), with 42 entries (start_index, end_index): (146, 188)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '177'), with 16 entries (start_index, end_index): (156, 172)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '180'), with 41 entries (start_index, end_index): (0, 41)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '202'), with 1 entries (start_index, end_index): (0, 1)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '117'), with 64 entries (start_index, end_index): (64, 128)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '131'), with 4 entries (start_index, end_index): (4, 8)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '134'), with 18 entries (start_index, end_index): (1, 19)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '191'), with 13 entries (start_index, end_index): (32, 45)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '139'), with 20 entries (start_index, end_index): (74, 94)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '253'), with 7 entries (start_index, end_index): (3, 10)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '101'), with 592 entries (start_index, end_index): (0, 592)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '405'), with 1035 entries (start_index, end_index): (0, 1035)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '272'), with 205 entries (start_index, end_index): (0, 205)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '201'), with 221 entries (start_index, end_index): (62, 283)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '203'), with 87 entries (start_index, end_index): (44, 131)
+202 - Time for 1 entries: 5.79 s
+id 202, log_p_S_given_D: [-16.35187117 -16.35187117 -16.35187117 -16.35187117 -16.35187117]
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 54, in process_id
+    ) = cca_ar_change.run_long_noise_model_through_time(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 57, in run_long_noise_model_through_time
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 561, in calc_log_p_S_given_D_for_ID_ecfev1_fef2575
+    cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/helpers.py", line 37, in build_vevidence_cutset_conditioned_ar_with_shape_factor
+    prior = AR.get_virtual_message_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/models/helpers.py", line 931, in get_virtual_message_with_shape_factor
+    calc_days_elapsed(prev_date, curr_date) == n_days
+AssertionError: Previous day and current day must be consecutive, they were 2 days apart
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 118, in <module>
+    log_p_S_given_D_list = list(executor.map(process_id, inf_settings))
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 575, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 458, in result
+    return self.__get_result()
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+AssertionError: Previous day and current day must be consecutive, they were 2 days apart
+(phd) (base) ➜  phd git:(main) ✗ python src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '132'), with 3 entries (start_index, end_index): (0, 3)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '146'), with 42 entries (start_index, end_index): (146, 188)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '177'), with 16 entries (start_index, end_index): (156, 172)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '202'), with 1 entries (start_index, end_index): (0, 1)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '180'), with 41 entries (start_index, end_index): (0, 41)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '117'), with 64 entries (start_index, end_index): (64, 128)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '131'), with 4 entries (start_index, end_index): (4, 8)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '134'), with 18 entries (start_index, end_index): (1, 19)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '191'), with 13 entries (start_index, end_index): (32, 45)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '139'), with 20 entries (start_index, end_index): (74, 94)
+202 - Time for 1 entries: 5.51 s
+id 202, log_p_S_given_D: [-16.35187117 -16.35187117 -16.35187117 -16.35187117 -16.35187117]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '253'), with 7 entries (start_index, end_index): (3, 10)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '101'), with 592 entries (start_index, end_index): (0, 592)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '405'), with 1035 entries (start_index, end_index): (0, 1035)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '272'), with 205 entries (start_index, end_index): (0, 205)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '201'), with 221 entries (start_index, end_index): (62, 283)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '203'), with 87 entries (start_index, end_index): (44, 131)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+132 - Time for 3 entries: 13.29 s
+id 132, log_p_S_given_D: [-20.75758342 -21.27093213 -21.707707   -22.06147626 -22.34705025]
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 54, in process_id
+    ) = cca_ar_change.run_long_noise_model_through_time(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 57, in run_long_noise_model_through_time
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 561, in calc_log_p_S_given_D_for_ID_ecfev1_fef2575
+    cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/helpers.py", line 37, in build_vevidence_cutset_conditioned_ar_with_shape_factor
+    prior = AR.get_virtual_message_with_shape_factor(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/models/helpers.py", line 931, in get_virtual_message_with_shape_factor
+    calc_days_elapsed(prev_date, curr_date) == n_days
+AssertionError: Previous day and current day must be consecutive, they were 1 days apart
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 118, in <module>
+    log_p_S_given_D_list = list(executor.map(process_id, inf_settings))
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 575, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 451, in result
+    return self.__get_result()
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+AssertionError: Previous day and current day must be consecutive, they were 1 days apart
+(phd) (base) ➜  phd git:(main) ✗ python src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+INFO:root:* Checking for same day measurements *
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '132'), with 3 entries (start_index, end_index): (0, 3)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '146'), with 42 entries (start_index, end_index): (146, 188)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '177'), with 16 entries (start_index, end_index): (156, 172)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '180'), with 41 entries (start_index, end_index): (0, 41)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '202'), with 1 entries (start_index, end_index): (0, 1)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '117'), with 64 entries (start_index, end_index): (64, 128)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '131'), with 4 entries (start_index, end_index): (4, 8)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '134'), with 18 entries (start_index, end_index): (1, 19)
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '191'), with 13 entries (start_index, end_index): (32, 45)
+202 - Time for 1 entries: 10.29 s
+id 202, log_p_S_given_D: [-16.35187117 -16.35187117 -16.35187117 -16.35187117 -16.35187117]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '139'), with 20 entries (start_index, end_index): (74, 94)
+132 - Time for 3 entries: 23.18 s
+id 132, log_p_S_given_D: [-20.75758342 -21.27093213 -21.707707   -22.06147626 -22.34705025]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '253'), with 7 entries (start_index, end_index): (3, 10)
+527 - Time for 4 entries: 29.41 s
+id 527, log_p_S_given_D: [-25.61140428 -26.45188809 -27.07217318 -27.5425883  -27.91407348]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '101'), with 592 entries (start_index, end_index): (0, 592)
+131 - Time for 4 entries: 31.17 s
+id 131, log_p_S_given_D: [-25.53796992 -25.52900146 -25.7593319  -26.02914981 -26.28070297]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '405'), with 1035 entries (start_index, end_index): (0, 1035)
+253 - Time for 7 entries: 43.29 s
+id 253, log_p_S_given_D: [-45.33997536 -46.66246577 -47.76716726 -48.66015126 -49.37919679]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '272'), with 205 entries (start_index, end_index): (0, 205)
+191 - Time for 13 entries: 86.95 s
+id 191, log_p_S_given_D: [-76.19691175 -79.31875483 -81.74655806 -83.59930519 -85.03824633]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '201'), with 221 entries (start_index, end_index): (62, 283)
+177 - Time for 16 entries: 96.28 s
+id 177, log_p_S_given_D: [-107.91746538 -111.16866855 -113.86130438 -116.10506024 -117.98349099]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '203'), with 87 entries (start_index, end_index): (44, 131)
+134 - Time for 18 entries: 112.62 s
+id 134, log_p_S_given_D: [-119.00507173 -117.35556186 -118.85819609 -120.76852518 -122.56889651]
+Processing ('_shape_factor', 'breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)', '527'), with 4 entries (start_index, end_index): (0, 4)
+139 - Time for 20 entries: 111.89 s
+id 139, log_p_S_given_D: [-108.56642017 -112.6838942  -115.9948574  -118.53435292 -120.500274  ]
+527 - Time for 4 entries: 18.31 s
+id 527, log_p_S_given_D: [-25.61140428 -26.45188809 -27.07217318 -27.5425883  -27.91407348]
+180 - Time for 41 entries: 189.23 s
+id 180, log_p_S_given_D: [-220.92788821 -233.86674377 -243.77614611 -251.58601084 -257.84170517]
+146 - Time for 42 entries: 193.96 s
+id 146, log_p_S_given_D: [-217.00944378 -229.78725076 -239.81692386 -247.78907428 -254.20778987]
+117 - Time for 64 entries: 254.31 s
+id 117, log_p_S_given_D: [-365.72287031 -383.98992752 -398.69734184 -410.52735616 -420.10808376]
+203 - Time for 87 entries: 240.25 s
+id 203, log_p_S_given_D: [-503.28095825 -533.21985495 -555.52840133 -572.91414777 -586.77254326]
+272 - Time for 205 entries: 477.92 s
+id 272, log_p_S_given_D: [-1091.29289396 -1133.49550138 -1161.75065789 -1184.55150364
+ -1203.66994064]
+201 - Time for 221 entries: 493.54 s
+id 201, log_p_S_given_D: [-1538.01041575 -1442.61555078 -1427.19420822 -1429.79852868
+ -1436.28785483]
+101 - Time for 592 entries: 944.60 s
+id 101, log_p_S_given_D: [-2873.45905212 -3068.9291075  -3215.69119154 -3329.99408394
+ -3420.69132454]
+405 - Time for 1035 entries: 1366.24 s
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 205, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 54, in process_id
+    ) = cca_ar_change.run_long_noise_model_through_time(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 57, in run_long_noise_model_through_time
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 611, in calc_log_p_S_given_D_for_ID_ecfev1_fef2575
+    log_p_S_given_D = fuse_results_to_compute_P_S_given_D(HFEV1, S, log_p_D_given_M)
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_algs_learn_ar_change.py", line 640, in fuse_results_to_compute_P_S_given_D
+    raise ValueError(
+ValueError: P(S|M) has 0 probabilities p_S_given_M: [3.47361613e-004 3.60933133e-186 2.95146289e-316 0.00000000e+000
+ 0.00000000e+000], p_D_given_M: [[0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.94065646e-324 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [9.77468603e-308 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.57707448e-291 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [6.77944144e-277 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.09425999e-263 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [6.82060649e-250 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.88989047e-238 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.48475827e-226 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.48691323e-216 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.73583816e-206 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.28108298e-196 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.51093878e-188 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.30747186e-179 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.28180943e-171 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [8.40195778e-164 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.11543332e-155 2.63574635e-318 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.79316069e-148 1.24859821e-311 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [5.27050841e-141 3.48825208e-305 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.65669128e-134 8.09825557e-299 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.37728672e-127 1.41100189e-292 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.81189146e-119 5.74582125e-286 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.35618309e-114 9.90227599e-281 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.48306079e-104 7.87229250e-273 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.05911720e-100 6.60658086e-268 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.26198408e-090 8.02290548e-260 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.11512812e-084 6.63779810e-254 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.21152406e-075 1.49895154e-246 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [8.62306146e-069 3.78152305e-240 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.88271384e-062 3.71815229e-234 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [7.03040956e-055 3.90931665e-228 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.56815564e-049 3.44560602e-223 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.90271440e-045 3.66335566e-219 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.15967249e-040 1.00648683e-214 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.24894699e-037 2.52340086e-212 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [8.81908759e-031 2.46550455e-207 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.09286147e-030 3.05322866e-206 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.25264125e-024 1.92610474e-201 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.39464780e-023 7.23389067e-200 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.90884102e-017 1.15573777e-195 4.94065646e-324 0.00000000e+000
+  0.00000000e+000]
+ [4.80637632e-014 2.92500610e-193 4.00193173e-322 0.00000000e+000
+  0.00000000e+000]
+ [6.40577172e-012 5.60411519e-191 6.55921551e-320 0.00000000e+000
+  0.00000000e+000]
+ [3.94627407e-009 1.13137172e-188 6.88172675e-318 0.00000000e+000
+  0.00000000e+000]
+ [9.23297149e-007 6.45416436e-187 2.48765768e-316 0.00000000e+000
+  0.00000000e+000]
+ [2.07666838e-003 5.71044412e-185 9.18936192e-315 0.00000000e+000
+  0.00000000e+000]
+ [7.54608432e-002 5.01935629e-184 4.95433591e-314 0.00000000e+000
+  0.00000000e+000]
+ [1.97813361e-001 2.82052259e-183 2.63377421e-313 0.00000000e+000
+  0.00000000e+000]
+ [9.00316974e-002 2.26518227e-183 2.24309149e-313 0.00000000e+000
+  0.00000000e+000]
+ [1.00000000e+000 7.72020778e-183 4.78917080e-313 0.00000000e+000
+  0.00000000e+000]]
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/tristan.trebaol/Desktop/PhD/Code/phd/src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py", line 118, in <module>
+    log_p_S_given_D_list = list(executor.map(process_id, inf_settings))
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/process.py", line 575, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 458, in result
+    return self.__get_result()
+  File "/Applications/anaconda3/envs/phd/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+ValueError: P(S|M) has 0 probabilities p_S_given_M: [3.47361613e-004 3.60933133e-186 2.95146289e-316 0.00000000e+000
+ 0.00000000e+000], p_D_given_M: [[0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [0.00000000e+000 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.94065646e-324 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [9.77468603e-308 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.57707448e-291 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [6.77944144e-277 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.09425999e-263 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [6.82060649e-250 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.88989047e-238 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.48475827e-226 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.48691323e-216 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.73583816e-206 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.28108298e-196 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.51093878e-188 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.30747186e-179 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.28180943e-171 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [8.40195778e-164 0.00000000e+000 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.11543332e-155 2.63574635e-318 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.79316069e-148 1.24859821e-311 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [5.27050841e-141 3.48825208e-305 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.65669128e-134 8.09825557e-299 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.37728672e-127 1.41100189e-292 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.81189146e-119 5.74582125e-286 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.35618309e-114 9.90227599e-281 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.48306079e-104 7.87229250e-273 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.05911720e-100 6.60658086e-268 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.26198408e-090 8.02290548e-260 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.11512812e-084 6.63779810e-254 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.21152406e-075 1.49895154e-246 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [8.62306146e-069 3.78152305e-240 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.88271384e-062 3.71815229e-234 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [7.03040956e-055 3.90931665e-228 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [3.56815564e-049 3.44560602e-223 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [2.90271440e-045 3.66335566e-219 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.15967249e-040 1.00648683e-214 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.24894699e-037 2.52340086e-212 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [8.81908759e-031 2.46550455e-207 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.09286147e-030 3.05322866e-206 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [1.25264125e-024 1.92610474e-201 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.39464780e-023 7.23389067e-200 0.00000000e+000 0.00000000e+000
+  0.00000000e+000]
+ [4.90884102e-017 1.15573777e-195 4.94065646e-324 0.00000000e+000
+  0.00000000e+000]
+ [4.80637632e-014 2.92500610e-193 4.00193173e-322 0.00000000e+000
+  0.00000000e+000]
+ [6.40577172e-012 5.60411519e-191 6.55921551e-320 0.00000000e+000
+  0.00000000e+000]
+ [3.94627407e-009 1.13137172e-188 6.88172675e-318 0.00000000e+000
+  0.00000000e+000]
+ [9.23297149e-007 6.45416436e-187 2.48765768e-316 0.00000000e+000
+  0.00000000e+000]
+ [2.07666838e-003 5.71044412e-185 9.18936192e-315 0.00000000e+000
+  0.00000000e+000]
+ [7.54608432e-002 5.01935629e-184 4.95433591e-314 0.00000000e+000
+  0.00000000e+000]
+ [1.97813361e-001 2.82052259e-183 2.63377421e-313 0.00000000e+000
+  0.00000000e+000]
+ [9.00316974e-002 2.26518227e-183 2.24309149e-313 0.00000000e+000
+  0.00000000e+000]
+ [1.00000000e+000 7.72020778e-183 4.78917080e-313 0.00000000e+000
+  0.00000000e+000]]
