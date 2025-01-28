@@ -4,6 +4,19 @@ import numpy as np
 import pandas as pd
 
 
+def get_blind_colours():
+    """
+    #0072b2 000,114,178 blue
+    #d55e00 213,094,000 vermilion
+    #009e73 000,158,115 bluish-green
+    #f0e442 240,228,066 yellow
+    #e69f00 230,159,000 orange
+    #56b4e9 086,180,233 sky-blue
+    #cc79a7 204,121,167 reddish-purple
+    """
+    return ["#0072b2", "#d55e00", "#009e73", "#f0e442", "#e69f00", "#56b4e9", "#cc79a7"]
+
+
 def get_path_to_src():
     return os.getcwd().split("src")[0] + "/src/"
 
