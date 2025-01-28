@@ -34,11 +34,15 @@ def PDF_conv_uni_gausian_add_mult(z, y1, y2, abserr_tol=1e-10):
     std_ecfev1(ecfev1) = ax + b
     a = 0.00510174, multiplicative noise
     b = 0.03032977, additive noise
+
+    std_fev1(fev1) = ax + b
+    a = 0.00527939, multiplicative noise
+    b = 0.03396603, additive noise
     """
     A = 1 / (y2 - y1)
 
     def sigma_fn(fev1):
-        return 0.00510174 * fev1 + 0.03032977
+        return 0.00527939 * fev1 + 0.03396603
 
     def conv_fn(y, z):
         return np.exp(-1 / 2 * (z - y) ** 2 / sigma_fn(z) ** 2) / (
