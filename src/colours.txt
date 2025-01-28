@@ -5,12 +5,12 @@ https://www.nature.com/articles/d41586-021-02696-z
 Using The "Color Universal Design (CUD) Colorblind barrier-free color Pallette"
 by Masataka Okabe and Kei Ito
 http://people.apache.org/~crossley/cud/cud.html
-#e69f00 230,159,000 orange
-#56b4e9 086,180,233 sky-blue
-#009e73 000,158,115 bluish-green
-#f0e442 240,228,066 yellow
 #0072b2 000,114,178 blue
 #d55e00 213,094,000 vermilion
+#009e73 000,158,115 bluish-green
+#f0e442 240,228,066 yellow
+#e69f00 230,159,000 orange
+#56b4e9 086,180,233 sky-blue
 #cc79a7 204,121,167 reddish-purple
 
 Default plotly colour sequence: 

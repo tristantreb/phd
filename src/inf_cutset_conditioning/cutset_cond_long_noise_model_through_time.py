@@ -62,7 +62,9 @@ def process_id(inf_settings):
         save=True,
     )
 
-    print(f"id {id}, log_p_S_given_D: {log_p_S_given_D}")
+    max = log_p_S_given_D.max()
+
+    print(f"id {id}, log_p_S_given_D: {log_p_S_given_D - max}")
 
     return {id: log_p_S_given_D}
 
