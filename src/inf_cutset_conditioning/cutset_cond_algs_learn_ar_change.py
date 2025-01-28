@@ -16,6 +16,7 @@ def run_long_noise_model_through_time(
     ar_change_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
+    n_days_consec=3,
     debug=False,
     save=False,
 ):
@@ -63,6 +64,7 @@ def run_long_noise_model_through_time(
         ecFEV1,
         ecFEF2575prctecFEV1,
         S,
+        n_days_consec,
         debug=debug,
     )
 
@@ -73,7 +75,12 @@ def run_long_noise_model_through_time(
 
 
 def run_long_noise_model_through_time_light(
-    df, ar_prior="uniform", ia_prior="uniform", ar_change_cpt_suffix="", debug=False
+    df,
+    ar_prior="uniform",
+    ia_prior="uniform",
+    ar_change_cpt_suffix="",
+    n_days_consec=3,
+    debug=False,
 ):
     (
         inf_alg,
@@ -112,6 +119,7 @@ def run_long_noise_model_through_time_light(
         ecFEV1,
         ecFEF2575prctecFEV1,
         S,
+        n_days_consec,
         debug=debug,
     )
 
@@ -151,7 +159,8 @@ def load_long_noise_model_through_time(
         )
     )
 
-    S = mh.DiscreteVariableNode("AR change factor shape", 2, 10, 2)
+    S = mh.DiscreteVariableNode("AR change factor shape", 1, 27, 1)
+    # S = mh.DiscreteVariableNode("AR change factor shape", 2, 10, 2)
     S_obs_idx_list = range(S.card)
 
     HFEV1_obs_idx_list = range(HFEV1.card)
@@ -511,6 +520,7 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
     ecFEV1,
     ecFEF2575prctecFEV1,
     S,
+    n_days_consec,
     debug=False,
 ):
     df = df.copy().sort_values(by="Date Recorded").reset_index(drop=True)
@@ -559,7 +569,14 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
 
             vevidence_ar = (
                 cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
-                    AR, h, curr_date, S_obs_idx, prev_date, next_date=None, n_days_consec=2, debug=debug
+                    AR,
+                    h,
+                    curr_date,
+                    S_obs_idx,
+                    prev_date,
+                    next_date=None,
+                    n_days_consec=n_days_consec,
+                    debug=debug,
                 )
             )
             res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values
@@ -608,7 +625,7 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
     toc = time.time()
     print(f"{id} - Time for {N} entries: {toc-tic:.2f} s")
 
-    log_p_S_given_D = fuse_results_to_compute_P_S_given_D(HFEV1, S, log_p_D_given_M)
+    log_p_S_given_D = fuse_results_to_compute_P_S_given_D(id, HFEV1, S, log_p_D_given_M)
 
     return (
         log_p_S_given_D,
@@ -617,6 +634,7 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
 
 
 def fuse_results_to_compute_P_S_given_D(
+    id,
     HFEV1,
     S,
     log_p_D_given_M,
@@ -637,8 +655,8 @@ def fuse_results_to_compute_P_S_given_D(
 
     # Check for 0 probabilities
     if np.any(p_S_given_M == 0):
-        raise ValueError(
-            f"P(S|M) has 0 probabilities p_S_given_M: {p_S_given_M}, p_D_given_M: {p_D_given_M}"
+        print(
+            f"Warning - ID {id}, P(S|M) has 0 probabilities p_S_given_M: {p_S_given_M}"
         )
 
     # Back to log space
