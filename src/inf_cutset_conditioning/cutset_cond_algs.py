@@ -872,15 +872,6 @@ def get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
     dist_ecFEV1 = res1[ecFEV1.name].values
     p_ecFEV1 = dist_ecFEV1[data["idx ecFEV1 (L)"]]
     log_p_D_given_M = np.log(p_ecFEV1)
-    # raise if the log has nan
-    # if np.isnan(log_p_D_given_M):
-        # print("inputs")
-        # print(f"data ecFEV1: {data['idx ecFEV1 (L)']}\np_ecFEV1: {p_ecFEV1}")
-        # print(f"vevidence ar {vevidence_ar}")
-        # print("outputs")
-        # print(f"log_p_D_given_M: {log_p_D_given_M}\ndist_ecFEV1: {dist_ecFEV1}")
-        # print(f"messages {messages}")
-        # raise ValueError("log_p_D_given_M is nan")
 
     # Get P(ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1)
     precomp_messages2 = precomp_messages
@@ -915,17 +906,6 @@ def get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
     factor_to_AR /= factor_to_AR.sum()
     dist_AR = res2[AR.name].values * factor_to_AR
     dist_AR /= dist_AR.sum()
-
-    # if np.isnan(dist_AR).any():
-    #     print("inputs")
-    #     print("hfev1 evidence", HFEV1_bin_idx, "bin", HFEV1.get_bins_str()[HFEV1_bin_idx])
-    #     print("ecfev1 evidence", data["idx ecFEV1 (L)"], "bin", ecFEV1.get_bins_str()[data["idx ecFEV1 (L)"]])
-    #     print(f"vevidence ar: {vevidence_ar.values}")
-    #     print(f"precomp messages: {precomp_messages2}")
-    #     print("outputs")
-    #     print("dist AR", dist_AR)
-    #     print("factor to AR", factor_to_AR)
-    #     raise ValueError("dist_AR has nan")
 
     return log_p_D_given_M, dist_AR, dist_ecFEV1, dist_ecFEF2575prctecFEV1
 
