@@ -17,6 +17,7 @@ def run_long_noise_model_through_time(
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
     n_days_consec=3,
+    s_card=10,
     debug=False,
     save=False,
 ):
@@ -36,6 +37,7 @@ def run_long_noise_model_through_time(
         ar_change_cpt_suffix,
         ecfev1_noise_model_suffix,
         fef2575_cpt_suffix,
+        s_card,
     )
 
     # Must have both ecfev1 and fef2575 observations
@@ -144,6 +146,7 @@ def load_long_noise_model_through_time(
     ar_change_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
+    s_card=10,
 ):
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
@@ -159,8 +162,7 @@ def load_long_noise_model_through_time(
         )
     )
 
-    S = mh.DiscreteVariableNode("AR change factor shape", 1, 27, 1)
-    # S = mh.DiscreteVariableNode("AR change factor shape", 2, 10, 2)
+    S = mh.DiscreteVariableNode("AR change factor shape", 1, s_card, 1)
     S_obs_idx_list = range(S.card)
 
     def get_min_possible_HFEV1_given_max_FEV1():

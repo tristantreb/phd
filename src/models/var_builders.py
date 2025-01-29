@@ -1028,11 +1028,10 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
 
     # Select change CPT depending on the suffix
-    if ar_change_cpt_suffix == "_shape_factor":
-        S = DiscreteVariableNode("AR change factor shape", 2, 10, 2)
-        S = DiscreteVariableNode("AR change factor shape", 1, 27, 1)
+    if ar_change_cpt_suffix == "_shape_factor10":
+        S = DiscreteVariableNode("AR change factor shape", 1, 10, 1)
         AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
-    elif ar_change_cpt_suffix == "_shape_factor1":
+    elif ar_change_cpt_suffix == "_shape_factor27":
         S = DiscreteVariableNode("AR change factor shape", 1, 27, 1)
         AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
     else:
