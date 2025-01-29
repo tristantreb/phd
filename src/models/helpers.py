@@ -948,14 +948,6 @@ class CutsetConditionedTemporalVariableNode(VariableNode):
 
         vmessage = prev_day_m
         vmessage = vmessage / vmessage.sum()
-
-        # If vmessage is nai
-        if np.isnan(vmessage).any():
-            print("Virtual message is nan")
-            print(f"curr_date {curr_date}, prev date {prev_date}, state {state_n}, shape_factor {shape_factor}")
-            print(f"prev day posterior {prev_day_posterior}")
-            print(f"cpt for std {cpt_for_std}")
-
         if debug:
             print(f"Returning virtual message: {vmessage}")
         return vmessage

@@ -148,7 +148,7 @@ def load_long_noise_model_through_time(
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
     # Initialize the noise model and its variables
-    _, _, HFEV1, _, _, _, HO2Sat, *_ = (
+    _, _, HFEV1, uecFEV1, ecFEV1, _, HO2Sat, *_ = (
         mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
             height,
             age,
@@ -163,7 +163,21 @@ def load_long_noise_model_through_time(
     # S = mh.DiscreteVariableNode("AR change factor shape", 2, 10, 2)
     S_obs_idx_list = range(S.card)
 
-    HFEV1_obs_idx_list = range(HFEV1.card)
+    def get_min_possible_HFEV1_given_max_FEV1():
+        max_ecfev1 = np.zeros(ecFEV1.card)
+        max_ecfev1[df["idx ecFEV1 (L)"].max()] = 1
+        uecfev1 = np.matmul(max_ecfev1, ecFEV1.cpt)
+        argmin_uecfev1 = np.nonzero(uecfev1)[0][0]
+        min_uecfev1 = uecFEV1.midbins[argmin_uecfev1]
+        argmin_hfev1 = HFEV1.get_bin_idx_for_value(min_uecfev1)
+        return argmin_hfev1
+
+    min_possible_hfev1_under_model = get_min_possible_HFEV1_given_max_FEV1()
+    if min_possible_hfev1_under_model > 0:
+        print(
+            f"Warning - min_possible_hfev1_under_model: {min_possible_hfev1_under_model}"
+        )
+    HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
 
     h_s_obs_states = list(itertools.product(HFEV1_obs_idx_list, S_obs_idx_list))
 
@@ -650,8 +664,11 @@ def fuse_results_to_compute_P_S_given_D(
     log_p_D_given_M -= max
     p_D_given_M = np.exp(log_p_D_given_M)
 
-    p_D_given_M = p_D_given_M.reshape((HFEV1.card, S.card))
-    p_S_given_M = np.matmul(HFEV1.cpt, p_D_given_M)
+    p_D_given_M = p_D_given_M.reshape((-1, S.card))
+    # Handle case where the smallest possible inferable HFEV1 is larger than 1.
+    argmin_hfev1 = HFEV1.card - p_D_given_M.shape[0]
+    hfev1_cpt = HFEV1.cpt[argmin_hfev1:]
+    p_S_given_M = np.matmul(hfev1_cpt, p_D_given_M)
 
     # Check for 0 probabilities
     if np.any(p_S_given_M == 0):
