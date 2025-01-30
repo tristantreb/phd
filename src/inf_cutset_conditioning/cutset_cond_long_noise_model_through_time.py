@@ -14,7 +14,7 @@ def process_id(inf_settings):
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_days_consec = 3
-    s_card = 10
+    s_card = 3
     # ecfev1_noise_model_suffix = "_std_0.068"
     # ecfev1_noise_model_suffix = "_std_0.23"
     ecfev1_noise_model_suffix = "_std_add_mult_fev1"
