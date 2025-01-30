@@ -113,7 +113,8 @@ if __name__ == "__main__":
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068",
         # "_shape_factor",
         # "_shape_factor27",
-        "_shape_factor10",
+        # "_shape_factor10",
+        "_shape_factor3",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
