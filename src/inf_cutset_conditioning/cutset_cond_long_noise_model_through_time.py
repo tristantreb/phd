@@ -70,7 +70,7 @@ def process_id(inf_settings):
         f.write(str(res) + "\n")
     f.close()
 
-    return {id: log_p_S_given_D}
+    return -1
 
 
 # Run the function in parallel using ProcessPoolExecutor
@@ -114,7 +114,8 @@ if __name__ == "__main__":
         # "_shape_factor",
         # "_shape_factor27",
         # "_shape_factor10",
-        "_shape_factor11",
+        # "_shape_factor11",
+        "_shape_factor15_weights",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
@@ -125,11 +126,7 @@ if __name__ == "__main__":
     # num_cores = os.cpu_count()
     # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        log_p_S_given_D_list = list(executor.map(process_id, inf_settings))
-
-    # Join the list of dictionaries into a single dictionary
-    log_p_S_given_D = {k: v for d in log_p_S_given_D_list for k, v in d.items()}
-    print(log_p_S_given_D)
+        list(executor.map(process_id, inf_settings))
 
 
 # def main():
