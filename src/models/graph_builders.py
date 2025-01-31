@@ -1233,8 +1233,6 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     network += [(AR_vars[i - 1].name, AR_vars[i].name) for i in range(1, n)]
     network += [(S.name, AR_vars[i].name) for i in range(1, n)]
 
-    print(network)
-
     model = BayesianNetwork(network)
 
     model.add_cpds(
