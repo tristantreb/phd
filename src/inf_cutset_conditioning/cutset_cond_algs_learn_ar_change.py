@@ -151,19 +151,28 @@ def load_long_noise_model_through_time(
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
     # Initialize the noise model and its variables
-    _, _, HFEV1, uecFEV1, ecFEV1, _, HO2Sat, *_ = (
-        mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
-            height,
-            age,
-            sex,
-            ar_change_cpt_suffix=ar_change_cpt_suffix,
-            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
-            fef2575_cpt_suffix=fef2575_cpt_suffix,
-        )
+    (
+        _,
+        _,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        S,
+    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+        height,
+        age,
+        sex,
+        ar_change_cpt_suffix=ar_change_cpt_suffix,
+        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        fef2575_cpt_suffix=fef2575_cpt_suffix,
     )
-
-    S = mh.DiscreteVariableNode("AR change factor shape", 1, s_card, 1)
-    S_obs_idx_list = range(S.card)
 
     def get_min_possible_HFEV1_given_max_FEV1():
         max_ecfev1 = np.zeros(ecFEV1.card)
@@ -181,6 +190,7 @@ def load_long_noise_model_through_time(
         )
     HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
 
+    S_obs_idx_list = range(S.card)
     h_s_obs_states = list(itertools.product(HFEV1_obs_idx_list, S_obs_idx_list))
 
     # Full inference model setup
@@ -197,6 +207,7 @@ def load_long_noise_model_through_time(
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        S,
     ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         height,
         age,
@@ -228,8 +239,8 @@ def load_long_noise_model_through_time_light(
 
     # Initialize the noise model and its variables
     (
-        model,
-        inf_alg,
+        _,
+        _,
         HFEV1,
         _,
         ecFEV1,
