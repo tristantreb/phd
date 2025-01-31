@@ -14,10 +14,10 @@ def process_id(inf_settings):
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_days_consec = 3
-    s_card = 3
+    s_card = 11
     # ecfev1_noise_model_suffix = "_std_0.068"
     # ecfev1_noise_model_suffix = "_std_0.23"
-    ecfev1_noise_model_suffix = "_std_add_mult_fev1"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
 
     dftmp, start_idx, end_idx = dh.find_longest_consec_series(
         df[df.ID == id], n_days=n_days_consec
@@ -27,15 +27,15 @@ def process_id(inf_settings):
         f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
     )
 
-    ecfef2575_cols = [
-        "ecFEF2575%ecFEV1",
-        "idx ecFEF2575%ecFEV1",
-        "idx ecFEF25-75 % ecFEV1 (%)",
-    ]
-    ecfev1_cols = [
-        "ecFEV1",
-        "idx ecFEV1 (L)",
-    ]
+    # ecfef2575_cols = [
+    #     "ecFEF2575%ecFEV1",
+    #     "idx ecFEF2575%ecFEV1",
+    #     "idx ecFEF25-75 % ecFEV1 (%)",
+    # ]
+    # ecfev1_cols = [
+    #     "ecFEV1",
+    #     "idx ecFEV1 (L)",
+    # ]
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         # "_shape_factor",
         # "_shape_factor27",
         # "_shape_factor10",
-        "_shape_factor3",
+        "_shape_factor11",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
