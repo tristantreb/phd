@@ -174,7 +174,7 @@ def PDF_X_x_1_minus_Y(z, x_a, x_b, y_a, y_b):
 
 
 class DiscreteVariableNode:
-    def __init__(self, name: str, a, b, interval):
+    def __init__(self, name: str, a, b, interval, prior):
         """
         name: variable's name (e.g. "Healthy FEV1 (L)")
         a: lower bound of the variable's domain
@@ -190,6 +190,33 @@ class DiscreteVariableNode:
         self.bin_width = interval
         self.values = np.arange(a, b + interval, interval)
         self.card = len(self.values)
+        self.cpt = self.set_prior(prior)
+
+    def set_prior(self, prior):
+        """
+        The prior should be a 1D array of probabilities
+        """
+        # Child variables have no prior
+        if prior == None:
+            return None
+        if prior["type"] == "uniform":
+            p = self._uniform_prior()
+        elif prior["type"] == "custom":
+            p = prior["p"]
+        else:
+            raise ValueError(f"Prior for {self.name} not recognized")
+
+        total_p = sum(p)
+        assert (
+            total_p - 1
+        ) < self.tol, f"Error computing prior: The sum of the probabilities should be 1, got {total_p}"
+        assert (
+            len(p) == self.card
+        ), f"Prior must have the var's cardinality ({self.card}), got {len(p)}"
+        return p
+
+    def _uniform_prior(self):
+        return np.array([1 / self.card] * self.card)
 
 
 class VariableNode:

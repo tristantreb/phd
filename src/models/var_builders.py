@@ -988,6 +988,63 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
     return HFEV1, ecFEV1, AR, HO2Sat, O2SatFFA, IA, UO2Sat, O2Sat, ecFEF2575prctecFEV1
 
 
+def set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior):
+    if ar_change_cpt_suffix == "_shape_factor10":
+        Var_ar_change = DiscreteVariableNode(
+            "AR change factor shape", 1, 10, 1, {"type": "uniform"}
+        )
+    elif ar_change_cpt_suffix == "_shape_factor27":
+        Var_ar_change = DiscreteVariableNode(
+            "AR change factor shape", 1, 27, 1, {"type": "uniform"}
+        )
+    elif ar_change_cpt_suffix == "_shape_factor3":
+        Var_ar_change = DiscreteVariableNode(
+            "AR change factor shape", 1, 3, 1, {"type": "uniform"}
+        )
+    elif ar_change_cpt_suffix == "_shape_factor11":
+        Var_ar_change = DiscreteVariableNode(
+            "AR change factor shape", 1, 11, 1, {"type": "uniform"}
+        )
+    else:
+        Var_ar_change = DiscreteVariableNode(
+            "Days elapsed", 1, 3, 1, {"type": "uniform"}
+        )
+    AR.set_change_cpt(get_cpt([AR, AR, Var_ar_change], suffix=ar_change_cpt_suffix))
+
+    if ar_prior == "uniform":
+        AR.set_first_day_prior({"type": "uniform"})
+    elif ar_prior == "uniform in log space":
+        AR.set_first_day_prior(
+            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
+        )
+    elif ar_prior == "uniform message to HFEV1":
+        AR.set_first_day_prior(
+            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
+        )
+    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575(),
+            }
+        )
+    elif ar_prior == "breathe (1 day model, O2Sat, ecFEV1)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
+            }
+        )
+    elif ar_prior == "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)":
+        AR.set_first_day_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575_ecfev1addmultnoise(),
+            }
+        )
+    return Var_ar_change
+
+
 def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     height,
     age,
@@ -1027,51 +1084,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     else:
         AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
 
-    # Select change CPT depending on the suffix
-    if ar_change_cpt_suffix == "_shape_factor10":
-        S = DiscreteVariableNode("AR change factor shape", 1, 10, 1)
-        AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
-    elif ar_change_cpt_suffix == "_shape_factor27":
-        S = DiscreteVariableNode("AR change factor shape", 1, 27, 1)
-        AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
-    elif ar_change_cpt_suffix == "_shape_factor3":
-        S = DiscreteVariableNode("AR change factor shape", 1, 3, 1)
-        AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
-    else:
-        DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
-        AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
-
-    if ar_prior == "uniform":
-        AR.set_first_day_prior({"type": "uniform"})
-    elif ar_prior == "uniform in log space":
-        AR.set_first_day_prior(
-            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
-        )
-    elif ar_prior == "uniform message to HFEV1":
-        AR.set_first_day_prior(
-            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
-        )
-    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75)":
-        AR.set_first_day_prior(
-            {
-                "type": "custom",
-                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575(),
-            }
-        )
-    elif ar_prior == "breathe (1 day model, O2Sat, ecFEV1)":
-        AR.set_first_day_prior(
-            {
-                "type": "custom",
-                "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
-            }
-        )
-    elif ar_prior == "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)":
-        AR.set_first_day_prior(
-            {
-                "type": "custom",
-                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575_ecfev1addmultnoise(),
-            }
-        )
+    Var_ar_change = set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior)
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
@@ -1135,6 +1148,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        Var_ar_change,
     )
 
 
@@ -1179,37 +1193,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     else:
         AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 10)
 
-    if ar_change_cpt_suffix == "_shape_factor":
-        S = DiscreteVariableNode("AR change factor shape", 2, 10, 2)
-        AR.set_change_cpt(get_cpt([AR, AR, S], suffix=ar_change_cpt_suffix))
-    else:
-        DE = DiscreteVariableNode("Days elapsed", 1, 3, 1)
-        AR.set_change_cpt(get_cpt([AR, AR, DE], suffix=ar_change_cpt_suffix))
-
-    if ar_prior == "uniform":
-        AR.set_first_day_prior({"type": "uniform"})
-    elif ar_prior == "uniform in log space":
-        AR.set_first_day_prior(
-            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
-        )
-    elif ar_prior == "uniform message to HFEV1":
-        AR.set_first_day_prior(
-            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
-        )
-    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75)":
-        AR.set_first_day_prior(
-            {
-                "type": "custom",
-                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575(),
-            }
-        )
-    elif ar_prior == "breathe (1 day model, O2Sat, ecFEV1)":
-        AR.set_first_day_prior(
-            {
-                "type": "custom",
-                "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
-            }
-        )
+    Var_ar_change = set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior)
 
     # Res 0.5 takes 19s, res 0.2 takes 21s
     HO2Sat = SharedVariableNode(
@@ -1271,4 +1255,5 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        Var_ar_change,
     )
