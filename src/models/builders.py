@@ -1129,6 +1129,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        _,
     ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
         height,
         age,
@@ -1200,6 +1201,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        _,
     ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
         height,
         age,
@@ -1253,6 +1255,93 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     )
 
 
+def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light_learn_S(
+    n,
+    height,
+    age,
+    sex,
+    ia_prior="uniform",
+    ar_prior="uniform",
+    ar_change_cpt_suffix="",
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+
+    Must have a corresponding AR change CPT
+    Musn't necessarily use the cutset conditioning
+
+    FEV1 noise model suffix fixed to 0.7, high noise to compensate low granularity for the temporal ARs
+    """
+
+    (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        S,
+    ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+        height,
+        age,
+        sex,
+        ia_prior,
+        ar_prior,
+        ar_change_cpt_suffix,
+    )
+
+    (
+        model,
+        _,
+        _,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+        _,
+    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
+        n,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        HO2Sat,
+        O2SatFFA,
+        IA,
+        UO2Sat,
+        O2Sat,
+        ecFEF2575prctecFEV1,
+        S,
+        check_model=check_model,
+    )
+    # inf_alg = apply_bayes_net_bp(model)
+    return (
+        model,
+        # inf_alg,
+        HFEV1,
+        HO2Sat,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        O2SatFFA_vars,
+        IA_vars,
+        UO2Sat_vars,
+        O2Sat_vars,
+        ecFEF2575prctecFEV1_vars,
+        S,
+    )
+
+
 def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light_factor_graph(
     n,
     height,
@@ -1285,6 +1374,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        _,
     ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
         height,
         age,
