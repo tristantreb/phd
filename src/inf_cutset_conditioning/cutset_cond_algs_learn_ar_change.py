@@ -227,13 +227,24 @@ def load_long_noise_model_through_time_light(
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
     # Initialize the noise model and its variables
-    _, _, HFEV1, _, _, _, HO2Sat, *_ = (
-        mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
-            height, age, sex, ar_change_cpt_suffix=ar_change_cpt_suffix
-        )
+    (
+        model,
+        inf_alg,
+        HFEV1,
+        _,
+        ecFEV1,
+        AR,
+        _,
+        _,
+        _,
+        _,
+        _,
+        ecFEF2575prctecFEV1,
+        S,
+    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+        height, age, sex, ar_change_cpt_suffix=ar_change_cpt_suffix
     )
 
-    S = mh.DiscreteVariableNode("AR change factor shape", 2, 10, 2)
     S_obs_idx_list = range(S.card)
 
     HFEV1_obs_idx_list = range(HFEV1.card)
@@ -254,6 +265,7 @@ def load_long_noise_model_through_time_light(
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        S,
     ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
         height,
         age,

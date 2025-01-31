@@ -1129,7 +1129,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
-        _,
+        Var_ar_change,
     ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
         height,
         age,
@@ -1166,6 +1166,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        Var_ar_change
     )
 
 
