@@ -14,7 +14,6 @@ def process_id(inf_settings):
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_days_consec = 3
-    s_card = 11
     # ecfev1_noise_model_suffix = "_std_0.068"
     # ecfev1_noise_model_suffix = "_std_0.23"
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
@@ -58,7 +57,6 @@ def process_id(inf_settings):
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix="",
         n_days_consec=n_days_consec,
-        s_card=s_card,
         debug=False,
         save=True,
     )
@@ -115,7 +113,9 @@ if __name__ == "__main__":
         # "_shape_factor27",
         # "_shape_factor10",
         # "_shape_factor11",
-        "_shape_factor15_weights",
+        # "_shape_factor15_weights",
+        # "_shape_factor9_stdmain",
+        "_shape_factor15_stdtail",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
