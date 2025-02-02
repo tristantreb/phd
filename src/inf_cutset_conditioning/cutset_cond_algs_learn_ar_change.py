@@ -17,7 +17,6 @@ def run_long_noise_model_through_time(
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
     n_days_consec=3,
-    s_card=10,
     debug=False,
     save=False,
 ):
@@ -37,7 +36,6 @@ def run_long_noise_model_through_time(
         ar_change_cpt_suffix,
         ecfev1_noise_model_suffix,
         fef2575_cpt_suffix,
-        s_card,
     )
 
     # Must have both ecfev1 and fef2575 observations
@@ -146,7 +144,6 @@ def load_long_noise_model_through_time(
     ar_change_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
-    s_card=10,
 ):
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
