@@ -39,39 +39,48 @@ def run_long_noise_model_through_time(
     )
 
     # Must have both ecfev1 and fef2575 observations
-    # (p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D, res_dict) = (
-    #     calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
-    #         df,
-    #         inf_alg,
-    #         HFEV1,
-    #         h_s_obs_states,
-    #         AR,
-    #         ecFEV1,
-    #         ecFEF2575prctecFEV1,
-    #         model_spec_txt,
-    #         S,
-    #         debug=debug,
-    #         save=save,
-    #     )
+    (p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D, res_dict) = (
+        calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
+            df,
+            inf_alg,
+            HFEV1,
+            h_s_obs_states,
+            AR,
+            ecFEV1,
+            ecFEF2575prctecFEV1,
+            model_spec_txt,
+            S,
+            n_days_consec,
+            debug=debug,
+            save=save,
+        )
+    )
+
+    # (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+    #     df,
+    #     inf_alg,
+    #     HFEV1,
+    #     h_s_obs_states,
+    #     AR,
+    #     ecFEV1,
+    #     ecFEF2575prctecFEV1,
+    #     S,
+    #     n_days_consec,
+    #     debug=debug,
     # )
 
-    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
-        df,
-        inf_alg,
-        HFEV1,
-        h_s_obs_states,
-        AR,
-        ecFEV1,
-        ecFEF2575prctecFEV1,
-        S,
-        n_days_consec,
-        debug=debug,
-    )
-
     return (
-        log_p_S_given_D,
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
         res_dict,
     )
+
+    # return (
+    #     log_p_S_given_D,
+    #     res_dict,
+    # )
 
 
 def run_long_noise_model_through_time_light(
@@ -307,6 +316,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
     ecFEF2575prctecFEV1,
     model_spec_txt,
     S,
+    n_days_consec,
     debug=False,
     save=False,
 ):
@@ -358,7 +368,14 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
 
             vevidence_ar = (
                 cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
-                    AR, h, curr_date, S_obs_idx, prev_date, next_date=None, debug=debug
+                    AR,
+                    h,
+                    curr_date,
+                    S_obs_idx,
+                    prev_date,
+                    next_date=None,
+                    n_days_consec=n_days_consec,
+                    debug=debug,
                 )
             )
             res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values
@@ -435,9 +452,10 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
     )
 
     # Put p_M_given_D in 2 dimensions, one for hfev1, one for s
-    p_M_given_D = p_M_given_D.reshape((HFEV1.card, S.card))
+    hfev1_card = len(h_s_obs_states) / S.card
+    p_M_given_D = p_M_given_D.reshape((hfev1_card, S.card))
     AR_given_M_and_all_D = AR_given_M_and_all_D.reshape(
-        (N, AR.card, HFEV1.card, S.card)
+        (N, AR.card, hfev1_card, S.card)
     )
 
     for S_obs_idx in range(S.card):
