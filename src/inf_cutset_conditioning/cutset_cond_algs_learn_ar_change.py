@@ -410,6 +410,28 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
                     m_from_fev_factor_dict,
                     m_from_fev_factor_key,
                 )
+            elif not np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print("Only ecFEV1 observed")
+                log_p_D_given_M_for_row, dist_AR, dist_ecFEV1 = (
+                    cca.get_AR_and_p_log_D_given_M_obs_fev1(
+                        row,
+                        inf_alg,
+                        HFEV1,
+                        HFEV1_bin_idx,
+                        ecFEV1,
+                        AR,
+                        vevidence_ar,
+                        uniform_from_o2_side | uniform_from_fef2575,
+                        m_from_hfev1_dict,
+                        m_from_hfev1_key,
+                        m_from_fev_factor_dict,
+                        m_from_fev_factor_key,
+                    )
+                )
+                dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
             else:
                 raise ValueError("Both ecFEV1 and ecFEF25-75 must be observed")
 
@@ -452,7 +474,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
     )
 
     # Put p_M_given_D in 2 dimensions, one for hfev1, one for s
-    hfev1_card = len(h_s_obs_states) / S.card
+    hfev1_card = int(len(h_s_obs_states) / S.card)
     p_M_given_D = p_M_given_D.reshape((hfev1_card, S.card))
     AR_given_M_and_all_D = AR_given_M_and_all_D.reshape(
         (N, AR.card, hfev1_card, S.card)

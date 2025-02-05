@@ -1,11 +1,12 @@
 import concurrent.futures
 import itertools
 
+# import src.inf_cutset_conditioning.cutset_cond_algs as cca
+import numpy as np
+
 import src.data.breathe_data as bd
 import src.data.helpers as dh
 import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca_ar_change
-
-# import src.inf_cutset_conditioning.cutset_cond_algs as cca
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
@@ -26,19 +27,19 @@ def process_id(inf_settings):
         f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
     )
 
-    # ecfef2575_cols = [
-    #     "ecFEF2575%ecFEV1",
-    #     "idx ecFEF2575%ecFEV1",
-    #     "idx ecFEF25-75 % ecFEV1 (%)",
-    # ]
-    # ecfev1_cols = [
-    #     "ecFEV1",
-    #     "idx ecFEV1 (L)",
-    # ]
+    ecfef2575_cols = [
+        "ecFEF2575%ecFEV1",
+        "idx ecFEF2575%ecFEV1",
+        "idx ecFEF25-75 % ecFEV1 (%)",
+    ]
+    ecfev1_cols = [
+        "ecFEV1",
+        "idx ecFEV1 (L)",
+    ]
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    # dftmp[ecfef2575_cols] = np.nan
+    dftmp[ecfef2575_cols] = np.nan
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -75,25 +76,25 @@ def process_id(inf_settings):
 if __name__ == "__main__":
 
     interesting_ids = [
-        "132",
-        "146",
-        "177",
-        "180",
-        "202",
-        "527",
+        # "132",
+        # "146",
+        # "177",
+        # "180",
+        # "202",
+        # "527",
         "117",
-        "131",
-        "134",
-        "191",
-        "139",
-        "253",
-        "101",
+        # "131",
+        # "134",
+        # "191",
+        # "139",
+        # "253",
+        # "101",
         # Also from consec values
-        "405",
-        "272",
-        "201",
-        "203",
-        "527",
+        # "405",
+        # "272",
+        # "201",
+        # "203",
+        # "527",
     ]
     # interesting_ids = df.ID.unique()
 
