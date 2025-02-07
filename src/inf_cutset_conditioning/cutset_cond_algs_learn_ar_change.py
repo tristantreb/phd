@@ -467,7 +467,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
         debug,
     )
 
-    p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D = (
+    p_M_given_D, AR_given_M_and_D, AR_given_M_and_all_D = (
         fuse_results_from_conditioned_models(
             HFEV1, H, h_s_obs_states, log_p_D_given_M, AR_given_M_and_all_D
         )
@@ -584,7 +584,7 @@ def fuse_results_from_conditioned_models(
     p_M_given_D = np.exp(log_p_M_given_D)
     p_M_given_D /= p_M_given_D.sum()
     AR_given_M_and_D = np.matmul(AR_given_M_and_all_D, p_M_given_D)
-    return p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D
+    return p_M_given_D, AR_given_M_and_D, AR_given_M_and_all_D
 
 
 def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
