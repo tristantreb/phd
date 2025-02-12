@@ -565,8 +565,8 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
 
         # ecfev1_noise_model_cpt_suffix="_std_0.043_mult"
         # ecfev1_noise_model_cpt_suffix="_std_0.23"
-        ecfev1_noise_model_cpt_suffix = "_std_0.068"
-        # ecfev1_noise_model_cpt_suffix = "_std_add_mult"
+        # ecfev1_noise_model_cpt_suffix = "_std_0.068"
+        ecfev1_noise_model_cpt_suffix = "_std_add_mult_ecfev1"
 
         ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise"
 
