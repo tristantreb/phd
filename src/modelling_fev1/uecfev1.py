@@ -23,9 +23,10 @@ import scipy.integrate as integrate
 #     return A * B * val
 
 
-def sigma_fn(fev1):
+def sigma_fn(fev1, use_ecfev1=True):
     """
     std_ecfev1(ecfev1) = ax + b
+    # ecfev1 has less noise than fev1 because of the filtering
     a = 0.00510174, multiplicative noise
     b = 0.03032977, additive noise
 
@@ -33,7 +34,10 @@ def sigma_fn(fev1):
     a = 0.00527939, multiplicative noise
     b = 0.03396603, additive noise
     """
-    return 0.00527939 * fev1 + 0.03396603
+    if use_ecfev1:
+        return 0.00510174 * fev1 + 0.03032977
+    else:
+        return 0.00527939 * fev1 + 0.03396603
 
 
 def p_uniform_x_gauss_add_mult_noise(z1, z2, y1, y2, abserr_tol=1e-10):
@@ -45,11 +49,18 @@ def p_uniform_x_gauss_add_mult_noise(z1, z2, y1, y2, abserr_tol=1e-10):
     """
 
     def pdf_gauss(y, z):
-        return np.exp(-((z - y) ** 2) / (2 * sigma_fn(y) ** 2)) / (
+        """
+        y: is the mean
+        z: is the value
+        """
+        return np.exp(-((z - y) ** 2) / (2 * sigma_fn(z) ** 2)) / (
             sigma_fn(z) * np.sqrt(2 * np.pi)
         )
 
     def conv_fn(y, z):
+        """
+        Mean is uniformly distributed between y1 and y2
+        """
         return pdf_gauss(y, z) / (y2 - y1) / y
 
     val, abserr = integrate.dblquad(conv_fn, z1, z2, y1, y2, epsabs=abserr_tol)
@@ -67,19 +78,8 @@ def PDF_conv_uni_gausian_add_mult(z, y1, y2, abserr_tol=1e-10):
     PDF of a convolution of a uniform and a gaussian distribution
 
     Return P(z | y1 < y < y2)
-
-    std_ecfev1(ecfev1) = ax + b
-    a = 0.00510174, multiplicative noise
-    b = 0.03032977, additive noise
-
-    std_fev1(fev1) = ax + b
-    a = 0.00527939, multiplicative noise
-    b = 0.03396603, additive noise
     """
     A = 1 / (y2 - y1)
-
-    def sigma_fn(fev1):
-        return 0.00527939 * fev1 + 0.03396603
 
     def conv_fn(y, z):
         return np.exp(-1 / 2 * (z - y) ** 2 / sigma_fn(z) ** 2) / (
