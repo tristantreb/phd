@@ -1098,7 +1098,7 @@ def plot_cutset_cond_results(
     )
 
     # Add HFEV1 posterior
-    ih.plot_histogram(fig, HFEV1, p_HFEV1_given_D, 0, 6, 1, 1, annot=True)
+    ih.plot_histogram(fig, HFEV1, p_HFEV1_given_D, 0, HFEV1.b, 1, 1, annot=True)
 
     # Add heatmap with AR posteriors
     df1 = pd.DataFrame(

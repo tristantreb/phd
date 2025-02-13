@@ -18,7 +18,7 @@ def get_blind_colours():
 
 
 def get_path_to_src():
-    return os.getcwd().split("src")[0] + "src/"
+    return os.getcwd().split("src")[0] + "/src/"
 
 
 def get_path_to_main():
