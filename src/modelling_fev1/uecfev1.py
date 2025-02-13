@@ -61,7 +61,7 @@ def p_uniform_x_gauss_add_mult_noise(z1, z2, y1, y2, abserr_tol=1e-10):
         """
         Mean is uniformly distributed between y1 and y2
         """
-        return pdf_gauss(y, z) / (y2 - y1) / y
+        return pdf_gauss(y, z) / (y2 - y1)
 
     val, abserr = integrate.dblquad(conv_fn, z1, z2, y1, y2, epsabs=abserr_tol)
     if abserr > abserr_tol:

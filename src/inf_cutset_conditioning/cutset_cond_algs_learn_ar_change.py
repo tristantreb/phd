@@ -535,6 +535,11 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
         AR_given_HFEV1_and_D = AR_given_M_and_all_D[:, :, :, S_obs_idx]
         AR_given_HFEV1_and_D = np.matmul(AR_given_HFEV1_and_D, p_HFEV1_given_D)
 
+        # Add HFEV1.card - hfev1_card zeros to p_HFEV1_given_D
+        p_HFEV1_given_D = np.concatenate(
+            [np.zeros(HFEV1.card - hfev1_card), p_HFEV1_given_D]
+        )
+
         # p_M_given_D has HFEV1.card
         # AR_given_M_and_D has N x AR.card
         fig = cca.plot_cutset_cond_results(
