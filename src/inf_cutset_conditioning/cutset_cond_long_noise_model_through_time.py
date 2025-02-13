@@ -40,7 +40,7 @@ def process_id(inf_settings):
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    # dftmp[ecfef2575_cols] = np.nan
+    dftmp[ecfef2575_cols] = np.nan
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -58,8 +58,6 @@ def process_id(inf_settings):
         ar_change_cpt_suffix=ar_change_cpt_suffix,
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix="",
-        # BEWARE IF SETTING GRANULAR MODEL TO FALSE, MODEL WILL BE SLOW BECAUSE IT WILL COMPUTE MESSAGES FROM O2 SATURATION SIDE
-        granular_model=False,
         n_days_consec=n_days_consec,
         debug=False,
         save=True,
@@ -82,7 +80,7 @@ if __name__ == "__main__":
         # "132",
         # "146",
         # "177",
-        # "180",
+        "180",
         # "202",
         # "527",
         # "117",
@@ -97,7 +95,7 @@ if __name__ == "__main__":
         # "272",
         # "201",
         # "203",
-        "527",
+        # "527",
     ]
     # interesting_ids = df.ID.unique()
 

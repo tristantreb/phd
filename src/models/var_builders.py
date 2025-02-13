@@ -989,35 +989,7 @@ def o2sat_fev1_fef2575_long_model_shared_healthy_vars_and_temporal_ar(
 
 
 def set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior):
-    if ar_change_cpt_suffix == "_shape_factor10":
-        Var_ar_change = DiscreteVariableNode(
-            "AR change factor shape", 1, 10, 1, {"type": "uniform"}
-        )
-    elif ar_change_cpt_suffix == "_shape_factor27":
-        Var_ar_change = DiscreteVariableNode(
-            "AR change factor shape", 1, 27, 1, {"type": "uniform"}
-        )
-    elif ar_change_cpt_suffix == "_shape_factor3":
-        Var_ar_change = DiscreteVariableNode(
-            "AR change factor shape", 1, 3, 1, {"type": "uniform"}
-        )
-    elif ar_change_cpt_suffix == "_shape_factor11":
-        Var_ar_change = DiscreteVariableNode(
-            "AR change factor shape", 1, 11, 1, {"type": "uniform"}
-        )
-    elif ar_change_cpt_suffix == "_shape_factor15_weights":
-        Var_ar_change = DiscreteVariableNode(
-            "AR change factor shape", 1, 15, 1, {"type": "uniform"}
-        )
-    elif ar_change_cpt_suffix == "_shape_factor9_stdmain":
-        Var_ar_change = DiscreteVariableNode(
-            "AR change factor shape", 1, 9, 1, {"type": "uniform"}
-        )
-    elif ar_change_cpt_suffix == "_shape_factor15_stdtail":
-        Var_ar_change = DiscreteVariableNode(
-            "AR change factor shape", 1, 15, 1, {"type": "uniform"}
-        )
-    elif ar_change_cpt_suffix == "_shape_factor_gauss":
+    if ar_change_cpt_suffix == "_shape_factor_Gmain0.2_Gtails10_w0.73":
         Var_ar_change = DiscreteVariableNode(
             "AR change factor shape", 1, 1, 1, {"type": "uniform"}
         )
@@ -1163,71 +1135,6 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         IA,
         UO2Sat,
         O2Sat,
-        ecFEF2575prctecFEV1,
-        Var_ar_change,
-    )
-
-def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_granular(
-    height,
-    age,
-    sex,
-    ia_prior="uniform",
-    ar_prior="uniform",
-    ar_change_cpt_suffix=None,
-    n_cutset_conditioned_states=None,
-    ecfev1_noise_model_suffix=None,
-    fef2575_cpt_suffix=None,
-):
-    """
-    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
-    The airway resistances has day-to-day temporal connection
-
-    Granular model means that the variables granularity have been optimised to avoid spiked on the posterior HFEV1
-    (AR bin width was >> compared to HFEV1 bin width)
-    """
-    hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
-    ho2sat_prior = {
-        "type": "default",
-        "height": height,
-        "sex": sex,
-    }
-    HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
-    # HFEV1_point_mass_prior = np.zeros(HFEV1.card)
-    # idx_three_point_five = HFEV1.get_bin_for_value(3.5)[1]
-    # HFEV1_point_mass_prior[idx_three_point_five] = 1
-    # HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
-
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
-    ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
-    ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
-    # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
-
-    if n_cutset_conditioned_states is not None:
-        AR = CutsetConditionedTemporalVariableNode(
-            "Airway resistance (%)", 0, 90, 2, n_cutset_conditioned_states
-        )
-    else:
-        AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
-
-    Var_ar_change = set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior)
-
-    # Set shared vars factor to node keys.
-    # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
-    HFEV1.set_factor_to_node_key(key_hfev1)
-
-    # Calculate CPTs
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_suffix))
-    ecFEF2575prctecFEV1.set_cpt(
-        get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix)
-    )
-
-    return (
-        HFEV1,
-        uecFEV1,
-        ecFEV1,
-        AR,
         ecFEF2575prctecFEV1,
         Var_ar_change,
     )
