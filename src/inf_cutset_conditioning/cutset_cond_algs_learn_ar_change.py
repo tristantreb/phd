@@ -17,6 +17,7 @@ def run_long_noise_model_through_time(
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
     n_days_consec=3,
+    granular_model=True,
     debug=False,
     save=False,
 ):
@@ -36,6 +37,7 @@ def run_long_noise_model_through_time(
         ar_change_cpt_suffix,
         ecfev1_noise_model_suffix,
         fef2575_cpt_suffix,
+        granular_model,
     )
 
     # Must have both ecfev1 and fef2575 observations
@@ -153,36 +155,56 @@ def load_long_noise_model_through_time(
     ar_change_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
+    granular_model=True,
 ):
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
-    # Initialize the noise model and its variables
-    (
-        _,
-        _,
-        HFEV1,
-        uecFEV1,
-        ecFEV1,
-        AR,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        S,
-    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
-        height,
-        age,
-        sex,
-        ar_change_cpt_suffix=ar_change_cpt_suffix,
-        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
-        fef2575_cpt_suffix=fef2575_cpt_suffix,
-    )
+    if not granular_model:
+        (
+            _,
+            _,
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            S,
+        ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+            height,
+            age,
+            sex,
+            ar_change_cpt_suffix=ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix=fef2575_cpt_suffix,
+        )
+    else:
+        (
+            _,
+            _,
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            S,
+        ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_granular(
+            height,
+            age,
+            sex,
+            ar_change_cpt_suffix=ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix=fef2575_cpt_suffix,
+        )
 
     def get_min_possible_HFEV1_given_max_FEV1():
         max_ecfev1 = np.zeros(ecFEV1.card)
         max_ecfev1[df["idx ecFEV1 (L)"].max()] = 1
+        # Compute underling ecFEV1 given observed max ecFEV1 = add noise to max ecFEV1
         uecfev1 = np.matmul(max_ecfev1, ecFEV1.cpt)
         argmin_uecfev1 = np.nonzero(uecfev1)[0][0]
         min_uecfev1 = uecFEV1.midbins[argmin_uecfev1]
@@ -200,30 +222,51 @@ def load_long_noise_model_through_time(
     h_s_obs_states = list(itertools.product(HFEV1_obs_idx_list, S_obs_idx_list))
 
     # Full inference model setup
-    (
-        _,
-        inf_alg,
-        HFEV1,
-        uecFEV1,
-        ecFEV1,
-        AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
-        ecFEF2575prctecFEV1,
-        S,
-    ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
-        height,
-        age,
-        sex,
-        ia_prior,
-        ar_prior,
-        ar_change_cpt_suffix,
-        len(h_s_obs_states),
-        ecfev1_noise_model_suffix,
-    )
+    if not granular_model:
+        (
+            _,
+            inf_alg,
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            HO2Sat,
+            O2SatFFA,
+            IA,
+            UO2Sat,
+            O2Sat,
+            ecFEF2575prctecFEV1,
+            S,
+        ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+            height,
+            age,
+            sex,
+            ia_prior,
+            ar_prior,
+            ar_change_cpt_suffix,
+            len(h_s_obs_states),
+            ecfev1_noise_model_suffix,
+        )
+    else:
+        (
+            _,
+            inf_alg,
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            S,
+        ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_granular(
+            height,
+            age,
+            sex,
+            ia_prior,
+            ar_prior,
+            ar_change_cpt_suffix,
+            len(h_s_obs_states),
+            ecfev1_noise_model_suffix,
+        )
 
     model_spec_txt = f"AR prior: {ar_prior}, ecFEV1 noise model {ecfev1_noise_model_suffix}<br>AR change CPT: {ar_change_cpt_suffix}"
     return (
@@ -342,6 +385,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
     uniform_from_o2_side = {
         "['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     }
+    # Required for the query. Message from fef25-75 is computed manually and won't use this precomp message
     uniform_from_fef2575 = {
         "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     }
@@ -404,6 +448,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
                     ecFEF2575prctecFEV1,
                     AR,
                     vevidence_ar,
+                    # uniform_from_fef2575,
                     uniform_from_o2_side | uniform_from_fef2575,
                     m_from_hfev1_dict,
                     m_from_hfev1_key,
@@ -424,6 +469,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_ecfev1_fef2575(
                         ecFEV1,
                         AR,
                         vevidence_ar,
+                        # uniform_from_fef2575,
                         uniform_from_o2_side | uniform_from_fef2575,
                         m_from_hfev1_dict,
                         m_from_hfev1_key,

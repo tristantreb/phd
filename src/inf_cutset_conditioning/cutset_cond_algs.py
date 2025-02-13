@@ -278,20 +278,18 @@ def run_long_noise_model_through_time_light(
         )
     )
 
-    (
-        fig,
-        p_M_given_D,
-        AR_given_M_and_D,
-    ) = calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
-        df,
-        inf_alg,
-        HFEV1,
-        HFEV1_obs_list,
-        AR,
-        ecFEV1,
-        ecFEF2575prctecFEV1,
-        model_spec_txt,
-        debug=debug,
+    (fig, p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D) = (
+        calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
+            df,
+            inf_alg,
+            HFEV1,
+            HFEV1_obs_list,
+            AR,
+            ecFEV1,
+            ecFEF2575prctecFEV1,
+            model_spec_txt,
+            debug=debug,
+        )
     )
     return fig, p_M_given_D, AR_given_M_and_D
 
@@ -385,6 +383,7 @@ def load_long_noise_model_through_time_light(
         UO2Sat,
         O2Sat,
         ecFEF2575prctecFEV1,
+        DE,
     ) = mb.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
         height,
         age,

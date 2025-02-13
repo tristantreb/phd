@@ -18,6 +18,7 @@ def process_id(inf_settings):
     # ecfev1_noise_model_suffix = "_std_0.068"
     # ecfev1_noise_model_suffix = "_std_0.23"
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    # ecfev1_noise_model_suffix = "_std_add_mult_fev1_midbin"
 
     dftmp, start_idx, end_idx = dh.find_longest_consec_series(
         df[df.ID == id], n_days=n_days_consec
@@ -57,6 +58,8 @@ def process_id(inf_settings):
         ar_change_cpt_suffix=ar_change_cpt_suffix,
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix="",
+        # BEWARE IF SETTING GRANULAR MODEL TO FALSE, MODEL WILL BE SLOW BECAUSE IT WILL COMPUTE MESSAGES FROM O2 SATURATION SIDE
+        granular_model=False,
         n_days_consec=n_days_consec,
         debug=False,
         save=True,
