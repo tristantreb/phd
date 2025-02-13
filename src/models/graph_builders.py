@@ -807,66 +807,6 @@ def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
     return G
 
 
-def fev1_fef2575_o2sat_point_in_time_noise_factor_graph_granular(
-    HFEV1,
-    uecFEV1,
-    ecFEV1,
-    AR,
-    ecFEF2575prctecFEV1,
-    check_model=True,
-):
-    """
-    AR and IA have no direct link in this model
-
-    Same as non granular model but without o2 saturation side
-    """
-
-    prior_hfev1 = build_pgmpy_hfev1_factor_fn(HFEV1)
-    cpt_uecfev1 = build_pgmpy_ecfev1_factor_fn(uecFEV1, HFEV1, AR)
-    cpt_ecfev1 = build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uecFEV1)
-    cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prctecfev1_factor_fn(
-        ecFEF2575prctecFEV1, AR
-    )
-    prior_ar = build_pgmpy_ar_factor_fn(AR)
-
-    G = FactorGraph()
-    G.add_nodes_from(
-        [
-            HFEV1.name,
-            uecFEV1.name,
-            ecFEV1.name,
-            AR.name,
-            ecFEF2575prctecFEV1.name,
-        ]
-    )
-    G.add_factors(
-        prior_hfev1,
-        cpt_uecfev1,
-        cpt_ecfev1,
-        cpt_ecFEF2575prctecFEV1,
-        prior_ar,
-    )
-    G.add_edges_from(
-        [
-            (prior_hfev1, HFEV1.name),
-            (HFEV1.name, cpt_uecfev1),
-            (prior_ar, AR.name),
-            (AR.name, cpt_uecfev1),
-            (AR.name, cpt_ecFEF2575prctecFEV1),
-            (cpt_uecfev1, uecFEV1.name),
-            (uecFEV1.name, cpt_ecfev1),
-            (cpt_ecfev1, ecFEV1.name),
-            (cpt_ecFEF2575prctecFEV1, ecFEF2575prctecFEV1.name),
-        ]
-    )
-
-    if check_model:
-        assert G.check_model() == True
-        print("Model is valid")
-
-    return G
-
-
 def fev1_o2sat_fef2575_noise_n_days_model(
     n,
     HFEV1,
