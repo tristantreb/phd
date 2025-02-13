@@ -40,7 +40,7 @@ def process_id(inf_settings):
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    dftmp[ecfef2575_cols] = np.nan
+    # dftmp[ecfef2575_cols] = np.nan
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         # "139",
         # "253",
         # "101",
-        # Also from consec values
+        # # Also from consec values
         # "405",
         # "272",
         # "201",
@@ -113,13 +113,7 @@ if __name__ == "__main__":
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.23",
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise",
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068",
-        "_shape_factor_gauss",
-        # "_shape_factor27",
-        # "_shape_factor10",
-        # "_shape_factor11",
-        # "_shape_factor15_weights",
-        # "_shape_factor9_stdmain",
-        # "_shape_factor15_stdtail",
+        "_shape_factor_Gmain0.2_Gtails10_w0.73",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
