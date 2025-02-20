@@ -181,7 +181,6 @@ def load_long_noise_model_through_time(
 
     def get_min_possible_HFEV1_given_max_FEV1():
         max_ecfev1 = np.zeros(ecFEV1.card)
-        print("max ecfev1", df["idx ecFEV1 (L)"].max(), df.ID.iloc[0])
         max_ecfev1[df["idx ecFEV1 (L)"].max()] = 1
         # Compute underling ecFEV1 given observed max ecFEV1 = add noise to max ecFEV1
         uecfev1 = np.matmul(max_ecfev1, ecFEV1.cpt)
