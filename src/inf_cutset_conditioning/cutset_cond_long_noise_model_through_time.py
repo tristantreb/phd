@@ -80,9 +80,8 @@ if __name__ == "__main__":
         # "132",
         # "146",
         # "177",
-        "180",
+        # "180",
         # "202",
-        # "527",
         # "117",
         # "131",
         # "134",
@@ -90,20 +89,20 @@ if __name__ == "__main__":
         # "139",
         # "253",
         # "101",
-        # # Also from consec values
+        # Also from consec values
         # "405",
         # "272",
         # "201",
         # "203",
-        # "527",
+        "527",
     ]
     # interesting_ids = df.ID.unique()
 
     ar_priors = [
-        # "uniform",
+        "uniform",
         # "uniform message to HFEV1",
         # "breathe (2 days model, ecFEV1, ecFEF25-75)",
-        "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
+        # "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
     ]
 
     ar_change_cpt_suffix = [
