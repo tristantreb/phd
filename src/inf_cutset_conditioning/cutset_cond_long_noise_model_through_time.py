@@ -8,6 +8,7 @@ import src.data.breathe_data as bd
 import src.data.helpers as dh
 import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca_ar_change
 
+# df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx_granular")
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
 
@@ -40,7 +41,7 @@ def process_id(inf_settings):
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    dftmp[ecfef2575_cols] = np.nan
+    # dftmp[ecfef2575_cols] = np.nan
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -59,7 +60,7 @@ def process_id(inf_settings):
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix="",
         n_days_consec=n_days_consec,
-        debug=False,
+        debug=True,
         save=True,
     )
 
@@ -99,10 +100,10 @@ if __name__ == "__main__":
     # interesting_ids = df.ID.unique()
 
     ar_priors = [
-        "uniform",
+        # "uniform",
         # "uniform message to HFEV1",
         # "breathe (2 days model, ecFEV1, ecFEF25-75)",
-        # "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
+        "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)",
     ]
 
     ar_change_cpt_suffix = [
