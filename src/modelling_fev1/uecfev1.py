@@ -40,6 +40,33 @@ def sigma_fn(fev1, use_ecfev1=True):
         return 0.00527939 * fev1 + 0.03396603
 
 
+def p_uniform_x_gauss_add_noise(z1, z2, y1, y2, std, abserr_tol=1e-10):
+    """
+    Return P(z1 < z < z2 | y1 < y < y2)
+    """
+
+    def pdf_gauss(y, z):
+        """
+        y: is the mean
+        z: is the value
+        """
+        return np.exp(-((z - y) ** 2) / (2 * std**2)) / (std * np.sqrt(2 * np.pi))
+
+    def conv_fn(y, z):
+        """
+        Mean is uniformly distributed between y1 and y2
+        """
+        return pdf_gauss(y, z) / (y2 - y1)
+
+    val, abserr = integrate.dblquad(conv_fn, z1, z2, y1, y2, epsabs=abserr_tol)
+    if abserr > abserr_tol:
+        raise ValueError(
+            f"Absolute error after solving the integral is too high {abserr}: y1={y1}, y2={y2}, z1={z1}, z2={z2} sigma=[{sigma_fn(z1)}, {sigma_fn(z2)}]"
+        )
+
+    return val
+
+
 def p_uniform_x_gauss_add_mult_noise(z1, z2, y1, y2, abserr_tol=1e-10):
     """
     A more correct approach is a linear noise: both additive and multiplicative noise are present
