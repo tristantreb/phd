@@ -986,7 +986,6 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     )
 
 
-
 def o2sat_fev1_point_in_time_model_shared_healthy_vars_light(
     height, age, sex, check_model=False, ia_prior="uniform"
 ):
@@ -1230,15 +1229,14 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     )
 
 
-def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light(
+def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light(
     n,
     height,
     age,
     sex,
-    ia_prior="uniform",
     ar_prior="uniform",
     ar_change_cpt_suffix="",
-    ar_change_cpt_state=0,
+    ecfev1_noise_model_suffix="_std0.7",
     check_model=False,
 ):
     """
@@ -1256,20 +1254,15 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         uecFEV1,
         ecFEV1,
         AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
         ecFEF2575prctecFEV1,
         _,
-    ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+    ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
         height,
         age,
         sex,
-        ia_prior,
         ar_prior,
         ar_change_cpt_suffix,
+        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
     )
 
     (
@@ -1279,24 +1272,14 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        O2SatFFA_vars,
-        IA_vars,
-        UO2Sat_vars,
-        O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
-    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
+    ) = graph_builders.fev1_fef2575_noise_n_days_model_temporal_ar(
         n,
         HFEV1,
         uecFEV1,
         ecFEV1,
         AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
         ecFEF2575prctecFEV1,
-        ar_change_cpt_state=ar_change_cpt_state,
         check_model=check_model,
     )
     # inf_alg = apply_bayes_net_bp(model)
@@ -1304,14 +1287,9 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         model,
         # inf_alg,
         HFEV1,
-        HO2Sat,
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        O2SatFFA_vars,
-        IA_vars,
-        UO2Sat_vars,
-        O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
     )
 

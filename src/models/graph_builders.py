@@ -1161,6 +1161,129 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
     )
 
 
+def fev1_fef2575_noise_n_days_model_temporal_ar(
+    n,
+    HFEV1,
+    uecFEV1,
+    ecFEV1,
+    AR,
+    ecFEF2575prctecFEV1,
+    ar_change_cpt_state=-1,
+    check_model=True,
+):
+    """
+    No direct link between AR and IA
+
+    The AR change factor is fixed to the cpt[:, :, ar_change_cpt_state] for all days
+    """
+
+    def create_var_for_day(var, day):
+        var_ = deepcopy(var)
+        var_.name = f"{var.name} day {day}"
+        return var_
+
+    AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
+    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
+    ecFEF2575prctecFEV1_vars = [
+        create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
+    ]
+
+    # Priors and CPTs
+    # AR first day prior shall be uniform
+    AR_priors = []
+    AR_priors.append(
+        TabularCPD(
+            variable=AR_vars[0].name,
+            variable_card=AR_vars[0].card,
+            values=AR_vars[0].first_day_prior.reshape(AR_vars[0].card, -1),
+            evidence=[],
+            evidence_card=[],
+        )
+    )
+    # For other days the cpt depends the number of days elapsed
+    # For testing, n days elapsed = 1
+    print(f"AR change cpt shape: {AR_vars[1].change_cpt.shape}")
+    print(f"Taking idx {ar_change_cpt_state} for the shape cpt")
+    for i in range(1, n):
+        # print(
+        #     f"{AR_vars[i].name}, cpt: {AR_vars[i].change_cpt[:, :, ar_change_cpt_state].shape}"
+        # )
+        AR_priors.append(
+            TabularCPD(
+                variable=AR_vars[i].name,
+                variable_card=AR_vars[i].card,
+                values=AR_vars[i].change_cpt[:, :, ar_change_cpt_state],
+                evidence=[AR_vars[i - 1].name],
+                evidence_card=[AR_vars[i - 1].card],
+            )
+        )
+
+    uecFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR_)
+        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    ]
+    ecFEV1_cpts = [
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
+        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+    ]
+    ecFEF2575prctecFEV1_cpts = [
+        build_pgmpy_ecfef2575prctecfev1_cpt(
+            ecFEF2575prctecFEV1_,
+            AR_,
+        )
+        for ecFEF2575prctecFEV1_, AR_ in zip(ecFEF2575prctecFEV1_vars, AR_vars)
+    ]
+
+    # Shared priors
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+
+    # Make sure the days are at the same location in all variable lists
+    for i in range(1, n + 1):
+        assert AR_vars[i - 1].name == f"{AR.name} day {i}"
+        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
+        assert (
+            ecFEF2575prctecFEV1_vars[i - 1].name
+            == f"{ecFEF2575prctecFEV1.name} day {i}"
+        )
+
+    network = []
+    # HFEV1 and HO2Sat are shared between days
+    for i in range(0, n):
+        network += [
+            (HFEV1.name, uecFEV1_vars[i].name),
+            (AR_vars[i].name, uecFEV1_vars[i].name),
+            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (AR_vars[i].name, ecFEF2575prctecFEV1_vars[i].name),
+        ]
+
+    network += [(AR_vars[i - 1].name, AR_vars[i].name) for i in range(1, n)]
+
+    model = BayesianNetwork(network)
+
+    model.add_cpds(
+        # Shared
+        prior_hfev1,
+        # Days priors and CPTs
+        *AR_priors,
+        *uecFEV1_cpts,
+        *ecFEV1_cpts,
+        *ecFEF2575prctecFEV1_cpts,
+    )
+
+    if check_model:
+        model.check_model()
+    return (
+        model,
+        HFEV1,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
 def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     n,
     HFEV1,
