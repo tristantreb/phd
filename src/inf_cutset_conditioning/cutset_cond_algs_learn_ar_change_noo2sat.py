@@ -21,11 +21,11 @@ it probably comes from an error in how I implemented precomputed messages - but 
 def run_long_noise_model_through_time(
     df,
     ar_prior="uniform",
-    ia_prior="uniform",
     ar_change_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
     n_days_consec=3,
+    light=False,
     debug=False,
     save=False,
 ):
@@ -41,10 +41,10 @@ def run_long_noise_model_through_time(
     ) = load_long_noise_model_through_time(
         df,
         ar_prior,
-        ia_prior,
         ar_change_cpt_suffix,
         ecfev1_noise_model_suffix,
         fef2575_cpt_suffix,
+        light,
     )
 
     # Must have both ecfev1 and fef2575 observations
@@ -158,10 +158,10 @@ def run_long_noise_model_through_time_light(
 def load_long_noise_model_through_time(
     df,
     ar_prior="uniform",
-    ia_prior="uniform",
     ar_change_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
+    light=False,
 ):
     height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
 
@@ -181,6 +181,7 @@ def load_long_noise_model_through_time(
         ar_change_cpt_suffix=ar_change_cpt_suffix,
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix=fef2575_cpt_suffix,
+        light=light,
     )
 
     def get_min_possible_HFEV1_given_max_FEV1():
@@ -221,6 +222,7 @@ def load_long_noise_model_through_time(
         len(h_s_obs_states),
         ecfev1_noise_model_suffix,
         fef2575_cpt_suffix,
+        light,
     )
 
     model_spec_txt = f"AR prior: {ar_prior}, ecFEV1 noise model {ecfev1_noise_model_suffix}<br>AR change CPT: {ar_change_cpt_suffix}"
