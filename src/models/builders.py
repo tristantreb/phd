@@ -938,33 +938,52 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     n_cutset_conditioned_states=None,
     ecfev1_noise_model_suffix=None,
     fef2575_cpt_suffix=None,
+    light=False,
     check_model=False,
 ):
     """
-    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    Longitudinal model with full FEV1, FEF25-75 side
     HFEV1 are shared across time points.
 
-    Must have a corresponding AR change CPT
     Musn't necessarily use the cutset conditioning
     """
-
-    (
-        HFEV1,
-        uecFEV1,
-        ecFEV1,
-        AR,
-        ecFEF2575prctecFEV1,
-        S,
-    ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
-        height,
-        age,
-        sex,
-        ar_prior,
-        ar_change_cpt_suffix,
-        n_cutset_conditioned_states,
-        ecfev1_noise_model_suffix,
-        fef2575_cpt_suffix,
-    )
+    print("getback light", light)
+    if light:
+        (
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            S,
+        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            n_cutset_conditioned_states,
+            ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix,
+        )
+    else:
+        (
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            S,
+        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            n_cutset_conditioned_states,
+            ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix,
+        )
     model = graph_builders.fev1_fef2575_point_in_time_noise_factor_graph(
         HFEV1,
         uecFEV1,
