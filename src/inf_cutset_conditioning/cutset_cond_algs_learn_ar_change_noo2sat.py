@@ -48,21 +48,26 @@ def run_long_noise_model_through_time(
     )
 
     # Must have both ecfev1 and fef2575 observations
-    (p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D, res_dict) = (
-        calc_log_p_D_given_M_and_AR_for_ID_any_obs(
-            df,
-            inf_alg,
-            HFEV1,
-            h_s_obs_states,
-            AR,
-            ecFEV1,
-            ecFEF2575prctecFEV1,
-            model_spec_txt,
-            S,
-            n_days_consec,
-            debug=debug,
-            save=save,
-        )
+    (
+        fig,
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
+        res_dict,
+    ) = calc_log_p_D_given_M_and_AR_for_ID_any_obs(
+        df,
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+        S,
+        n_days_consec,
+        debug=debug,
+        save=save,
     )
 
     # (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
@@ -79,6 +84,7 @@ def run_long_noise_model_through_time(
     # )
 
     return (
+        fig,
         p_M_given_D,
         log_p_D_given_M,
         AR_given_M_and_D,
@@ -509,6 +515,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
         )
 
     return (
+        fig,
         p_M_given_D,
         log_p_D_given_M,
         AR_given_M_and_D,
