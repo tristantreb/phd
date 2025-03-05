@@ -947,7 +947,6 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
 
     Musn't necessarily use the cutset conditioning
     """
-    print("getback light", light)
     if light:
         (
             HFEV1,
@@ -1286,7 +1285,6 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light(
 
     (
         model,
-        _,
         _,
         AR_vars,
         uecFEV1_vars,

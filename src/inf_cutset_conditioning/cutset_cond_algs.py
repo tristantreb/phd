@@ -1162,6 +1162,4 @@ def plot_cutset_cond_results(
             dh.get_path_to_main() + f"/PlotsBreathe/Cutset_conditioning/{title}.png",
             scale=3,
         )
-    else:
-        fig.show()
     return fig
