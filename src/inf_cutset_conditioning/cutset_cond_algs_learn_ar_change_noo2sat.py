@@ -38,6 +38,7 @@ def run_long_noise_model_through_time(
         ecFEF2575prctecFEV1,
         model_spec_txt,
         S,
+        cond_hfev1_card,
     ) = load_long_noise_model_through_time(
         df,
         ar_prior,
@@ -51,6 +52,7 @@ def run_long_noise_model_through_time(
     (
         fig,
         p_M_given_D,
+        p_HFEV1_given_D,
         log_p_D_given_M,
         AR_given_M_and_D,
         AR_given_M_and_all_D,
@@ -66,6 +68,7 @@ def run_long_noise_model_through_time(
         model_spec_txt,
         S,
         n_days_consec,
+        cond_hfev1_card,
         debug=debug,
         save=save,
     )
@@ -86,6 +89,7 @@ def run_long_noise_model_through_time(
     return (
         fig,
         p_M_given_D,
+        p_HFEV1_given_D,
         log_p_D_given_M,
         AR_given_M_and_D,
         AR_given_M_and_all_D,
@@ -115,6 +119,7 @@ def run_long_noise_model_through_time_light(
         ecFEF2575prctecFEV1,
         model_spec_txt,
         S,
+        cond_hfev1_card,
     ) = load_long_noise_model_through_time_light(
         df, ar_prior, ia_prior, ar_change_cpt_suffix
     )
@@ -144,6 +149,7 @@ def run_long_noise_model_through_time_light(
         ecFEF2575prctecFEV1,
         S,
         n_days_consec,
+        cond_hfev1_card,
         debug=debug,
     )
 
@@ -206,6 +212,7 @@ def load_long_noise_model_through_time(
             f"Warning - min_possible_hfev1_under_model: {min_possible_hfev1_under_model}"
         )
     HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
+    cond_hfev1_card = len(HFEV1_obs_idx_list)
 
     S_obs_idx_list = range(S.card)
     h_s_obs_states = list(itertools.product(HFEV1_obs_idx_list, S_obs_idx_list))
@@ -241,6 +248,7 @@ def load_long_noise_model_through_time(
         ecFEF2575prctecFEV1,
         model_spec_txt,
         S,
+        cond_hfev1_card,
     )
 
 
@@ -323,6 +331,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     model_spec_txt,
     S,
     n_days_consec,
+    cond_hfev1_card,
     debug=False,
     save=False,
 ):
@@ -482,12 +491,10 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     )
 
     # Put p_M_given_D in 2 dimensions, one for hfev1, one for s
-    hfev1_card = int(len(h_s_obs_states) / S.card)
-    p_M_given_D = p_M_given_D.reshape((hfev1_card, S.card))
+    p_M_given_D = p_M_given_D.reshape((cond_hfev1_card, S.card))
     AR_given_M_and_all_D = AR_given_M_and_all_D.reshape(
-        (N, AR.card, hfev1_card, S.card)
+        (N, AR.card, cond_hfev1_card, S.card)
     )
-
     for S_obs_idx in range(S.card):
         model_spec_txt_for_S = f"{model_spec_txt}, S: {S_obs_idx}"
 
@@ -498,8 +505,9 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
         AR_given_HFEV1_and_D = np.matmul(AR_given_HFEV1_and_D, p_HFEV1_given_D)
 
         # Add HFEV1.card - hfev1_card zeros to p_HFEV1_given_D
+        print(f"p_HFEV1_given_D: {p_HFEV1_given_D.shape}")
         p_HFEV1_given_D = np.concatenate(
-            [np.zeros(HFEV1.card - hfev1_card), p_HFEV1_given_D]
+            [np.zeros(HFEV1.card - cond_hfev1_card), p_HFEV1_given_D]
         )
 
         # p_M_given_D has HFEV1.card
@@ -517,6 +525,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     return (
         fig,
         p_M_given_D,
+        p_HFEV1_given_D,
         log_p_D_given_M,
         AR_given_M_and_D,
         AR_given_M_and_all_D,
