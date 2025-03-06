@@ -8,7 +8,7 @@ import src.models.builders as mb
 import src.tests.data_factory as data
 
 
-def test_light_model_no_o2sat():
+def test_long_model_no_o2sat():
     """
     End to end test for light model with only fev1 side
     """
@@ -20,7 +20,7 @@ def test_light_model_no_o2sat():
     # Model parameters
     ar_prior = "uniform"
     ar_change_cpt_suffix = "_shape_factor_Gmain0.2_Gtails10_w0.73"
-    ecfev1_noise_model_suffix = "_std0.7"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
 
     # Load variable eliminiation
     (
@@ -30,7 +30,7 @@ def test_light_model_no_o2sat():
         uecFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
-    ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light(
+    ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
         n_days,
         height,
         age,
@@ -38,6 +38,10 @@ def test_light_model_no_o2sat():
         ar_prior,
         ar_change_cpt_suffix,
         ecfev1_noise_model_suffix,
+        light=False,
+    )
+    df_mock = data.add_idx_obs_cols(
+        df_mock, ecFEV1_vars[0], ecFEF2575prctecFEV1_vars[0]
     )
     var_elim = VariableElimination(model)
 
@@ -63,6 +67,7 @@ def test_light_model_no_o2sat():
     (
         fig,
         p_M_given_D,
+        p_HFEV1_given_D,
         log_p_D_given_M,
         AR_given_M_and_D,
         AR_given_M_and_all_D,
@@ -72,10 +77,10 @@ def test_light_model_no_o2sat():
         ar_prior,
         ar_change_cpt_suffix=ar_change_cpt_suffix,
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
-        light=True,
+        light=False,
         n_days_consec=3,
     )
-    hfev1_cc = p_M_given_D.reshape(-1)
+    hfev1_cc = p_HFEV1_given_D
     ar0_cc = AR_given_M_and_D[0, :]
     ar1_cc = AR_given_M_and_D[1, :]
     ar2_cc = AR_given_M_and_D[2, :]
@@ -83,24 +88,27 @@ def test_light_model_no_o2sat():
     # Assert results are equal
     def get_element_wise_max_diff(v1, v2):
         return np.max(np.abs(v1 - v2))
+    
+    AR = AR_vars[0]
+    AR.name = AR.name.split(" day")[0]
 
-    # plot_diff(
-    #     HFEV1,
-    #     AR_vars[0],
-    #     hfev1_cc,
-    #     hfev1_ve,
-    #     ar0_cc,
-    #     ar0_ve,
-    #     ar1_cc,
-    #     ar1_ve,
-    #     ar2_cc,
-    #     ar2_ve,
-    # )
+    plot_diff(
+        HFEV1,
+        AR_vars[0],
+        hfev1_cc,
+        hfev1_ve,
+        ar0_cc,
+        ar0_ve,
+        ar1_cc,
+        ar1_ve,
+        ar2_cc,
+        ar2_ve,
+    )
 
-    assert get_element_wise_max_diff(hfev1_cc, hfev1_ve) < 1e-8
-    assert get_element_wise_max_diff(ar0_cc, ar0_ve) < 1e-8
-    assert get_element_wise_max_diff(ar1_cc, ar1_ve) < 1e-8
-    assert get_element_wise_max_diff(ar2_cc, ar2_ve) < 1e-8
+    assert get_element_wise_max_diff(hfev1_cc, hfev1_ve) < 1e-10
+    assert get_element_wise_max_diff(ar0_cc, ar0_ve) < 1e-10
+    assert get_element_wise_max_diff(ar1_cc, ar1_ve) < 1e-10
+    assert get_element_wise_max_diff(ar2_cc, ar2_ve) < 1e-10
 
     return None
 
