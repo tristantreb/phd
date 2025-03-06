@@ -97,41 +97,23 @@ def abbr_to_colname(name: str):
 
 
 ## Discretized PDF with the sampling solution
-# Let Unblocked FEV1 be a continuous random variable following a uniform distribution between a and b
-def get_unblocked_fev1(a, b):
-    return np.random.uniform(a, b)
-
-
-# Let % Small parentAirway blockage be a continuous random variable following a uniform distribution between a and b
-def get_small_airway_blockage(a, b):
-    return np.random.uniform(a, b)
-
-
-# Let FEV1 be the product of Unblocked FEV1 and (1 - % Small parentAirway blockage)
-# FEV1 is a continuous random variable following a uniform distribution between 0 and 6
-def get_fev1(unblocked_fev1, small_airway_blockage):
-    # 0% Small parentAirway blockage implies that FEV1 = Unblocked FEV1
-    # 100% Small parentAirway blockage implies that FEV1 = 0
-    fev1 = unblocked_fev1 * (1 - small_airway_blockage)
-    return pd.DataFrame(
-        {
-            "Unblocked FEV1": [unblocked_fev1],
-            "Small airway blockage": [small_airway_blockage],
-            "FEV1": [fev1],
-        }
-    )
 
 
 # We can generate a sample of FEV1 values and put the results in a dataframe
 def generate_fev1_sample(u1, u2, b1, b2, n=10000):
-    df = get_fev1(get_unblocked_fev1(u1, u2), get_small_airway_blockage(b1, b2))
-    for _ in range(n):
-        df = pd.concat(
-            [
-                df,
-                get_fev1(get_unblocked_fev1(u1, u2), get_small_airway_blockage(b1, b2)),
-            ]
-        )
+    np.random.seed(0)
+    unblocked_fev1 = np.random.uniform(u1, u2, n)
+    small_airway_blockage = np.random.uniform(b1, b2, n)
+    fev1 = unblocked_fev1 * (1 - small_airway_blockage)
+
+    df = pd.DataFrame(
+        {
+            "Unblocked FEV1": unblocked_fev1,
+            "Small airway blockage": small_airway_blockage,
+            "FEV1": fev1,
+        }
+    )
+
     return df
 
 

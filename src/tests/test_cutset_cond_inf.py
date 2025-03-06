@@ -1,32 +1,11 @@
 import numpy as np
-import pandas as pd
 from pgmpy.inference.ExactInference import VariableElimination
 from plotly.subplots import make_subplots
 
 import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
 import src.inference.helpers as ih
 import src.models.builders as mb
-
-
-def get_mock_data():
-    df_mock = pd.DataFrame(
-        {
-            "ID": ["1", "1", "1"],
-            "Date Recorded": [1, 2, 3],
-            "Height": 180,
-            "Age": 35,
-            "Sex": "Male",
-            "ecFEV1": [1.8, 2.2, 2.2],
-            "ecFEF2575%ecFEV1": [12, 120, 150],
-            "idx ecFEV1 (L)": [1, 2, 2],
-            "idx ecFEF2575%ecFEV1": [0, 6, 7],
-            "idx ecFEF25-75 % ecFEV1 (%)": [0, 6, 7],
-        }
-    )
-    df_mock["Date Recorded"] = pd.to_datetime(
-        df_mock["Date Recorded"], unit="D", origin="2020-01-01"
-    )
-    return df_mock
+import src.tests.data_factory as data
 
 
 def test_light_model_no_o2sat():
@@ -34,7 +13,7 @@ def test_light_model_no_o2sat():
     End to end test for light model with only fev1 side
     """
     # Data
-    df_mock = get_mock_data()
+    df_mock = data.get_mock_data()
     height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
     n_days = df_mock.shape[0]
 
@@ -105,18 +84,19 @@ def test_light_model_no_o2sat():
     def get_element_wise_max_diff(v1, v2):
         return np.max(np.abs(v1 - v2))
 
-    plot_diff(
-        HFEV1,
-        AR_vars[0],
-        hfev1_cc,
-        hfev1_ve,
-        ar0_cc,
-        ar0_ve,
-        ar1_cc,
-        ar1_ve,
-        ar2_cc,
-        ar2_ve,
-    )
+    # plot_diff(
+    #     HFEV1,
+    #     AR_vars[0],
+    #     hfev1_cc,
+    #     hfev1_ve,
+    #     ar0_cc,
+    #     ar0_ve,
+    #     ar1_cc,
+    #     ar1_ve,
+    #     ar2_cc,
+    #     ar2_ve,
+    # )
+
     assert get_element_wise_max_diff(hfev1_cc, hfev1_ve) < 1e-8
     assert get_element_wise_max_diff(ar0_cc, ar0_ve) < 1e-8
     assert get_element_wise_max_diff(ar1_cc, ar1_ve) < 1e-8
