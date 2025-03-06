@@ -630,9 +630,6 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
 
     arr = np.ones(AR.card)
     arr /= arr.sum()
-    uniform_from_o2_side = {
-        "['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
-    }
     uniform_from_fef2575 = {
         "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     }
@@ -695,7 +692,7 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
                     ecFEF2575prctecFEV1,
                     AR,
                     vevidence_ar,
-                    uniform_from_o2_side | uniform_from_fef2575,
+                    uniform_from_fef2575,
                     m_from_hfev1_dict,
                     m_from_hfev1_key,
                     m_from_fev_factor_dict,

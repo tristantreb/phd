@@ -47,6 +47,7 @@ def process_id(inf_settings):
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
     (
+        fig,
         p_M_given_D,
         log_p_D_given_M,
         AR_given_M_and_D,

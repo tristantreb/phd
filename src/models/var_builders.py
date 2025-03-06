@@ -993,6 +993,10 @@ def set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior):
         Var_ar_change = DiscreteVariableNode(
             "AR change factor shape", 1, 1, 1, {"type": "uniform"}
         )
+    if ar_change_cpt_suffix == "_shape_factor_grid_search_1":
+        Var_ar_change = DiscreteVariableNode(
+            "AR change factor shape", 1, 27, 1, {"type": "uniform"}
+        )
     else:
         Var_ar_change = DiscreteVariableNode(
             "Days elapsed", 1, 3, 1, {"type": "uniform"}
