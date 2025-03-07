@@ -1329,14 +1329,15 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
     )
 
 
-def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_light_learn_S(
+def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
     n,
     height,
     age,
     sex,
-    ia_prior="uniform",
-    ar_prior="uniform",
-    ar_change_cpt_suffix="",
+    ar_prior,
+    ar_change_cpt_suffix,
+    ecfev1_noise_model_suffix,
+    light=False,
     check_model=False,
 ):
     """
@@ -1349,51 +1350,53 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     FEV1 noise model suffix fixed to 0.7, high noise to compensate low granularity for the temporal ARs
     """
 
-    (
-        HFEV1,
-        uecFEV1,
-        ecFEV1,
-        AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
-        ecFEF2575prctecFEV1,
-        S,
-    ) = var_builders.o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
-        height,
-        age,
-        sex,
-        ia_prior,
-        ar_prior,
-        ar_change_cpt_suffix,
-    )
+    if light:
+        (
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            S,
+        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        )
+    else:
+        (
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            S,
+        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        )
 
     (
         model,
         _,
-        _,
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        O2SatFFA_vars,
-        IA_vars,
-        UO2Sat_vars,
-        O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
         _,
-    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
+    ) = graph_builders.fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
         n,
         HFEV1,
         uecFEV1,
         ecFEV1,
         AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
         ecFEF2575prctecFEV1,
         S,
         check_model=check_model,
@@ -1403,14 +1406,9 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         model,
         # inf_alg,
         HFEV1,
-        HO2Sat,
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        O2SatFFA_vars,
-        IA_vars,
-        UO2Sat_vars,
-        O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
         S,
     )

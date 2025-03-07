@@ -1284,17 +1284,12 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
     )
 
 
-def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
+def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     n,
     HFEV1,
     uecFEV1,
     ecFEV1,
     AR,
-    HO2Sat,
-    O2SatFFA,
-    IA,
-    UO2Sat,
-    O2Sat,
     ecFEF2575prctecFEV1,
     S,
     check_model=True,
@@ -1316,10 +1311,6 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     ecFEF2575prctecFEV1_vars = [
         create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
     ]
-    O2SatFFA_vars = [create_var_for_day(O2SatFFA, i) for i in range(1, n + 1)]
-    IA_vars = [create_var_for_day(IA, i) for i in range(1, n + 1)]
-    UO2Sat_vars = [create_var_for_day(UO2Sat, i) for i in range(1, n + 1)]
-    O2Sat_vars = [create_var_for_day(O2Sat, i) for i in range(1, n + 1)]
 
     # Priors and CPTs
     # AR first day prior shall be uniform
@@ -1362,23 +1353,9 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
         )
         for ecFEF2575prctecFEV1_, AR_ in zip(ecFEF2575prctecFEV1_vars, AR_vars)
     ]
-    O2SatFFA_cpts = [
-        build_pgmpy_o2satffa_cpt(O2SatFFA_, HO2Sat, AR_)
-        for O2SatFFA_, AR_ in zip(O2SatFFA_vars, AR_vars)
-    ]
-    IA_priors = [build_pgmpy_ia_prior(IA_) for IA_ in IA_vars]
-    UO2Sat_cpts = [
-        build_pgmpy_uo2sat_cpt(UO2Sat_, O2SatFFA_, IA_)
-        for UO2Sat_, O2SatFFA_, IA_ in zip(UO2Sat_vars, O2SatFFA_vars, IA_vars)
-    ]
-    O2Sat_cpts = [
-        build_pgmpy_o2sat_cpt(O2Sat_, UO2Sat_)
-        for O2Sat_, UO2Sat_ in zip(O2Sat_vars, UO2Sat_vars)
-    ]
 
     # Shared priors
     prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
-    prior_ho2sat = build_pgmpy_ho2sat_prior(HO2Sat)
     prior_S = build_pgmpy_ar_change_var_prior(S)
 
     # Make sure the days are at the same location in all variable lists
@@ -1390,24 +1367,15 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
             ecFEF2575prctecFEV1_vars[i - 1].name
             == f"{ecFEF2575prctecFEV1.name} day {i}"
         )
-        assert O2SatFFA_vars[i - 1].name == f"{O2SatFFA.name} day {i}"
-        assert IA_vars[i - 1].name == f"{IA.name} day {i}"
-        assert UO2Sat_vars[i - 1].name == f"{UO2Sat.name} day {i}"
-        assert O2Sat_vars[i - 1].name == f"{O2Sat.name} day {i}"
 
     network = []
     # HFEV1 and HO2Sat are shared between days
     for i in range(0, n):
         network += [
             (HFEV1.name, uecFEV1_vars[i].name),
-            (HO2Sat.name, O2SatFFA_vars[i].name),
             (AR_vars[i].name, uecFEV1_vars[i].name),
             (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
             (AR_vars[i].name, ecFEF2575prctecFEV1_vars[i].name),
-            (AR_vars[i].name, O2SatFFA_vars[i].name),
-            (O2SatFFA_vars[i].name, UO2Sat_vars[i].name),
-            (IA_vars[i].name, UO2Sat_vars[i].name),
-            (UO2Sat_vars[i].name, O2Sat_vars[i].name),
         ]
 
     # Deal with AR variables
@@ -1419,35 +1387,23 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     model.add_cpds(
         # Shared
         prior_hfev1,
-        prior_ho2sat,
         prior_S,
         # Days priors and CPTs
         *AR_priors,
         *uecFEV1_cpts,
         *ecFEV1_cpts,
         *ecFEF2575prctecFEV1_cpts,
-        *O2SatFFA_cpts,
-        *IA_priors,
-        *UO2Sat_cpts,
-        *O2Sat_cpts,
     )
-
-    # print('nodes', model.nodes())
-    # print("cpds", model.get_cpds())
 
     if check_model:
         model.check_model()
+
     return (
         model,
         HFEV1,
-        HO2Sat,
         AR_vars,
         uecFEV1_vars,
         ecFEV1_vars,
-        O2SatFFA_vars,
-        IA_vars,
-        UO2Sat_vars,
-        O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
         S,
     )

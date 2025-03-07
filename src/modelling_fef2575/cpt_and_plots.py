@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import scipy.integrate as integrate
 from plotly.subplots import make_subplots
 from scipy.optimize import minimize
 from scipy.stats import norm
@@ -78,15 +79,19 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
         if debug:
             print(df_f3.iloc[idx]["mean"])
 
-        # Add gaussian approximation
-        p_arr = norm.pdf(
-            yVar.midbins,
-            loc=df_f3.iloc[idx]["mean"],
-            scale=df_f3.iloc[idx]["std"],
-        )
-        p_arr_norm = p_arr / sum(p_arr)
+        # For each bin of AR, I define a continuous gaussian
+        # For each bin of FEF25-75%FEV1, I integrate the gaussian over the bin
+        for j, (z1, z2) in enumerate(yVar.get_bins_arr()):
+            print(f"idx: {idx}, midbin: {midbin} - j: {j}, z1: {z1}, z2: {z2}")
+            # Integrate gaussian over bin
+            p = integrate.quad(
+                lambda x: norm.pdf(x, loc=df_f3.iloc[idx]["mean"], scale=df_f3.iloc[idx]["std"]),
+                z1,
+                z2,
+            )[0]
+            cpt_y_var_AR[j, idx] = p
 
-        cpt_y_var_AR[:, idx] = p_arr_norm
+        cpt_y_var_AR[:, idx] /= sum(cpt_y_var_AR[:, idx])
 
         # The 3 last bins are unreliable (too few data + mean is increase instead of decreasing)
         # Instead use the 4th last bin, i.e. the last reliable bin
