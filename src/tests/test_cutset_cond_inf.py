@@ -7,8 +7,10 @@ import src.inference.helpers as ih
 import src.models.builders as mb
 import src.tests.data_factory as data
 
+def assert_low_element_wise_max_diff(v1, v2, tol=1e-10):
+    assert np.max(np.abs(v1 - v2)) < tol
 
-def test_long_model_no_o2sat():
+def test_3_days_model_with_cutset_cond_give_correct_posteriors():
     """
     End to end test for light model with only fev1 side
     """
@@ -85,10 +87,6 @@ def test_long_model_no_o2sat():
     ar1_cc = AR_given_M_and_D[1, :]
     ar2_cc = AR_given_M_and_D[2, :]
 
-    # Assert results are equal
-    def get_element_wise_max_diff(v1, v2):
-        return np.max(np.abs(v1 - v2))
-    
     AR = AR_vars[0]
     AR.name = AR.name.split(" day")[0]
 
@@ -105,10 +103,10 @@ def test_long_model_no_o2sat():
         ar2_ve,
     )
 
-    assert get_element_wise_max_diff(hfev1_cc, hfev1_ve) < 1e-10
-    assert get_element_wise_max_diff(ar0_cc, ar0_ve) < 1e-10
-    assert get_element_wise_max_diff(ar1_cc, ar1_ve) < 1e-10
-    assert get_element_wise_max_diff(ar2_cc, ar2_ve) < 1e-10
+    assert_low_element_wise_max_diff(hfev1_cc, hfev1_ve)
+    assert_low_element_wise_max_diff(ar0_cc, ar0_ve)
+    assert_low_element_wise_max_diff(ar1_cc, ar1_ve)
+    assert_low_element_wise_max_diff(ar2_cc, ar2_ve)
 
     return None
 
@@ -169,3 +167,71 @@ def plot_diff(
     title = "Cutset conditioning (red) vs variable elimination (blue)"
     fig.update_layout(showlegend=False, height=550, width=800, title=title)
     fig.show()
+
+
+def test_learning_s():
+    df_mock = data.get_mock_data()
+    height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
+    n_days = df_mock.shape[0]
+
+    # Model parameters
+    ar_prior = "uniform"
+    ar_change_cpt_suffix = "_shape_factor_Gmain0.2_Gtails10_w0.73"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+
+    (
+        model,
+        HFEV1,
+        AR_vars,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+        S,
+    ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
+        n_days,
+        height,
+        age,
+        sex,
+        ar_prior,
+        ar_change_cpt_suffix,
+        ecfev1_noise_model_suffix,
+        light=False,
+    )
+    var_elim = VariableElimination(model)
+
+    df_mock = data.add_idx_obs_cols(
+        df_mock, ecFEV1_vars[0], ecFEF2575prctecFEV1_vars[0]
+    )
+    evidence_dict = {}
+    for i in range(n_days):
+        evidence_dict[ecFEV1_vars[i].name] = df_mock.loc[i, "idx ecFEV1 (L)"]
+        evidence_dict[ecFEF2575prctecFEV1_vars[i].name] = df_mock.loc[
+            i, "idx ecFEF2575%ecFEV1"
+        ]
+
+    res_ve_S = var_elim.query(
+        variables=[S.name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    s_ve = res_ve_S[S.name].values
+
+    # Run custom algorithm
+    n_days_consec = 3
+    (
+        log_p_S_given_D,
+        _,
+    ) = cca_ar_change_noo2sat.run_long_noise_model_through_time(
+        df_mock,
+        ar_prior=ar_prior,
+        ar_change_cpt_suffix=ar_change_cpt_suffix,
+        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        n_days_consec=n_days_consec,
+        light=False,
+    )
+
+    p_S_given_D = np.exp(log_p_S_given_D)
+    p_S_given_D /= np.sum(p_S_given_D)
+
+    # Assert results are equal
+    assert_low_element_wise_max_diff(p_S_given_D, s_ve) 
