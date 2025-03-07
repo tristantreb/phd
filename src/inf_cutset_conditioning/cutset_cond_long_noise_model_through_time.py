@@ -55,15 +55,11 @@ def process_id(inf_settings):
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix="",
         n_days_consec=n_days_consec,
+        light=False,
         debug=False,
+        get_p_s_given_d=True,
         save=True,
     )
-
-    (
-        log_p_S_given_D,
-        res_dict,
-    ) = out
-
     # (
     #     fig,
     #     p_M_given_D,
@@ -73,10 +69,15 @@ def process_id(inf_settings):
     #     res_dict,
     # ) = out
 
+    (
+        log_p_S_given_D,
+        res_dict,
+    ) = out
     res = {id: log_p_S_given_D}
-
     # Write results to file p_s_given_d.json
-    with open(f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d.json", "a") as f:
+    with open(
+        f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d.json", "a"
+    ) as f:
         f.write(str(res) + "\n")
     f.close()
 
@@ -86,27 +87,27 @@ def process_id(inf_settings):
 # Run the function in parallel using ProcessPoolExecutor
 if __name__ == "__main__":
 
-    interesting_ids = [
-        # "132",
-        # "146",
-        # "177",
-        # "180",
-        # "202",
-        # "117",
-        # "131",
-        # "134",
-        # "191",
-        # "139",
-        # "253",
-        # "101",
-        # Also from consec values
-        # "405",
-        # "272",
-        # "201",
-        # "203",
-        "527",
-    ]
-    # interesting_ids = df.ID.unique()
+    # interesting_ids = [
+    #     "132",
+    #     "146",
+    #     "177",
+    #     "180",
+    #     "202",
+    #     "117",
+    #     "131",
+    #     "134",
+    #     "191",
+    #     "139",
+    #     "253",
+    #     "101",
+    #     # Also from consec values
+    #     "405",
+    #     "272",
+    #     "201",
+    #     "203",
+    #     "527",
+    # ]
+    interesting_ids = df.ID.unique()
 
     ar_priors = [
         # "uniform",

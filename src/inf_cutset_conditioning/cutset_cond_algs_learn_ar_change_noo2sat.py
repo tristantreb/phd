@@ -26,6 +26,7 @@ def run_long_noise_model_through_time(
     fef2575_cpt_suffix=None,
     n_days_consec=3,
     light=False,
+    get_p_s_given_d=False,
     debug=False,
     save=False,
 ):
@@ -48,57 +49,35 @@ def run_long_noise_model_through_time(
         light,
     )
 
-    # (
-    #     fig,
-    #     p_M_given_D,
-    #     p_HFEV1_given_D,
-    #     log_p_D_given_M,
-    #     AR_given_M_and_D,
-    #     AR_given_M_and_all_D,
-    #     res_dict,
-    # ) = calc_log_p_D_given_M_and_AR_for_ID_any_obs(
-    #     df,
-    #     inf_alg,
-    #     HFEV1,
-    #     h_s_obs_states,
-    #     AR,
-    #     ecFEV1,
-    #     ecFEF2575prctecFEV1,
-    #     model_spec_txt,
-    #     S,
-    #     n_days_consec,
-    #     cond_hfev1_card,
-    #     debug=debug,
-    #     save=save,
-    # )
-
-    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
-        df,
-        inf_alg,
-        HFEV1,
-        h_s_obs_states,
-        AR,
-        ecFEV1,
-        ecFEF2575prctecFEV1,
-        S,
-        n_days_consec,
-        debug=debug,
-    )
-
-    # return (
-    #     fig,
-    #     p_M_given_D,
-    #     p_HFEV1_given_D,
-    #     log_p_D_given_M,
-    #     AR_given_M_and_D,
-    #     AR_given_M_and_all_D,
-    #     res_dict,
-    # )
-
-    return (
-        log_p_S_given_D,
-        res_dict,
-    )
+    if get_p_s_given_d:
+        return calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+            df,
+            inf_alg,
+            HFEV1,
+            h_s_obs_states,
+            AR,
+            ecFEV1,
+            ecFEF2575prctecFEV1,
+            S,
+            n_days_consec,
+            debug=debug,
+        )
+    else:
+        return calc_log_p_D_given_M_and_AR_for_ID_any_obs(
+            df,
+            inf_alg,
+            HFEV1,
+            h_s_obs_states,
+            AR,
+            ecFEV1,
+            ecFEF2575prctecFEV1,
+            model_spec_txt,
+            S,
+            n_days_consec,
+            cond_hfev1_card,
+            debug=debug,
+            save=save,
+        )
 
 
 def run_long_noise_model_through_time_light(
@@ -504,7 +483,6 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
         AR_given_HFEV1_and_D = np.matmul(AR_given_HFEV1_and_D, p_HFEV1_given_D)
 
         # Add HFEV1.card - hfev1_card zeros to p_HFEV1_given_D
-        print(f"p_HFEV1_given_D: {p_HFEV1_given_D.shape}")
         p_HFEV1_given_D = np.concatenate(
             [np.zeros(HFEV1.card - cond_hfev1_card), p_HFEV1_given_D]
         )
