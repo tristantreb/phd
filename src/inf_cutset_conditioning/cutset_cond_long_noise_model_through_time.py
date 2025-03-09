@@ -122,7 +122,8 @@ if __name__ == "__main__":
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise",
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068",
         # "_shape_factor_Gmain0.2_Gtails10_w0.73",
-        "_shape_factor_grid_search_1",
+        # "_shape_factor_grid_search_1",
+        "_shape_factor_weight_card11",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
