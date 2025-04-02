@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.integrate as integrate
-from scipy.stats import norm
+from scipy.stats import laplace, norm
 
 import src.models.helpers as mh
 
@@ -74,7 +74,7 @@ def p_uniform_x_gaussian(z1, z2, y1, y2, s, abserr_tol=1e-10, debug=True):
     return val
 
 
-def p_uniform_x_gmm(z1, z2, y1, y2, s1, s2, w1, abserr_tol=1e-8, debug=True):
+def p_uniform_x_gmm(z1, z2, y1, y2, s1, s2, w1, laplace_main, abserr_tol=1e-8, debug=True):
     """
     Y ~ U(y1, y2)
     Z ~ w1 * N(mu=Y, s=s1) + w2 * N(mu=Y, s=s2)
@@ -82,11 +82,14 @@ def p_uniform_x_gmm(z1, z2, y1, y2, s1, s2, w1, abserr_tol=1e-8, debug=True):
     """
     w2 = 1 - w1
 
-    def conv_fn(z, y, s1, s2, w1, w2):
-        return (w1 * norm.pdf(z, y, s1) + w2 * norm.pdf(z, y, s2)) / (y2 - y1)
+    def conv_fn(z, y, s1, s2, w1, w2, laplace_main=False):
+        if laplace_main:
+            return (w1 * laplace.pdf(z, y, s1) + w2 * norm.pdf(z, y, s2)) / (y2 - y1)
+        else:
+            return (w1 * norm.pdf(z, y, s1) + w2 * norm.pdf(z, y, s2)) / (y2 - y1)
 
     val, abserr = integrate.dblquad(
-        conv_fn, y1, y2, z1, z2, args=[s1, s2, w1, w2], epsabs=abserr_tol
+        conv_fn, y1, y2, z1, z2, args=[s1, s2, w1, w2, laplace_main], epsabs=abserr_tol
     )
     if abserr > abserr_tol and debug:
         print(
