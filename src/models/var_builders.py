@@ -993,6 +993,10 @@ def set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior):
         Var_ar_change = DiscreteVariableNode(
             "AR change factor shape", 1, 28, 1, {"type": "uniform"}
         )
+    elif ar_change_cpt_suffix == "_shape_factor_main_tail_card23":
+        Var_ar_change = DiscreteVariableNode(
+            "AR change factor shape", 1, 23, 1, {"type": "uniform"}
+        )
     elif ar_change_cpt_suffix == "_shape_factor_Gmain0.2_Gtails10_w0.73":
         Var_ar_change = DiscreteVariableNode(
             "AR change factor shape", 1, 1, 1, {"type": "uniform"}
