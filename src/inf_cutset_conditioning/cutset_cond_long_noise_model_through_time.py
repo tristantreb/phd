@@ -125,7 +125,8 @@ if __name__ == "__main__":
         # "_shape_factor_grid_search_2",
         # "_shape_factor_weight_card11",
         # "_shape_factor_main_tail_card28",
-        "_shape_factor_main_tail_card23",
+        # "_shape_factor_main_tail_card23",
+        "_shape_factor_single_laplace_card9",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
