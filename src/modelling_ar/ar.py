@@ -74,7 +74,9 @@ def p_uniform_x_gaussian(z1, z2, y1, y2, s, abserr_tol=1e-10, debug=True):
     return val
 
 
-def p_uniform_x_gmm(z1, z2, y1, y2, s1, s2, w1, laplace_main, abserr_tol=1e-8, debug=True):
+def p_uniform_x_gmm(
+    z1, z2, y1, y2, s1, s2, w1, laplace_main, abserr_tol=1e-8, debug=True
+):
     """
     Y ~ U(y1, y2)
     Z ~ w1 * N(mu=Y, s=s1) + w2 * N(mu=Y, s=s2)
@@ -89,7 +91,13 @@ def p_uniform_x_gmm(z1, z2, y1, y2, s1, s2, w1, laplace_main, abserr_tol=1e-8, d
             return (w1 * norm.pdf(z, y, s1) + w2 * norm.pdf(z, y, s2)) / (y2 - y1)
 
     val, abserr = integrate.dblquad(
-        conv_fn, y1, y2, z1, z2, args=[s1, s2, w1, w2, laplace_main], epsabs=abserr_tol
+        conv_fn,
+        y1,
+        y2,
+        lambda y: z1,
+        lambda y: z2,
+        args=[s1, s2, w1, w2, laplace_main],
+        epsabs=abserr_tol,
     )
     if abserr > abserr_tol and debug:
         print(
