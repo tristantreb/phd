@@ -42,7 +42,7 @@ def process_id(inf_settings):
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    # dftmp[ecfef2575_cols] = np.nan
+    dftmp[ecfef2575_cols] = np.nan
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -57,29 +57,29 @@ def process_id(inf_settings):
         n_days_consec=n_days_consec,
         light=False,
         debug=False,
-        get_p_s_given_d=True,
+        get_p_s_given_d=False,
         save=True,
     )
-    # (
-    #     fig,
-    #     p_M_given_D,
-    #     log_p_D_given_M,
-    #     AR_given_M_and_D,
-    #     AR_given_M_and_all_D,
-    #     res_dict,
-    # ) = out
-
     (
-        log_p_S_given_D,
+        fig,
+        p_M_given_D,
+        log_p_D_given_M,
+        AR_given_M_and_D,
+        AR_given_M_and_all_D,
         res_dict,
     ) = out
-    res = {id: log_p_S_given_D}
-    # Write results to file p_s_given_d.json
-    with open(
-        f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d.json", "a"
-    ) as f:
-        f.write(str(res) + "\n")
-    f.close()
+
+    # (
+    #     log_p_S_given_D,
+    #     res_dict,
+    # ) = out
+    # res = {id: log_p_S_given_D}
+    # # Write results to file p_s_given_d.json
+    # with open(
+    #     f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d.json", "a"
+    # ) as f:
+    #     f.write(str(res) + "\n")
+    # f.close()
 
     return -1
 
@@ -87,27 +87,27 @@ def process_id(inf_settings):
 # Run the function in parallel using ProcessPoolExecutor
 if __name__ == "__main__":
 
-    # interesting_ids = [
-    #     "132",
-    #     "146",
-    #     "177",
-    #     "180",
-    #     "202",
-    #     "117",
-    #     "131",
-    #     "134",
-    #     "191",
-    #     "139",
-    #     "253",
-    #     "101",
-    #     # Also from consec values
-    #     "405",
-    #     "272",
-    #     "201",
-    #     "203",
-    #     "527",
-    # ]
-    interesting_ids = df.ID.unique()
+    interesting_ids = [
+        # "132",
+        # "146",
+        # "177",
+        # "180",
+        # "202",
+        # "117",
+        # "131",
+        # "134",
+        "191",
+        # "139",
+        # "253",
+        # "101",
+        # Also from consec values
+        # "405",
+        # "272",
+        # "201",
+        # "203",
+        # "527",
+    ]
+    # interesting_ids = df.ID.unique()
 
     ar_priors = [
         # "uniform",
@@ -126,7 +126,8 @@ if __name__ == "__main__":
         # "_shape_factor_weight_card11",
         # "_shape_factor_main_tail_card28",
         # "_shape_factor_main_tail_card23",
-        "_shape_factor_single_laplace_card9",
+        # "_shape_factor_single_laplace_card9",
+        "_shape_factor_single_laplace_0.001",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card

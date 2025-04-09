@@ -182,6 +182,8 @@ def load_long_noise_model_through_time(
         argmin_uecfev1 = np.nonzero(uecfev1)[0][0]
         min_uecfev1 = uecFEV1.midbins[argmin_uecfev1]
         argmin_hfev1 = HFEV1.get_bin_idx_for_value(min_uecfev1)
+        # This code is working
+        # print(f"uecfev1: {uecfev1}\nargmin_uecfev1: {argmin_uecfev1}\nmin_uecfev1: {min_uecfev1}\nargmin_hfev1: {argmin_hfev1}\nHFEV1 midbin: {HFEV1.midbins[argmin_hfev1]}") 
         return argmin_hfev1
 
     min_possible_hfev1_under_model = get_min_possible_HFEV1_given_max_FEV1()
@@ -375,6 +377,10 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
             )
             res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values
 
+            # print(
+            #     f"HFEV1_obs_idx: {HFEV1_bin_idx}, S_obs_idx: {S_obs_idx}, vevidence_ar: {vevidence_ar.values}"
+            # )
+
             if debug:
                 print(
                     f"HFEV1_obs_idx: {HFEV1_bin_idx}, S_obs_idx: {S_obs_idx}, vevidence_ar: {vevidence_ar.values}"
@@ -431,6 +437,8 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                 raise ValueError("Both ecFEV1 and ecFEF25-75 must be observed")
 
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
+            # If dist_AR contains at least one nan then print
+            if np.isnan
             AR_given_M_and_past_D[n, :, h] = dist_AR
             res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
             res_dict["ecFEF2575%ecFEV1"][n, :, h] = dist_ecFEF2575prctecFEV1
