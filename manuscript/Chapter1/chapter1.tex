@@ -65,17 +65,17 @@ Although one can theoretically back-calculate PaO2 from SpO2 via the oxyhemoglob
 % Note: You can roughly estimate PaO₂ from SpO₂ using the oxyhemoglobin dissociation curve, but it's important to note that this is an approximation with several limitations. The relationship between SpO₂ and PaO₂ is influenced by factors such as pH, temperature, and levels of 2,3-diphosphoglycerate, which can shift the curve. For precise and clinically reliable measurements of PaO₂, an arterial blood gas (ABG) test is preferred over an estimation derived from SpO₂.
 
 \subsection{Analysing the relationship between \F, oxygen saturation, and lung health}
-The conclusion of the previous section essentially assumes that \F and oxygen saturation are key physiological indicators of lung function. I now have to confirm this assumption drawn from pulmonary physiology knowledge by analysing real patient data. I therefore plotted \F versus oxygen saturation for individuals with varying severities of lung disease. I have chosen the data from the SmartCare study, over BreatheCF, because i) it contains sicker individuals with interesting examples of very unhealthy lungs, ii) every day has an extra label \textit{Is Exacerbated} which tells whether or not the individual was having an acute pulmonary exacerbation. This label was learnt by the acute pulmonary exacerbation prediction model introduced in section X. The result on Figure \ref{fig:o2_\F_exacerbated} shows that these two metrics effectively differentiate patients based on their respiratory health. 
+The conclusion of the previous section essentially assumes that \F and oxygen saturation are key physiological indicators of lung function. I now have to confirm this assumption drawn from pulmonary physiology knowledge by analysing real patient data. I therefore plotted \F versus oxygen saturation for individuals with varying severities of lung disease. I have chosen the data from the SmartCare study, over BreatheCF, because i) it contains sicker individuals with interesting examples of very unhealthy lungs, ii) every day has an extra label \textit{Is Exacerbated} which tells whether or not the individual was having an acute pulmonary exacerbation. This label was learnt by the acute pulmonary exacerbation prediction model introduced in section X. The result on Figure \ref{fig:o2_fev1_exacerbated} shows that these two metrics effectively differentiate patients based on their respiratory health. 
 % TODO: Add filtering steps in appendix? They don't help the story
 
 \begin{figure}[!h]
     \caption{Scatter plot of \OXSat and \F smoothed. On both axis, the red distribution shifts to lower values. This means that \OXSat and \F values tend to drop from baseline during exacerbations.}
     \centering
-    \includegraphics[width=150mm]{Chapter1/Figs/o2_\F_with_exacerbated_labels.png}
-    \label{fig:o2_\F_exacerbated}
+    \includegraphics[width=150mm]{Chapter1/Figs/o2_fev1_with_exacerbated_labels.png}
+    \label{fig:o2_fev1_exacerbated}
 \end{figure}
 
-There is abundant amount of information to take away from Figure \ref{fig:o2_\F_exacerbated}, which also shows how precious Damian's predictive algorithm is to give additional insight about the health state of the lungs.
+There is abundant amount of information to take away from Figure \ref{fig:o2_fev1_exacerbated}, which also shows how precious Damian's predictive algorithm is to give additional insight about the health state of the lungs.
 % TODO: talk about the impact of transition periods, it's a refinement than didn't help to highlight more information
 
 \paragraph{Figure adjustments}
@@ -132,13 +132,13 @@ Defining a healthy baseline allows to address the non-pathological individual-le
 \paragraph{Airway resistance}
 Similarly to how doctors compute the “\F in percent predicted” by dividing the observed \F by the predicted\ value, I can define a “divisive measure” of the difference between healthy and underlying \F (each represented by probability distributions). Physically, \F is a measure of airway resistance, reflecting the non-linear aggregation of local resistances across the airway generation (see Section X). Consequently, this divisive measure, which expresses the drop from an individual's healthy \F baseline, can be interpreted as a probabilistic measure of the airway resistance.
 
-I have now sufficient information to draw the first part of the model which answers the question: "What can \F tell about lung health?", see Figure \ref{graph:\F_side}.
+I have now sufficient information to draw the first part of the model which answers the question: "What can \F tell about lung health?", see Figure \ref{graph:fev1_side}.
 
 \begin{figure}[!h]
     \caption{Graphical structure of the \F side of the model}
     \centering
-    \includegraphics[width=80mm]{Chapter1/Figs/\F_side_model_structure.png}
-    \label{graph:\F_side}
+    \includegraphics[width=80mm]{Chapter1/Figs/fev1_side_model_structure.png}
+    \label{graph:fev1_side}
 \end{figure}
 
 I would like to recall that another person might have come up with another model structure. The challenge is to build a model that can be useful for clinical applications. To avoid testing numerous alternative models, I chose to develop a model based on established best practices from specialised CF centers, assuming that several decades of collaborative clinical efforts have yielded an optimal understanding of \F’s role in evaluating patient health.
@@ -148,19 +148,19 @@ I would like to recall that another person might have come up with another model
 
 \subsection{Data validation of the multiplicative factor}
 
-In Figure \ref{graph:\F_side}, the factors F1 and F3 are relatively straightforward to model because F1 is derived from reference equations, and F3 is essentially a noise factor. F2 is therefore the most critical to get right, as it connects the drop between healthy and observed \F with the first health metric: airway resistance. Similarly to Section X, I produced visualisations for this factor function before implementing it to confirm that the multiplicative relationship assumption drawn from medical knowledge aligns with the actual physiological signals from the Smartcare dataset.
+In Figure \ref{graph:fev1_side}, the factors F1 and F3 are relatively straightforward to model because F1 is derived from reference equations, and F3 is essentially a noise factor. F2 is therefore the most critical to get right, as it connects the drop between healthy and observed \F with the first health metric: airway resistance. Similarly to Section X, I produced visualisations for this factor function before implementing it to confirm that the multiplicative relationship assumption drawn from medical knowledge aligns with the actual physiological signals from the Smartcare dataset.
 
 When developing this part of the model, I initially considered separating the airway resistance into two parts: small airway blockage and long term lung damage. This distinction is clinically significant in CF because small-airway blockage (e.g., mucus accumulation in bronchioles) can be temporary, whereas long term lung damage (e.g., bronchiectasis) is permanent. For a CF individual, it would be very informative to know what percentage of airway resistance could be reversed by changing habits (e.g., running, more physiotherapy). Likewise, monitoring the number of people at risk due to high permanent lung damage could significantly improve hospital resources management.
 
-If the model could estimate the precise amount of reversible blockage, I could use it to introduce an additional metric called “unblocked \F". It would represent the \F a patient might achieve if all reversible components of its lung damage were resolved. Figure \ref{graph:unblocked_\F} shows how the airway resistance would be substituted. 
+If the model could estimate the precise amount of reversible blockage, I could use it to introduce an additional metric called “unblocked \F". It would represent the \F a patient might achieve if all reversible components of its lung damage were resolved. Figure \ref{graph:unblocked_fev1} shows how the airway resistance would be substituted. 
 \begin{figure}[!h]
-    \caption{Focus on the update of the graph from Figure \ref{graph:\F_side} where I would differentiate the airway resistance into its reversible component (small airway blockage) and permanent component (long term lung damage). The rest of the graph would remain the same}
+    \caption{Focus on the update of the graph from Figure \ref{graph:fev1_side} where I would differentiate the airway resistance into its reversible component (small airway blockage) and permanent component (long term lung damage). The rest of the graph would remain the same}
     \centering
-    \includegraphics[width=50mm]{Chapter1/Figs/unblocked_\F_model_structure.png}
+    \includegraphics[width=50mm]{Chapter1/Figs/unblocked_fev1_model_structure.png}
     \label{graph:unblocked_\F}
 \end{figure}
 I decided not to do this update on the graph for two reasons. Firstly, the extra hidden variable would lead to too many unknowns relative to the model evidence. The updated model equations, as shown below, could not be solved by inference or would require more observables. On the left there is one unknown for one equation, on the right there are three unknowns for two equations.
-\[
+\begin{align*}
 1-AR = H\!F\!EV_1 \times ecF\!EV_1 \quad \Rightarrow \quad 
 \left\{
 \begin{aligned}
@@ -168,7 +168,7 @@ I decided not to do this update on the graph for two reasons. Firstly, the extra
 1-SAB &= uF\!EV_1 \times ecF\!EV_1
 \end{aligned}
 \right.
-\]
+\end{align*}
 Secondly, it is difficult to draw a clear line between permanent and reversible aspects of the airway resistance. Symptoms that should be reversible are usually never fully resolved due to the chronic aspect of the lung inflammation in CF, as explained in section X. An undetermined quantity of small airway blockage stays over long time-scales and is therefore hard to differentiate from permanent damage using the physiological signals form the dataset. I concluded that adding this complexity would not be advantageous at this stage of the project. It might however be a great candidate to extend this first model.
 
 Nevertheless, introducing this cascade of multiplicative factors remains a compelling way to evaluate the richness of the data, that is, whether it captures different aspects of airway resistance, and to verify whether the multiplicative relationship holds in real patient data. When using data I do not have the limitations of equations and can find a reasonable approximation for the unblocked \F. I did this and produced visualisations representing the multiplicative lung damage and multiplicative small-airway blockage using the SmartCare dataset. The results and interpretations for each case is described below.
@@ -180,13 +180,13 @@ To preserve as much raw information as possible, and thus capture true signals i
 \end{equation}
 Concretely, this equation means that at 0\% of lung damage unblocked \UF = \HF, at 25\% of lung damage, \UF = $3/4$ \HF, and that negative lung damage expressed by \UF > \HF is theoretically impossible.
 
-Since small airway damage accumulated over many years is the main driver for lung degradation in CF, age should be a good estimator of lung damage. I therefore plotted age against the lung damage computed using the above formula for every individual. I stratified the population by age groups to highlight underlying trend in the data. As expected, there is a clear increase of lung damage with age on Figure \ref{fig:factor_\F_lung_damage}. The mean group's age rises from 44\% in age group 18-30 years old, to 49\% in age group 30-40 and 55\% in age group 40-50. I ignored the age group 50-66 because i) very unhealthy individuals that might lie in the previous age groups would most probably, and unfortunately, not have reached such an old age; ii) the statistics based four individuals are not reliable. I compared the means, and not other quartiles, because the spread of the box-plots is more indicative of the size of the group than the variability of the data.
+Since small airway damage accumulated over many years is the main driver for lung degradation in CF, age should be a good estimator of lung damage. I therefore plotted age against the lung damage computed using the above formula for every individual. I stratified the population by age groups to highlight underlying trend in the data. As expected, there is a clear increase of lung damage with age on Figure \ref{fig:factor_fev1_lung_damage}. The mean group's age rises from 44\% in age group 18-30 years old, to 49\% in age group 30-40 and 55\% in age group 40-50. I ignored the age group 50-66 because i) very unhealthy individuals that might lie in the previous age groups would most probably, and unfortunately, not have reached such an old age; ii) the statistics based four individuals are not reliable. I compared the means, and not other quartiles, because the spread of the box-plots is more indicative of the size of the group than the variability of the data.
 
 \begin{figure}[!h]
     \caption{Relationship between permanent lung damage approximated from the data and age.  One can observe a clear increase of lung damage with the mean group's age from 44\% in age group [18-30), to 49\% in age group [30-40) and 55\% in age group [40-50)}
     \centering
-    \includegraphics[width=80mm]{Chapter1/Figs/factor_healthy_\F_lung_damage.png}
-    \label{fig:factor_\F_lung_damage}
+    \includegraphics[width=80mm]{Chapter1/Figs/factor_healthy_fev1_lung_damage.png}
+    \label{fig:factor_fev1_lung_damage}
 \end{figure}
 
 \subsubsection{Identifying small airway blockage in the data}
@@ -194,13 +194,13 @@ Using the same definition of unblocked \F as in the previous section, I can form
 \begin{equation}
     (1 - \frac{F\!EV_1\ (L)}{uF\!EV_1\ (L)})\cdot 100
 \end{equation}
-Since an acute pulmonary exacerbation is generally linked to a temporary increase in small airway blockage (excess mucus production), I used the exacerbated labels from Damian's predictive algorithm (cite X) to indicate the presence of small airway blockage. I plotted the results in Figure \ref{fig:factor_\F_small_airway_blockage}, where each vertical bar contains the \F records for a single individual. I expect measurements performed in an exacerbated period (red) to have a higher small airway blockage than measurements performed in a stable period (blue). 
+Since an acute pulmonary exacerbation is generally linked to a temporary increase in small airway blockage (excess mucus production), I used the exacerbated labels from Damian's predictive algorithm (cite X) to indicate the presence of small airway blockage. I plotted the results in Figure \ref{fig:factor_fev1_small_airway_blockage}, where each vertical bar contains the \F records for a single individual. I expect measurements performed in an exacerbated period (red) to have a higher small airway blockage than measurements performed in a stable period (blue). 
 % TODO: have ie removed data from transition periods?
 \begin{figure}[!h]
     \caption{Relationship between the small airway blockage approximated from the data and the exacerbation labels from the predictive classifier in \cite{damian}.  One bar is one individual, the results are presented in Table \ref{tab:n_ex_labels}}
     \centering
-    \includegraphics[width=150mm]{Chapter1/Figs/factor_unblocked_\F_small_airway_blockage.png}
-    \label{fig:factor_\F_small_airway_blockage}
+    \includegraphics[width=150mm]{Chapter1/Figs/factor_unblocked_fev1_small_airway_blockage.png}
+    \label{fig:factor_fev1_small_airway_blockage}
 \end{figure}
 I have three remarks about this figure. Firstly, although the labeling is binary, going from stable to exacerbated is, in reality, a progressive change. Measurements done at the boundary of the stable/exacerbation period can be noisy. I therefore removed the datapoints located at the periods of transitions between exacerbated and stable states, as explained in section X. Secondly, very sick individuals under chronic inflammation are permanently exacerbated. As such, there might not be much difference between the clinical symptoms during an exacerbation and during a stable period. In this case the red/blue points can be mixed without a clear ordering. Thirdly, the labels are not very informative for individuals that have mostly one colour. I decided to keep them, though, to show a transparent picture of the CF population from the SmartCare study.
 % TODO: validate if true looking at Damian's material. Point 2: especially since the predictive algorithm only identifies acute pulmonary exacerbations that were treated by antibiotics. People always exacerbated have regular treatmetbs that are often dissociated from pejoration of clinical symptoms.
@@ -209,7 +209,7 @@ I summarised my observations in Table \ref{tab:n_ex_labels}. Among the individua
 \begin{table}
 \centering
 \label{tab:n_ex_labels}
-\caption{Results of grouping individuals in Figure \ref{fig:factor_\F_small_airway_blockage}} with similar behaviours. The majority of the individuals have a higher small airway blockage during exacerbations. It confirms that exacerbations tend to correlate with small airway blockage.
+\caption{Results of grouping individuals in Figure \ref{fig:factor_fev1_small_airway_blockage}} with similar behaviours. The majority of the individuals have a higher small airway blockage during exacerbations. It confirms that exacerbations tend to correlate with small airway blockage.
 \begin{tabular}{c|c|c|c}
 \textbf{\#} & \textbf{Case observed on the plot}& \specialcell{\textbf{\# Individuals}\\\textbf{(total 96)}} & \specialcell{\textbf{Case}\\\textbf{is expected}} \\
 \hline
@@ -221,10 +221,10 @@ I summarised my observations in Table \ref{tab:n_ex_labels}. Among the individua
 \end{tabular}
 \end{table}
 
-In conclusion, these two visualisations (figure \ref{fig:factor_\F_lung_damage} and figure \ref{fig:factor_\F_small_airway_blockage}) confirm that the multiplicative factor is a meaningful way to express the relationship between the healthy \F, the airway resistance, and the observed \F respective to the data.
+In conclusion, these two visualisations (figure \ref{fig:factor_fev1_lung_damage} and figure \ref{fig:factor_fev1_small_airway_blockage}) confirm that the multiplicative factor is a meaningful way to express the relationship between the healthy \F, the airway resistance, and the observed \F respective to the data.
 
 \section{Conditional probability tables}
-In section X and X, I have defined and validated the graphical representation of the \F side of the model. I will now explain how I encoded the medical knowledge into the three factors  from Figure \ref{graph:\F_side}, namely: the healthy \F prior (F1), the multiplicative factor (F2), the noise factor (F3). As explained in section X, I decided to discretise every variable by a sum of piecewise uniformly distributed random variables. Consequently, the factor functions are represented conditional probability tables (CPTs) instead of continuous conditional probability density functions. The dimensionality of a CPT is given by the cardinality of the variables connected to the factor. 
+In section X and X, I have defined and validated the graphical representation of the \F side of the model. I will now explain how I encoded the medical knowledge into the three factors  from Figure \ref{graph:fev1_side}, namely: the healthy \F prior (F1), the multiplicative factor (F2), the noise factor (F3). As explained in section X, I decided to discretise every variable by a sum of piecewise uniformly distributed random variables. Consequently, the factor functions are represented conditional probability tables (CPTs) instead of continuous conditional probability density functions. The dimensionality of a CPT is given by the cardinality of the variables connected to the factor. 
 
 \subsection{Modelling an individual's healthy \F prior}
 To compute the healthy \F prior, I implemented the reference equations for normal lung function introduced in section X.  It was more difficult than expected because the paper does not explicitly states how to quantify the uncertainty around the \F value predicted by their fit, which I need to derive a probability distribution for that \F value.  I contacted the Global Lung Initiative (GLI) to get additional documentation and will hereby how I established a mapping that assigns a probability to any given healthy \F value.
@@ -253,7 +253,7 @@ Figure X shows an example of a healthy \F given a specific individual.
 
 \subsection{Multiplicative factor to encode P( \F | healthy \F, airway resistance)}
 % TODO: Add to introduction. Convolutions are to functions what additions and multiplications are to scalars: mathematical operators. 
-The factor F2 on figure \ref{graph:\F_side} is a reducing factor whereby the healthy \F gets multiplied by the airway resistance to produce the underlying \F.
+The factor F2 on figure \ref{graph:fev1_side} is a reducing factor whereby the healthy \F gets multiplied by the airway resistance to produce the underlying \F.
 \begin{equation}
 uecF\!EV_1 = H\!F\!EV_1\ (1-A\!R)
 \end{equation}
@@ -350,17 +350,17 @@ I used the same optimal parameters as in cite X to apply the algorithm: a window
 To build the factor F3 (Figure X), I have to estimate $P(ecF\!EV_1 | uF\!EV_1)$. I assumed that the variability was the same for every individual. 
 From the introductory section about noise modelling (section X), the technical noise from the measurement device is typically additive and gaussian. A simple factor would therefore be to use an additive gaussian noise, centered on the underlying \F and with the standard deviation taken as the median over the population (on the boxplot from Figure X). 
 
-However, the previously-mentioned signal-dependent variability related to the natural biological variations is typically multiplicative (section X). I therefore produced a plot of the effort corrected \F versus the individual-level variability to evaluate how wrong the additive noise hypothesis would be. To extract the trend from the set of datapoints, I grouped the ec\F in three categories with a balanced amount of individuals per category, see Figure \ref{fig:\F_noise_model} A. If the additive noise hypothesis was a perfect predictor of the variability, then the categories would have the same median values. Since it is not the case I decided to add a multiplicative dimension to the model of the \F variability such that:
+However, the previously-mentioned signal-dependent variability related to the natural biological variations is typically multiplicative (section X). I therefore produced a plot of the effort corrected \F versus the individual-level variability to evaluate how wrong the additive noise hypothesis would be. To extract the trend from the set of datapoints, I grouped the ec\F in three categories with a balanced amount of individuals per category, see Figure \ref{fig:fev1_noise_model} A. If the additive noise hypothesis was a perfect predictor of the variability, then the categories would have the same median values. Since it is not the case I decided to add a multiplicative dimension to the model of the \F variability such that:
 \begin{equation}
     ecF\!EV_1 \sim \mathcal{N}(uF\!EV_1, a\ uF\!EV_1 + b)
 \end{equation}
-I performed a regression with least squares to evaluate the best matching parameters a and b, see Figure \ref{fig:\F_noise_model} B. 
+I performed a regression with least squares to evaluate the best matching parameters a and b, see Figure \ref{fig:fev1_noise_model} B. 
 
 \begin{figure}[!h]
     \caption{Variability model to encode $P(ecF\!EV_1 | uF\!EV_1)$.  A shows that the individual-level std of the ec\F residuals' increases with ec\F. This justifies using a gaussian model with an additive and a multiplicative component: $\mathcal{N}(uF\!EV_1, a\ uF\!EV_1 + b)$. B shows the result of the regression going through the mid-bin of each group, hereby setting the gaussian noise parameters to a=0.00510174 and b=0.03032977}
     \centering
-    \includegraphics[width=50mm]{Chapter1/Figs/\F_noise_model.png}
-    \label{fig:\F_noise_model}
+    \includegraphics[width=50mm]{Chapter1/Figs/fev1_noise_model.png}
+    \label{fig:fev1_noise_model}
 \end{figure}
 
 % Challenge the implementation of the noise model because I could also have learnt an asymmetric noise model by including the outliers down instead of building a noise model with two components (ec\F hen uec\F)
@@ -368,7 +368,7 @@ I performed a regression with least squares to evaluate the best matching parame
 \section{Characterising the health of the respiratory zone with oxygen saturation}
 
 % Sum up the challenge of monitoring lung health with o2sat
-Oxygen saturation is routinely employed across a wide range of respiratory conditions, especially in case of hypoxemia that might require an immediate oxygen therapy (section X). It is however not generally used to monitor mild or moderate symptoms in lung health. Healthy lungs can tolerate considerable damage before oxygen starts to decline which means that oxygen saturation is a strong indicator of severe lung damage but it is a weak indicator of mild or moderate lung damage. As explained in section X, this redundancy is due to the nonlinearity between PaO2 and SpO2 in the hemoglobin dissociation curve and to the biological mechanisms that compensate for reduction in PaO2. Unlike \F for the conducting zone, selecting oxygen saturation to assess damage in the respiratory zone was therefore a not an obvious choice. Nevertheless, it is important to not dismiss it if there might be value in using it.  For example, the patterns observed in Figure \ref{fig:o2_\F_exacerbated} are encouraging as they suggest that subtle fluctuations amidst the variability in oxygen saturation measurements (the normal range is 95-100\%), ignored in clinical practice, can be identified. Additionally, unlike DLCO test and PaO2 measurements that would provide a more direct assessment of the lung's ability to exchange gas, oxygen saturation is a non-invasive measure, requiring a small and inexpensive electronic device (section X). It therefore respects the project's aim to model lung health with easily collectible data.
+Oxygen saturation is routinely employed across a wide range of respiratory conditions, especially in case of hypoxemia that might require an immediate oxygen therapy (section X). It is however not generally used to monitor mild or moderate symptoms in lung health. Healthy lungs can tolerate considerable damage before oxygen starts to decline which means that oxygen saturation is a strong indicator of severe lung damage but it is a weak indicator of mild or moderate lung damage. As explained in section X, this redundancy is due to the nonlinearity between PaO2 and SpO2 in the hemoglobin dissociation curve and to the biological mechanisms that compensate for reduction in PaO2. Unlike \F for the conducting zone, selecting oxygen saturation to assess damage in the respiratory zone was therefore a not an obvious choice. Nevertheless, it is important to not dismiss it if there might be value in using it.  For example, the patterns observed in Figure \ref{fig:o2_fev1_exacerbated} are encouraging as they suggest that subtle fluctuations amidst the variability in oxygen saturation measurements (the normal range is 95-100\%), ignored in clinical practice, can be identified. Additionally, unlike DLCO test and PaO2 measurements that would provide a more direct assessment of the lung's ability to exchange gas, oxygen saturation is a non-invasive measure, requiring a small and inexpensive electronic device (section X). It therefore respects the project's aim to model lung health with easily collectible data.
 
 I have faced three main challenges in this section. The first one was to separate the normal from pathological variability in oxygen saturation. The second challenge was to identify whether a drop in oxygen saturation is caused by an issue in the conducting zone, the respiratory zone, or both. The third challenge was to understand if it is possible to identify moderate lung damage using the second order signals in the oxygen saturation data. Resolving the third challenge would be interesting because subtle signals in oxygen saturation have not been explored in literature.
 
@@ -399,12 +399,12 @@ As a consequence of the high redundancy in the lungs (section X), any drop from 
 \paragraph{Inactive alveoli to characterise the health of respiratory zone}
 Further drop from O2SatFFA must be due to causes other than airway resistance, be it i) any form of alveoli blockage or damage that impairs gas exchanges (e.g. mucus blockage, reduction in diffusion through the membrane due to thickened blood-gaz barrier, damage due to chronic inflammation), or ii) remaining small airway blockage not captured by the airway resistance. The later is related to the fact that only significant damage in the small airways is reflected by \F, as seen on the airway generation contribution to airway resistance curve in section X.  I introduced the inactive alveoli (IA) variable, which represents the proportion of drop in oxygen saturation that is caused by the two above-mentioned sources of oxygen transport impairment.
 
-To conclude, I extended the graphical representation of the model from figure \ref{graph:\F_side} with the variables introduced in this section, as can be seen on figure \ref{graph:o2_side}. I also added the factors to connect the variables. F4 represents the prior for the healthy oxygen saturation (HO2Sat). F5 and F6 are reducing factors: they quantify the amount healthy \OXSat gets reduced, firstly by airway damage and secondly by alveoli damage (and remaining small airway blockage not reflected by the airway resistance), to obtain the \OXSat measurement. O2SatFFA is the intermediary variable which accounts for the damage in the airways but not in the alveoli. After the two step reduction we obtain the uO2Sat. The noise model simulates the technical noise and the daily biological variations that explain why for a single uO2Sat value, multiple O2Sat values can be measured with an oximetry test. I will justify the choice of the factor functions in the next section.
+To conclude, I extended the graphical representation of the model from figure \ref{graph:fev1_side} with the variables introduced in this section, as can be seen on figure \ref{graph:o2_side}. I also added the factors to connect the variables. F4 represents the prior for the healthy oxygen saturation (HO2Sat). F5 and F6 are reducing factors: they quantify the amount healthy \OXSat gets reduced, firstly by airway damage and secondly by alveoli damage (and remaining small airway blockage not reflected by the airway resistance), to obtain the \OXSat measurement. O2SatFFA is the intermediary variable which accounts for the damage in the airways but not in the alveoli. After the two step reduction we obtain the uO2Sat. The noise model simulates the technical noise and the daily biological variations that explain why for a single uO2Sat value, multiple O2Sat values can be measured with an oximetry test. I will justify the choice of the factor functions in the next section.
 
 \begin{figure}[!h]
     \centering
     \includegraphics[width=100mm]{Chapter1/Figs/o2_sat_model_structure.png}
-    \caption{Model structure with the \F and the oxygen saturation side (extension from \ref{graph:\F_side}}
+    \caption{Model structure with the \F and the oxygen saturation side (extension from \ref{graph:fev1_side}}
     \label{graph:o2_side}
 \end{figure}
 
@@ -421,7 +421,7 @@ I set hypotheses for how small airway blockage, represented by exacerbated label
 \begin{itemize}
     \item HP1.1: O2 is affected during exacerbations, at least for some individuals or exacerbations.
 \item HP1.2: O2 is affected during the onset of an exacerbation but is corrected for by the body even before the exacerbation is resolved, for example on a time scale of a week or faster, at least for some individuals or exacerbations.
-\item HP1.3: O2 is unaffected by exacerbations. This hypothesis can already be disproved, at least at population-level, because of the distribution shift on the SpO2 density plot from Figure \ref{fig:o2_\F_exacerbated}.
+\item HP1.3: O2 is unaffected by exacerbations. This hypothesis can already be disproved, at least at population-level, because of the distribution shift on the SpO2 density plot from Figure \ref{fig:o2_fev1_exacerbated}.
 \end{itemize}
 
 I also set hypotheses for how long term lung damage, represented by the signal during stable periods, affects oxygen saturation:
@@ -457,7 +457,7 @@ On Figure \ref{fig:o2sat_boxplots_smartcare}, there are three categories of indi
     \item Individuals with a higher mean oxygen saturation during an exacerbated period might be due to true positives and false positives miss-classifications by the predictive algorithm (as shown in Figure 4.5 of the thesis report cite X).
 \end{enumerate}
 
-The impact of long-term damage on oxygen saturation can be assessed by analysing the trend in predicted SpO2 during stable periods (blue boxes). Looking at the top envelope of the data created by joining the boxes' top values, oxygen saturation decreases at population-level when going from right to left: on the right all blue boxes are above the green line, whereas on the left all the boxes are below it. I have already mentioned this effect in the analysis of figure \ref{fig:o2_\F_exacerbated} in section X. This suggests that the long term lung damage has an impact on oxygen saturation, i.e.  HP2.1 would valid while HP2.2 could be rejected.
+The impact of long-term damage on oxygen saturation can be assessed by analysing the trend in predicted SpO2 during stable periods (blue boxes). Looking at the top envelope of the data created by joining the boxes' top values, oxygen saturation decreases at population-level when going from right to left: on the right all blue boxes are above the green line, whereas on the left all the boxes are below it. I have already mentioned this effect in the analysis of figure \ref{fig:o2_fev1_exacerbated} in section X. This suggests that the long term lung damage has an impact on oxygen saturation, i.e.  HP2.1 would valid while HP2.2 could be rejected.
 
 \paragraph{Validating that airway resistance and inactive alveoli have an impact on oxygen saturation}
 I have hereby confirmed that oxygen saturation is sensitive to small airway blockage as well as long-term lung damage. I then aimed to challenge the factors structure by looking at the data and test the third family of hypotheses. 
