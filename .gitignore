@@ -13,6 +13,8 @@
 # LateX files
 *.aux
 thesis.bbl
+thesis.fls
+thesis.fdb_latexmk
 thesis.blg
 thesis.idx
 thesis.ilg
@@ -25,3 +27,4 @@ thesis.nls
 thesis.out
 thesis.ps
 thesis.toc
+thesis.synctex.gz

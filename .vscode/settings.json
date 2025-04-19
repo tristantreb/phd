@@ -1,6 +1,17 @@
 {
-  "python.formatting.provider": "black",
-  "python.analysis.extraPaths": [
-    "./src/data"
-  ]
+    "python.formatting.provider": "black",
+    "python.analysis.extraPaths": [
+        "./src/data"
+    ],
+    "[latex]": {
+        "editor.defaultFormatter": "James-Yu.latex-workshop",
+        "editor.formatOnSave": false,
+        "editor.formatOnPaste": false
+    },
+    "latex-workshop.latexFormatter.engine": "latexindent",
+    "latex-workshop.latexFormatter.args": [
+        "-m",
+        "-l=+M"
+    ],
+    "latex-workshop.latex.autoBuild.run": "never"
 }
