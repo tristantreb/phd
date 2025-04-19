@@ -561,7 +561,7 @@ supported!}
     BoldFont = *-bold,
     ItalicFont = *-italic,
     BoldItalicFont = *-bolditalic,
-  ]{xits}
+  ]{XITS}
   
   \setmathfont[ 
     Extension = .otf,

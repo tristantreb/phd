@@ -13,5 +13,9 @@
         "-m",
         "-l=+M"
     ],
-    "latex-workshop.latex.autoBuild.run": "never"
+    "latex-workshop.latex.autoBuild.run": "never",
+    "latex-workshop.latex.build.forceRecipeUsage": false,
+    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.synctex.afterBuild.enabled": true,
+    "latex-workshop.synctex.synctexjs.enabled": true
 }
