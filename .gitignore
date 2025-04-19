@@ -9,3 +9,19 @@
 
 # Jupyter notebook caches
 *.pyc
+
+# LateX files
+*.aux
+thesis.bbl
+thesis.blg
+thesis.idx
+thesis.ilg
+thesis.ind
+thesis.lof
+thesis.log
+thesis.lot
+thesis.nlo
+thesis.nls
+thesis.out
+thesis.ps
+thesis.toc
