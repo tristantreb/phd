@@ -438,7 +438,8 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
 
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
             # If dist_AR contains at least one nan then print
-            if np.isnan
+            if np.isnan(dist_AR).any():
+                print(f"Warning - dist_AR contains nan for ID {id}, row {n}, h {h}")
             AR_given_M_and_past_D[n, :, h] = dist_AR
             res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
             res_dict["ecFEF2575%ecFEV1"][n, :, h] = dist_ecFEF2575prctecFEV1
