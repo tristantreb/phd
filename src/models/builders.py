@@ -1329,6 +1329,88 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
     )
 
 
+def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
+    n,
+    height,
+    age,
+    sex,
+    ar_prior="uniform",
+    ar_change_cpt_suffix="",
+    ecfev1_noise_model_suffix="_std0.7",
+    light=False,
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+
+    Must have a corresponding AR change CPT
+    Musn't necessarily use the cutset conditioning
+
+    There is one single AR variable shared across time points
+    """
+
+    if light:
+        (
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            _,
+        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        )
+    else:
+        (
+            HFEV1,
+            uecFEV1,
+            ecFEV1,
+            AR,
+            ecFEF2575prctecFEV1,
+            _,
+        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        )
+
+    (
+        model,
+        _,
+        _,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+    ) = graph_builders.fev1_fef2575_noise_n_days_model_shared_ar(
+        n,
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        ecFEF2575prctecFEV1,
+        check_model=check_model,
+    )
+    # inf_alg = apply_bayes_net_bp(model)
+    return (
+        model,
+        # inf_alg,
+        HFEV1,
+        AR,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
 def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
     n,
     height,

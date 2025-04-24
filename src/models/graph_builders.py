@@ -1284,6 +1284,96 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
     )
 
 
+def fev1_fef2575_noise_n_days_model_shared_ar(
+    n,
+    HFEV1,
+    uecFEV1,
+    ecFEV1,
+    AR,
+    ecFEF2575prctecFEV1,
+    check_model=True,
+):
+    """
+    No direct link between AR and IA
+
+    The AR change factor is fixed to the cpt[:, :, ar_change_cpt_state] for all days
+
+    There is one single AR variable shared across time points
+    """
+
+    def create_var_for_day(var, day):
+        var_ = deepcopy(var)
+        var_.name = f"{var.name} day {day}"
+        return var_
+
+    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
+    ecFEF2575prctecFEV1_vars = [
+        create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
+    ]
+
+    uecFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR) for uecFEV1_ in uecFEV1_vars
+    ]
+    ecFEV1_cpts = [
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
+        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+    ]
+    ecFEF2575prctecFEV1_cpts = [
+        build_pgmpy_ecfef2575prctecfev1_cpt(
+            ecFEF2575prctecFEV1_,
+            AR,
+        )
+        for ecFEF2575prctecFEV1_ in ecFEF2575prctecFEV1_vars
+    ]
+
+    # Shared priors
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+    ar_prior = build_pgmpy_ar_prior(AR)
+
+    # Make sure the days are at the same location in all variable lists
+    for i in range(1, n + 1):
+        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
+        assert (
+            ecFEF2575prctecFEV1_vars[i - 1].name
+            == f"{ecFEF2575prctecFEV1.name} day {i}"
+        )
+
+    network = []
+    # HFEV1 and HO2Sat and AR are shared between days
+    for i in range(0, n):
+        network += [
+            (HFEV1.name, uecFEV1_vars[i].name),
+            (AR.name, uecFEV1_vars[i].name),
+            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (AR.name, ecFEF2575prctecFEV1_vars[i].name),
+        ]
+
+    model = BayesianNetwork(network)
+
+    model.add_cpds(
+        # Shared
+        prior_hfev1,
+        # Days priors and CPTs
+        ar_prior,
+        *uecFEV1_cpts,
+        *ecFEV1_cpts,
+        *ecFEF2575prctecFEV1_cpts,
+    )
+
+    if check_model:
+        model.check_model()
+    return (
+        model,
+        HFEV1,
+        AR,
+        uecFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+    )
+
+
 def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     n,
     HFEV1,
@@ -1327,7 +1417,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     # For other days the cpt depends the number of days elapsed
     # For testing, n days elapsed = 1
     for i in range(1, n):
-        print(f"{AR_vars[i].name}, cpt: {AR_vars[i].change_cpt.shape}")
+        # print(f"{AR_vars[i].name}, cpt: {AR_vars[i].change_cpt.shape}")
         AR_priors.append(
             TabularCPD(
                 variable=AR_vars[i].name,
