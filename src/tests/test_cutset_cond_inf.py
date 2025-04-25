@@ -12,9 +12,10 @@ def assert_low_element_wise_max_diff(v1, v2, tol=1e-10):
     assert np.max(np.abs(v1 - v2)) < tol
 
 
-def test_3_days_model_with_cutset_cond_give_same_posteriors_as_var_elim():
+def test_cutset_cond_gives_same_posteriors_as_var_elim():
     """
     End to end test for light model with only fev1 side
+    3 days model
     """
     # Data
     df_mock = data.get_mock_data()
@@ -114,7 +115,17 @@ def test_3_days_model_with_cutset_cond_give_same_posteriors_as_var_elim():
 
 
 def plot_diff(
-    HFEV1, AR, hfev1_cc, hfev1_ve, ar0_cc, ar0_ve, ar1_cc, ar1_ve, ar2_cc, ar2_ve
+    HFEV1,
+    AR,
+    hfev1_cc,
+    hfev1_ve,
+    ar0_cc,
+    ar0_ve,
+    ar1_cc,
+    ar1_ve,
+    ar2_cc,
+    ar2_ve,
+    title_suffix="",
 ):
     fig = make_subplots(rows=4, cols=1, vertical_spacing=0.13)
     # Add HFEV1
@@ -166,12 +177,12 @@ def plot_diff(
     fig.update_xaxes(title_font=dict(size=12), title_standoff=7)
 
     # Hide legend
-    title = "Cutset conditioning (red) vs variable elimination (blue)"
+    title = f"Cutset conditioning (red) vs variable elimination (blue)\n{title_suffix}"
     fig.update_layout(showlegend=False, height=550, width=800, title=title)
     fig.show()
 
 
-def test_3_days_model_with_cutset_cond_provide_same_p_s_given_d_as_var_elim():
+def test_cutset_cond_gives_same_p_S_given_D_as_var_elim():
     df_mock = data.get_mock_data()
     height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
     n_days = df_mock.shape[0]
@@ -240,11 +251,8 @@ def test_3_days_model_with_cutset_cond_provide_same_p_s_given_d_as_var_elim():
     assert_low_element_wise_max_diff(p_S_given_D, s_ve)
 
 
-def test_2_days_model_with_cutset_cond_with_identical_and_changing_fev1():
+def test_cutset_cond_compare_p_S_given_D_with_different_fev1_records_and_AR_change_factors():
     """
-    Test that the custom algorithm provides different P(D|S) for identical and changing fev1 over two days
-    Use two S: one that is identity (simulating one single AR across time), one that is changing (allowing different ARs)
-
     - P(D=same fev1|S=identity) > P(D=changing fev1|S=identity)
     - P(D=changing fev1|S=broad) > P(D=changing fev1|S=identity)
     - P(D|S=identity) must never be equal to P(D|S=broad)
@@ -321,97 +329,101 @@ def test_2_days_model_with_cutset_cond_with_identical_and_changing_fev1():
     assert log_p_S_given_D["si"] != log_p_S_given_D["sb"]
 
 
-def test_using_identity_AR_change_factor_against_single_AR_across_time_points_gives_same_results():
+# def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_nonchanging_fev1_records():
+
+def test_identity_AR_change_factor_against_single_AR_across_time_points_gives_same_posteriors():
     """
-    Test that using an identity AR change factor is equivalent to using a single AR across time points
+    3 days model with 1/ identical FEV1 records, 2/ step change in FEV1 records
     """
-    # Data
-    df_mock = data.get_mock_data()
-    height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
-    n_days = df_mock.shape[0]
+    for fev1_mode in ["identical", "changing"]:
+        df_mock = data.get_mock_data(fev1_mode)
+        height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
+        n_days = df_mock.shape[0]
+        assert n_days == 3
 
-    # Model parameters
-    ar_prior = "uniform"
-    ar_change_cpt_suffix = "_shape_factor_identity"
-    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+        # Model parameters
+        ar_prior = "uniform"
+        ar_change_cpt_suffix = "_shape_factor_identity"
+        ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
 
-    # Load variable eliminiation
-    (
-        model,
-        HFEV1,
-        AR,
-        uecFEV1_vars,
-        ecFEV1_vars,
-        ecFEF2575prctecFEV1_vars,
-    ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
-        n_days,
-        height,
-        age,
-        sex,
-        ar_prior,
-        ar_change_cpt_suffix,
-        ecfev1_noise_model_suffix,
-        light=False,
-    )
-    df_mock = data.add_idx_obs_cols(
-        df_mock, ecFEV1_vars[0], ecFEF2575prctecFEV1_vars[0]
-    )
-    var_elim = VariableElimination(model)
+        # Load variable eliminiation
+        (
+            model,
+            HFEV1,
+            AR,
+            uecFEV1_vars,
+            ecFEV1_vars,
+            ecFEF2575prctecFEV1_vars,
+        ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
+            n_days,
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix,
+            light=False,
+        )
+        df_mock = data.add_idx_obs_cols(
+            df_mock, ecFEV1_vars[0], ecFEF2575prctecFEV1_vars[0]
+        )
+        var_elim = VariableElimination(model)
 
-    # Run variable elimination
-    evidence_dict = {}
-    for i in range(n_days):
-        evidence_dict[ecFEV1_vars[i].name] = df_mock.loc[i, "idx ecFEV1 (L)"]
-        evidence_dict[ecFEF2575prctecFEV1_vars[i].name] = df_mock.loc[
-            i, "idx ecFEF2575%ecFEV1"
-        ]
+        # Run variable elimination
+        evidence_dict = {}
+        for i in range(n_days):
+            evidence_dict[ecFEV1_vars[i].name] = df_mock.loc[i, "idx ecFEV1 (L)"]
+            evidence_dict[ecFEF2575prctecFEV1_vars[i].name] = df_mock.loc[
+                i, "idx ecFEF2575%ecFEV1"
+            ]
 
-    res_ve = var_elim.query(
-        variables=[AR.name, HFEV1.name],
-        evidence=evidence_dict,
-        joint=False,
-    )
-    hfev1_ve = res_ve[HFEV1.name].values
-    ar_ve = res_ve[AR.name].values
+        res_ve = var_elim.query(
+            variables=[AR.name, HFEV1.name],
+            evidence=evidence_dict,
+            joint=False,
+        )
+        hfev1_ve = res_ve[HFEV1.name].values
+        ar_ve = res_ve[AR.name].values
 
-    # Run custom model
-    (
-        fig,
-        p_M_given_D,
-        p_HFEV1_given_D,
-        log_p_D_given_M,
-        AR_given_M_and_D,
-        AR_given_M_and_all_D,
-        res_dict,
-    ) = cca_ar_change_noo2sat.run_long_noise_model_through_time(
-        df_mock,
-        ar_prior,
-        ar_change_cpt_suffix=ar_change_cpt_suffix,
-        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
-        light=False,
-        n_days_consec=3,
-    )
-    hfev1_cc = p_HFEV1_given_D
-    ar0_cc = AR_given_M_and_D[0, :]
-    ar1_cc = AR_given_M_and_D[1, :]
-    ar2_cc = AR_given_M_and_D[2, :]
+        # Run custom model
+        (
+            fig,
+            p_M_given_D,
+            p_HFEV1_given_D,
+            log_p_D_given_M,
+            AR_given_M_and_D,
+            AR_given_M_and_all_D,
+            res_dict,
+        ) = cca_ar_change_noo2sat.run_long_noise_model_through_time(
+            df_mock,
+            ar_prior,
+            ar_change_cpt_suffix=ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+            light=False,
+            n_days_consec=3,
+        )
+        hfev1_cc = p_HFEV1_given_D
+        ar0_cc = AR_given_M_and_D[0, :]
+        ar1_cc = AR_given_M_and_D[1, :]
+        ar2_cc = AR_given_M_and_D[2, :]
 
-    plot_diff(
-        HFEV1,
-        AR,
-        hfev1_cc,
-        hfev1_ve,
-        ar0_cc,
-        ar_ve,
-        ar1_cc,
-        ar_ve,
-        ar2_cc,
-        ar_ve,
-    )
+        plot_diff(
+            HFEV1,
+            AR,
+            hfev1_cc,
+            hfev1_ve,
+            ar0_cc,
+            ar_ve,
+            ar1_cc,
+            ar_ve,
+            ar2_cc,
+            ar_ve,
+            title_suffix=f"fev1_mode: {fev1_mode}",
+        )
 
-    assert_low_element_wise_max_diff(hfev1_cc, hfev1_ve)
-    assert_low_element_wise_max_diff(ar0_cc, ar_ve)
-    assert_low_element_wise_max_diff(ar1_cc, ar_ve)
-    assert_low_element_wise_max_diff(ar2_cc, ar_ve)
+        assert_low_element_wise_max_diff(hfev1_cc, hfev1_ve)
+        assert_low_element_wise_max_diff(ar0_cc, ar_ve)
+        assert_low_element_wise_max_diff(ar1_cc, ar_ve)
+        assert_low_element_wise_max_diff(ar2_cc, ar_ve)
 
     return None
