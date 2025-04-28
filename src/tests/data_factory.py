@@ -23,8 +23,16 @@ def get_mock_data(fev1_mode):
                 "Height": 180,
                 "Age": 35,
                 "Sex": "Male",
-                "ecFEV1": [1.8, 2.2, 4.2],
-                "ecFEF2575%ecFEV1": [12, 120, 150],
+                # VE against VE work
+                # "ecFEV1": [4.2, 2.2, 1.8],
+                # "ecFEF2575%ecFEV1": [90, 90, 90],
+                # VE against VE fails - 3rd day shifts right
+                # "ecFEV1": [2.2, 2.2, 4.2],
+                # "ecFEF2575%ecFEV1": [90, 90, 90],
+                # VE aganst VE fail - weird becasue almost right
+                "ecFEV1": [2.2, 2.2, 4.5],
+                "ecFEF2575%ecFEV1": [90, 90, 90],
+                # "ecFEF2575%ecFEV1": [12, 120, 150],
             }
         )
     df_mock["Date Recorded"] = pd.to_datetime(
