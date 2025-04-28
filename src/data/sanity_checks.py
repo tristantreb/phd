@@ -163,7 +163,7 @@ def drug_therapies(df):
 def data_types(df):
     for col in df.columns:
         match col:
-            case "ID" | "Sex" | "Date Recorded":
+            case "ID" | "Sex" | "Date Recorded" | "ID T5" | "ID T6" | "ID T7":
                 if df[col].dtype != np.dtype("O"):
                     logging.warning(
                         "Expected {col} to be of type object, got {df[col].dtype}"
