@@ -93,7 +93,7 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim():
     AR = AR_vars[0]
     AR.name = AR.name.split(" day")[0]
 
-    plot_diff(
+    plot_diff_3_days(
         HFEV1,
         AR_vars[0],
         "Variable elimination",
@@ -116,7 +116,7 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim():
     return None
 
 
-def plot_diff(
+def plot_diff_3_days(
     HFEV1,
     AR,
     series1_name,
@@ -183,6 +183,40 @@ def plot_diff(
     # Hide legend
     title = f"{series1_name} (blue) vs {series2_name} (red)<br>{title_suffix}"
     fig.update_layout(showlegend=False, height=550, width=800, title=title)
+    fig.show()
+
+
+def plot_diff_n_days(
+    HFEV1,
+    AR,
+    series1_name,
+    series2_name,
+    hfev1_1,
+    hfev1_2,
+    ars_1,
+    ars_2,
+    title_suffix="",
+):
+    fig = make_subplots(rows=len(ars_1) + 1, cols=1, vertical_spacing=0.13)
+    # Add series 1
+    ih.plot_histogram(fig, HFEV1, hfev1_1, HFEV1.a, HFEV1.b, 1, 1, annot=False)
+    for i, ar_1 in enumerate(ars_1):
+        ih.plot_histogram(fig, AR, ar_1, AR.a, AR.b, i + 2, 1, annot=False)
+
+    # Add series 2
+    ih.plot_histogram(fig, HFEV1, hfev1_2, HFEV1.a, HFEV1.b, 1, 1, title=HFEV1.name)
+    for i, ar_2 in enumerate(ars_2):
+        ih.plot_histogram(fig, AR, ar_2, AR.a, AR.b, i + 2, 1, annot=False)
+
+    for i in range(len(ars_1) + 1):
+        fig.data[i].marker.color = "#636EFA"
+        fig.data[i + len(ars_1) + 1].marker.color = "#EF553B"
+    # Reduce x axis title font size
+    fig.update_xaxes(title_font=dict(size=12), title_standoff=7)
+
+    # Hide legend
+    title = f"{series1_name} (blue) vs {series2_name} (red)<br>{title_suffix}"
+    fig.update_layout(showlegend=False, height=550, width=800, title=title, margin=dict(t=150))
     fig.show()
 
 
@@ -336,6 +370,10 @@ def test_cutset_cond_compare_p_S_given_D_with_different_fev1_records_and_AR_chan
 def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_nonchanging_fev1_records():
     """
     Since var elim is exact, this checks model implementation is correct
+
+    # Identical FEV1 records with identity AR change factor: same posteriors
+    # Identical FEV1 records with broad AR change factor: posteriors are slightly different because of edges truncations
+    # Changing FEV1 records with identity AR change factor: posteriors should be the same
     """
     for fev1_mode, ar_change_cpt_suffix in [
         ("changing", "_shape_factor_identity"),
@@ -429,7 +467,7 @@ def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_nonchanging_fev1_
         ar_ve_single_ar = res_ve_single_ar[AR.name].values
 
         # Run single AR model over 3 days with variable elimination
-        plot_diff(
+        plot_diff_3_days(
             HFEV1_n_ar,
             AR,
             "Variable elimination n ARs",
@@ -443,6 +481,151 @@ def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_nonchanging_fev1_
             ar2_ve_n_ar,
             ar_ve_single_ar,
             title_suffix=f"fev1_mode: {fev1_mode}, ar_change_cpt_suffix: {ar_change_cpt_suffix}",
+        )
+
+        assert_low_element_wise_max_diff(hfev1_ve_n_ar, hfev1_ve_single_ar)
+        assert_low_element_wise_max_diff(ar0_ve_n_ar, ar_ve_single_ar)
+        assert_low_element_wise_max_diff(ar1_ve_n_ar, ar_ve_single_ar)
+        assert_low_element_wise_max_diff(ar2_ve_n_ar, ar_ve_single_ar)
+
+
+def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_changing_fev1_records():
+    """
+    Since var elim is exact, this checks model implementation is correct
+    """
+    fev1_mode = "changing"
+    ar_change_cpt_suffix = "_shape_factor_identity"
+
+    n_days = 2
+    df_mock = data.get_data_df_template(n_days)
+    height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
+
+    measurements = {
+        # fails - weird because almost right
+        1: {
+            "ecFEV1": [2.2, 4.5],
+            "ecFEF2575%ecFEV1": [90, 90],
+        },
+        # fails - 2nd day shifts right
+        2: {
+            "ecFEV1": [2.2, 3.2],
+            "ecFEF2575%ecFEV1": [90, 90],
+        },
+        # works
+        3: {
+            "ecFEV1": [2.2, 2.2],
+            "ecFEF2575%ecFEV1": [90, 90],
+        },
+    }
+
+    for obs_idx in range(1, len(measurements) + 1):
+        print(f"measurements: {measurements[obs_idx]}")
+        df_mock["ecFEV1"] = measurements[obs_idx]["ecFEV1"]
+        df_mock["ecFEF2575%ecFEV1"] = measurements[obs_idx]["ecFEF2575%ecFEV1"]
+
+        # Model parameters
+        ar_prior = "uniform"
+        ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+
+        # Load n days model with variable elimination
+        (
+            model_n_ar,
+            HFEV1_n_ar,
+            AR_vars,
+            uecFEV1_vars,
+            ecFEV1_vars,
+            ecFEF2575prctecFEV1_vars,
+        ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
+            n_days,
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix,
+            light=False,
+        )
+
+        # Load single AR model over 3 days with variable elimination
+        (
+            model_single_ar,
+            HFEV1_single_ar,
+            AR,
+            uecFEV1_vars,
+            ecFEV1_vars,
+            ecFEF2575prctecFEV1_vars,
+        ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
+            n_days,
+            height,
+            age,
+            sex,
+            ar_prior,
+            ar_change_cpt_suffix,
+            ecfev1_noise_model_suffix,
+            light=False,
+        )
+
+        df_mock = data.add_idx_obs_cols(
+            df_mock, ecFEV1_vars[0], ecFEF2575prctecFEV1_vars[0]
+        )
+
+        var_elim_n_ar = VariableElimination(model_n_ar)
+        var_elim_single_ar = VariableElimination(model_single_ar)
+
+        # Run variable elimination
+        evidence_dict = {}
+        for i in range(n_days):
+            evidence_dict[ecFEV1_vars[i].name] = df_mock.loc[i, "idx ecFEV1 (L)"]
+            evidence_dict[ecFEF2575prctecFEV1_vars[i].name] = df_mock.loc[
+                i, "idx ecFEF2575%ecFEV1"
+            ]
+
+        AR_vars_names = [v.name for v in AR_vars]
+
+        res_ve_n_ar = var_elim_n_ar.query(
+            variables=AR_vars_names + [HFEV1_n_ar.name],
+            evidence=evidence_dict,
+            joint=False,
+        )
+        res_ve_single_ar = var_elim_single_ar.query(
+            variables=[AR.name, HFEV1_single_ar.name],
+            evidence=evidence_dict,
+            joint=False,
+        )
+
+        hfev1_ve_n_ar = res_ve_n_ar[HFEV1_n_ar.name].values
+        ar_posteriors = [res_ve_n_ar[v.name].values for v in AR_vars]
+
+        hfev1_ve_single_ar = res_ve_single_ar[HFEV1_single_ar.name].values
+        ar_ve_single_ar = res_ve_single_ar[AR.name].values
+
+        # Proba of model given the data
+        # Get P(ecFEV1 | age, sex, height, ecFEF2575%ecFEV1)
+        day_idx = 1
+        # Remove var obs at day_idx from evidence dict
+        p_ecfev1_for_day_evidence = evidence_dict.copy()
+        p_ecfev1_for_day_evidence.pop(ecFEV1_vars[day_idx].name)
+
+        p_ecfev1_for_day = var_elim_n_ar.query(
+            variables=[ecFEV1_vars[day_idx].name],
+            evidence=p_ecfev1_for_day_evidence,
+            joint=False,
+        )
+        p_ecfev1_for_day = p_ecfev1_for_day[ecFEV1_vars[day_idx].name].values
+
+        p_obs_for_day = p_ecfev1_for_day[df_mock.loc[day_idx, "idx ecFEV1 (L)"]]
+
+        # Run single AR model over 3 days with variable elimination
+        plot_diff_n_days(
+            HFEV1_n_ar,
+            AR,
+            "Variable elimination n ARs",
+            "Variable elimination shared AR",
+            hfev1_ve_n_ar,
+            hfev1_ve_single_ar,
+            ar_posteriors,
+            [ar_ve_single_ar, ar_ve_single_ar],
+            title_suffix=f"fev1 mode: {fev1_mode}, ar change factor: {ar_change_cpt_suffix}<br>obs: {measurements[obs_idx]}<br>p({ecFEV1_vars[day_idx].name}|M) = {p_obs_for_day:.2e}",
         )
 
         # assert_low_element_wise_max_diff(hfev1_ve_n_ar, hfev1_ve_single_ar)
@@ -527,7 +710,7 @@ def test_identity_AR_change_factor_against_single_AR_across_time_points_gives_sa
         ar1_cc = AR_given_M_and_D[1, :]
         ar2_cc = AR_given_M_and_D[2, :]
 
-        plot_diff(
+        plot_diff_3_days(
             HFEV1,
             AR,
             "Variable elimination",
