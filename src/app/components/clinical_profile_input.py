@@ -1,7 +1,7 @@
 import dash_bootstrap_components as dbc
 from dash import html
 
-import src.app.assets.styles as styles
+import app.assets.styles as styles
 
 clinical_profile_box_style = {"width": "200px", "font-size": styles.font_size("L")}
 input_group_text_style = {"width": "105px", "font-size": styles.font_size("M")}

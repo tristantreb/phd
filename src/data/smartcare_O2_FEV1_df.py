@@ -1,9 +1,9 @@
 import pandas as pd
 
-import src.data.smartcare_measurements as smartcare_measurements
-import src.data.smartcare_patients as smartcare_patients
-import src.modelling_fev1.ec_smoothing as ec_smoothing
-import src.modelling_fev1.pred_fev1 as pred_fev1
+import data.smartcare_measurements as smartcare_measurements
+import data.smartcare_patients as smartcare_patients
+import modelling_fev1.ec_smoothing as ec_smoothing
+import modelling_fev1.pred_fev1 as pred_fev1
 
 datadir = "../../../../SmartCareData/"
 

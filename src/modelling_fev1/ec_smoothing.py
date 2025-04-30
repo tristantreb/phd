@@ -1,4 +1,4 @@
-import src.o2_fev1_analysis.smooth as smooth
+import o2_fev1_analysis.smooth as smooth
 
 
 def _effort_corrected_smoothing(df, col, scale, shift):

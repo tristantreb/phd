@@ -3,10 +3,10 @@ import time
 
 import numpy as np
 
-import src.inf_cutset_conditioning.cutset_cond_algs as cca
-import src.inf_cutset_conditioning.helpers as cutseth
-import src.models.builders as mb
-import src.models.helpers as mh
+import inf_cutset_conditioning.cutset_cond_algs as cca
+import inf_cutset_conditioning.helpers as cutseth
+import models.builders as mb
+import models.helpers as mh
 
 
 def run_long_noise_model_through_time(

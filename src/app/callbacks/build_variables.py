@@ -1,7 +1,7 @@
 from dash import Input, Output
 
-import src.models.helpers as mh
-import src.models.var_builders as var_builders
+import models.helpers as mh
+import models.var_builders as var_builders
 
 
 def build_variables_callback(app):

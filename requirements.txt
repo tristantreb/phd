@@ -11,3 +11,4 @@ statsmodels>=0.13
 tqdm>=4.64
 joblib>=1.2
 opt_einsum>=3.3
+# -e git+ssh://git@github.com/tristantreb/phd.git@d46d38fc8fb52e363a14657f39e0f25b9e7abbe1#egg=Lung_Heatlh_Model

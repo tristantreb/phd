@@ -1,4 +1,4 @@
-import src.models.helpers as mh
+import models.helpers as mh
 
 
 def calc_cpt(UO2Sat: mh.VariableNode, O2SatFFA: mh.VariableNode, IA: mh.VariableNode):

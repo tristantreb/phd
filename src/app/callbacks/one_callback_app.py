@@ -5,14 +5,14 @@ import plotly.graph_objects as go
 from dash import Input, Output
 from plotly.subplots import make_subplots
 
-import src.app.assets.styles as s
-import src.inference.helpers as ih
-import src.modelling_o2.helpers as o2h
-import src.modelling_o2.ia as ia
-import src.models.builders as mb
-import src.models.graph_builders as graph_builders
-import src.models.var_builders as var_builders
-from src.inference.inf_algs import apply_factor_graph_bp
+import app.assets.styles as s
+import inference.helpers as ih
+import modelling_o2.helpers as o2h
+import modelling_o2.ia as ia
+import models.builders as mb
+import models.graph_builders as graph_builders
+import models.var_builders as var_builders
+from inference.inf_algs import apply_factor_graph_bp
 
 
 def build_fev1_o2sat_with_factor_graph(app):
@@ -568,7 +568,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         # ecfev1_noise_model_cpt_suffix = "_std_0.068"
         ecfev1_noise_model_cpt_suffix = "_std_add_mult_ecfev1"
 
-        ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise"
+        ar_fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
 
         (
             _,
@@ -929,6 +929,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             fef2575_text,
         )
 
+
 def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
     @app.callback(
         Output("lung-graph", "figure"),
@@ -977,7 +978,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
         # ecfev1_noise_model_cpt_suffix = "_std_0.068_log"
         # ecfev1_noise_model_cpt_suffix = "_std_add_mult"
 
-        ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise"
+        ar_fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
 
         (
             _,
@@ -1338,6 +1339,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
             fig_fef2575,
             fef2575_text,
         )
+
 
 def build_fev1_fef2575_o2sat_with_factor_graph_light(app):
     @app.callback(

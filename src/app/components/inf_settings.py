@@ -1,8 +1,8 @@
 import dash_bootstrap_components as dbc
 from dash import html
 
-import src.app.assets.styles as styles
-from src.models.helpers import name_to_abbr_dict
+import app.assets.styles as styles
+from models.helpers import name_to_abbr_dict
 
 font_size = styles.font_size("M")
 select_style = {"font-size": font_size}
@@ -85,7 +85,7 @@ priors_settings_layout = html.Div(
                         {
                             "label": "breathe (2 days model, ecFEV1, ecFEF25-75, add mult noise)",
                             "value": "breathe (2 days model, ecFEV1, ecFEF25-75, add mult noise)",
-                        }
+                        },
                     ],
                     value="uniform",
                     style=select_style,

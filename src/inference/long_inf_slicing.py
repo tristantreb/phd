@@ -5,10 +5,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import src.data.helpers as dh
-import src.inference.helpers as ih
-import src.models.cpts.helpers as cpth
-import src.models.helpers as mh
+import data.helpers as dh
+import inference.helpers as ih
+import models.cpts.helpers as cpth
+import models.helpers as mh
 from pgmpy.factors.discrete import TabularCPD
 
 plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"

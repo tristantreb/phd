@@ -1,6 +1,6 @@
 from scipy.stats import norm
 
-import src.modelling_fev1.gli_models_helpers as glih
+import modelling_fev1.gli_models_helpers as glih
 
 
 def calc_hfef2575_prior(hfef2575_bins, height, age, sex):

@@ -4,11 +4,11 @@ from functools import reduce
 
 import pandas as pd
 
-import src.data.helpers as dh
-import src.data.sanity_checks as sanity_checks
-import src.modelling_fev1.ec_smoothing as ec_smoothing
-import src.modelling_fev1.pred_fev1 as pred_fev1
-import src.modelling_o2.ho2sat as ho2sat
+import data.helpers as dh
+import data.sanity_checks as sanity_checks
+import modelling_fev1.ec_smoothing as ec_smoothing
+import modelling_fev1.pred_fev1 as pred_fev1
+import modelling_o2.ho2sat as ho2sat
 
 
 def load_meas_from_excel(

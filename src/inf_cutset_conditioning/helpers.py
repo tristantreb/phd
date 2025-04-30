@@ -1,4 +1,4 @@
-import src.models.helpers as mh
+import models.helpers as mh
 from pgmpy.factors.discrete import TabularCPD
 
 

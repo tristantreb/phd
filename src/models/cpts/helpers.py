@@ -3,9 +3,9 @@ from typing import List
 import numpy as np
 from plotly.subplots import make_subplots
 
-import src.data.helpers as dh
-import src.inference.helpers as ih
-import src.models.helpers as mh
+import data.helpers as dh
+import inference.helpers as ih
+import models.helpers as mh
 
 
 def get_cpt(vars: List[mh.VariableNode | mh.DiscreteVariableNode], suffix=None):

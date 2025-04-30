@@ -7,11 +7,10 @@ import os
 import dash_bootstrap_components as dbc
 from dash import Dash, dcc, html
 
-from src.app.callbacks.build_model_and_infer import model_and_inference_callback
-from src.app.callbacks.build_variables import build_variables_with_cf_callback
-from src.app.components.sliders import fev1_slider_layout
-from src.app.components.clinical_profile_input import clinical_profile_input_layout
-from src.app.components.sliders import O2Sat_slider_layout, fev1_slider_layout
+from app.callbacks.build_model_and_infer import model_and_inference_callback
+from app.callbacks.build_variables import build_variables_with_cf_callback
+from app.components.clinical_profile_input import clinical_profile_input_layout
+from app.components.sliders import O2Sat_slider_layout, fev1_slider_layout
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error

@@ -3,10 +3,10 @@ import os
 import dash_bootstrap_components as dbc
 from dash import Dash, dcc, html
 
-import src.app.assets.styles as s
-import src.app.components.sliders as sliders
-from src.app.callbacks.one_callback_app import build_fev1_o2sat_with_factor_graph
-from src.app.components.clinical_profile_input import clinical_profile_input_layout
+import app.assets.styles as s
+import app.components.sliders as sliders
+from app.callbacks.one_callback_app import build_fev1_o2sat_with_factor_graph
+from app.components.clinical_profile_input import clinical_profile_input_layout
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error

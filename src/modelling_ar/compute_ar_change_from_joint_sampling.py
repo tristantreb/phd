@@ -8,9 +8,9 @@ import concurrent.futures
 import numpy as np
 import pandas as pd
 
-import src.data.breathe_data as bd
-import src.data.helpers as dh 
-import src.modelling_ar.AR_joint_sampling as model_ar
+import data.breathe_data as bd
+import data.helpers as dh
+import modelling_ar.AR_joint_sampling as model_ar
 
 df_obs = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
@@ -52,8 +52,8 @@ def get_ar_shift_with_joint_sampling_for_ID(df_for_ID, max_offset=3):
             day_1 = df_two_days.loc[0, "Date Recorded"]
             day_2 = df_two_days.loc[1, "Date Recorded"]
 
-            ar_day1_dist, ar_day1_sample, ar_day2_dist, ar_day2_sample = model_ar.sample_jointly_from_AR(
-                df_two_days, day_1, day_2, debug=False
+            ar_day1_dist, ar_day1_sample, ar_day2_dist, ar_day2_sample = (
+                model_ar.sample_jointly_from_AR(df_two_days, day_1, day_2, debug=False)
             )
             ar_shift = ar_day2_sample - ar_day1_sample
             days_elapsed = (day_2 - day_1).days

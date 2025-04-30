@@ -7,8 +7,8 @@ from plotly.subplots import make_subplots
 from scipy.optimize import minimize
 from scipy.stats import norm
 
-import src.data.helpers as dh
-import src.models.helpers as mh
+import data.helpers as dh
+import models.helpers as mh
 
 
 def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col, marginals=False):
@@ -85,7 +85,9 @@ def calc_plot_cpt_ecFEF2575prctecFEV1_given_AR(
             print(f"idx: {idx}, midbin: {midbin} - j: {j}, z1: {z1}, z2: {z2}")
             # Integrate gaussian over bin
             p = integrate.quad(
-                lambda x: norm.pdf(x, loc=df_f3.iloc[idx]["mean"], scale=df_f3.iloc[idx]["std"]),
+                lambda x: norm.pdf(
+                    x, loc=df_f3.iloc[idx]["mean"], scale=df_f3.iloc[idx]["std"]
+                ),
                 z1,
                 z2,
             )[0]

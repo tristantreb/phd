@@ -1,7 +1,7 @@
 import numpy as np
 
-import src.inference.long_inf_slicing as slicing
-import src.models.builders as mb
+import inference.long_inf_slicing as slicing
+import models.builders as mb
 
 
 def sample_jointly_from_AR(df_two_days, date_1, date_2, light_model=False, debug=False):

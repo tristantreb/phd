@@ -2,8 +2,8 @@ import logging
 
 import pandas as pd
 
-import src.data.helpers as dh
-import src.data.sanity_checks as sanity_checks
+import data.helpers as dh
+import data.sanity_checks as sanity_checks
 
 df = pd.read_csv(
     f"{dh.get_path_to_main()}/DataFiles/Tromso/tromso_28april2025.csv",
@@ -13,6 +13,7 @@ df = pd.read_csv(
 
 df.reset_index(inplace=True)
 df.rename(columns={"index": "ID"}, inplace=True)
+
 
 # Split datasets
 def get_dataset(df, study_name):
@@ -102,6 +103,4 @@ logging.info("Processing FEF2575")
 df_t5.apply(lambda x: sanity_checks.fef2575(x["FEF2575"], x["ID"]), axis=1)
 
 logging.info("Processing O2 Saturation")
-df_t5.apply(
-    lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x["ID"]), axis=1
-)
+df_t5.apply(lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x["ID"]), axis=1)

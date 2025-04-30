@@ -1,6 +1,6 @@
 import pandas as pd
 
-import src.data.sanity_checks as sanity_checks
+import data.sanity_checks as sanity_checks
 
 smartcare_data_dir = "../../../../SmartCareData/"
 
@@ -209,11 +209,13 @@ def _correct_date_recorded(df, col_name):
     tmp_date_time = df["DateTime Recorded"].copy()
     df["Date Recorded"], df["DateTime Recorded"] = zip(
         *df.apply(
-            lambda x: (x["Date Recorded"], x["DateTime Recorded"])
-            if x["DateTime Recorded"].hour >= 2
-            else (
-                x["Date Recorded"] - pd.Timedelta(days=1),
-                x["DateTime Recorded"] - pd.Timedelta(days=1),
+            lambda x: (
+                (x["Date Recorded"], x["DateTime Recorded"])
+                if x["DateTime Recorded"].hour >= 2
+                else (
+                    x["Date Recorded"] - pd.Timedelta(days=1),
+                    x["DateTime Recorded"] - pd.Timedelta(days=1),
+                )
             ),
             axis=1,
         )

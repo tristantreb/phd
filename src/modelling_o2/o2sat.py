@@ -1,6 +1,6 @@
 import numpy as np
 
-import src.models.helpers as mh
+import models.helpers as mh
 
 
 def generate_o2sat_measurement(a, b, std_gauss):
