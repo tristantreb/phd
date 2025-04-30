@@ -14,5 +14,3 @@ opt_einsum>=3.3
 # App
 dash==2.14.1
 dash-bootstrap-components==1.5.0
-# Lung Health Model
--e git+ssh://git@github.com/tristantreb/phd.git@d46d38fc8fb52e363a14657f39e0f25b9e7abbe1#egg=Lung_Heatlh_Model
