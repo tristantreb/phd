@@ -3,11 +3,11 @@ import concurrent.futures
 import numpy as np
 import pandas as pd
 
-import src.data.breathe_data as bd
-import src.data.helpers as dh
-import src.inference.inf_two_days_model as inf_two_days_model
-import src.inference.long_inf_slicing as slicing
-import src.models.builders as mb
+import data.breathe_data as bd
+import data.helpers as dh
+import inference.inf_two_days_model as inf_two_days_model
+import inference.long_inf_slicing as slicing
+import models.builders as mb
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
@@ -29,5 +29,5 @@ if __name__ == "__main__":
     final_results = pd.concat(results, ignore_index=True)
     final_results.to_excel(
         f"{dh.get_path_to_main()}/ExcelFiles/BR/Refining_F3/infer_AR_using_two_days_model_ecFEV1_ecFEF2575_ecfev1noiseaddmult.xlsx",
-        index=False
+        index=False,
     )

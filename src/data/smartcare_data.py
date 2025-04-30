@@ -1,6 +1,6 @@
 import pandas as pd
 
-import src.data.helpers as dh
+import data.helpers as dh
 
 
 def load_o2_fev1_df_from_excel():

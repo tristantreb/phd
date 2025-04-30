@@ -3,10 +3,10 @@ import time
 
 import numpy as np
 
-import src.inf_cutset_conditioning.cutset_cond_algs as cca
-import src.inf_cutset_conditioning.helpers as cutseth
-import src.models.builders as mb
-import src.models.helpers as mh
+import inf_cutset_conditioning.cutset_cond_algs as cca
+import inf_cutset_conditioning.helpers as cutseth
+import models.builders as mb
+import models.helpers as mh
 
 """
 Updates wrt to src/inf_cutset_conditioning/cutset_cond_long_noise_model_through_time.py:
@@ -183,7 +183,7 @@ def load_long_noise_model_through_time(
         min_uecfev1 = uecFEV1.midbins[argmin_uecfev1]
         argmin_hfev1 = HFEV1.get_bin_idx_for_value(min_uecfev1)
         # This code is working
-        # print(f"uecfev1: {uecfev1}\nargmin_uecfev1: {argmin_uecfev1}\nmin_uecfev1: {min_uecfev1}\nargmin_hfev1: {argmin_hfev1}\nHFEV1 midbin: {HFEV1.midbins[argmin_hfev1]}") 
+        # print(f"uecfev1: {uecfev1}\nargmin_uecfev1: {argmin_uecfev1}\nmin_uecfev1: {min_uecfev1}\nargmin_hfev1: {argmin_hfev1}\nHFEV1 midbin: {HFEV1.midbins[argmin_hfev1]}")
         return argmin_hfev1
 
     min_possible_hfev1_under_model = get_min_possible_HFEV1_given_max_FEV1()

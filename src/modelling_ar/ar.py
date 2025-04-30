@@ -2,7 +2,7 @@ import numpy as np
 import scipy.integrate as integrate
 from scipy.stats import laplace, norm
 
-import src.models.helpers as mh
+import models.helpers as mh
 
 
 def PDF_conv_uni_laplace_additive(z, y1, y2, s, abserr_tol=1e-10):

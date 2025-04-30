@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-import src.data.helpers as dh
+import data.helpers as dh
 
 # from shared_code.utilities import calcPredictedFEV1, getMostRecentDataFrameFromFile
 # from shared_code.blob_tools import BlobTools
@@ -118,9 +118,19 @@ class RedCap:
             self.redcapidmap, how="inner", left_on="study_id", right_on="redcap_id"
         )
         # Print IDs that are in redcapidmap but not in redcap_data
-        print('IDs in redcapidmap but not in redcap_data', self.redcapidmap[~self.redcapidmap.redcap_id.isin(self.redcap_data.study_id)]['redcap_id'].unique())
+        print(
+            "IDs in redcapidmap but not in redcap_data",
+            self.redcapidmap[
+                ~self.redcapidmap.redcap_id.isin(self.redcap_data.study_id)
+            ]["redcap_id"].unique(),
+        )
         # Print IDs that are in redcap_data but not in redcapidmap
-        print('IDs in redcap_data but not in redcapidmap', self.redcap_data[~self.redcap_data.study_id.isin(self.redcapidmap.redcap_id)]['study_id'].unique())
+        print(
+            "IDs in redcap_data but not in redcapidmap",
+            self.redcap_data[
+                ~self.redcap_data.study_id.isin(self.redcapidmap.redcap_id)
+            ]["study_id"].unique(),
+        )
         tmpids = id_merged[
             id_merged["redcap_repeat_instrument"] == "patient_info"
         ].filter(["study_id", "hospital", "study_number"])

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import norm
 
-import src.models.helpers as mh
+import models.helpers as mh
 
 
 def get_IA_breathe_prior():

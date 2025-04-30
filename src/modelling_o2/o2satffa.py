@@ -1,6 +1,6 @@
 import numpy as np
 
-import src.models.helpers as mh
+import models.helpers as mh
 
 
 def multiplicative_drop_func(x):

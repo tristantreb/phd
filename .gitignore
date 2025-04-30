@@ -28,3 +28,6 @@ thesis.out
 thesis.ps
 thesis.toc
 thesis.synctex.gz
+
+# Other
+*.egg-info

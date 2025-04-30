@@ -1,7 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 
-import src.models.helpers as mh
+import models.helpers as mh
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 

@@ -6,10 +6,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import src.data.breathe_data as bd
-import src.data.helpers as dh
-import src.inference.helpers as ih
-import src.models.builders as mb
+import data.breathe_data as bd
+import data.helpers as dh
+import inference.helpers as ih
+import models.builders as mb
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
@@ -36,7 +36,7 @@ def compute_log_p_D_given_M_per_entry_per_HFEV1_obs(
         _,
         _,
         ecFEF2575prctecFEV1,
-) = mb.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
+    ) = mb.o2sat_fev1_fef2575_point_in_time_model_shared_healthy_vars(
         height, age, sex, ar_prior=ar_prior
     )
 

@@ -6,14 +6,14 @@ import time
 
 import numpy as np
 
-import src.models.graph_builders as graph_builders
-import src.models.helpers as mh
-import src.models.var_builders as var_builders
+import models.graph_builders as graph_builders
+import models.helpers as mh
+import models.var_builders as var_builders
+from inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
 
 # PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.models import BayesianNetwork
-from src.inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):

@@ -1,7 +1,7 @@
 import concurrent.futures
 
-import src.data.breathe_data as bd
-import src.inf_cutset_conditioning.cutset_conditioning_algs as cca
+import data.breathe_data as bd
+import inf_cutset_conditioning.cutset_conditioning_algs as cca
 
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 

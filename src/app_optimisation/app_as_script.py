@@ -1,10 +1,10 @@
 import numpy as np
 from plotly.subplots import make_subplots
 
-import src.inference.helpers as ih
-import src.modelling_o2.helpers as o2h
-import src.models.helpers as mh
-import src.models.point_in_time as model
+import inference.helpers as ih
+import modelling_o2.helpers as o2h
+import models.helpers as mh
+import models.point_in_time as model
 
 sex = "Male"
 age = 30
@@ -127,17 +127,13 @@ def model_and_inference(
     ia_max = 90
 
     # HFEV1
-    ih.plot_histogram(
-        fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green"
-    )
+    ih.plot_histogram(fig, HFEV1, HFEV1.cpt, fev1_min, fev1_max, 1, 1, None, "green")
     ih.plot_histogram(
         fig, HFEV1, res_hfev1.values, fev1_min, fev1_max, 2, 1, HFEV1.name, "green"
     )
 
     # HO2Sat
-    ih.plot_histogram(
-        fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, None, "blue"
-    )
+    ih.plot_histogram(fig, HO2Sat, HO2Sat.cpt, o2sat_min, o2sat_max, 1, 5, None, "blue")
     o2h.add_o2sat_normal_range_line(fig, max(HO2Sat.cpt), 1, 5)
 
     ih.plot_histogram(
@@ -152,15 +148,21 @@ def model_and_inference(
 
     # O2SatFFA
     ih.plot_histogram(
-        fig, O2SatFFA, res_o2satffa.values, o2sat_min, o2sat_max, 7, 5, O2SatFFA.name, "blue"
+        fig,
+        O2SatFFA,
+        res_o2satffa.values,
+        o2sat_min,
+        o2sat_max,
+        7,
+        5,
+        O2SatFFA.name,
+        "blue",
     )
     o2h.add_o2sat_normal_range_line(fig, max(res_o2satffa.values), 7, 5)
 
     # IA
     ih.plot_histogram(fig, IA, IA.cpt, ia_min, ia_max, 9, 3, None, "crimson")
-    ih.plot_histogram(
-        fig, IA, res_ia.values, ia_min, ia_max, 10, 3, IA.name, "crimson"
-    )
+    ih.plot_histogram(fig, IA, res_ia.values, ia_min, ia_max, 10, 3, IA.name, "crimson")
 
     # UO2Sat
     ih.plot_histogram(

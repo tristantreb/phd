@@ -1,13 +1,13 @@
 import concurrent.futures
 import itertools
 
-# import src.inf_cutset_conditioning.cutset_cond_algs as cca
+# import inf_cutset_conditioning.cutset_cond_algs as cca
 import numpy as np
 
-import src.data.breathe_data as bd
-import src.data.helpers as dh
-import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca_ar_change
-import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
+import data.breathe_data as bd
+import data.helpers as dh
+import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca_ar_change
+import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
 
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx_granular")
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")

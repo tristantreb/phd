@@ -8,8 +8,8 @@ import pandas as pd
 import scipy.integrate as integrate
 from scipy.stats import norm
 
-import src.modelling_fev1.pred_fev1 as pred_fev1
-import src.modelling_o2.ho2sat as ho2sat
+import modelling_fev1.pred_fev1 as pred_fev1
+import modelling_o2.ho2sat as ho2sat
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.

@@ -2,11 +2,11 @@ import numpy as np
 from dash import Input, Output
 from plotly.subplots import make_subplots
 
-import src.inference.helpers as ih
-import src.modelling_o2.helpers as o2h
-import src.models.graph_builders as graph_builders
-import src.models.helpers as mh
-from src.inference.inf_algs import apply_bayes_net_bp
+import inference.helpers as ih
+import modelling_o2.helpers as o2h
+import models.graph_builders as graph_builders
+import models.helpers as mh
+from inference.inf_algs import apply_bayes_net_bp
 
 
 def model_and_inference_callback(app):

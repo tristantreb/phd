@@ -5,10 +5,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import src.data.helpers as dh
-import src.inf_cutset_conditioning.helpers as cutseth
-import src.inference.helpers as ih
-import src.models.builders as mb
+import data.helpers as dh
+import inf_cutset_conditioning.helpers as cutseth
+import inference.helpers as ih
+import models.builders as mb
 
 
 def compute_log_p_D_given_M_for_noise_model(
@@ -1099,8 +1099,6 @@ def plot_cutset_cond_results(
 
     # Add HFEV1 posterior
     ih.plot_histogram(fig, HFEV1, p_HFEV1_given_D, 0, HFEV1.b, 1, 1, annot=True)
-
-    
 
     # Add heatmap with AR posteriors
     df1 = pd.DataFrame(

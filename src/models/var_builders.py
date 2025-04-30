@@ -6,14 +6,14 @@ Each function corresponds to a full set of variables to be plugged into a bayesi
 
 import numpy as np
 
-from src.modelling_ar import ar
-from src.modelling_ar.ar import (
+from modelling_ar import ar
+from modelling_ar.ar import (
     get_prior_for_uniform_hfev1_message,
     get_uniform_prior_in_log_space,
 )
-from src.modelling_o2.ia import get_IA_breathe_prior
-from src.models.cpts.helpers import get_cpt
-from src.models.helpers import (
+from modelling_o2.ia import get_IA_breathe_prior
+from models.cpts.helpers import get_cpt
+from models.helpers import (
     CutsetConditionedTemporalVariableNode,
     DiscreteVariableNode,
     SharedVariableNode,

@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-import src.inference.long_inf_slicing as slicing
-import src.models.builders as mb
+import inference.long_inf_slicing as slicing
+import models.builders as mb
 
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):

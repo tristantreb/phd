@@ -1,6 +1,6 @@
 from dash import dcc, html
 
-import src.app.assets.styles as styles
+import app.assets.styles as styles
 
 fev1_o2sat_observed_vars_checklist_layout = html.Div(
     [

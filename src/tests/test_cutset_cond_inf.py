@@ -2,10 +2,10 @@ import numpy as np
 from pgmpy.inference.ExactInference import VariableElimination
 from plotly.subplots import make_subplots
 
-import src.inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
-import src.inference.helpers as ih
-import src.models.builders as mb
-import src.tests.data_factory as data
+import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
+import inference.helpers as ih
+import models.builders as mb
+import tests.data_factory as data
 
 
 def assert_low_element_wise_max_diff(v1, v2, tol=1e-10):
@@ -216,7 +216,9 @@ def plot_diff_n_days(
 
     # Hide legend
     title = f"{series1_name} (blue) vs {series2_name} (red)<br>{title_suffix}"
-    fig.update_layout(showlegend=False, height=550, width=800, title=title, margin=dict(t=150))
+    fig.update_layout(
+        showlegend=False, height=550, width=800, title=title, margin=dict(t=150)
+    )
     fig.show()
 
 
