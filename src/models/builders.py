@@ -6,14 +6,14 @@ import time
 
 import numpy as np
 
+# PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
+from pgmpy.factors.discrete import TabularCPD
+from pgmpy.models import BayesianNetwork
+
 import models.graph_builders as graph_builders
 import models.helpers as mh
 import models.var_builders as var_builders
 from inference.inf_algs import apply_bayes_net_bp, apply_factor_graph_bp
-
-# PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
-from pgmpy.factors.discrete import TabularCPD
-from pgmpy.models import BayesianNetwork
 
 
 def set_LD_prior(fev1, pred_FEV1, pred_FEV1_std):
@@ -616,7 +616,6 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
     HFEV1 and HO2Sat are shared across time points.
     """
-
     (
         HFEV1,
         uecFEV1,
