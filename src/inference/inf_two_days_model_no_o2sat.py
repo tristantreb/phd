@@ -115,18 +115,6 @@ if __name__ == "__main__":
         res = executor.map(process_id, ids)
 
     res = pd.concat(res, ignore_index=True)
-    # res = (
-    #     res.apply(pd.Series)
-    #     .reset_index(drop=True)
-    #     .rename(
-    #         columns={
-    #             0: "ID",
-    #             1: "Date Recorded",
-    #             2: "HFEV1",
-    #             3: "AR",
-    #         }
-    #     )
-    # )
 
     res.to_excel(
         f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_fev1_01052025.xlsx",

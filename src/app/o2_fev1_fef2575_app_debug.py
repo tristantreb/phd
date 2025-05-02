@@ -13,6 +13,7 @@ from app.components.inf_settings import var_to_infer_select_layout
 from app.components.observed_vars_checklist import (
     fev1_fef2575_o2sat_observed_vars_checklist_layout,
 )
+from app.components.inf_settings import priors_settings_layout
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -49,6 +50,7 @@ app.layout = dbc.Container(
             ]
         ),
         var_to_infer_select_layout,
+        priors_settings_layout,
         html.Div(
             "3. Select observed values, and view your the state of your lungs health:",
             style={
