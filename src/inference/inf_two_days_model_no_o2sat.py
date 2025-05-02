@@ -37,13 +37,8 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
         uecFEV1,
         ecFEV1,
         AR,
-        HO2Sat,
-        O2SatFFA,
-        IA,
-        UO2Sat,
-        O2Sat,
         ecFEF2575prctecFEV1,
-    ) = mb.o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
+    ) = mb.fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         height,
         age,
         sex,
@@ -52,7 +47,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     )
 
     vars = [AR]
-    shared_vars = [HFEV1, HO2Sat]
+    shared_vars = [HFEV1]
     obs_vars = [ecFEV1.name]
     # obs_vars = [ecFEV1.name, O2Sat.name]
     # obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
@@ -74,9 +69,6 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     # Get precompupted messages to speedup inference
     arr = np.ones(AR.card)
     arr /= arr.sum()
-    uniform_from_o2_side = {
-        "['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
-    }
     # Create precomp messages for FEF25-75 given it's unobserved
     # arr = np.ones(ecFEF2575prctecFEV1.card)
     # arr /= arr.sum()
@@ -98,16 +90,13 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
             obs_vars,
             diff_threshold,
             [],
-            precomp_messages=uniform_from_o2_side.copy(),
-            # precomp_messages=uniform_from_o2_side.copy()
-            # | uniform_from_fef2575_side.copy(),
             debug=debug,
         )
 
         new_row = df_query_res_two_days.loc[
             # 0, ["ID", "Day", HFEV1.name, HO2Sat.name, AR.name, IA.name]
             0,
-            ["ID", "Day", HFEV1.name, HO2Sat.name, AR.name],
+            ["ID", "Day", HFEV1.name, AR.name],
         ]
         df_current_day_res = pd.concat([df_current_day_res, pd.DataFrame(new_row).T])
 
@@ -116,7 +105,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
 
 def process_id(id):
     df_for_ID = df[df.ID == id]
-    res = infer_for_id(df_for_ID)
+    res = infer_for_id(df_for_ID, debug=False)
     return res
 
 
@@ -126,19 +115,18 @@ if __name__ == "__main__":
         res = executor.map(process_id, ids)
 
     res = pd.concat(res, ignore_index=True)
-    res = (
-        res.apply(pd.Series)
-        .reset_index(drop=True)
-        .rename(
-            columns={
-                0: "ID",
-                1: "Date Recorded",
-                2: "HFEV1",
-                3: "HO2Sat",
-                4: "AR",
-            }
-        )
-    )
+    # res = (
+    #     res.apply(pd.Series)
+    #     .reset_index(drop=True)
+    #     .rename(
+    #         columns={
+    #             0: "ID",
+    #             1: "Date Recorded",
+    #             2: "HFEV1",
+    #             3: "AR",
+    #         }
+    #     )
+    # )
 
     res.to_excel(
         f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_fev1_01052025.xlsx",
