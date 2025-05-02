@@ -7,14 +7,12 @@ import concurrent.futures
 
 import pandas as pd
 
-import data.breathe_data as breathe_data
+import data.breathe_data as bd
 import data.helpers as dh
 import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
-df = breathe_data.load_meas_from_excel(
-    "BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx"
-)
+df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
 
 # Infer AR and IA for all data points given an individuals' age, sex, height, FEV1 and O2 saturation measurements
@@ -45,21 +43,25 @@ def infer_AR_IA_for_ID(df):
     )
 
     def infer_and_unpack(
-        id, date_recorded, ecfev1_obs_idx, o2sat_obs_idx, ecfef2575prctecfev1_obs_idx
+        id,
+        date_recorded,
+        ecfev1_obs_idx,
+        # id, date_recorded, ecfev1_obs_idx, o2sat_obs_idx, ecfef2575prctecfev1_obs_idx
     ):
         res = inf_alg.query(
-            variables=[AR.name, IA.name, HFEV1.name, HO2Sat.name],
+            variables=[AR.name, HFEV1.name, HO2Sat.name],
+            # variables=[AR.name, IA.name, HFEV1.name, HO2Sat.name],
             evidence={
                 ecFEV1.name: ecfev1_obs_idx,
-                O2Sat.name: o2sat_obs_idx,
-                ecFEF2575prctecFEV1.name: ecfef2575prctecfev1_obs_idx,
+                # O2Sat.name: o2sat_obs_idx,
+                # ecFEF2575prctecFEV1.name: ecfef2575prctecfev1_obs_idx,
             },
         )
         return (
             id,
             date_recorded,
             res[AR.name].values,
-            res[IA.name].values,
+            # res[IA.name].values,
             res[HFEV1.name].values,
             res[HO2Sat.name].values,
         )
@@ -69,8 +71,8 @@ def infer_AR_IA_for_ID(df):
             row["ID"],
             row["Date Recorded"],
             row[f"idx {ecFEV1.name}"],
-            row[f"idx {O2Sat.name}"],
-            row[f"idx {ecFEF2575prctecFEV1.name}"],
+            # row[f"idx {O2Sat.name}"],
+            # row[f"idx {ecFEF2575prctecFEV1.name}"],
         ),
         axis=1,
     )
@@ -97,14 +99,15 @@ if __name__ == "__main__":
                 0: "ID",
                 1: "Date Recorded",
                 2: "AR",
-                3: "IA",
-                4: "HFEV1",
-                5: "HO2Sat",
+                # 3: "IA",
+                3: "HFEV1",
+                4: "HO2Sat",
             }
         )
     )
 
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_o2sat_fev1_01052025.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_01052025.xlsx",
+        # f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_o2sat_fev1_01052025.xlsx",
         index=False,
     )

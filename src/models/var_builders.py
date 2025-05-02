@@ -563,6 +563,81 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     )
 
 
+def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
+    height,
+    age,
+    sex,
+    ar_prior="uniform",
+    ecfev1_noise_model_cpt_suffix="_std_add_mult",
+    ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise",
+):
+    """
+    Point in time model with full FEV1, FEF25-75 and O2Sat sides
+
+    There is no factor linking AR and IA in this model. The priors for AR, IA are uniform
+    """
+    hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
+    HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
+
+    ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
+
+    ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
+    # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
+    AR = VariableNode("Airway resistance (%)", 0, 90, 2, prior=None)
+    if ar_prior == "uniform":
+        AR.cpt = AR.set_prior({"type": "uniform"})
+    elif ar_prior == "uniform in log space":
+        AR.cpt = AR.set_prior(
+            {"type": "custom", "p": get_uniform_prior_in_log_space(AR)}
+        )
+    elif ar_prior == "uniform message to HFEV1":
+        AR.cpt = AR.set_prior(
+            {"type": "custom", "p": get_prior_for_uniform_hfev1_message(AR)}
+        )
+    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75)":
+        AR.cpt = AR.set_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575(),
+            }
+        )
+    elif ar_prior == "breathe (1 day model, O2Sat, ecFEV1)":
+        AR.cpt = AR.set_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
+            }
+        )
+    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75, add mult noise)":
+        AR.cpt = AR.set_prior(
+            {
+                "type": "custom",
+                "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575_ecfev1addmultnoise(),
+            }
+        )
+
+    # Set shared vars factor to node keys.
+    # Used to aggregate messages up in longitudinal model
+    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    HFEV1.set_factor_to_node_key(key_hfev1)
+
+    # Calculate CPTs
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_cpt_suffix))
+    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
+    ecFEF2575prctecFEV1.set_cpt(
+        get_cpt([ecFEF2575prctecFEV1, AR], suffix=ar_fef2575_cpt_suffix)
+    )
+
+    return (
+        HFEV1,
+        uecFEV1,
+        ecFEV1,
+        AR,
+        ecFEF2575prctecFEV1,
+    )
+
+
 def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
     height,
     age,
