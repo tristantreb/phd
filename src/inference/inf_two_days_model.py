@@ -54,9 +54,9 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     vars = [AR]
     shared_vars = [HFEV1, HO2Sat]
     # obs_vars = [ecFEV1.name]
-    obs_vars = [ecFEV1.name, O2Sat.name]
+    # obs_vars = [ecFEV1.name, O2Sat.name]
     # obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
-    # obs_vars = [ecFEV1.name, O2Sat.name, ecFEF2575prctecFEV1.name]
+    obs_vars = [ecFEV1.name, O2Sat.name, ecFEF2575prctecFEV1.name]
 
     # Find the max FEV1 values
     # Given an ID, get the data which maximises ecFEV1, then ecFEF2575, then O2 Saturation
@@ -128,6 +128,6 @@ if __name__ == "__main__":
     res = pd.concat(res, ignore_index=True)
 
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_o2_fev1_01052025.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_o2_fev1_fef2575_01052025.xlsx",
         index=False,
     )
