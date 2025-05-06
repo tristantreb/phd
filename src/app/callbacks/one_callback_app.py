@@ -665,11 +665,11 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         o2sat_max = 100
         ia_min = 0
         ia_max = 20
-        font_size = 14
+        font_size = 12
 
         height_prior_posterior = 155
         height_posterior = 120
-        width = 350
+        width = 300
 
         # HFEV1
         viz_layout = [[prior, None], [posterior, None], [None, None]]
