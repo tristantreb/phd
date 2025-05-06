@@ -4,6 +4,7 @@ import data.smartcare_measurements as smartcare_measurements
 import data.smartcare_patients as smartcare_patients
 import modelling_fev1.ec_smoothing as ec_smoothing
 import modelling_fev1.pred_fev1 as pred_fev1
+import data.breathe_data as bd
 
 datadir = "../../../../SmartCareData/"
 
@@ -43,7 +44,7 @@ def create():
     df_O2_FEV1 = ec_smoothing.calc_smoothed_fe_measures(df_O2_FEV1)
 
     # Compute FEV1 % Predicted
-    df_O2_FEV1 = pred_fev1.calc_FEV1_prct_predicted_df(df_O2_FEV1)
+    df_O2_FEV1 = bd.calc_FEV1_prct_predicted_df(df_O2_FEV1)
 
     print(
         "\nCreated df_O2_FEV1 with {} entries (initially {}, removed {})".format(
