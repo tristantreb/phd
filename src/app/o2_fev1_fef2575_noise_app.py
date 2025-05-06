@@ -16,6 +16,13 @@ from app.components.inf_settings import priors_settings_layout
 from app.components.observed_vars_checklist import (
     fev1_fef2575_o2sat_observed_vars_checklist_layout,
 )
+from app.components.posteriors_display import (
+    ar_row,
+    healthy_vars_row,
+    ia_row,
+    o2satffa_row,
+    u_o2sat_fev1_row,
+)
 
 """
 Solving: "Error #15: Initializing libiomp5.dylib, but found libiomp5.dylib already initialized" error
@@ -85,81 +92,13 @@ app.layout = dbc.Container(
         ),
         html.Div(
             [
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                dcc.Loading(
-                                    children=[
-                                        dcc.Graph(
-                                            id="HFEV1-dist",
-                                            style={"display": "none"},
-                                        )
-                                    ],
-                                ),
-                                sliders.hfev1_slider_layout,
-                            ],
-                            width=3,
-                        ),
-                        dbc.Col(
-                            [""],
-                            width=3,
-                        ),
-                        dbc.Col(
-                            [
-                                dcc.Loading(
-                                    children=[
-                                        dcc.Graph(
-                                            id="HO2Sat-dist",
-                                            style={"display": "none"},
-                                        )
-                                    ],
-                                ),
-                                sliders.ho2sat_slider_layout,
-                            ],
-                            width=3,
-                        ),
-                    ],
-                    style={
-                        "font-size": s.font_size(),
-                        "padding-top": "20px",
-                        "padding-bottom": "0px",
-                    },
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [""],
-                            width=3,
-                        ),
-                        dbc.Col(
-                            [
-                                dcc.Loading(
-                                    children=[
-                                        dcc.Graph(
-                                            id="AR-dist",
-                                            style={"display": "none"},
-                                        )
-                                    ],
-                                ),
-                                sliders.AR_slider_layout,
-                            ],
-                            width=3,
-                        ),
-                        dbc.Col(
-                            [""],
-                            width=3,
-                        ),
-                    ],
-                    style={
-                        "font-size": s.font_size(),
-                        "padding-top": "20px",
-                        "padding-bottom": "0px",
-                    },
-                ),
+                healthy_vars_row,
+                ar_row,
+                o2satffa_row,
+                ia_row,
+                u_o2sat_fev1_row,
             ]
         ),
-        dcc.Loading(children=[dcc.Graph(id="lung-graph")]),
         html.Div(
             id="FEF25-75-prct-FEV1-output",
             style={
