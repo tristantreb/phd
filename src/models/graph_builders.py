@@ -33,13 +33,13 @@ def build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR):
     )
 
 
-def build_pgmpy_ecfev1_noise_cpt(ecFEV1, uecFEV1):
+def build_pgmpy_ecfev1_noise_cpt(ecFEV1, uFEV1):
     return TabularCPD(
         variable=ecFEV1.name,
         variable_card=ecFEV1.card,
         values=ecFEV1.cpt.reshape(ecFEV1.card, -1),
-        evidence=[uecFEV1.name],
-        evidence_card=[uecFEV1.card],
+        evidence=[uFEV1.name],
+        evidence_card=[uFEV1.card],
     )
 
 
@@ -137,18 +137,18 @@ def build_pgmpy_hfev1_factor_fn(HFEV1):
     return DiscreteFactor([HFEV1.name], [HFEV1.card], HFEV1.cpt)
 
 
-def build_pgmpy_ecfev1_factor_fn(uecFEV1, HFEV1, AR):
+def build_pgmpy_ecfev1_factor_fn(uFEV1, HFEV1, AR):
     return DiscreteFactor(
-        [uecFEV1.name, HFEV1.name, AR.name],
-        [uecFEV1.card, HFEV1.card, AR.card],
-        uecFEV1.cpt,
+        [uFEV1.name, HFEV1.name, AR.name],
+        [uFEV1.card, HFEV1.card, AR.card],
+        uFEV1.cpt,
     )
 
 
-def build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uecFEV1):
+def build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uFEV1):
     return DiscreteFactor(
-        [ecFEV1.name, uecFEV1.name],
-        [ecFEV1.card, uecFEV1.card],
+        [ecFEV1.name, uFEV1.name],
+        [ecFEV1.card, uFEV1.card],
         ecFEV1.cpt,
     )
 
@@ -721,7 +721,7 @@ def fev1_fef2575_o2sat_point_in_time_factor_graph(
 
 def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     HO2Sat,
@@ -737,8 +737,8 @@ def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
     """
 
     prior_hfev1 = build_pgmpy_hfev1_factor_fn(HFEV1)
-    cpt_uecfev1 = build_pgmpy_ecfev1_factor_fn(uecFEV1, HFEV1, AR)
-    cpt_ecfev1 = build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uecFEV1)
+    cpt_ufev1 = build_pgmpy_ecfev1_factor_fn(uFEV1, HFEV1, AR)
+    cpt_ecfev1 = build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uFEV1)
     cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prctecfev1_factor_fn(
         ecFEF2575prctecFEV1, AR
     )
@@ -753,7 +753,7 @@ def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
     G.add_nodes_from(
         [
             HFEV1.name,
-            uecFEV1.name,
+            uFEV1.name,
             ecFEV1.name,
             AR.name,
             HO2Sat.name,
@@ -766,7 +766,7 @@ def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
     )
     G.add_factors(
         prior_hfev1,
-        cpt_uecfev1,
+        cpt_ufev1,
         cpt_ecfev1,
         cpt_ecFEF2575prctecFEV1,
         prior_ar,
@@ -779,9 +779,9 @@ def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
     G.add_edges_from(
         [
             (prior_hfev1, HFEV1.name),
-            (HFEV1.name, cpt_uecfev1),
+            (HFEV1.name, cpt_ufev1),
             (prior_ar, AR.name),
-            (AR.name, cpt_uecfev1),
+            (AR.name, cpt_ufev1),
             (AR.name, cpt_ecFEF2575prctecFEV1),
             (AR.name, cpt_o2satffa),
             (prior_ho2sat, HO2Sat.name),
@@ -793,8 +793,8 @@ def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
             (cpt_uo2sat, UO2Sat.name),
             (UO2Sat.name, cpt_o2sat),
             (cpt_o2sat, O2Sat.name),
-            (cpt_uecfev1, uecFEV1.name),
-            (uecFEV1.name, cpt_ecfev1),
+            (cpt_ufev1, uFEV1.name),
+            (uFEV1.name, cpt_ecfev1),
             (cpt_ecfev1, ecFEV1.name),
             (cpt_ecFEF2575prctecFEV1, ecFEF2575prctecFEV1.name),
         ]
@@ -809,7 +809,7 @@ def fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
 
 def fev1_fef2575_point_in_time_noise_factor_graph(
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     ecFEF2575prctecFEV1,
@@ -820,8 +820,8 @@ def fev1_fef2575_point_in_time_noise_factor_graph(
     """
 
     prior_hfev1 = build_pgmpy_hfev1_factor_fn(HFEV1)
-    cpt_uecfev1 = build_pgmpy_ecfev1_factor_fn(uecFEV1, HFEV1, AR)
-    cpt_ecfev1 = build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uecFEV1)
+    cpt_ufev1 = build_pgmpy_ecfev1_factor_fn(uFEV1, HFEV1, AR)
+    cpt_ecfev1 = build_pgmpy_ecfev1_noise_factor_fn(ecFEV1, uFEV1)
     cpt_ecFEF2575prctecFEV1 = build_pgmpy_ecfef2575prctecfev1_factor_fn(
         ecFEF2575prctecFEV1, AR
     )
@@ -831,7 +831,7 @@ def fev1_fef2575_point_in_time_noise_factor_graph(
     G.add_nodes_from(
         [
             HFEV1.name,
-            uecFEV1.name,
+            uFEV1.name,
             ecFEV1.name,
             AR.name,
             ecFEF2575prctecFEV1.name,
@@ -839,7 +839,7 @@ def fev1_fef2575_point_in_time_noise_factor_graph(
     )
     G.add_factors(
         prior_hfev1,
-        cpt_uecfev1,
+        cpt_ufev1,
         cpt_ecfev1,
         cpt_ecFEF2575prctecFEV1,
         prior_ar,
@@ -847,12 +847,12 @@ def fev1_fef2575_point_in_time_noise_factor_graph(
     G.add_edges_from(
         [
             (prior_hfev1, HFEV1.name),
-            (HFEV1.name, cpt_uecfev1),
+            (HFEV1.name, cpt_ufev1),
             (prior_ar, AR.name),
-            (AR.name, cpt_uecfev1),
+            (AR.name, cpt_ufev1),
             (AR.name, cpt_ecFEF2575prctecFEV1),
-            (cpt_uecfev1, uecFEV1.name),
-            (uecFEV1.name, cpt_ecfev1),
+            (cpt_ufev1, uFEV1.name),
+            (uFEV1.name, cpt_ecfev1),
             (cpt_ecfev1, ecFEV1.name),
             (cpt_ecFEF2575prctecFEV1, ecFEF2575prctecFEV1.name),
         ]
@@ -868,7 +868,7 @@ def fev1_fef2575_point_in_time_noise_factor_graph(
 def fev1_o2sat_fef2575_noise_n_days_model(
     n,
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     HO2Sat,
@@ -889,7 +889,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         return var_
 
     AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
-    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    uFEV1_vars = [create_var_for_day(uFEV1, i) for i in range(1, n + 1)]
     ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
     ecFEF2575prctecFEV1_vars = [
         create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
@@ -902,13 +902,13 @@ def fev1_o2sat_fef2575_noise_n_days_model(
     # Priors and CPTs
     AR_priors = [build_pgmpy_ar_prior(AR_) for AR_ in AR_vars]
 
-    uecFEV1_cpts = [
-        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR_)
-        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    uFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(uFEV1_, HFEV1, AR_)
+        for uFEV1_, AR_ in zip(uFEV1_vars, AR_vars)
     ]
     ecFEV1_cpts = [
-        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
-        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uFEV1_)
+        for ecFEV1_, uFEV1_ in zip(ecFEV1_vars, uFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
         build_pgmpy_ecfef2575prctecfev1_cpt(
@@ -938,7 +938,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
     # Make sure the days are at the same location in all variable lists
     for i in range(1, n + 1):
         assert AR_vars[i - 1].name == f"{AR.name} day {i}"
-        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert uFEV1_vars[i - 1].name == f"{uFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
         assert (
             ecFEF2575prctecFEV1_vars[i - 1].name
@@ -953,10 +953,10 @@ def fev1_o2sat_fef2575_noise_n_days_model(
     # HFEV1 and HO2Sat are shared between days
     for i in range(0, n):
         network += [
-            (HFEV1.name, uecFEV1_vars[i].name),
+            (HFEV1.name, uFEV1_vars[i].name),
             (HO2Sat.name, O2SatFFA_vars[i].name),
-            (AR_vars[i].name, uecFEV1_vars[i].name),
-            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (AR_vars[i].name, uFEV1_vars[i].name),
+            (uFEV1_vars[i].name, ecFEV1_vars[i].name),
             (AR_vars[i].name, ecFEF2575prctecFEV1_vars[i].name),
             (AR_vars[i].name, O2SatFFA_vars[i].name),
             (O2SatFFA_vars[i].name, UO2Sat_vars[i].name),
@@ -972,7 +972,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         prior_ho2sat,
         # Days priors and CPTs
         *AR_priors,
-        *uecFEV1_cpts,
+        *uFEV1_cpts,
         *ecFEV1_cpts,
         *ecFEF2575prctecFEV1_cpts,
         *O2SatFFA_cpts,
@@ -988,7 +988,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
         HFEV1,
         HO2Sat,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         O2SatFFA_vars,
         IA_vars,
@@ -1001,7 +1001,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
 def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
     n,
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     HO2Sat,
@@ -1025,7 +1025,7 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
         return var_
 
     AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
-    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    uFEV1_vars = [create_var_for_day(uFEV1, i) for i in range(1, n + 1)]
     ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
     ecFEF2575prctecFEV1_vars = [
         create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
@@ -1063,13 +1063,13 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
             )
         )
 
-    uecFEV1_cpts = [
-        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR_)
-        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    uFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(uFEV1_, HFEV1, AR_)
+        for uFEV1_, AR_ in zip(uFEV1_vars, AR_vars)
     ]
     ecFEV1_cpts = [
-        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
-        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uFEV1_)
+        for ecFEV1_, uFEV1_ in zip(ecFEV1_vars, uFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
         build_pgmpy_ecfef2575prctecfev1_cpt(
@@ -1099,7 +1099,7 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
     # Make sure the days are at the same location in all variable lists
     for i in range(1, n + 1):
         assert AR_vars[i - 1].name == f"{AR.name} day {i}"
-        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert uFEV1_vars[i - 1].name == f"{uFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
         assert (
             ecFEF2575prctecFEV1_vars[i - 1].name
@@ -1114,10 +1114,10 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
     # HFEV1 and HO2Sat are shared between days
     for i in range(0, n):
         network += [
-            (HFEV1.name, uecFEV1_vars[i].name),
+            (HFEV1.name, uFEV1_vars[i].name),
             (HO2Sat.name, O2SatFFA_vars[i].name),
-            (AR_vars[i].name, uecFEV1_vars[i].name),
-            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (AR_vars[i].name, uFEV1_vars[i].name),
+            (uFEV1_vars[i].name, ecFEV1_vars[i].name),
             (AR_vars[i].name, ecFEF2575prctecFEV1_vars[i].name),
             (AR_vars[i].name, O2SatFFA_vars[i].name),
             (O2SatFFA_vars[i].name, UO2Sat_vars[i].name),
@@ -1135,7 +1135,7 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
         prior_ho2sat,
         # Days priors and CPTs
         *AR_priors,
-        *uecFEV1_cpts,
+        *uFEV1_cpts,
         *ecFEV1_cpts,
         *ecFEF2575prctecFEV1_cpts,
         *O2SatFFA_cpts,
@@ -1151,7 +1151,7 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
         HFEV1,
         HO2Sat,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         O2SatFFA_vars,
         IA_vars,
@@ -1164,7 +1164,7 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
 def fev1_fef2575_noise_n_days_model_temporal_ar(
     n,
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     ecFEF2575prctecFEV1,
@@ -1183,7 +1183,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
         return var_
 
     AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
-    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    uFEV1_vars = [create_var_for_day(uFEV1, i) for i in range(1, n + 1)]
     ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
     ecFEF2575prctecFEV1_vars = [
         create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
@@ -1219,13 +1219,13 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
             )
         )
 
-    uecFEV1_cpts = [
-        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR_)
-        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    uFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(uFEV1_, HFEV1, AR_)
+        for uFEV1_, AR_ in zip(uFEV1_vars, AR_vars)
     ]
     ecFEV1_cpts = [
-        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
-        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uFEV1_)
+        for ecFEV1_, uFEV1_ in zip(ecFEV1_vars, uFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
         build_pgmpy_ecfef2575prctecfev1_cpt(
@@ -1241,7 +1241,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
     # Make sure the days are at the same location in all variable lists
     for i in range(1, n + 1):
         assert AR_vars[i - 1].name == f"{AR.name} day {i}"
-        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert uFEV1_vars[i - 1].name == f"{uFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
         assert (
             ecFEF2575prctecFEV1_vars[i - 1].name
@@ -1252,9 +1252,9 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
     # HFEV1 and HO2Sat are shared between days
     for i in range(0, n):
         network += [
-            (HFEV1.name, uecFEV1_vars[i].name),
-            (AR_vars[i].name, uecFEV1_vars[i].name),
-            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (HFEV1.name, uFEV1_vars[i].name),
+            (AR_vars[i].name, uFEV1_vars[i].name),
+            (uFEV1_vars[i].name, ecFEV1_vars[i].name),
             (AR_vars[i].name, ecFEF2575prctecFEV1_vars[i].name),
         ]
 
@@ -1267,7 +1267,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
         prior_hfev1,
         # Days priors and CPTs
         *AR_priors,
-        *uecFEV1_cpts,
+        *uFEV1_cpts,
         *ecFEV1_cpts,
         *ecFEF2575prctecFEV1_cpts,
     )
@@ -1278,7 +1278,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
         model,
         HFEV1,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     )
@@ -1287,7 +1287,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
 def fev1_fef2575_noise_n_days_model_shared_ar(
     n,
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     ecFEF2575prctecFEV1,
@@ -1306,18 +1306,16 @@ def fev1_fef2575_noise_n_days_model_shared_ar(
         var_.name = f"{var.name} day {day}"
         return var_
 
-    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    uFEV1_vars = [create_var_for_day(uFEV1, i) for i in range(1, n + 1)]
     ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
     ecFEF2575prctecFEV1_vars = [
         create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
     ]
 
-    uecFEV1_cpts = [
-        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR) for uecFEV1_ in uecFEV1_vars
-    ]
+    uFEV1_cpts = [build_pgmpy_ecfev1_cpt(uFEV1_, HFEV1, AR) for uFEV1_ in uFEV1_vars]
     ecFEV1_cpts = [
-        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
-        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uFEV1_)
+        for ecFEV1_, uFEV1_ in zip(ecFEV1_vars, uFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
         build_pgmpy_ecfef2575prctecfev1_cpt(
@@ -1333,7 +1331,7 @@ def fev1_fef2575_noise_n_days_model_shared_ar(
 
     # Make sure the days are at the same location in all variable lists
     for i in range(1, n + 1):
-        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert uFEV1_vars[i - 1].name == f"{uFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
         assert (
             ecFEF2575prctecFEV1_vars[i - 1].name
@@ -1344,9 +1342,9 @@ def fev1_fef2575_noise_n_days_model_shared_ar(
     # HFEV1 and HO2Sat and AR are shared between days
     for i in range(0, n):
         network += [
-            (HFEV1.name, uecFEV1_vars[i].name),
-            (AR.name, uecFEV1_vars[i].name),
-            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (HFEV1.name, uFEV1_vars[i].name),
+            (AR.name, uFEV1_vars[i].name),
+            (uFEV1_vars[i].name, ecFEV1_vars[i].name),
             (AR.name, ecFEF2575prctecFEV1_vars[i].name),
         ]
 
@@ -1357,7 +1355,7 @@ def fev1_fef2575_noise_n_days_model_shared_ar(
         prior_hfev1,
         # Days priors and CPTs
         ar_prior,
-        *uecFEV1_cpts,
+        *uFEV1_cpts,
         *ecFEV1_cpts,
         *ecFEF2575prctecFEV1_cpts,
     )
@@ -1368,7 +1366,7 @@ def fev1_fef2575_noise_n_days_model_shared_ar(
         model,
         HFEV1,
         AR,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     )
@@ -1377,7 +1375,7 @@ def fev1_fef2575_noise_n_days_model_shared_ar(
 def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     n,
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     ecFEF2575prctecFEV1,
@@ -1396,7 +1394,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
         return var_
 
     AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
-    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    uFEV1_vars = [create_var_for_day(uFEV1, i) for i in range(1, n + 1)]
     ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
     ecFEF2575prctecFEV1_vars = [
         create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
@@ -1428,13 +1426,13 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
             )
         )
 
-    uecFEV1_cpts = [
-        build_pgmpy_ecfev1_cpt(uecFEV1_, HFEV1, AR_)
-        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    uFEV1_cpts = [
+        build_pgmpy_ecfev1_cpt(uFEV1_, HFEV1, AR_)
+        for uFEV1_, AR_ in zip(uFEV1_vars, AR_vars)
     ]
     ecFEV1_cpts = [
-        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uecFEV1_)
-        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+        build_pgmpy_ecfev1_noise_cpt(ecFEV1_, uFEV1_)
+        for ecFEV1_, uFEV1_ in zip(ecFEV1_vars, uFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
         build_pgmpy_ecfef2575prctecfev1_cpt(
@@ -1451,7 +1449,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     # Make sure the days are at the same location in all variable lists
     for i in range(1, n + 1):
         assert AR_vars[i - 1].name == f"{AR.name} day {i}"
-        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert uFEV1_vars[i - 1].name == f"{uFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
         assert (
             ecFEF2575prctecFEV1_vars[i - 1].name
@@ -1462,9 +1460,9 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     # HFEV1 and HO2Sat are shared between days
     for i in range(0, n):
         network += [
-            (HFEV1.name, uecFEV1_vars[i].name),
-            (AR_vars[i].name, uecFEV1_vars[i].name),
-            (uecFEV1_vars[i].name, ecFEV1_vars[i].name),
+            (HFEV1.name, uFEV1_vars[i].name),
+            (AR_vars[i].name, uFEV1_vars[i].name),
+            (uFEV1_vars[i].name, ecFEV1_vars[i].name),
             (AR_vars[i].name, ecFEF2575prctecFEV1_vars[i].name),
         ]
 
@@ -1480,7 +1478,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
         prior_S,
         # Days priors and CPTs
         *AR_priors,
-        *uecFEV1_cpts,
+        *uFEV1_cpts,
         *ecFEV1_cpts,
         *ecFEF2575prctecFEV1_cpts,
     )
@@ -1492,7 +1490,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
         model,
         HFEV1,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
         S,
@@ -1502,7 +1500,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
 def fev1_fef2575_o2sat_n_days_noise_factor_graph(
     n,
     HFEV1,
-    uecFEV1,
+    uFEV1,
     ecFEV1,
     AR,
     # HO2Sat,
@@ -1524,7 +1522,7 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
         return var_
 
     AR_vars = [create_var_for_day(AR, i) for i in range(1, n + 1)]
-    uecFEV1_vars = [create_var_for_day(uecFEV1, i) for i in range(1, n + 1)]
+    uFEV1_vars = [create_var_for_day(uFEV1, i) for i in range(1, n + 1)]
     ecFEV1_vars = [create_var_for_day(ecFEV1, i) for i in range(1, n + 1)]
     ecFEF2575prctecFEV1_vars = [
         create_var_for_day(ecFEF2575prctecFEV1, i) for i in range(1, n + 1)
@@ -1555,13 +1553,13 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
             )
         )
 
-    uecFEV1_cpts = [
-        build_pgmpy_ecfev1_factor_fn(uecFEV1_, HFEV1, AR_)
-        for uecFEV1_, AR_ in zip(uecFEV1_vars, AR_vars)
+    uFEV1_cpts = [
+        build_pgmpy_ecfev1_factor_fn(uFEV1_, HFEV1, AR_)
+        for uFEV1_, AR_ in zip(uFEV1_vars, AR_vars)
     ]
     ecFEV1_cpts = [
-        build_pgmpy_ecfev1_noise_factor_fn(ecFEV1_, uecFEV1_)
-        for ecFEV1_, uecFEV1_ in zip(ecFEV1_vars, uecFEV1_vars)
+        build_pgmpy_ecfev1_noise_factor_fn(ecFEV1_, uFEV1_)
+        for ecFEV1_, uFEV1_ in zip(ecFEV1_vars, uFEV1_vars)
     ]
     ecFEF2575prctecFEV1_cpts = [
         build_pgmpy_ecfef2575prctecfev1_factor_fn(
@@ -1587,7 +1585,7 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
     # Make sure the days are at the same location in all variable lists
     for i in range(1, n + 1):
         assert AR_vars[i - 1].name == f"{AR.name} day {i}"
-        assert uecFEV1_vars[i - 1].name == f"{uecFEV1.name} day {i}"
+        assert uFEV1_vars[i - 1].name == f"{uFEV1.name} day {i}"
         assert ecFEV1_vars[i - 1].name == f"{ecFEV1.name} day {i}"
         assert (
             ecFEF2575prctecFEV1_vars[i - 1].name
@@ -1605,7 +1603,7 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
     nodes = []
     for i in range(0, n):
         nodes += [
-            uecFEV1_vars[i].name,
+            uFEV1_vars[i].name,
             ecFEV1_vars[i].name,
             AR_vars[i].name,
             # O2SatFFA_vars[i].name,
@@ -1624,7 +1622,7 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
     G.add_factors(
         prior_hfev1,
         # prior_ho2sat,
-        *uecFEV1_cpts,
+        *uFEV1_cpts,
         *ecFEV1_cpts,
         *ecFEF2575prctecFEV1_cpts,
         *AR_priors,
@@ -1636,9 +1634,9 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
     inner_links = []
     for i in range(0, n):
         inner_links += [
-            (HFEV1.name, uecFEV1_cpts[i]),
+            (HFEV1.name, uFEV1_cpts[i]),
             (AR_priors[i], AR_vars[i].name),
-            (AR_vars[i].name, uecFEV1_cpts[i]),
+            (AR_vars[i].name, uFEV1_cpts[i]),
             (AR_vars[i].name, ecFEF2575prctecFEV1_cpts[i]),
             # (AR_vars[i].name, O2SatFFA_cpts[i]),
             # (HO2Sat.name, O2SatFFA_cpts[i]),
@@ -1649,8 +1647,8 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
             # (UO2Sat_cpts[i], UO2Sat_vars[i].name),
             # (UO2Sat_vars[i].name, O2Sat_cpts[i]),
             # (O2Sat_cpts[i], O2Sat_vars[i].name),
-            (uecFEV1_cpts[i], uecFEV1_vars[i].name),
-            (uecFEV1_vars[i].name, ecFEV1_cpts[i]),
+            (uFEV1_cpts[i], uFEV1_vars[i].name),
+            (uFEV1_vars[i].name, ecFEV1_cpts[i]),
             (ecFEV1_cpts[i], ecFEV1_vars[i].name),
             (ecFEF2575prctecFEV1_cpts[i], ecFEF2575prctecFEV1_vars[i].name),
         ]
@@ -1676,7 +1674,7 @@ def fev1_fef2575_o2sat_n_days_noise_factor_graph(
         HFEV1,
         # HO2Sat,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         # O2SatFFA_vars,
         # IA_vars,

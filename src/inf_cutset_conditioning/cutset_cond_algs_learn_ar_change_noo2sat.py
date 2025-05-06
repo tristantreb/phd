@@ -159,7 +159,7 @@ def load_long_noise_model_through_time(
         _,
         _,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         _,
@@ -178,12 +178,12 @@ def load_long_noise_model_through_time(
         max_ecfev1 = np.zeros(ecFEV1.card)
         max_ecfev1[df["idx ecFEV1 (L)"].max()] = 1
         # Compute underling ecFEV1 given observed max ecFEV1 = add noise to max ecFEV1
-        uecfev1 = np.matmul(max_ecfev1, ecFEV1.cpt)
-        argmin_uecfev1 = np.nonzero(uecfev1)[0][0]
-        min_uecfev1 = uecFEV1.midbins[argmin_uecfev1]
-        argmin_hfev1 = HFEV1.get_bin_idx_for_value(min_uecfev1)
+        ufev1 = np.matmul(max_ecfev1, ecFEV1.cpt)
+        argmin_ufev1 = np.nonzero(ufev1)[0][0]
+        min_ufev1 = uFEV1.midbins[argmin_ufev1]
+        argmin_hfev1 = HFEV1.get_bin_idx_for_value(min_ufev1)
         # This code is working
-        # print(f"uecfev1: {uecfev1}\nargmin_uecfev1: {argmin_uecfev1}\nmin_uecfev1: {min_uecfev1}\nargmin_hfev1: {argmin_hfev1}\nHFEV1 midbin: {HFEV1.midbins[argmin_hfev1]}")
+        # print(f"ufev1: {ufev1}\nargmin_ufev1: {argmin_ufev1}\nmin_ufev1: {min_ufev1}\nargmin_hfev1: {argmin_hfev1}\nHFEV1 midbin: {HFEV1.midbins[argmin_hfev1]}")
         return argmin_hfev1
 
     min_possible_hfev1_under_model = get_min_possible_HFEV1_given_max_FEV1()
@@ -201,7 +201,7 @@ def load_long_noise_model_through_time(
         _,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -267,7 +267,7 @@ def load_long_noise_model_through_time_light(
         _,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -342,9 +342,9 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     # uniform_from_o2_side = {
     #     "['O2 saturation if fully functional alveoli (%)', 'Healthy O2 saturation (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     # }
-    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_hfev1_dict = {}
-    m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev_factor_key = "['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
     m_from_fev_factor_dict = {}
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
@@ -628,9 +628,9 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
     uniform_from_fef2575 = {
         "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     }
-    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_hfev1_dict = {}
-    m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev_factor_key = "['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
     m_from_fev_factor_dict = {}
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual

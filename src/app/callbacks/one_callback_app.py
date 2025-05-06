@@ -574,7 +574,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             _,
             inf_alg,
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             HO2Sat,
@@ -607,7 +607,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
 
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
-        vars_to_infer = [IA, O2SatFFA, uO2Sat, uecFEV1]
+        vars_to_infer = [IA, O2SatFFA, uO2Sat, uFEV1]
         evidence = []
         if "HFEV1" in observed_vars_checklist:
             evidence.append([HFEV1, HFEV1_obs])
@@ -644,7 +644,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
             res_ho2sat = query[HO2Sat.name]
         if "AR" not in observed_vars_checklist:
             res_ar = query[AR.name]
-        res_uecfev1 = query[uecFEV1.name]
+        res_ufev1 = query[uFEV1.name]
         res_o2satffa = query[O2SatFFA.name]
         res_ia = query[IA.name]
         res_uo2sat = query[uO2Sat.name]
@@ -682,16 +682,16 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph(app):
         ia_max = 30
         font_size = 12
 
-        # uecFEV1
+        # uFEV1
         ih.plot_histogram(
             fig,
-            uecFEV1,
-            res_uecfev1.values,
-            uecFEV1.a,
-            uecFEV1.b,
+            uFEV1,
+            res_ufev1.values,
+            uFEV1.a,
+            uFEV1.b,
             6,
             1,
-            uecFEV1.name,
+            uFEV1.name,
             "green",
         )
 
@@ -938,7 +938,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_report(app):
         Output("IA-dist", "figure"),
         Output("O2SatFFA-dist", "figure"),
         Output("uO2Sat-dist", "figure"),
-        Output("uecFEV1-dist", "figure"),
+        Output("uFEV1-dist", "figure"),
         Output("FEV1-dist", "figure"),
         Output("O2-saturation-dist", "figure"),
         Output("FEF25-75-dist", "figure"),
@@ -983,7 +983,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_report(app):
             _,
             inf_alg,
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             HO2Sat,
@@ -1016,7 +1016,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_report(app):
 
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
-        vars_to_infer = [IA, O2SatFFA, uO2Sat, uecFEV1]
+        vars_to_infer = [IA, O2SatFFA, uO2Sat, uFEV1]
         evidence = []
         if "HFEV1" in observed_vars_checklist:
             evidence.append([HFEV1, HFEV1_obs])
@@ -1053,7 +1053,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_report(app):
             res_ho2sat = query[HO2Sat.name]
         if "AR" not in observed_vars_checklist:
             res_ar = query[AR.name]
-        res_uecfev1 = query[uecFEV1.name]
+        res_ufev1 = query[uFEV1.name]
         res_o2satffa = query[O2SatFFA.name]
         res_ia = query[IA.name]
         res_uo2sat = query[uO2Sat.name]
@@ -1276,13 +1276,13 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_report(app):
         fig_uecfeV1 = make_subplots(rows=1, cols=1)
         ih.plot_histogram(
             fig_uecfeV1,
-            uecFEV1,
-            res_uecfev1.values,
+            uFEV1,
+            res_ufev1.values,
             fev_min,
             fev_max,
             1,
             1,
-            uecFEV1.name,
+            uFEV1.name,
             "green",
         )
         fig_uecfeV1.update_layout(
@@ -1432,7 +1432,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
             _,
             inf_alg,
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             HO2Sat,
@@ -1465,7 +1465,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
 
         FEF2575prctFEV1_obs = FEF2575_obs / FEV1_obs * 100
 
-        vars_to_infer = [IA, O2SatFFA, uO2Sat, uecFEV1]
+        vars_to_infer = [IA, O2SatFFA, uO2Sat, uFEV1]
         evidence = []
         if "HFEV1" in observed_vars_checklist:
             evidence.append([HFEV1, HFEV1_obs])
@@ -1502,7 +1502,7 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
             res_ho2sat = query[HO2Sat.name]
         if "AR" not in observed_vars_checklist:
             res_ar = query[AR.name]
-        res_uecfev1 = query[uecFEV1.name]
+        res_ufev1 = query[uFEV1.name]
         res_o2satffa = query[O2SatFFA.name]
         res_ia = query[IA.name]
         res_uo2sat = query[uO2Sat.name]
@@ -1540,16 +1540,16 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_log(app):
         ia_max = 30
         font_size = 12
 
-        # uecFEV1
+        # uFEV1
         ih.plot_histogram(
             fig,
-            uecFEV1,
-            res_uecfev1.values,
-            uecFEV1.a,
-            uecFEV1.b,
+            uFEV1,
+            res_ufev1.values,
+            uFEV1.a,
+            uFEV1.b,
             6,
             1,
-            uecFEV1.name,
+            uFEV1.name,
             "green",
         )
 

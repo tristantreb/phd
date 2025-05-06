@@ -145,7 +145,7 @@ u_o2sat_fev1_row = dbc.Row(
                 dcc.Loading(
                     children=[
                         dcc.Graph(
-                            id="uecFEV1-dist",
+                            id="uFEV1-dist",
                         )
                     ],
                 ),
@@ -172,5 +172,3 @@ u_o2sat_fev1_row = dbc.Row(
         "padding-bottom": "0px",
     },
 )
-
-
