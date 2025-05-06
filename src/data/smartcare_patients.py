@@ -132,9 +132,7 @@ def _compute_predicted_fev1(df):
     # )
     print("Compute Calculated Predicted FEV1 using GLI reference equations")
     df["Predicted FEV1"] = df.apply(
-        lambda x: pred_fev1.calc_predicted_FEV1_LMS(
-            pred_fev1.load_LMS_spline_vals(x.Age, x.Sex),
-            pred_fev1.load_LMS_coeffs(x.Sex),
+        lambda x: pred_fev1.calc_predicted_value_LMS_straight(
             x.Height,
             x.Age,
             x.Sex,
