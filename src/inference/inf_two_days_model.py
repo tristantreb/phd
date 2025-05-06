@@ -9,7 +9,11 @@ import inference.long_inf_slicing as slicing
 import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
-df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
+# df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
+df = dh.load_excel(
+    f"{dh.get_path_to_main()}/ExcelFiles/SC/O2_FEV1_df_conservative_smoothing_with_idx.xlsx",
+    date_cols=["Date Recorded"],
+)
 
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
@@ -54,15 +58,18 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     vars = [AR]
     shared_vars = [HFEV1, HO2Sat]
     # obs_vars = [ecFEV1.name]
-    # obs_vars = [ecFEV1.name, O2Sat.name]
+    obs_vars = [ecFEV1.name, O2Sat.name]
     # obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
-    obs_vars = [ecFEV1.name, O2Sat.name, ecFEF2575prctecFEV1.name]
+    # obs_vars = [ecFEV1.name, O2Sat.name, ecFEF2575prctecFEV1.name]
 
     # Find the max FEV1 values
     # Given an ID, get the data which maximises ecFEV1, then ecFEF2575, then O2 Saturation
     idx_max_FEV1 = df_for_ID.sort_values(
-        by=["ecFEV1", "ecFEF2575", "O2 Saturation"], ascending=False
+        by=["ecFEV1", "O2 Saturation"], ascending=False
     ).index[0]
+    # idx_max_FEV1 = df_for_ID.sort_values(
+    #     by=["ecFEV1", "ecFEF2575", "O2 Saturation"], ascending=False
+    # ).index[0]
 
     # For each entry, create a two_days data structure that hold the current day as well as the day where the max FEV1 is observed
     # If the two idx are the same, then run a one day model.
@@ -115,6 +122,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
 
 
 def process_id(id):
+    print(f"Processing ID: {id}")
     df_for_ID = df[df.ID == id]
     res = infer_for_id(df_for_ID, debug=False)
     return res
@@ -128,6 +136,6 @@ if __name__ == "__main__":
     res = pd.concat(res, ignore_index=True)
 
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_o2_fev1_fef2575_01052025.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/SC/infer_AR_using_two_days_model_o2_fev1_06052025.xlsx",
         index=False,
     )
