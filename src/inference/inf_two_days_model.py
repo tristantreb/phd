@@ -10,10 +10,10 @@ import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
-df = dh.load_excel(
-    f"{dh.get_path_to_main()}/ExcelFiles/SC/O2_FEV1_df_conservative_smoothing_with_idx.xlsx",
-    date_cols=["Date Recorded"],
-)
+# df = dh.load_excel(
+#     f"{dh.get_path_to_main()}/ExcelFiles/SC/O2_FEV1_df_conservative_smoothing_with_idx.xlsx",
+#     date_cols=["Date Recorded"],
+# )
 
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
