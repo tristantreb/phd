@@ -468,7 +468,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 0.05, prior=None)
 
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
@@ -534,14 +534,14 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
     HO2Sat.set_factor_to_node_key(key_ho2sat)
 
     # Calculate CPTs
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_cpt_suffix))
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_cpt_suffix))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
@@ -551,7 +551,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -580,7 +580,7 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 0.05, prior=None)
 
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
@@ -619,19 +619,19 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
 
     # Calculate CPTs
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_cpt_suffix))
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_cpt_suffix))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
     ecFEF2575prctecFEV1.set_cpt(
         get_cpt([ecFEF2575prctecFEV1, AR], suffix=ar_fef2575_cpt_suffix)
     )
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -662,7 +662,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
     HFEV1.cpt = get_p_in_log(HFEV1, HFEV1.cpt)
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 0.05, prior=None)
 
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
@@ -728,14 +728,14 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
     HO2Sat.set_factor_to_node_key(key_ho2sat)
 
     # Calculate CPTs
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_cpt_suffix))
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_cpt_suffix))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
@@ -745,7 +745,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -783,7 +783,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
     # HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 1, prior=None)
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 1, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 1, prior=None)
 
     ecFEF2575prctecFEV1 = VariableNode(
         "ecFEF25-75 % ecFEV1 (%)", 0, 200, 20, prior=None
@@ -852,14 +852,14 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
     HO2Sat.set_factor_to_node_key(key_ho2sat)
 
     # Calculate CPTs
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_cpt_suffix))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_cpt_suffix))
     ecFEF2575prctecFEV1.set_cpt(get_cpt([ecFEF2575prctecFEV1, AR]))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
@@ -867,7 +867,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1167,7 +1167,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     # HFEV1_point_mass_prior[idx_three_point_five] = 1
     # HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
 
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 0.05, prior=None)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
@@ -1217,14 +1217,14 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
     HO2Sat.set_factor_to_node_key(key_ho2sat)
 
     # Calculate CPTs
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_suffix))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_suffix))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
@@ -1234,7 +1234,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1264,7 +1264,7 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
 
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 0.05, prior=None)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
     ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
     # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
@@ -1280,19 +1280,19 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
 
     # Calculate CPTs
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_suffix))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_suffix))
     ecFEF2575prctecFEV1.set_cpt(
         get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix)
     )
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -1316,7 +1316,7 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
     """
     hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 1, prior=hfev1_prior)
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 1, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 1, prior=None)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 1, prior=None)
     ecFEF2575prctecFEV1 = VariableNode(
         "ecFEF25-75 % ecFEV1 (%)", 0, 200, 20, prior=None
@@ -1333,19 +1333,19 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
 
     # Calculate CPTs
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix=ecfev1_noise_model_suffix))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_suffix))
     ecFEF2575prctecFEV1.set_cpt(
         get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix)
     )
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -1380,7 +1380,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     # HFEV1_point_mass_prior[idx_three_point_five] = 1
     # HFEV1.cpt = HFEV1.set_prior({"type": "custom", "p": HFEV1_point_mass_prior})
 
-    uecFEV1 = VariableNode("Underlying ecFEV1 (L)", 0, 6, 1, prior=None)
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 1, prior=None)
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 1, prior=None)
     ecFEF2575prctecFEV1 = VariableNode(
         "ecFEF25-75 % ecFEV1 (%)", 0, 200, 20, prior=None
@@ -1432,14 +1432,14 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model
-    key_hfev1 = f"['{uecFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
     key_ho2sat = f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}'] -> {HO2Sat.name}"
     HFEV1.set_factor_to_node_key(key_hfev1)
     HO2Sat.set_factor_to_node_key(key_ho2sat)
 
     # Calculate CPTs
-    uecFEV1.set_cpt(get_cpt([uecFEV1, HFEV1, AR]))
-    ecFEV1.set_cpt(get_cpt([ecFEV1, uecFEV1], suffix="_std_0.7"))
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix="_std_0.7"))
     O2SatFFA.set_cpt(get_cpt([O2SatFFA, HO2Sat, AR]))
     UO2Sat.set_cpt(get_cpt([UO2Sat, O2SatFFA, IA]))
     O2Sat.set_cpt(get_cpt([O2Sat, UO2Sat]))
@@ -1447,7 +1447,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
 
     return (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,

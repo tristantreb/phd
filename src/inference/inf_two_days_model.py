@@ -34,7 +34,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
         _,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,

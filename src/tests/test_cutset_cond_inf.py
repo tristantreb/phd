@@ -32,7 +32,7 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim():
         model,
         HFEV1,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
@@ -236,7 +236,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim():
         model,
         HFEV1,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
         S,
@@ -312,7 +312,7 @@ def test_cutset_cond_compare_p_S_given_D_with_different_fev1_records_and_AR_chan
         model,
         HFEV1,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
         S,
@@ -396,7 +396,7 @@ def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_nonchanging_fev1_
             model_n_ar,
             HFEV1_n_ar,
             AR_vars,
-            uecFEV1_vars,
+            uFEV1_vars,
             ecFEV1_vars,
             ecFEF2575prctecFEV1_vars,
         ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
@@ -415,7 +415,7 @@ def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_nonchanging_fev1_
             model_single_ar,
             HFEV1_single_ar,
             AR,
-            uecFEV1_vars,
+            uFEV1_vars,
             ecFEV1_vars,
             ecFEF2575prctecFEV1_vars,
         ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
@@ -534,7 +534,7 @@ def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_changing_fev1_rec
             model_n_ar,
             HFEV1_n_ar,
             AR_vars,
-            uecFEV1_vars,
+            uFEV1_vars,
             ecFEV1_vars,
             ecFEF2575prctecFEV1_vars,
         ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
@@ -553,7 +553,7 @@ def test_var_elim_on_single_vs_n_ARs_gives_same_posteriors_for_changing_fev1_rec
             model_single_ar,
             HFEV1_single_ar,
             AR,
-            uecFEV1_vars,
+            uFEV1_vars,
             ecFEV1_vars,
             ecFEF2575prctecFEV1_vars,
         ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
@@ -656,7 +656,7 @@ def test_identity_AR_change_factor_against_single_AR_across_time_points_gives_sa
             model,
             HFEV1,
             AR,
-            uecFEV1_vars,
+            uFEV1_vars,
             ecFEV1_vars,
             ecFEF2575prctecFEV1_vars,
         ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(

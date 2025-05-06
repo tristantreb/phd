@@ -3,13 +3,13 @@ from typing import List
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from pgmpy.factors.discrete import TabularCPD
 from plotly.subplots import make_subplots
 
 import data.helpers as dh
 import inference.helpers as ih
 import models.cpts.helpers as cpth
 import models.helpers as mh
-from pgmpy.factors.discrete import TabularCPD
 
 plotsdir = dh.get_path_to_main() + "/PlotsBreathe/Longitudinal_model/"
 
@@ -133,7 +133,7 @@ def query_forwardly_across_days(
         get_uniform_message(shared_var.card) for shared_var in shared_variables
     ]
 
-    m_from_ecfev1_key = "Underlying ecFEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_ecfev1_key = "Underlying FEV1 (L) -> ['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_ecfev1_dict = {}
 
     while True:

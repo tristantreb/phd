@@ -618,7 +618,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     """
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -638,7 +638,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -654,7 +654,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         model,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -681,7 +681,7 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     """
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -695,7 +695,7 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     )
     model = graph_builders.fev1_fef2575_point_in_time_noise_factor_graph(
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -706,7 +706,7 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         model,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -730,7 +730,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
 
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -750,7 +750,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -766,7 +766,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_log(
         model,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -794,7 +794,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
 
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -808,7 +808,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -824,7 +824,7 @@ def o2sat_fev1_fef2575_point_in_time_model_noise_shared_healthy_vars_light(
         model,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -923,7 +923,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
 
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -946,7 +946,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -962,7 +962,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         model,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -996,7 +996,7 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     if light:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1014,7 +1014,7 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     else:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1031,7 +1031,7 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         )
     model = graph_builders.fev1_fef2575_point_in_time_noise_factor_graph(
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -1042,7 +1042,7 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
         model,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -1243,7 +1243,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
 
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1264,7 +1264,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     )
     model = graph_builders.fev1_fef2575_o2sat_point_in_time_noise_factor_graph(
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1280,7 +1280,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
         model,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1317,7 +1317,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
     if light:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1333,7 +1333,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
     else:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1351,13 +1351,13 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
         model,
         _,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     ) = graph_builders.fev1_fef2575_noise_n_days_model_temporal_ar(
         n,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -1369,7 +1369,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
         # inf_alg,
         HFEV1,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     )
@@ -1399,7 +1399,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
     if light:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1415,7 +1415,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
     else:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1433,13 +1433,13 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
         model,
         _,
         _,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     ) = graph_builders.fev1_fef2575_noise_n_days_model_shared_ar(
         n,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -1451,7 +1451,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
         # inf_alg,
         HFEV1,
         AR,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     )
@@ -1481,7 +1481,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
     if light:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1497,7 +1497,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
     else:
         (
             HFEV1,
-            uecFEV1,
+            uFEV1,
             ecFEV1,
             AR,
             ecFEF2575prctecFEV1,
@@ -1515,14 +1515,14 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
         model,
         _,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
         _,
     ) = graph_builders.fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
         n,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         ecFEF2575prctecFEV1,
@@ -1535,7 +1535,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
         # inf_alg,
         HFEV1,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
         S,
@@ -1565,7 +1565,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
 
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1589,7 +1589,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         _,
         # _,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         # O2SatFFA_vars,
         # IA_vars,
@@ -1599,7 +1599,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     ) = graph_builders.fev1_fef2575_o2sat_n_days_noise_factor_graph(
         n,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         # HO2Sat,
@@ -1618,7 +1618,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
         HFEV1,
         # HO2Sat,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         # O2SatFFA_vars,
         # IA_vars,
@@ -1648,7 +1648,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
 
     (
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1666,7 +1666,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
         _,
         _,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         O2SatFFA_vars,
         IA_vars,
@@ -1676,7 +1676,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
     ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model(
         n,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -1694,7 +1694,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
         HFEV1,
         HO2Sat,
         AR_vars,
-        uecFEV1_vars,
+        uFEV1_vars,
         ecFEV1_vars,
         O2SatFFA_vars,
         IA_vars,

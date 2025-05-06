@@ -25,7 +25,7 @@ def compute_log_p_D_given_M_for_noise_model(
         _,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         _,
@@ -322,7 +322,7 @@ def load_long_noise_model_through_time(
         _,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -374,7 +374,7 @@ def load_long_noise_model_through_time_light(
         _,
         inf_alg,
         HFEV1,
-        uecFEV1,
+        uFEV1,
         ecFEV1,
         AR,
         HO2Sat,
@@ -443,9 +443,9 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     uniform_from_fef2575 = {
         "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     }
-    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_hfev1_dict = {}
-    m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev_factor_key = "['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
     m_from_fev_factor_dict = {}
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
@@ -626,9 +626,9 @@ def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1_fef2575(
     uniform_from_fef2575 = {
         "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     }
-    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_hfev1_dict = {}
-    m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev_factor_key = "['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
     m_from_fev_factor_dict = {}
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
@@ -750,9 +750,9 @@ def calc_log_p_D_given_M_and_AR_for_ID_obs_fev1(
     uniform_from_fef2575 = {
         "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     }
-    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
     m_from_hfev1_dict = {}
-    m_from_fev_factor_key = "['Underlying ecFEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev_factor_key = "['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
     m_from_fev_factor_dict = {}
 
     # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual

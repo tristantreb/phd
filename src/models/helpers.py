@@ -21,7 +21,7 @@ def name_to_abbr_dict():
     return {
         "Healthy FEV1 (L)": "HFEV1",
         "ecFEV1 (L)": "ecFEV1",
-        "Underlying ecFEV1 (L)": "uecFEV1",
+        "Underlying FEV1 (L)": "uFEV1",
         "ecFEF25-75 % ecFEV1 (%)": "ecFEF25-75%ecFEV1",
         "Airway resistance (%)": "AR",
         # "Airway resistance": "AR",
@@ -71,7 +71,7 @@ def abbr_to_colname_dict():
     return {
         "HFEV1": "Healthy FEV1",
         "ecFEV1": "ecFEV1",
-        "uecFEV1": "uecFEV1",
+        "uFEV1": "uFEV1",
         "O2Sat": "O2 Saturation",
         "HO2Sat": "Healthy O2 Saturation",
         "ecFEF25-75%ecFEV1": "ecFEF2575%ecFEV1",
