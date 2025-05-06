@@ -48,15 +48,15 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
 
     vars = [AR]
     shared_vars = [HFEV1]
-    obs_vars = [ecFEV1.name]
+    # obs_vars = [ecFEV1.name]
     # obs_vars = [ecFEV1.name, O2Sat.name]
-    # obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
+    obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
     # obs_vars = [ecFEV1.name, O2Sat.name, ecFEF2575prctecFEV1.name]
 
     # Find the max FEV1 values
     # Given an ID, get the data which maximises ecFEV1, then ecFEF2575, then O2 Saturation
     idx_max_FEV1 = df_for_ID.sort_values(
-        by=["ecFEV1", "ecFEF2575", "O2 Saturation"], ascending=False
+        by=["ecFEV1", "ecFEF2575"], ascending=False
     ).index[0]
 
     # For each entry, create a two_days data structure that hold the current day as well as the day where the max FEV1 is observed
@@ -117,6 +117,6 @@ if __name__ == "__main__":
     res = pd.concat(res, ignore_index=True)
 
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_fev1_01052025.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_fev1_fef2575_06052025.xlsx",
         index=False,
     )
