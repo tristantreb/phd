@@ -13,11 +13,20 @@ import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_a
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx_granular")
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 # With step change
-df = df.loc[2445:2455]
-start_date = df["Date Recorded"].min()
-end_date = start_date + pd.Timedelta(days=len(df) - 1)
+
+df_step_change = df.loc[2445:2455]
+# Create a new date range with consecutive dates
+start_date = df_step_change["Date Recorded"].min()
+end_date = start_date + pd.Timedelta(days=len(df_step_change) - 1)
 date_range = pd.date_range(start=start_date, end=end_date, freq="D")
-df["Date Recorded"] = date_range
+df_step_change["Date Recorded"] = date_range
+# df_step_change = df_step_change[df_step_change['ecFEV1'].diff() <= 0][1:-1]
+
+df_constant = df.loc[0:10]
+assert df_constant.ID.unique()[0] == '101'
+
+ids = ['104', '101']
+df = pd.concat([df_step_change, df_constant])
 
 def process_id(inf_settings):
 
@@ -114,7 +123,7 @@ if __name__ == "__main__":
         # "527",
     ]
     # interesting_ids = df.ID.unique()
-    interesting_ids = ["104"]
+    interesting_ids = ids
 
     ar_priors = [
         # "uniform",
@@ -129,11 +138,11 @@ if __name__ == "__main__":
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1addmultnoise",
         # "_shift_span_[-20;20]_joint_sampling_3_days_model_ecfev1std0.068",
         # "_shape_factor_Gmain0.2_Gtails10_w0.73",
-        # "_shape_factor_grid_search_2",
+        "_shape_factor_grid_search_2",
         # "_shape_factor_weight_card11",
         # "_shape_factor_main_tail_card28",
         # "_shape_factor_main_tail_card23",
-        "_shape_factor_single_laplace_card9",
+        # "_shape_factor_single_laplace_card9",
         # "_shape_factor_single_laplace_0.001",
     ]
 
