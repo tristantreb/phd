@@ -12,18 +12,12 @@ import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_a
 
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx_granular")
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
-
 # With step change
-df_step_change = df.loc[2445:2455]
-start_date = df_step_change["Date Recorded"].min()
-end_date = start_date + pd.Timedelta(days=len(df_step_change) - 1)
+df = df.loc[2445:2455]
+start_date = df["Date Recorded"].min()
+end_date = start_date + pd.Timedelta(days=len(df) - 1)
 date_range = pd.date_range(start=start_date, end=end_date, freq="D")
-df_step_change["Date Recorded"] = date_range
-df_step_change = df_step_change[df_step_change['ecFEV1'].diff() <= 0][1:-1]
-
-# df_constant = df.loc[0:10]
-ids = ['104']
-df = pd.concat([df_step_change])
+df["Date Recorded"] = date_range
 
 def process_id(inf_settings):
 
@@ -54,7 +48,7 @@ def process_id(inf_settings):
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    dftmp[ecfef2575_cols] = np.nan 
+    # dftmp[ecfef2575_cols] = np.nan 
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -100,15 +94,15 @@ def process_id(inf_settings):
 if __name__ == "__main__":
 
     interesting_ids = [
-        "132",
-        "146",
-        "177",
-        "180",
-        "202",
-        "117",
-        "131",
-        "134",
-        "191",
+        # "132",
+        # "146",
+        # "177",
+        # "180",
+        # "202",
+        # "117",
+        # "131",
+        # "134",
+        # "191",
         # "139",
         # "253",
         # "101",
@@ -120,7 +114,7 @@ if __name__ == "__main__":
         # "527",
     ]
     # interesting_ids = df.ID.unique()
-    interesting_ids = ids
+    interesting_ids = ["104"]
 
     ar_priors = [
         # "uniform",
