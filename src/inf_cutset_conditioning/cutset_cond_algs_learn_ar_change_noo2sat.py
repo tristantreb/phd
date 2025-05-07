@@ -701,7 +701,7 @@ def calc_log_p_S_given_D_for_ID_any_obs(
                 row["idx ecFEF25-75 % ecFEV1 (%)"]
             ):
                 if debug:
-                    print("Both ecFEV1 and ecFEF25-75 observed")
+                    print("ecFEV1 observed")
                 log_p_D_given_M_for_row, dist_AR, dist_ecFEV1 = (
                     cca.get_AR_and_p_log_D_given_M_obs_fev1(
                         row,
