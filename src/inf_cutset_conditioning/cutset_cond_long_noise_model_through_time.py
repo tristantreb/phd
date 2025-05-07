@@ -3,6 +3,7 @@ import itertools
 
 # import inf_cutset_conditioning.cutset_cond_algs as cca
 import numpy as np
+import pandas as pd
 
 import data.breathe_data as bd
 import data.helpers as dh
@@ -12,6 +13,17 @@ import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_a
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx_granular")
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
+# With step change
+df_step_change = df.loc[2445:2455]
+start_date = df_step_change["Date Recorded"].min()
+end_date = start_date + pd.Timedelta(days=len(df_step_change) - 1)
+date_range = pd.date_range(start=start_date, end=end_date, freq="D")
+df_step_change["Date Recorded"] = date_range
+df_step_change = df_step_change[df_step_change['ecFEV1'].diff() <= 0][1:-1]
+
+# df_constant = df.loc[0:10]
+ids = ['104']
+df = pd.concat([df_step_change])
 
 def process_id(inf_settings):
 
@@ -42,7 +54,7 @@ def process_id(inf_settings):
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    dftmp[ecfef2575_cols] = np.nan
+    dftmp[ecfef2575_cols] = np.nan 
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -57,29 +69,29 @@ def process_id(inf_settings):
         n_days_consec=n_days_consec,
         light=False,
         debug=False,
-        get_p_s_given_d=False,
+        get_p_s_given_d=True,
         save=True,
     )
-    (
-        fig,
-        p_M_given_D,
-        log_p_D_given_M,
-        AR_given_M_and_D,
-        AR_given_M_and_all_D,
-        res_dict,
-    ) = out
-
     # (
-    #     log_p_S_given_D,
+    #     fig,
+    #     p_M_given_D,
+    #     log_p_D_given_M,
+    #     AR_given_M_and_D,
+    #     AR_given_M_and_all_D,
     #     res_dict,
     # ) = out
-    # res = {id: log_p_S_given_D}
-    # # Write results to file p_s_given_d.json
-    # with open(
-    #     f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d.json", "a"
-    # ) as f:
-    #     f.write(str(res) + "\n")
-    # f.close()
+
+    (
+        log_p_S_given_D,
+        res_dict,
+    ) = out
+    res = {id: log_p_S_given_D}
+    # Write results to file p_s_given_d.json
+    with open(
+        f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d.json", "a"
+    ) as f:
+        f.write(str(res) + "\n")
+    f.close()
 
     return -1
 
@@ -88,14 +100,14 @@ def process_id(inf_settings):
 if __name__ == "__main__":
 
     interesting_ids = [
-        # "132",
-        # "146",
-        # "177",
-        # "180",
-        # "202",
-        # "117",
-        # "131",
-        # "134",
+        "132",
+        "146",
+        "177",
+        "180",
+        "202",
+        "117",
+        "131",
+        "134",
         "191",
         # "139",
         # "253",
@@ -108,6 +120,7 @@ if __name__ == "__main__":
         # "527",
     ]
     # interesting_ids = df.ID.unique()
+    interesting_ids = ids
 
     ar_priors = [
         # "uniform",
@@ -126,8 +139,8 @@ if __name__ == "__main__":
         # "_shape_factor_weight_card11",
         # "_shape_factor_main_tail_card28",
         # "_shape_factor_main_tail_card23",
-        # "_shape_factor_single_laplace_card9",
-        "_shape_factor_single_laplace_0.001",
+        "_shape_factor_single_laplace_card9",
+        # "_shape_factor_single_laplace_0.001",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
