@@ -50,7 +50,7 @@ def run_long_noise_model_through_time(
     )
 
     if get_p_s_given_d:
-        return calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+        return calc_log_p_S_given_D_for_ID_any_obs(
             df,
             inf_alg,
             HFEV1,
@@ -117,7 +117,7 @@ def run_long_noise_model_through_time_light(
     #     )
     # )
 
-    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+    (log_p_S_given_D, res_dict) = calc_log_p_S_given_D_for_ID_any_obs(
         df,
         inf_alg,
         HFEV1,
@@ -596,7 +596,7 @@ def fuse_results_from_conditioned_models(
     return p_M_given_D, AR_given_M_and_D, AR_given_M_and_all_D
 
 
-def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
+def calc_log_p_S_given_D_for_ID_any_obs(
     df,
     inf_alg,
     HFEV1,
@@ -668,6 +668,10 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
                     f"HFEV1_obs_idx: {HFEV1_bin_idx}, S_obs_idx: {S_obs_idx}, vevidence_ar: {vevidence_ar.values}"
                 )
 
+            print(
+                f"curr_date: {curr_date}, row['idx ecFEV1 (L)']: {row['idx ecFEV1 (L)']}, row['idx ecFEF25-75 % ecFEV1 (%)']: {row['idx ecFEF25-75 % ecFEV1 (%)']}"
+            )
+
             if not np.isnan(row["idx ecFEV1 (L)"]) and not np.isnan(
                 row["idx ecFEF25-75 % ecFEV1 (%)"]
             ):
@@ -687,14 +691,36 @@ def calc_log_p_S_given_D_for_ID_ecfev1_fef2575(
                     ecFEF2575prctecFEV1,
                     AR,
                     vevidence_ar,
-                    uniform_from_fef2575,
+                    {},
                     m_from_hfev1_dict,
                     m_from_hfev1_key,
                     m_from_fev_factor_dict,
                     m_from_fev_factor_key,
                 )
+            elif not np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print("Both ecFEV1 and ecFEF25-75 observed")
+                log_p_D_given_M_for_row, dist_AR, dist_ecFEV1 = (
+                    cca.get_AR_and_p_log_D_given_M_obs_fev1(
+                        row,
+                        inf_alg,
+                        HFEV1,
+                        HFEV1_bin_idx,
+                        ecFEV1,
+                        AR,
+                        vevidence_ar,
+                        uniform_from_fef2575,
+                        m_from_hfev1_dict,
+                        m_from_hfev1_key,
+                        m_from_fev_factor_dict,
+                        m_from_fev_factor_key,
+                    )
+                )
+                dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
             else:
-                raise ValueError("Both ecFEV1 and ecFEF25-75 must be observed")
+                raise ValueError(f"No ecFEV1 or ecFEF25-75 observed for row {n}")
 
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
             res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
