@@ -668,10 +668,6 @@ def calc_log_p_S_given_D_for_ID_any_obs(
                     f"HFEV1_obs_idx: {HFEV1_bin_idx}, S_obs_idx: {S_obs_idx}, vevidence_ar: {vevidence_ar.values}"
                 )
 
-            print(
-                f"curr_date: {curr_date}, row['idx ecFEV1 (L)']: {row['idx ecFEV1 (L)']}, row['idx ecFEF25-75 % ecFEV1 (%)']: {row['idx ecFEF25-75 % ecFEV1 (%)']}"
-            )
-
             if not np.isnan(row["idx ecFEV1 (L)"]) and not np.isnan(
                 row["idx ecFEF25-75 % ecFEV1 (%)"]
             ):
