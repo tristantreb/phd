@@ -191,11 +191,13 @@ def load_long_noise_model_through_time(
         print(
             f"Warning - min_possible_hfev1_under_model: {min_possible_hfev1_under_model}"
         )
-    HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
+    # HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
+    # HFEV1_obs_idx_list = [40]
     cond_hfev1_card = len(HFEV1_obs_idx_list)
 
     S_obs_idx_list = range(S.card)
     h_s_obs_states = list(itertools.product(HFEV1_obs_idx_list, S_obs_idx_list))
+    # print(f"h_s_obs_states: {h_s_obs_states}")
 
     (
         _,
