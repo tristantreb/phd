@@ -41,6 +41,8 @@ def get_mock_data(fev1_mode="changing"):
                 "Sex": "Male",
                 # VE against VE work
                 "ecFEV1": [4.2, 2.2, 1.8],
+                # "ecFEV1": [2.2, 2.2, 2.2],
+                # "ecFEV1": [4.2, 2.2, 1.8],
                 "ecFEF2575%ecFEV1": [90, 90, 90],
                 # VE against VE fails - 3rd day shifts right
                 # "ecFEV1": [2.2, 2.2, 4.2],

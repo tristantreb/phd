@@ -45,9 +45,7 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_in_evidence():
         ecfev1_noise_model_suffix,
         light=False,
     )
-    df_mock = data.add_idx_obs_cols(
-        df_mock, ecFEV1_vars[0]
-    )
+    df_mock = data.add_idx_obs_cols(df_mock, ecFEV1_vars[0])
     var_elim = VariableElimination(model)
 
     # Run variable elimination
@@ -111,6 +109,7 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_in_evidence():
     assert_low_element_wise_max_diff(ar2_cc, ar2_ve)
 
     return None
+
 
 def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_and_fef2575_in_evidence():
     """
@@ -329,7 +328,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_in_evidence():
 
     # Model parameters
     ar_prior = "uniform"
-    ar_change_cpt_suffix = "_shape_factor_single_laplace_card5"
+    ar_change_cpt_suffix = "_shape_factor_single_laplace_card3"
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
 
     (
@@ -352,9 +351,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_in_evidence():
     )
     var_elim = VariableElimination(model)
 
-    df_mock = data.add_idx_obs_cols(
-        df_mock, ecFEV1_vars[0]
-    )
+    df_mock = data.add_idx_obs_cols(df_mock, ecFEV1_vars[0])
     evidence_dict = {}
     for i in range(n_days):
         evidence_dict[ecFEV1_vars[i].name] = df_mock.loc[i, "idx ecFEV1 (L)"]
@@ -378,10 +375,10 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_in_evidence():
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         n_days_consec=n_days_consec,
         light=False,
-        get_p_s_given_d=True,
+        get_p_s_given_d=True
     )
 
-    p_S_given_D = np.exp(log_p_S_given_D)
+    p_S_given_D = np.exp(log_p_S_given_D - np.max(log_p_S_given_D))
     p_S_given_D /= np.sum(p_S_given_D)
 
     # Assert results are equal
@@ -400,9 +397,9 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_and_fef2575_in
 
     (
         model,
-        HFEV1,
-        AR_vars,
-        uFEV1_vars,
+        _,
+        _,
+        _,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
         S,
@@ -450,7 +447,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_and_fef2575_in
         get_p_s_given_d=True,
     )
 
-    p_S_given_D = np.exp(log_p_S_given_D)
+    p_S_given_D = np.exp(log_p_S_given_D - np.max(log_p_S_given_D))
     p_S_given_D /= np.sum(p_S_given_D)
 
     # Assert results are equal

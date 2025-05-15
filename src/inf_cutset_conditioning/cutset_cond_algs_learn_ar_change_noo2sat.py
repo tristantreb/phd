@@ -466,7 +466,7 @@ def fuse_results_to_compute_P_S_given_D(
     S,
     log_p_D_given_M,
 ):
-    # P(S|D) = sum_h ( P(D|S, H) P(H) )
+    # P(D|S) = sum_h ( P(D|S, H) P(H) )
     # P(D|S, H) = P(D|M)
 
     # Multiply the data over all days
@@ -481,17 +481,17 @@ def fuse_results_to_compute_P_S_given_D(
     # Handle case where the smallest possible inferable HFEV1 is larger than 1.
     argmin_hfev1 = HFEV1.card - p_D_given_M.shape[0]
     hfev1_cpt = HFEV1.cpt[argmin_hfev1:]
-    p_S_given_M = np.matmul(hfev1_cpt, p_D_given_M)
+    p_D_given_S = np.matmul(hfev1_cpt, p_D_given_M)
 
     # Check for 0 probabilities
-    if np.any(p_S_given_M == 0):
+    if np.any(p_D_given_S == 0):
         print(
-            f"Warning - ID {id}, P(S|M) has 0 probabilities p_S_given_M: {p_S_given_M}"
+            f"Warning - ID {id}, P(S|M) has 0 probabilities p_D_given_S: {p_D_given_S}"
         )
 
     # Back to log space
-    log_p_S_given_M = np.log(p_S_given_M)
+    log_p_D_given_S = np.log(p_D_given_S)
     # Add back max to compare to merge result with other individuals'
-    log_p_S_given_M += max
+    log_p_D_given_S += max
 
-    return log_p_S_given_M
+    return log_p_D_given_S
