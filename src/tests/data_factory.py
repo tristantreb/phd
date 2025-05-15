@@ -18,7 +18,7 @@ def get_data_df_template(n_days):
     return df_mock
 
 
-def get_mock_data(fev1_mode):
+def get_mock_data(fev1_mode="changing"):
     if fev1_mode == "identical":
         df_mock = pd.DataFrame(
             {
@@ -40,14 +40,14 @@ def get_mock_data(fev1_mode):
                 "Age": 35,
                 "Sex": "Male",
                 # VE against VE work
-                # "ecFEV1": [4.2, 2.2, 1.8],
-                # "ecFEF2575%ecFEV1": [90, 90, 90],
+                "ecFEV1": [4.2, 2.2, 1.8],
+                "ecFEF2575%ecFEV1": [90, 90, 90],
                 # VE against VE fails - 3rd day shifts right
                 # "ecFEV1": [2.2, 2.2, 4.2],
                 # "ecFEF2575%ecFEV1": [90, 90, 90],
                 # VE aganst VE fail - weird becasue almost right
-                "ecFEV1": [2.2, 2.2, 4.5],
-                "ecFEF2575%ecFEV1": [90, 90, 90],
+                # "ecFEV1": [2.2, 2.2, 4.5],
+                # "ecFEF2575%ecFEV1": [90, 90, 90],
                 # "ecFEF2575%ecFEV1": [12, 120, 150],
             }
         )

@@ -191,7 +191,7 @@ def load_long_noise_model_through_time(
         print(
             f"Warning - min_possible_hfev1_under_model: {min_possible_hfev1_under_model}"
         )
-    # HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
+    HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
     # HFEV1_obs_idx_list = [40]
     cond_hfev1_card = len(HFEV1_obs_idx_list)
 
@@ -718,7 +718,7 @@ def calc_log_p_S_given_D_for_ID_any_obs(
                 )
                 dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
             else:
-                raise ValueError(f"No ecFEV1 or ecFEF25-75 observed for row {n}")
+                raise ValueError(f"No ecFEV1 observed for row {n}")
 
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
             res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
