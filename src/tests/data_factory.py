@@ -91,6 +91,7 @@ def get_mock_data_2_days(fev1_mode):
 
 def add_idx_obs_cols(df, ecFEV1, ecFEF2575prctecFEV1=None):
     df["idx ecFEV1 (L)"] = [ecFEV1.get_bin_idx_for_value(x) for x in df["ecFEV1"]]
+    # If there are no idx col, then ecFEF2575prctecFEV1 is not added to evidence in custom cutset cond alg
     if ecFEF2575prctecFEV1 is not None:
         df["idx ecFEF2575%ecFEV1"] = [
             ecFEF2575prctecFEV1.get_bin_idx_for_value(x) for x in df["ecFEF2575%ecFEV1"]
