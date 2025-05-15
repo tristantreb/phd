@@ -926,11 +926,11 @@ def get_AR_and_p_log_D_given_M_obs_fev1(
 ):
 
     # Get P(ecFEV1 | model conditionned on HFEV1_obs)
-    precomp_messages1 = precomp_messages
+    precomp_messages1 = precomp_messages.copy()
     ref = f"{HFEV1_bin_idx}"
     add_ref = True
     if ref in m_from_hfev1_dict:
-        precomp_messages.update(m_from_hfev1_dict[ref])
+        precomp_messages1.update(m_from_hfev1_dict[ref])
         add_ref = False
     res1, messages = bp.query(
         variables=[ecFEV1.name],
@@ -946,11 +946,11 @@ def get_AR_and_p_log_D_given_M_obs_fev1(
     log_p_D_given_M = np.log(p_ecFEV1)
 
     # Get AR
-    precomp_messages2 = precomp_messages
+    precomp_messages2 = precomp_messages.copy()
     ref = f"{HFEV1_bin_idx}_{data['idx ecFEV1 (L)']}"
     add_ref = True
     if ref in m_from_fev_factor_dict:
-        precomp_messages.update(m_from_fev_factor_dict[ref])
+        precomp_messages2.update(m_from_fev_factor_dict[ref])
         add_ref = False
     res2, messages = bp.query(
         variables=[AR.name],
