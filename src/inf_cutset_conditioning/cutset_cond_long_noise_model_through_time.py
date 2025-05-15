@@ -154,7 +154,8 @@ if __name__ == "__main__":
         # "_shape_factor_single_laplace_card9",
         # "_shape_factor_single_laplace_0.5",
         # "_shape_factor_single_laplace_1.5",
-        "_shape_factor_single_laplace_card10",
+        # "_shape_factor_single_laplace_card10",
+        "_shape_factor_single_laplace_card3",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
