@@ -15,38 +15,34 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 # With step change
 
 # df_step_change = df.loc[2445:2475]
-df_step_change = df.loc[2454:2458]
+# df_step_change = df.loc[2454:2458]
 # # Create a new date range with consecutive dates
-start_date = df_step_change["Date Recorded"].min()
-end_date = start_date + pd.Timedelta(days=len(df_step_change) - 1)
-date_range = pd.date_range(start=start_date, end=end_date, freq="D")
-df_step_change["Date Recorded"] = date_range
+# start_date = df_step_change["Date Recorded"].min()
+# end_date = start_date + pd.Timedelta(days=len(df_step_change) - 1)
+# date_range = pd.date_range(start=start_date, end=end_date, freq="D")
+# df_step_change["Date Recorded"] = date_range
 # df_step_change = df_step_change[df_step_change['ecFEV1'].diff() <= 0][1:-1]
 
 # df_constant = df.loc[0:30]
 # df_constant = df.loc[0:5]
 
-ids = ["104"]
-df = df_step_change
+# ids = ["101", "104"]
 # df = pd.concat([df_step_change, df_constant])
 
 
 def process_id(inf_settings):
 
-    get_p_s_given_d = True
+    get_p_s_given_d = False
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_days_consec = 3
-    # ecfev1_noise_model_suffix = "_std_0.068"
-    # ecfev1_noise_model_suffix = "_std_0.23"
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
-    # ecfev1_noise_model_suffix = "_std_add_mult_fev1_midbin"
 
     dftmp, start_idx, end_idx = dh.find_longest_consec_series(
         df[df.ID == id], n_days=n_days_consec
     )
     # Select only X days per ID
-    # dftmp = dftmp.head(10)
+    dftmp = dftmp.head(10).reset_index()
 
     print(
         f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
@@ -64,7 +60,7 @@ def process_id(inf_settings):
     # Obs FEV1 and FEF25-75
     #
     # Obs FEV1
-    dftmp[ecfef2575_cols] = np.nan
+    # dftmp[ecfef2575_cols] = np.nan
     # Obs no data
     # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -91,7 +87,8 @@ def process_id(inf_settings):
         res = {id: log_p_S_given_D}
         # Write results to file p_s_given_d.json
         with open(
-            f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d_card_df_constant.json", "a"
+            f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d.json",
+            "a",
         ) as f:
             f.write(str(res) + "\n")
         f.close()
@@ -134,8 +131,8 @@ if __name__ == "__main__":
     #     # For step change
     #     "104",
     # ]
-    # interesting_ids = df.ID.unique()
-    interesting_ids = ids
+    interesting_ids = df.ID.unique()
+    interesting_ids = ['104']
 
     ar_priors = [
         # "uniform",
@@ -154,9 +151,9 @@ if __name__ == "__main__":
         # "_shape_factor_weight_card11",
         # "_shape_factor_main_tail_card28",
         # "_shape_factor_main_tail_card23",
-        "_shape_factor_single_laplace_card9",
+        # "_shape_factor_single_laplace_card9",
         # "_shape_factor_single_laplace_0.5",
-        # "_shape_factor_single_laplace_1.5",
+        "_shape_factor_single_laplace_1.5",
         # "_shape_factor_single_laplace_card10",
         # "_shape_factor_single_laplace_card3",
     ]
