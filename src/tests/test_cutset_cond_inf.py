@@ -46,7 +46,7 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_in_evidence():
         light=False,
     )
     df_mock = data.add_idx_obs_cols(
-        df_mock, ecFEV1_vars[0], ecFEF2575prctecFEV1_vars[0]
+        df_mock, ecFEV1_vars[0]
     )
     var_elim = VariableElimination(model)
 
@@ -90,20 +90,20 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_in_evidence():
     AR = AR_vars[0]
     AR.name = AR.name.split(" day")[0]
 
-    # plot_diff_3_days(
-    #     HFEV1,
-    #     AR_vars[0],
-    #     "Variable elimination",
-    #     "Cutset conditioning",
-    #     hfev1_ve,
-    #     hfev1_cc,
-    #     ar0_ve,
-    #     ar0_cc,
-    #     ar1_ve,
-    #     ar1_cc,
-    #     ar2_cc,
-    #     ar2_ve,
-    # )
+    plot_diff_3_days(
+        HFEV1,
+        AR_vars[0],
+        "Variable elimination",
+        "Cutset conditioning",
+        hfev1_ve,
+        hfev1_cc,
+        ar0_ve,
+        ar0_cc,
+        ar1_ve,
+        ar1_cc,
+        ar2_cc,
+        ar2_ve,
+    )
 
     assert_low_element_wise_max_diff(hfev1_cc, hfev1_ve)
     assert_low_element_wise_max_diff(ar0_cc, ar0_ve)
@@ -112,7 +112,7 @@ def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_in_evidence():
 
     return None
 
-def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_fef2575_in_evidence():
+def test_cutset_cond_gives_same_posteriors_as_var_elim_with_fev1_and_fef2575_in_evidence():
     """
     End to end test for light model with only fev1 side
     3 days model
@@ -334,11 +334,11 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_in_evidence():
 
     (
         model,
-        HFEV1,
-        AR_vars,
-        uFEV1_vars,
+        _,
+        _,
+        _,
         ecFEV1_vars,
-        ecFEF2575prctecFEV1_vars,
+        _,
         S,
     ) = mb.fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
         n_days,
@@ -353,7 +353,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_in_evidence():
     var_elim = VariableElimination(model)
 
     df_mock = data.add_idx_obs_cols(
-        df_mock, ecFEV1_vars[0], ecFEF2575prctecFEV1_vars[0]
+        df_mock, ecFEV1_vars[0]
     )
     evidence_dict = {}
     for i in range(n_days):
