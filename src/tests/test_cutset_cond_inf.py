@@ -375,7 +375,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_in_evidence():
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         n_days_consec=n_days_consec,
         light=False,
-        get_p_s_given_d=True
+        get_p_s_given_d=True,
     )
 
     p_S_given_D = np.exp(log_p_S_given_D - np.max(log_p_S_given_D))
@@ -453,6 +453,10 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_and_fef2575_in
     # Assert results are equal
     assert_low_element_wise_max_diff(p_S_given_D, s_ve)
 
+
+"""
+Those tests shouldn't be needed anymore since I correctly implemented testing the cutset alg against var elim for P(S|D)
+"""
 
 # def test_cutset_cond_compare_p_S_given_D_with_different_fev1_records_and_AR_change_factors():
 #     """
