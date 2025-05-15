@@ -873,7 +873,7 @@ def get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
     p_ecFEV1 = dist_ecFEV1[data["idx ecFEV1 (L)"]]
     log_p_D_given_M = np.log(p_ecFEV1)
 
-    # Get P(ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1)
+    # Get P(AR, ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1) 
     precomp_messages2 = precomp_messages
     ref = f"{HFEV1_bin_idx}_{data['idx ecFEV1 (L)']}"
     add_ref = True
