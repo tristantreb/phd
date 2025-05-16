@@ -113,7 +113,7 @@ def run_long_noise_model_through_time(
 
             # p_M_given_D has HFEV1.card
             # AR_given_M_and_D has N x AR.card
-            fig = cca.plot_cutset_cond_results(
+            fig = cca.plot_short_term_long_model_cutset_cond_results(
                 df,
                 HFEV1,
                 p_HFEV1_given_D,
@@ -122,6 +122,15 @@ def run_long_noise_model_through_time(
                 model_spec_txt_for_S,
                 save,
             )
+            # fig = cca.plot_cutset_cond_results(
+            #     df,
+            #     HFEV1,
+            #     p_HFEV1_given_D,
+            #     AR,
+            #     AR_given_HFEV1_and_D,
+            #     model_spec_txt_for_S,
+            #     save,
+            # )
 
         return (
             fig,

@@ -873,7 +873,7 @@ def get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
     p_ecFEV1 = dist_ecFEV1[data["idx ecFEV1 (L)"]]
     log_p_D_given_M = np.log(p_ecFEV1)
 
-    # Get P(AR, ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1) 
+    # Get P(AR, ecFEF2575 | model conditionned on HFEV1_obs, ecFEV1)
     precomp_messages2 = precomp_messages
     ref = f"{HFEV1_bin_idx}_{data['idx ecFEV1 (L)']}"
     add_ref = True
@@ -1078,6 +1078,140 @@ def fuse_results_from_conditioned_models(
     p_M_given_D /= p_M_given_D.sum()
     AR_given_M_and_D = np.matmul(AR_given_M_and_all_D, p_M_given_D)
     return p_M_given_D, log_p_D_given_M, AR_given_M_and_D, AR_given_M_and_all_D
+
+
+def plot_short_term_long_model_cutset_cond_results(
+    df,
+    HFEV1,
+    p_HFEV1_given_D,
+    AR,
+    AR_given_M_and_D,
+    model_spec_txt,
+    save,
+):
+    id = df.loc[0, "ID"]
+    layout = [
+        [
+            {"type": "scatter", "rowspan": 1, "colspan": 1},
+            {"type": "scatter", "rowspan": 1, "colspan": 1},
+        ],
+        [None, {"type": "scatter", "rowspan": 1, "colspan": 1}],
+        [None, {"type": "heatmap", "rowspan": 2, "colspan": 1}],
+        [None, None],
+    ]
+    fig = make_subplots(
+        rows=np.shape(layout)[0],
+        cols=np.shape(layout)[1],
+        specs=layout,
+        vertical_spacing=0.05,
+        horizontal_spacing=0.2,
+        shared_xaxes=True,
+    )
+
+    # Add HFEV1 posterior
+    ih.plot_histogram(fig, HFEV1, p_HFEV1_given_D, 0, HFEV1.b, 1, 1, annot=True)
+    fig.update_xaxes(title_text=HFEV1.name, title_standoff=0.4, row=1, col=1)
+    fig.update_yaxes(title_text="p", row=1, col=1)
+
+    # Add ecFEV1
+    fig.add_trace(
+        go.Scatter(
+            y=df["ecFEV1"],
+            x=df["Date Recorded"],
+            mode="lines+markers",
+            marker=dict(size=4),
+            line=dict(width=1),
+        ),
+        row=1,
+        col=2,
+    )
+    fig.update_yaxes(
+        title="ecFEV1 (L)",
+        row=1,
+        col=2,
+        range=[np.nanmin(df.ecFEV1) * 0.98, np.nanmax(df.ecFEV1) * 1.02],
+    )
+
+    # Add ecFEF2575%ecFEV1
+    fig.add_trace(
+        go.Scatter(
+            y=df["ecFEF2575%ecFEV1"],
+            x=df["Date Recorded"],
+            mode="lines+markers",
+            marker=dict(size=4),
+            line=dict(width=1),
+        ),
+        row=2,
+        col=2,
+    )
+    fig.update_yaxes(
+        title="ecFEF2575<br>% ecFEV1",
+        row=2,
+        col=2,
+        range=[
+            np.nanmin(df["ecFEF2575%ecFEV1"]) * 0.98,
+            np.nanmax(df["ecFEF2575%ecFEV1"]) * 1.02,
+        ],
+    )
+
+    # Add heatmap with AR posteriors
+    df1 = pd.DataFrame(
+        data=AR_given_M_and_D,
+        columns=AR.get_bins_str(),
+        index=df["Date Recorded"].apply(lambda date: date.strftime("%Y-%m-%d")),
+    )
+    colorscale = [
+        [0, "white"],
+        [0.01, "red"],
+        [0.05, "yellow"],
+        [0.1, "cyan"],
+        [0.6, "blue"],
+        [1, "black"],
+    ]
+
+    fig.add_trace(
+        go.Heatmap(z=df1.T, x=df1.index, y=df1.columns, coloraxis="coloraxis1"),
+        row=3,
+        col=2,
+    )
+    fig.update_yaxes(
+        title_text=AR.name,
+        tickmode="array",
+        tickvals=np.linspace(AR.a, AR.b, 10),
+        row=3,
+        col=2,
+    )
+    fig.update_xaxes(
+        title_text="Date (categorical)",
+        row=3,
+        col=2,
+        nticks=10,
+        type="category",
+    )
+
+    title = f"{id} - Results after fusing all P(M_h|D) {len(df)} entries<br>{model_spec_txt}"
+    fig.update_layout(
+        font=dict(size=8),
+        height=500,
+        width=700,
+        title=title,
+        coloraxis1=dict(
+            colorscale=colorscale,
+            colorbar_x=1,
+            colorbar_y=0.24,
+            colorbar_thickness=10,
+            colorbar_len=0.52,
+        ), 
+        title_font_size=10,
+        showlegend=False,
+    )
+
+    if save:
+        fig.write_image(
+            dh.get_path_to_main() + f"/PlotsBreathe/Cutset_conditioning/{title}.png",
+            scale=3,
+        )
+    return fig
 
 
 def plot_cutset_cond_results(
