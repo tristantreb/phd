@@ -132,7 +132,7 @@ if __name__ == "__main__":
     #     "104",
     # ]
     interesting_ids = df.ID.unique()
-    interesting_ids = ['104']
+    # interesting_ids = ['104']
 
     ar_priors = [
         # "uniform",
