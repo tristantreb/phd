@@ -36,17 +36,18 @@ def process_id(inf_settings):
     get_p_s_given_d = True
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
-    n_days_consec = 3
+    n_missing_days_allowed = 2
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
 
-    dftmp, start_idx, end_idx = dh.find_longest_consec_series(
-        df[df.ID == id], n_days=n_days_consec
+    df_pre, start_idx, end_idx = dh.find_longest_conseq_sequence(
+        df[df.ID == id], n_missing_days_allowed=n_missing_days_allowed
     )
-    for ndays in [5, 10, 15, 20, 25, 30, 50]:
+    for ndays in [5, 8, 10, 15, 20, 25, 30, 50, 100]:
         print(f"Processing ID {id} with sequences of {ndays} days")
-        dftmp = dftmp.head(ndays).reset_index()
-        if len(dftmp) < ndays:
-            continue
+        dftmp = df_pre.head(ndays).reset_index()
+        # if len(dftmp) < ndays:
+        #     print(f"Skipping ID {id}, n entries < {ndays} days")
+        #     continue
 
         print(
             f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
@@ -91,7 +92,7 @@ def process_id(inf_settings):
             res = {id: log_p_S_given_D}
             # Write results to file p_s_given_d.json
             with open(
-                f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d_{ndays}days.json",
+                f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d_{ndays}d.json",
                 "a",
             ) as f:
                 f.write(str(res) + "\n")

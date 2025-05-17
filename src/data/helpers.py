@@ -133,14 +133,16 @@ def add_drug_therapy_shapes_for_ID(fig, df_for_ID, drug_df):
     return -1
 
 
-def find_longest_consec_series(df_for_ID, n_days=3):
+def find_longest_conseq_sequence(df_for_ID, n_missing_days_allowed=0):
 
     df_for_ID = df_for_ID.reset_index(drop=True)
     df_for_ID["Prev day"] = df_for_ID["Date Recorded"].shift(1)
     df_for_ID["Days elapsed"] = df_for_ID["Date Recorded"] - df_for_ID["Prev day"]
 
     # Get first idx where Days elapsed is greater than 1
-    idx = df_for_ID[df_for_ID["Days elapsed"] > pd.Timedelta(days=n_days)].index
+    idx = df_for_ID[
+        df_for_ID["Days elapsed"] > pd.Timedelta(days=n_missing_days_allowed + 1)
+    ].index
     # Add the first idx
     idx = idx.insert(0, 0)
     # Add last idx
@@ -163,12 +165,18 @@ def split_ID_data_in_groups(df, group_size):
     def split_long_series_in_chunks(df, chunk_size):
         df.reset_index(inplace=True, drop=True)
         id = df.ID.unique()[0]
-        df.rename(columns={'ID': 'ID_chunks'}, inplace=True)
+        df.rename(columns={"ID": "ID_chunks"}, inplace=True)
         df_id = df[df.ID_chunks == id]
         for i in range(0, len(df_id), chunk_size):
             df_id.loc[i : i + chunk_size, "ID_chunks"] = f"{id}_{i//chunk_size}"
         return df_id
 
-    df_new = df.groupby('ID').apply(lambda x: split_long_series_in_chunks(x, group_size))
-    df_new = df_new.reset_index().drop(columns=['level_1']).rename(columns={'ID': 'ID_init','ID_chunks': 'ID'})
+    df_new = df.groupby("ID").apply(
+        lambda x: split_long_series_in_chunks(x, group_size)
+    )
+    df_new = (
+        df_new.reset_index()
+        .drop(columns=["level_1"])
+        .rename(columns={"ID": "ID_init", "ID_chunks": "ID"})
+    )
     return df_new
