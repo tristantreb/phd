@@ -36,7 +36,7 @@ def process_id(inf_settings):
     get_p_s_given_d = True
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
-    n_missing_days_allowed = 2
+    n_missing_days_allowed = 1
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
 
     df_pre, start_idx, end_idx = dh.find_longest_conseq_sequence(
@@ -77,7 +77,7 @@ def process_id(inf_settings):
             ar_change_cpt_suffix=ar_change_cpt_suffix,
             ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
             fef2575_cpt_suffix="",
-            n_days_consec=n_days_consec,
+            n_days_consec=n_missing_days_allowed+1,
             light=False,
             debug=False,
             get_p_s_given_d=get_p_s_given_d,
@@ -92,7 +92,7 @@ def process_id(inf_settings):
             res = {id: log_p_S_given_D}
             # Write results to file p_s_given_d.json
             with open(
-                f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d_{ndays}d.json",
+                f"{dh.get_path_to_src()}/inf_cutset_conditioning/p_s_given_d_card14_{ndays}d.json",
                 "a",
             ) as f:
                 f.write(str(res) + "\n")
