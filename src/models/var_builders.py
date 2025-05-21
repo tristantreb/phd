@@ -1076,6 +1076,10 @@ def set_temporal_AR_params(AR, ar_change_cpt_suffix, ar_prior):
         Var_ar_change = DiscreteVariableNode(
             "AR change factor shape", 1, 14, 1, {"type": "uniform"}
         )
+    elif ar_change_cpt_suffix == "_shape_factor_single_laplace_1.7":
+        Var_ar_change = DiscreteVariableNode(
+            "AR change factor shape", 1, 1, 1, {"type": "uniform"}
+        )
     elif ar_change_cpt_suffix == "_shape_factor_single_laplace_card5":
         Var_ar_change = DiscreteVariableNode(
             "AR change factor shape", 1, 5, 1, {"type": "uniform"}
