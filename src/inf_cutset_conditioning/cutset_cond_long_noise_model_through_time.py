@@ -33,7 +33,7 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 
 def process_id(inf_settings):
 
-    get_p_s_given_d = True
+    get_p_s_given_d = False
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_missing_days_allowed = 1
@@ -43,7 +43,7 @@ def process_id(inf_settings):
         df[df.ID == id], n_missing_days_allowed=n_missing_days_allowed
     )
     # for ndays in [5, 8, 10, 15, 20, 25, 30, 50, 100]:
-    for ndays in [500, 1000]:
+    for ndays in [100]:
         print(f"Processing ID {id} with sequences of {ndays} days")
         dftmp = df_pre.head(ndays).reset_index()
         # if len(dftmp) < ndays:
@@ -115,29 +115,37 @@ def process_id(inf_settings):
 # Run the function in parallel using ProcessPoolExecutor
 if __name__ == "__main__":
 
-    # interesting_ids = [
-    #     "132",
-    #     "146",
-    #     "177",
-    #     "180",
-    #     "202",
-    #     "117",
-    #     "131",
-    #     "134",
-    #     "191",
-    #     "139",
-    #     "253",
-    #     "101",
-    #     # Also from consec values
-    #     "405",
-    #     "272",
-    #     "201",
-    #     "203",
-    #     "527",
-    #     # For step change
-    #     "104",
-    # ]
-    interesting_ids = df.ID.unique()
+    interesting_ids = [
+        "146",
+        "177",
+        "180",
+        # "202",
+        "117",
+        # "131",
+        # "132",
+        # "134",
+        # "191",
+        "139",
+        # "253",
+        "101",
+        # Also from consec values
+        "405",
+        "272",
+        "201",
+        "203",
+        # "527",
+        # For step change
+        # "104",
+    ]
+    ids_narrowed_in_point_in_time = [
+        '104',
+        '107',
+        '202',
+        '210',
+        '372',
+        '433',
+    ]
+    # interesting_ids = df.ID.unique()
     # interesting_ids = ['104']
 
     ar_priors = [
@@ -159,14 +167,14 @@ if __name__ == "__main__":
         # "_shape_factor_main_tail_card23",
         # "_shape_factor_single_laplace_card9",
         # "_shape_factor_single_laplace_0.5",
-        # "_shape_factor_single_laplace_1.5",
-        "_shape_factor_single_laplace_card14",
+        "_shape_factor_single_laplace_1.7",
+        # "_shape_factor_single_laplace_card14",
         # "_shape_factor_single_laplace_card3",
     ]
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
     inf_settings = list(
-        itertools.product(ar_change_cpt_suffix, ar_priors, interesting_ids)
+        itertools.product(ar_change_cpt_suffix, ar_priors, ids_narrowed_in_point_in_time)
     )
 
     # num_cores = os.cpu_count()
