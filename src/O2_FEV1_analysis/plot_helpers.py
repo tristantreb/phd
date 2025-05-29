@@ -195,10 +195,10 @@ def plot_o2_fev_with_displots(O2_FEV1, x, y, ex_column, title):
     # Set y axis title to y
     fig.update_yaxes(title_text=y, row=2, col=1)
 
-    rm_legend = 3 if ex_column == "Exacerbation State" else 2
+    # rm_legend = 3 if ex_column == "Exacerbation State" else 2
     # Remove duplicated legends
-    for i in range(0, len(fig.data) - rm_legend):
-        fig.data[i].showlegend = False
+    # for i in range(0, len(fig.data) - rm_legend):
+    #     fig.data[i].showlegend = False
     # Update fig size
     fig.update_layout(height=600, width=1300, title=title)
 

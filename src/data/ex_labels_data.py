@@ -128,7 +128,7 @@ def load():
     return pred_ex_labels
 
 
-def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
+def mark_ex_transition_period(df, n_days_before=2, n_days_after=2, debug=False):
     """
     This function provides more conservative ex labels by marking the days before and after an exacerbation start as in "transition"
     We are using a model that marks exacerbated periods as 1, and non-exacerbated periods as 0.
@@ -137,11 +137,13 @@ def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
     N days after includes the day of exacerbation start
     Hence, if n_days_before = 2 and n_days_after = 2, the transition period is 4 days long
     """
-    print(
-        f"\n** Marking ({n_days_before}, {n_days_after}) transition window around exacerbation start **"
-    )
+    if debug:
+        print(
+            f"\n** Marking ({n_days_before}, {n_days_after}) transition window around exacerbation start **"
+        )
     df_value_counts_is_ex = df["Is Exacerbated"].value_counts()
-    print(f"Initially:\n{df_value_counts_is_ex}")
+    if debug:
+        print(f"Initially:\n{df_value_counts_is_ex}")
 
     df = df.sort_values(by=["ID", "Date Recorded"]).reset_index(drop=True)
 
@@ -154,19 +156,20 @@ def mark_ex_transition_period(df, n_days_before=2, n_days_after=2):
             lambda x: _get_ex_start_dates(x), axis=1
         )
 
-        df.loc[
-            df.ID == id, "Exacerbation State"
-        ] = _overwrite_when_in_transition_period(
-            df_for_ID,
-            n_days_before,
-            n_days_after,
+        df.loc[df.ID == id, "Exacerbation State"] = (
+            _overwrite_when_in_transition_period(
+                df_for_ID,
+                n_days_before,
+                n_days_after,
+            )
         )
     df_value_counts_ex_state = df["Exacerbation State"].value_counts()
 
     # print(
     #     f"{df_value_counts_ex_state[0.5]} measurements marked within the transition period ({df_value_counts_is_ex[True]-df_value_counts_ex_state[1]} stable, {df_value_counts_is_ex[False]-df_value_counts_ex_state[0]} exacerbated)"
     # )
-    print(f"Finally:\n{df_value_counts_ex_state}")
+    if debug:
+        print(f"Finally:\n{df_value_counts_ex_state}")
     return df
 
 
@@ -190,7 +193,7 @@ def _overwrite_when_in_transition_period(df_for_ID, n_days_before, n_days_after)
             f"Wrongly parametrised transition period ({n_days_before}, {n_days_after})"
         )
 
-    ex_state = df_for_ID["Is Exacerbated"].astype(int).copy()
+    ex_state = df_for_ID["Is Exacerbated"].astype(float).copy()
 
     # Get indices where ex_start is True
     get_start_idx = np.where(df_for_ID["Exacerbation Start"] == True)[0]
