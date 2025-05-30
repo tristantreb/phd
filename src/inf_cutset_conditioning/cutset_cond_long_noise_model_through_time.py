@@ -43,7 +43,7 @@ def process_id(inf_settings):
         df[df.ID == id], n_missing_days_allowed=n_missing_days_allowed
     )
     # for ndays in [5, 8, 10, 15, 20, 25, 30, 50, 100]:
-    for ndays in [100]:
+    for ndays in [30]:
         print(f"Processing ID {id} with sequences of {ndays} days")
         dftmp = df_pre.head(ndays).reset_index()
         # if len(dftmp) < ndays:
@@ -66,7 +66,7 @@ def process_id(inf_settings):
         # Obs FEV1 and FEF25-75
         #
         # Obs FEV1
-        # dftmp[ecfef2575_cols] = np.nan
+        dftmp[ecfef2575_cols] = np.nan
         # Obs no data
         # dftmp[ecfev1_cols + ecfef2575_cols] = np.nan
 
@@ -100,16 +100,35 @@ def process_id(inf_settings):
             f.close()
         else:
             (
-                fig,
+                # fig,
                 p_M_given_D,
                 p_HFEV1_given_D,
                 log_p_D_given_M,
+                AR_given_D,
                 AR_given_M_and_D,
                 AR_given_M_and_all_D,
                 res_dict,
             ) = out
 
-    return -1
+            dates = dftmp["Date Recorded"].apply(
+                lambda date: date.strftime("%Y-%m-%d")
+            )
+
+            # Transform AR_given_D into a dataframe with one AR entry per day
+            new_ar_hfev1_df = pd.DataFrame(
+                data=[[AR_given_D[i, :]] for i in range(AR_given_D.shape[0])],
+                columns=["AR"],
+                index=dates,
+            )
+            new_ar_hfev1_df = new_ar_hfev1_df.reset_index()
+            new_ar_hfev1_df["ID"] = id
+            new_ar_hfev1_df["p_HFEV1_given_D"] = [p_HFEV1_given_D] * len(
+                new_ar_hfev1_df
+            )
+            new_ar_hfev1_df['Sequence length'] = ndays
+            new_ar_hfev1_df.rename({"p_HFEV1_given_D": "HFEV1"}, axis=1, inplace=True)
+
+    return new_ar_hfev1_df
 
 
 # Run the function in parallel using ProcessPoolExecutor
@@ -129,10 +148,10 @@ if __name__ == "__main__":
         # "253",
         "101",
         # Also from consec values
-        "405",
-        "272",
-        "201",
-        "203",
+        # "405",
+        # "272",
+        # "201",
+        # "203",
         # "527",
         # For step change
         # "104",
@@ -174,13 +193,17 @@ if __name__ == "__main__":
 
     # Zip the three elements together, to create a list of tuples of size card x card x card
     inf_settings = list(
-        itertools.product(ar_change_cpt_suffix, ar_priors, ids_narrowed_in_point_in_time)
+        itertools.product(ar_change_cpt_suffix, ar_priors, interesting_ids)
     )
 
     # num_cores = os.cpu_count()
     # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        list(executor.map(process_id, inf_settings))
+        results = list(executor.map(process_id, inf_settings))
+        combined_df = pd.concat(results, ignore_index=True)
+        combined_df.to_excel(
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.7_30days_fev1.xlsx", index=False
+        )
 
 
 # def main():

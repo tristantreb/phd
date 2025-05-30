@@ -2,7 +2,9 @@ import itertools
 import time
 
 import numpy as np
+import pandas as pd
 
+import data.helpers as dh
 import inf_cutset_conditioning.cutset_cond_algs as cca
 import inf_cutset_conditioning.helpers as cutseth
 import models.builders as mb
@@ -30,6 +32,9 @@ def run_long_noise_model_through_time(
     debug=False,
     save=False,
 ):
+    plot_res = False
+    id = df.ID[0]
+
     (
         inf_alg,
         HFEV1,
@@ -104,7 +109,7 @@ def run_long_noise_model_through_time(
             p_HFEV1_given_D /= p_HFEV1_given_D.sum()
 
             AR_given_HFEV1_and_D = AR_given_M_and_all_D[:, :, :, S_obs_idx]
-            AR_given_HFEV1_and_D = np.matmul(AR_given_HFEV1_and_D, p_HFEV1_given_D)
+            AR_given_D = np.matmul(AR_given_HFEV1_and_D, p_HFEV1_given_D)
 
             # Add HFEV1.card - hfev1_card zeros to p_HFEV1_given_D
             p_HFEV1_given_D = np.concatenate(
@@ -113,30 +118,50 @@ def run_long_noise_model_through_time(
 
             # p_M_given_D has HFEV1.card
             # AR_given_M_and_D has N x AR.card
-            fig = cca.plot_short_term_long_model_cutset_cond_results(
-                df,
-                HFEV1,
-                p_HFEV1_given_D,
-                AR,
-                AR_given_HFEV1_and_D,
-                model_spec_txt_for_S,
-                save,
-            )
-            # fig = cca.plot_cutset_cond_results(
-            #     df,
-            #     HFEV1,
-            #     p_HFEV1_given_D,
-            #     AR,
-            #     AR_given_HFEV1_and_D,
-            #     model_spec_txt_for_S,
-            #     save,
-            # )
+            if plot_res:
+                fig = cca.plot_short_term_long_model_cutset_cond_results(
+                    df,
+                    HFEV1,
+                    p_HFEV1_given_D,
+                    AR,
+                    AR_given_D,
+                    model_spec_txt_for_S,
+                    save,
+                )
+                # fig = cca.plot_cutset_cond_results(
+                #     df,
+                #     HFEV1,
+                #     p_HFEV1_given_D,
+                #     AR,
+                #     AR_given_HFEV1_and_D,
+                #     model_spec_txt_for_S,
+                #     save,
+                # )
+            # else:
+
+            #     dates = df["Date Recorded"].apply(
+            #         lambda date: date.strftime("%Y-%m-%d")
+            #     )
+
+            #     # Transform AR_given_D into a dataframe with one AR entry per day
+            #     AR_given_D_df = pd.DataFrame(
+            #         data=[[AR_given_D[i, :]] for i in range(AR_given_D.shape[0])],
+            #         columns=["AR"],
+            #         index=dates,
+            #     )
+            #     AR_given_D_df["ID"] = id
+            #     AR_given_D_df["p_HFEV1_given_D"] = [p_HFEV1_given_D] * len(
+            #         AR_given_D_df
+            #     )
+            #     AR_given_D_df.to_excel(
+            #         f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/{id}_{model_spec_txt_for_S}_{len(df)}entries.xlsx"
+            #     )
 
         return (
-            fig,
             p_M_given_D,
             p_HFEV1_given_D,
             log_p_D_given_M,
+            AR_given_D,
             AR_given_M_and_D,
             AR_given_M_and_all_D,
             res_dict,
