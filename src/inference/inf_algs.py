@@ -1,4 +1,4 @@
-from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
+from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessagePassing
 
 
 def apply_bayes_net_bp(model):
@@ -12,4 +12,4 @@ def apply_factor_graph_bp(model, check_model=False):
     """
     Given a graphical model, returns the custom Belief Propagation class
     """
-    return BeliefPropagationWithMessageParsing(model, check_model)
+    return BeliefPropagationWithMessagePassing(model, check_model)

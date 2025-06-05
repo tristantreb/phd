@@ -1,9 +1,9 @@
 import numpy as np
 import plotly.graph_objects as go
+from pgmpy.factors.discrete import TabularCPD
+from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessagePassing
 
 import models.helpers as mh
-from pgmpy.factors.discrete import TabularCPD
-from pgmpy.inference import BeliefPropagation, BeliefPropagationWithMessageParsing
 
 # Set global value for tolerance.
 # This to account for the rounding error: https://www.cs.drexel.edu/~jpopyack/Courses/CSP/Fa17/extras/Rounding/index.html#:~:text=Rounding%20(roundoff)%20error%20is%20a,word%20size%20used%20for%20integers.
@@ -12,7 +12,7 @@ TOL_GLOBAL = 1e-6
 
 
 def infer_on_factor_graph(
-    inference_alg: BeliefPropagationWithMessageParsing,
+    inference_alg: BeliefPropagationWithMessagePassing,
     variables: tuple[mh.VariableNode],
     evidence: tuple[tuple[mh.VariableNode, float]],
     virtual_evidence=None,
@@ -89,6 +89,7 @@ def plot_histogram(
     name=None,
     xlabels=True,
     clean_ticks=False,
+    opacity=1,
 ):
     fig.add_trace(
         go.Histogram(
@@ -97,6 +98,7 @@ def plot_histogram(
             histfunc="sum",  # Use 'sum' to represent pre-counted data
             xbins=dict(start=xmin, end=xmax, size=Var.bin_width),
             name=name,
+            opacity=opacity,
         ),
         row=row,
         col=col,
