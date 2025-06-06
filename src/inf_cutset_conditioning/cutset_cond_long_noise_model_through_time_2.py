@@ -9,8 +9,8 @@ import data.breathe_data as bd
 import data.helpers as dh
 import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change as cca_ar_change
 import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
-import tests.data_factory as factory
 
+# df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx_granular")
 df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
 
 # With step change
@@ -30,8 +30,6 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 # ids = ["101", "104"]
 # df = pd.concat([df_step_change, df_constant])
 
-# df = factory.get_df_with_no_obs(365)
-
 
 def process_id(inf_settings):
 
@@ -40,20 +38,17 @@ def process_id(inf_settings):
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_missing_days_allowed = 1
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
-    plot_res = True
 
     df_pre, start_idx, end_idx = dh.find_longest_conseq_sequence(
         df[df.ID == id], n_missing_days_allowed=n_missing_days_allowed
     )
-    # df_pre = df
     # for ndays in [5, 8, 10, 15, 20, 25, 30, 50, 100]:
-    # for ndays in [365]:
-    for ndays in [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]:
+    for ndays in [30]:
         print(f"Processing ID {id} with sequences of {ndays} days")
         dftmp = df_pre.head(ndays).reset_index()
-        if len(dftmp) < ndays:
-            print(f"Skipping ID {id}, n entries < {ndays} days")
-            continue
+        # if len(dftmp) < ndays:
+        #     print(f"Skipping ID {id}, n entries < {ndays} days")
+        #     continue
 
         print(
             f"Processing {inf_settings}, with {len(dftmp)} entries (start_index, end_index): ({start_idx}, {end_idx})"
@@ -83,9 +78,8 @@ def process_id(inf_settings):
             ar_change_cpt_suffix=ar_change_cpt_suffix,
             ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
             fef2575_cpt_suffix="",
-            n_days_consec=n_missing_days_allowed + 1,
+            n_days_consec=n_missing_days_allowed+1,
             light=False,
-            plot_res=plot_res,
             debug=False,
             get_p_s_given_d=get_p_s_given_d,
             save=True,
@@ -116,7 +110,9 @@ def process_id(inf_settings):
                 res_dict,
             ) = out
 
-            dates = dftmp["Date Recorded"].apply(lambda date: date.strftime("%Y-%m-%d"))
+            dates = dftmp["Date Recorded"].apply(
+                lambda date: date.strftime("%Y-%m-%d")
+            )
 
             # Transform AR_given_D into a dataframe with one AR entry per day
             new_ar_hfev1_df = pd.DataFrame(
@@ -129,7 +125,7 @@ def process_id(inf_settings):
             new_ar_hfev1_df["p_HFEV1_given_D"] = [p_HFEV1_given_D] * len(
                 new_ar_hfev1_df
             )
-            new_ar_hfev1_df["Sequence length"] = ndays
+            new_ar_hfev1_df['Sequence length'] = ndays
             new_ar_hfev1_df.rename({"p_HFEV1_given_D": "HFEV1"}, axis=1, inplace=True)
 
     return new_ar_hfev1_df
@@ -161,17 +157,15 @@ if __name__ == "__main__":
         # "104",
     ]
     ids_narrowed_in_point_in_time = [
-        "104",
-        "107",
-        "202",
-        "210",
-        "372",
-        "433",
+        '104',
+        '107',
+        '202',
+        '210',
+        '372',
+        '433',
     ]
-    # interesting_ids = df.ID.unique()
-    # interesting_ids = ["101"]  # , '102', '103', '106', '107', '109']
-    interesting_ids = ['103', '109', '106', '101', '116', '123', '130', '138']
-
+    interesting_ids = df.ID.unique()
+    # interesting_ids = ['103', '109', '106', '101', '116', '123', '130', '138']
 
     ar_priors = [
         # "uniform",
@@ -193,6 +187,7 @@ if __name__ == "__main__":
         # "_shape_factor_single_laplace_card9",
         # "_shape_factor_single_laplace_0.5",
         "_shape_factor_single_laplace_1.6",
+        # "_shape_factor_single_laplace_1.7",
         # "_shape_factor_single_laplace_card14",
         # "_shape_factor_single_laplace_card3",
     ]
@@ -206,10 +201,10 @@ if __name__ == "__main__":
     # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = list(executor.map(process_id, inf_settings))
-        # combined_df = pd.concat(results, ignore_index=True)
-        # combined_df.to_excel(
-        #     f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_30days_fev1.xlsx", index=False
-        # )
+        combined_df = pd.concat(results, ignore_index=True)
+        combined_df.to_excel(
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_30days_fev1_fef2575.xlsx", index=False
+        )
 
 
 # def main():

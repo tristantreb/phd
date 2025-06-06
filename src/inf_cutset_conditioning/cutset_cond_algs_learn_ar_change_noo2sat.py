@@ -29,10 +29,10 @@ def run_long_noise_model_through_time(
     n_days_consec=3,
     light=False,
     get_p_s_given_d=False,
+    plot_res=False,
     debug=False,
     save=False,
 ):
-    plot_res = False
     id = df.ID[0]
 
     (
@@ -383,8 +383,31 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                     )
                 )
                 dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
+            elif np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print(
+                        f"Warning - Both ecFEV1 and ecFEF25-75 not observed for ID {id}, row {n}, h {h}"
+                    )
+                log_p_D_given_M_for_row, dist_AR = (
+                    cca.get_AR_and_p_log_D_given_M_no_obs(
+                        inf_alg,
+                        HFEV1,
+                        HFEV1_bin_idx,
+                        AR,
+                        vevidence_ar,
+                        uniform_from_fef2575,
+                        m_from_hfev1_dict,
+                        m_from_hfev1_key,
+                    )
+                )
+                dist_ecFEV1 = np.zeros(ecFEV1.card)
+                dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
             else:
-                raise ValueError("Both ecFEV1 and ecFEF25-75 must be observed")
+                raise ValueError(
+                    f"Unexpected combination of observed variables for row\n{row}"
+                )
 
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
             # If dist_AR contains at least one nan then print

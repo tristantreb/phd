@@ -1189,7 +1189,8 @@ def plot_short_term_long_model_cutset_cond_results(
         type="category",
     )
 
-    title = f"{id} - Results after fusing all P(M_h|D) {len(df)} entries<br>{model_spec_txt}"
+    obs_vars = "fev1" if np.isnan(df["ecFEF2575%ecFEV1"]).all() else "fev1, fef2575"
+    title = f"{id} - Results after fusing all P(M_h|D) {len(df)} entries<br>{model_spec_txt}, {obs_vars}"
     fig.update_layout(
         font=dict(size=8),
         height=500,

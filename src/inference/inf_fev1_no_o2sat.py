@@ -49,9 +49,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     vars = [AR]
     shared_vars = [HFEV1]
     obs_vars = [ecFEV1.name]
-    # obs_vars = [ecFEV1.name, O2Sat.name]
     # obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
-    # obs_vars = [ecFEV1.name, O2Sat.name, ecFEF2575prctecFEV1.name]
 
     # Find the max FEV1 values
     # Given an ID, get the data which maximises ecFEV1, then ecFEF2575, then O2 Saturation
@@ -76,31 +74,36 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     #     "['ecFEF2575%ecFEV1', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     # }
 
-    for i, _ in df_for_ID.iterrows():
-        if i != idx_max_FEV1:
-            df_two_days = df_for_ID.iloc[[i, idx_max_FEV1]]
-        else:
-            df_two_days = df_for_ID.iloc[[i]]
-
-        df_query_res_two_days, _, _ = slicing.query_forwardly_across_days(
-            df_two_days,
-            inf_alg,
-            shared_vars,
-            vars,
-            obs_vars,
-            diff_threshold,
-            [],
-            debug=debug,
+    def infer_and_unpack(
+        id,
+        date_recorded,
+        ecfev1_obs_idx,
+        # ecfef2575prctecfev1_obs_idx,
+    ):
+        res = inf_alg.query(
+            variables=[AR.name, HFEV1.name],
+            evidence={
+                ecFEV1.name: ecfev1_obs_idx,
+                # ecFEF2575prctecFEV1.name: ecfef2575prctecfev1_obs_idx,
+            },
+        )
+        return (
+            id,
+            date_recorded,
+            res[AR.name].values,
+            res[HFEV1.name].values,
         )
 
-        new_row = df_query_res_two_days.loc[
-            # 0, ["ID", "Day", HFEV1.name, HO2Sat.name, AR.name, IA.name]
-            0,
-            ["ID", "Day", HFEV1.name, AR.name],
-        ]
-        df_current_day_res = pd.concat([df_current_day_res, pd.DataFrame(new_row).T])
-
-    return df_current_day_res
+    res = df.apply(
+        lambda row: infer_and_unpack(
+            row["ID"],
+            row["Date Recorded"],
+            row[f"idx {ecFEV1.name}"],
+            # row[f"idx {ecFEF2575prctecFEV1.name}"],
+        ),
+        axis=1,
+    )
+    return res
 
 
 def process_id(id):
@@ -117,6 +120,6 @@ if __name__ == "__main__":
     res = pd.concat(res, ignore_index=True)
 
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_fev1_06062025.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_06062025.xlsx",
         index=False,
     )
