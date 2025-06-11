@@ -8,7 +8,7 @@ import numpy as np
 
 # PGMPY have been isolated in bayes_net_builders.py. This is tech debt.
 from pgmpy.factors.discrete import TabularCPD
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork
 
 import models.graph_builders as graph_builders
 import models.helpers as mh
@@ -117,7 +117,7 @@ def build_full_FEV1_side(
         evidence_card=[len(SAB.midbins), len(UFEV1.midbins)],
     )
 
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             (HFEV1.name, UFEV1.name),
             (LD.name, UFEV1.name),
@@ -151,7 +151,7 @@ def build_HFEV1_AB_FEV1(HFEV1_prior: object):
     AB = mh.VariableNode("Airway Degradation", 0, 0.8, 0.05, prior={"type": "uniform"})
     FEV1 = mh.VariableNode("FEV1 (L)", 0.1, 6, 0.1, None)
 
-    model = BayesianNetwork([(HFEV1.name, FEV1.name), (AB.name, FEV1.name)])
+    model = DiscreteBayesianNetwork([(HFEV1.name, FEV1.name), (AB.name, FEV1.name)])
 
     cpt_fev1 = TabularCPD(
         variable=FEV1.name,
@@ -248,7 +248,7 @@ def build_FEV1_O2_point_in_time_model(hfev1_prior, ho2sat_prior):
     print(f"Time to build variables: {time.time() - tic}")
     tic = time.time()
 
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             (HFEV1.name, ecFEV1.name),
             (AR.name, ecFEV1.name),
@@ -375,7 +375,7 @@ def build_longitudinal_FEV1_side(
         SAB_priors.append(prior_SAB_i)
         FEV1_cpts.append(cpt_FEV1)
 
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             (HFEV1.name, UFEV1.name),
             (LD.name, UFEV1.name),

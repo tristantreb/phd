@@ -10,7 +10,7 @@ Note on PGMPY:
 from copy import deepcopy
 
 from pgmpy.factors.discrete import DiscreteFactor, TabularCPD
-from pgmpy.models import BayesianNetwork, FactorGraph
+from pgmpy.models import DiscreteBayesianNetwork, FactorGraph
 
 
 def build_pgmpy_hfev1_prior(HFEV1):
@@ -200,7 +200,7 @@ def fev1_point_in_time_model(HFEV1, ecFEV1, AR):
     cpt_ecfev1 = build_pgmpy_ecfev1_cpt(ecFEV1, HFEV1, AR)
     prior_ar = build_pgmpy_ar_prior(AR)
 
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             (HFEV1.name, ecFEV1.name),
             (AR.name, ecFEV1.name),
@@ -232,7 +232,7 @@ def fev1_o2sat_point_in_time_model(
     cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
     cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
 
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             (HFEV1.name, ecFEV1.name),
             (AR.name, ecFEV1.name),
@@ -274,7 +274,7 @@ def fev1_o2sat_point_in_time_model_2(
     cpt_uo2sat = build_pgmpy_uo2sat_cpt(UO2Sat, O2SatFFA, IA)
     cpt_o2sat = build_pgmpy_o2sat_cpt(O2Sat, UO2Sat)
 
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             (HFEV1.name, ecFEV1.name),
             (AR.name, ecFEV1.name),
@@ -329,7 +329,7 @@ def fev1_o2sat_fef2575_point_in_time_model(
         ecFEF2575prctecFEV1, AR
     )
 
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             (HFEV1.name, ecFEV1.name),
             (AR.name, ecFEV1.name),
@@ -406,7 +406,7 @@ def fev1_o2sat_two_days_model(
     cpt_o2sat_2 = build_pgmpy_o2sat_cpt(O2Sat_2, UO2Sat_2)
 
     # HFEV1 and HO2Sat are shared between day 1 and day2
-    model = BayesianNetwork(
+    model = DiscreteBayesianNetwork(
         [
             # Day 1
             (HFEV1.name, ecFEV1.name),
@@ -541,7 +541,7 @@ def fev1_o2sat_n_days_model(
             (UO2Sat_vars[i].name, O2Sat_vars[i].name),
         ]
 
-    model = BayesianNetwork(network)
+    model = DiscreteBayesianNetwork(network)
 
     model.add_cpds(
         # Shared
@@ -964,7 +964,7 @@ def fev1_o2sat_fef2575_noise_n_days_model(
             (UO2Sat_vars[i].name, O2Sat_vars[i].name),
         ]
 
-    model = BayesianNetwork(network)
+    model = DiscreteBayesianNetwork(network)
 
     model.add_cpds(
         # Shared
@@ -1127,7 +1127,7 @@ def fev1_o2sat_fef2575_noise_n_days_model_temporal_ar(
 
     network += [(AR_vars[i - 1].name, AR_vars[i].name) for i in range(1, n)]
 
-    model = BayesianNetwork(network)
+    model = DiscreteBayesianNetwork(network)
 
     model.add_cpds(
         # Shared
@@ -1260,7 +1260,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar(
 
     network += [(AR_vars[i - 1].name, AR_vars[i].name) for i in range(1, n)]
 
-    model = BayesianNetwork(network)
+    model = DiscreteBayesianNetwork(network)
 
     model.add_cpds(
         # Shared
@@ -1348,7 +1348,7 @@ def fev1_fef2575_noise_n_days_model_shared_ar(
             (AR.name, ecFEF2575prctecFEV1_vars[i].name),
         ]
 
-    model = BayesianNetwork(network)
+    model = DiscreteBayesianNetwork(network)
 
     model.add_cpds(
         # Shared
@@ -1470,7 +1470,7 @@ def fev1_fef2575_noise_n_days_model_temporal_ar_with_ar_change_variable(
     network += [(AR_vars[i - 1].name, AR_vars[i].name) for i in range(1, n)]
     network += [(S.name, AR_vars[i].name) for i in range(1, n)]
 
-    model = BayesianNetwork(network)
+    model = DiscreteBayesianNetwork(network)
 
     model.add_cpds(
         # Shared

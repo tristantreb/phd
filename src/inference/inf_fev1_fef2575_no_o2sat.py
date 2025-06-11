@@ -40,6 +40,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
         ecFEF2575prctecFEV1,
     ) = mb.fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         height,
+
         age,
         sex,
         ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_cpt_suffix,
@@ -62,7 +63,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     # Adding the max FEV1 information to the model input allows a better estimation of the HFEV1, hereby reducing the shared uncertainty between AR and HFEV1.
 
     # Save information into a df
-    df_current_day_res = pd.DataFrame({})
+    res_for_ID = pd.DataFrame({})
 
     # Get precompupted messages to speedup inference
     arr = np.ones(AR.card)
@@ -74,12 +75,11 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     #     "['ecFEF2575%ecFEV1', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     # }
 
-    def infer_and_unpack(
-        id,
-        date_recorded,
-        ecfev1_obs_idx,
-        ecfef2575prctecfev1_obs_idx,
-    ):
+    for index, row in df_for_ID.iterrows():
+        ecfev1_obs_idx = row[f"idx {ecFEV1.name}"]
+        ecfef2575prctecfev1_obs_idx = row[f"idx {ecFEF2575prctecFEV1.name}"]
+        id = row["ID"]
+
         res = inf_alg.query(
             variables=[AR.name, HFEV1.name],
             evidence={
@@ -87,26 +87,21 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
                 ecFEF2575prctecFEV1.name: ecfef2575prctecfev1_obs_idx,
             },
         )
-        return (
-            id,
-            date_recorded,
-            res[AR.name].values,
-            res[HFEV1.name].values,
-        )
 
-    res = df.apply(
-        lambda row: infer_and_unpack(
-            row["ID"],
-            row["Date Recorded"],
-            row[f"idx {ecFEV1.name}"],
-            row[f"idx {ecFEF2575prctecFEV1.name}"],
-        ),
-        axis=1,
-    )
-    return res
+        new_row = pd.DataFrame(
+            {
+                "ID": [id],
+                "Date Recorded": [row["Date Recorded"]],
+                AR.name: [res[AR.name].values],
+                HFEV1.name: [res[HFEV1.name].values],
+            }
+        )
+        res_for_ID = pd.concat([res_for_ID, new_row], ignore_index=True)
+    return res_for_ID
 
 
 def process_id(id):
+    print(f"Processing ID: {id}")
     df_for_ID = df[df.ID == id]
     res = infer_for_id(df_for_ID, debug=False)
     return res
@@ -119,7 +114,8 @@ if __name__ == "__main__":
 
     res = pd.concat(res, ignore_index=True)
 
+    print(f"Saving results to {dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_fef2575_11062025.xlsx")
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_fef2575_06062025.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_fef2575_11062025.xlsx",
         index=False,
     )
