@@ -43,7 +43,7 @@ def process_id(inf_settings):
         df[df.ID == id], n_missing_days_allowed=n_missing_days_allowed
     )
     # for ndays in [5, 8, 10, 15, 20, 25, 30, 50, 100]:
-    for ndays in [30]:
+    for ndays in [20]:
         print(f"Processing ID {id} with sequences of {ndays} days")
         dftmp = df_pre.head(ndays).reset_index()
         # if len(dftmp) < ndays:

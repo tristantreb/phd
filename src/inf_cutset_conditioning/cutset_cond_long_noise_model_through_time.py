@@ -48,7 +48,8 @@ def process_id(inf_settings):
     # df_pre = df
     # for ndays in [5, 8, 10, 15, 20, 25, 30, 50, 100]:
     # for ndays in [365]:
-    for ndays in [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]:
+    # for ndays in [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]:
+    for ndays in [20]:
         print(f"Processing ID {id} with sequences of {ndays} days")
         dftmp = df_pre.head(ndays).reset_index()
         if len(dftmp) < ndays:
@@ -168,9 +169,9 @@ if __name__ == "__main__":
         "372",
         "433",
     ]
-    # interesting_ids = df.ID.unique()
+    interesting_ids = df.ID.unique()
     # interesting_ids = ["101"]  # , '102', '103', '106', '107', '109']
-    interesting_ids = ['103', '109', '106', '101', '116', '123', '130', '138']
+    # interesting_ids = ['103', '109', '106', '101', '116', '123', '130', '138']
 
 
     ar_priors = [
@@ -206,10 +207,10 @@ if __name__ == "__main__":
     # with concurrent.futures.ProcessPoolExecutor(max_workers=num_cores) as executor:
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = list(executor.map(process_id, inf_settings))
-        # combined_df = pd.concat(results, ignore_index=True)
-        # combined_df.to_excel(
-        #     f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_30days_fev1.xlsx", index=False
-        # )
+        combined_df = pd.concat(results, ignore_index=True)
+        combined_df.to_excel(
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_20days_fev1_fef2575.xlsx", index=False
+        )
 
 
 # def main():
