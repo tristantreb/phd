@@ -177,6 +177,16 @@ def add_traces_F3_mean_and_percentiles_per_AR_bin(fig, df_f3):
     fig.add_traces(
         go.Scatter(
             x=df_f3["AR midbin"],
+            y=df_f3["mean"],
+            mode="lines+markers",
+            line=dict(color="purple"),
+            name="Mean",
+            yaxis="y2",
+        )
+    )
+    fig.add_traces(
+        go.Scatter(
+            x=df_f3["AR midbin"],
             y=df_f3["p16"],
             mode="lines+markers",
             line=dict(color="green"),
