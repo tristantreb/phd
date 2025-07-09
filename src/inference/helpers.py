@@ -131,6 +131,8 @@ def plot_histogram(
         )
     if clean_ticks and Var.name == "Airway resistance (%)":
         fig.update_xaxes(tickvals=np.linspace(Var.a, Var.b, 10), row=row, col=col)
+    if clean_ticks and Var.name == "Airway conductance (%)":
+        fig.update_xaxes(tickvals=np.linspace(Var.a, Var.b, 10), row=row, col=col)
     return -1
 
 
