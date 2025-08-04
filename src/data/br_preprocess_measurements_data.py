@@ -30,13 +30,13 @@ class MeasurementData:
                 "DateNum",
                 "UserName",
                 "RecordingType",
-                "CaptureType",
+                # "CaptureType",
                 "Date_TimeRecorded",
                 "FEV",
                 "WeightInKg",
                 "O2Saturation",
                 "Pulse_BPM_",
-                "Temp_degC_",
+                # "Temp_degC_",
                 "Calories",
                 "Rating",
                 "Sleep",
@@ -51,13 +51,13 @@ class MeasurementData:
                 "DateNum",
                 "UserName",
                 "RecordingType",
-                "CaptureType",
+                # "CaptureType",
                 "Date_TimeRecorded",
                 "FEV",
                 "WeightInKg",
                 "O2Saturation",
                 "Pulse_BPM_",
-                "Temp_degC_",
+                # "Temp_degC_",
                 "Calories",
                 "Rating",
                 "Sleep",
@@ -68,7 +68,7 @@ class MeasurementData:
         )
         self.inputcolnames = {
             "CoughRecording": "Value",
-            "TemperatureRecording": "Value",
+            # "TemperatureRecording": "Value",
             "WeightRecording": "Value",
             "WellnessRecording": "Value",
             "CalorieRecording": "Calories",
@@ -116,7 +116,7 @@ class MeasurementData:
             "SputumColorRecording": "SputumColour",
             "SputumColourRecording": "SputumColour",
             "SputumSampleRecording": "SputumSampleTaken_",
-            "TemperatureRecording": "Temp_degC_",
+            # "TemperatureRecording": "Temp_degC_",
             "WeightRecording": "WeightInKg",
             "InterpWeightRecording": "WeightInKg",
         }
@@ -127,15 +127,15 @@ class MeasurementData:
         """
         self.measure_tables = {}
         for meas_table_name in [
-            # "Activity",
-            # "Coughing",
-            # "HeartRate",
+            "Activity",
+            "Coughing",
+            "HeartRate",
             "Oximeter",
-            # "Sleep",
+            "Sleep",
             "Spirometer",
             # "Temperature",
-            # "Weight",
-            # "Wellbeing",
+            "Weight",
+            "Wellbeing",
         ]:
             file_location = (
                 dh.get_path_to_main()
@@ -184,13 +184,13 @@ class MeasurementData:
                 "DateNum",
                 "UserName",
                 "RecordingType",
-                "CaptureType",
+                # "CaptureType",
                 "Date_TimeRecorded",
                 "FEV",
                 "WeightInKg",
                 "O2Saturation",
                 "Pulse_BPM_",
-                "Temp_degC_",
+                # "Temp_degC_",
                 "Calories",
                 "Rating",
                 "Sleep",
@@ -202,7 +202,7 @@ class MeasurementData:
             temp_physdata["SmartCareID"] = meas_table["ID"]
             temp_physdata["UserName"] = meas_table["StudyNumber"]
             temp_physdata["Date_TimeRecorded"] = meas_table["DateDt"]
-            temp_physdata["CaptureType"] = meas_table["CaptureType"]
+            # temp_physdata["CaptureType"] = meas_table["CaptureType"]
             temp_physdata["RecordingType"] = recordingtype
             temp_physdata[self.outputcolnames[recordingtype]] = meas_table[
                 self.inputcolnames[recordingtype]
@@ -243,13 +243,13 @@ class MeasurementData:
     def generateBreathePhysdataTableFromMeasureTables(self):
         """Iterate through the data and generate the breathe physdata table."""
         breatheRowsToAdd = [
-            # ["Activity", "CalorieRecording", 1],
-            # ["Coughing", "CoughRecording", 1],
-            # ["HeartRate", "RestingHRRecording", 1],
+            ["Activity", "CalorieRecording", 1],
+            ["Coughing", "CoughRecording", 1],
+            ["HeartRate", "RestingHRRecording", 1],
             ["Oximeter", "O2SaturationRecording", 1],
             ["Oximeter", "PulseRateRecording", 1],
-            # ["Sleep", "MinsAsleepRecording", 0],
-            # ["Sleep", "MinsAwakeRecording", 0],
+            ["Sleep", "MinsAsleepRecording", 0],
+            ["Sleep", "MinsAwakeRecording", 0],
             ["Spirometer", "FEV1Recording", 1],
             ["Spirometer", "FEF2575Recording", 1],
             ["Spirometer", "PEFRecording", 1],
@@ -257,10 +257,10 @@ class MeasurementData:
             ["Spirometer", "FEV1DivFEV6Recording", 1],
             ["Spirometer", "FEV6Recording", 1],
             # ["Temperature", "TemperatureRecording", 1],
-            # ["Weight", "WeightRecording", 1],
-            # ["Wellbeing", "WellnessRecording", 1],
-            # ["Wellbeing", "HasColdOrFluRecording", 0],
-            # ["Wellbeing", "HasHayFeverRecording", 0],
+            ["Weight", "WeightRecording", 1],
+            ["Wellbeing", "WellnessRecording", 1],
+            ["Wellbeing", "HasColdOrFluRecording", 0],
+            ["Wellbeing", "HasHayFeverRecording", 0],
         ]
         for i in breatheRowsToAdd:
             self.addBreatheRowsForMeasure(self.measure_tables[i[0]], i[1], i[2])
@@ -351,7 +351,7 @@ class MeasurementData:
                 "ScaledDateNum",
                 "DateNum",
                 "Date_TimeRecorded",
-                "CaptureType",
+                # "CaptureType",
             ],
             axis=1,
         )
@@ -400,7 +400,7 @@ class MeasurementData:
                 "WeightInKg",
                 "O2Saturation",
                 "Pulse_BPM_",
-                "Temp_degC_",
+                # "Temp_degC_",
                 "Calories",
                 "Rating",
                 "Sleep",
@@ -462,7 +462,7 @@ class MeasurementData:
                 "WeightInKg",
                 "O2Saturation",
                 "Pulse_BPM_",
-                "Temp_degC_",
+                # "Temp_degC_",
                 "Calories",
                 "Rating",
                 "Sleep",
@@ -726,7 +726,7 @@ class MeasurementData:
                 -1,
                 600,
             ],  # MinsAwakeRecording this is minutes awake during the night (mins not sleeping)
-            ["TemperatureRecording", 34, 40],
+            # ["TemperatureRecording", 34, 40],
             ["WeightRecording", 30, 120],
         ]
         for i in measureRanges:
@@ -775,8 +775,8 @@ class MeasurementData:
 
     def exportData(self):
         today = datetime.today()
-        self.brphysdata.to_excel(
-            f"{dh.get_path_to_main()}/DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.xlsx",
+        self.brphysdata.to_csv(
+            f"{dh.get_path_to_main()}/DataFiles/BR/MeasurementData/ProcessedData/BRPhysdata-{today.strftime('%Y%m%d')}T{today.strftime('%H%M%S')}.csv",
             index=False,
         )
         self.brphysdata_deleted[
