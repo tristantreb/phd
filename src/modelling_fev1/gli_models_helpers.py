@@ -11,6 +11,7 @@ def get_lms_pred_value_for_zscore(zscore_arr, M, S, L, debug=False):
 
 
 def get_inverse_lms_pred_fev1_for_zscore(pred_fev1_arr, S, M, L):
+    # ( (fev1 / M)^L - 1 ) / (S * L)
     return (np.exp(L * np.log(pred_fev1_arr / M)) - 1) / (S * L)
 
 
