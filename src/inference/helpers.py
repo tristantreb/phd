@@ -116,6 +116,8 @@ def plot_histogram(
         row=row,
         col=col,
     )
+    # Hide y axis grid
+    fig.update_yaxes(showgrid=False, row=row, col=col)
     # Add one specific tick label on the x axis
     # fig.update_xaxes(tickvals=[Var.get_mean(p)], row=row, col=col)
     # Add distribution's mean as an annotation with small font size
