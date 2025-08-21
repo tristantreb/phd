@@ -2304,6 +2304,7 @@ def build_fev1_fef2575_o2sat_with_factor_graph_debug(app):
 
         return fig, ecFEV1.a, ecFEV1.b
 
+
 def build_fev1_fef2575_o2sat_noise_with_factor_graph_debug(app):
     @app.callback(
         Output("lung-graph", "figure"),
@@ -2492,9 +2493,13 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_debug(app):
         )
         # FEV1-side factor to AR
         key = get_key(f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}']", AR.name)
-        ih.plot_histogram(fig, AR, messages[key], AR.a, AR.b, 5, 2, None, "gray")
+        ih.plot_histogram(
+            fig, AR, messages[key], AR.a, AR.b, 5, 2, None, "gray", clean_ticks=True
+        )
         # AR prior
-        ih.plot_histogram(fig, AR, AR.cpt, AR.a, AR.b, 4, 3, AR.name, "crimson")
+        ih.plot_histogram(
+            fig, AR, AR.cpt, AR.a, AR.b, 4, 3, AR.name, "crimson", clean_ticks=True
+        )
         # ecFEF25-75%ecFEV1 observation
         key = get_key(f"['{ecFEF2575prctecFEV1.name}', '{AR.name}']", AR.name)
         ih.plot_histogram(
@@ -2527,7 +2532,9 @@ def build_fev1_fef2575_o2sat_noise_with_factor_graph_debug(app):
         )
         # O2-side factor to AR
         key = get_key(f"['{O2SatFFA.name}', '{HO2Sat.name}', '{AR.name}']", AR.name)
-        ih.plot_histogram(fig, AR, messages[key], AR.a, AR.b, 5, 4, None, "gray")
+        ih.plot_histogram(
+            fig, AR, messages[key], AR.a, AR.b, 5, 4, None, "gray", clean_ticks=True
+        )
         # IA
         key = get_key(f"['{uO2Sat.name}', '{O2SatFFA.name}', '{IA.name}']", IA.name)
         ih.plot_histogram(fig, IA, messages[key], ia_min, ia_max, 11, 4, None, "gray")

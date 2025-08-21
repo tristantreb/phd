@@ -85,7 +85,7 @@ def plot_histogram(
     col,
     title=None,
     colour=None,
-    annot=True,
+    annot=False,
     name=None,
     xlabels=True,
     clean_ticks=False,
