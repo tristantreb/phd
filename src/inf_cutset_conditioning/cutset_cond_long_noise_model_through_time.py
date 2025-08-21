@@ -40,6 +40,7 @@ def process_id(inf_settings):
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_missing_days_allowed = 1
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
     plot_res = True
 
     df_pre, start_idx, end_idx = dh.find_longest_conseq_sequence(
@@ -83,7 +84,7 @@ def process_id(inf_settings):
             ar_prior=ar_prior,
             ar_change_cpt_suffix=ar_change_cpt_suffix,
             ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
-            fef2575_cpt_suffix="",
+            fef2575_cpt_suffix=fef2575_cpt_suffix,
             n_days_consec=n_missing_days_allowed + 1,
             light=False,
             plot_res=plot_res,
