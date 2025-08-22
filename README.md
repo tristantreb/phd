@@ -1,6 +1,6 @@
-# PhD Bayesian Network Analysis
+# Modelling lung health with CF home-monitoring data
 
-This repository contains code for Bayesian network modeling and inference, with a focus on medical data analysis (e.g., O2 saturation, FEV1, etc.). The codebase includes model construction, CPT calculation, inference routines, and plotting utilities.
+This repository contains code for Bayesian network modeling and inference, with a focus on data analysis of CF home-monitoring data (e.g., O2 saturation, FEV1, etc.). The codebase includes model construction, CPT calculation, inference routines, and plotting utilities, etc
 
 ## Features
 
