@@ -41,7 +41,7 @@ def plot_FEF2575_ratio_with_IA(df, AR_col, FEF2575_col, marginals=False):
     ]
     fig.update_coloraxes(colorscale=colorscale)
     # fig.update_yaxes(range=[0,150])
-    fig.update_traces(marker=dict(size=3), selector=dict(mode="markers"))
+    fig.update_traces(marker=dict(size=2), selector=dict(mode="markers"))
     fig.update_layout(width=1200, height=800)
     fig.show()
 
