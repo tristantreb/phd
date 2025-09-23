@@ -67,19 +67,39 @@ def process_id_fev1_fef_model(id, df20):
     return np.sum(log_p_S_given_D)
 
 
+def process_data_no_interconnections(df):
+    """
+    Running this for one day with FEV1 and FEF gives same result than
+    the process_data_AR_through_time function
+    """
+    ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
+
+    log_p_S_given_D, _ = (
+        cca_ar_change_noo2sat.run_long_noise_model_no_ar_interconnections(
+            df,
+            ar_prior=ar_prior,
+            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+            fef2575_cpt_suffix=fef2575_cpt_suffix,
+            debug=False,
+        )
+    )
+    return log_p_S_given_D
+
+
 def process_id_2day_fev1_fef_model(id, df20, df_rmax_rows):
     """
     To get results for the two days model, I run the process_id_longitudinal_data n times,
     each time adding the rmax FEV1 and rmax FEF25-75 as a second day.
     """
     df_for_ID = df20[df20.ID == id]
-    df_row = df_rmax_rows[df_rmax_rows.ID == id]
+    df_rmax_row = df_rmax_rows[df_rmax_rows.ID == id]
 
     log_p_S_given_D = []
     for i, _ in df_for_ID.iterrows():
         dftmp = df_for_ID.iloc[i : i + 1]
-        dftmp = pd.concat([dftmp, df_row]).reset_index()
-        log_p_S_given_Di = process_data_AR_through_time(dftmp)
+        dftmp = pd.concat([df_rmax_row, dftmp]).reset_index()
+        log_p_S_given_Di = process_data_no_interconnections(dftmp)
         log_p_S_given_D.append(log_p_S_given_Di)
     return np.sum(log_p_S_given_D)
-
