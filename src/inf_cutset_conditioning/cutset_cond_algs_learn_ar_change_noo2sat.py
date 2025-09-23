@@ -523,9 +523,11 @@ def fuse_results_to_compute_P_S_given_D(
     S,
     log_p_D_given_M,
 ):
-    # P(D|S) = sum_h ( P(D|S, H) P(H) )
-    # P(D|S, H) = P(D|M)
-
+    """
+    Fusing results across the conditionned HFEV1 states S
+    P(D|S) = sum_h (P(D|S, H) P(H)) = sum_h (P(D|M) P(H))
+    Preserves absolute values of the probabilities to allow cross individuals comparison (if same input data)
+    """
     # Multiply the data over all days
     log_p_D_given_M = log_p_D_given_M.sum(axis=0)
 
@@ -552,3 +554,323 @@ def fuse_results_to_compute_P_S_given_D(
     log_p_D_given_S += max
 
     return log_p_D_given_S
+
+
+def run_long_noise_model_no_ar_interconnections(
+    df,
+    ar_prior="uniform",
+    ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
+    debug=False,
+):
+    id = df.ID[0]
+    # High n days consec because rmax FEV1 can be very far away from the current day
+    n_days_consec = 10000
+
+    (
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+        S,
+        cond_hfev1_card,
+    ) = load_long_noise_model_no_ar_interconnections(
+        df,
+        ar_prior,
+        ecfev1_noise_model_suffix,
+        fef2575_cpt_suffix,
+    )
+
+    (log_p_D_given_M, res_dict) = (
+        calc_log_p_D_given_M_and_AR_for_ID_any_obs_no_ar_interconnections(
+            df,
+            inf_alg,
+            HFEV1,
+            h_s_obs_states,
+            AR,
+            ecFEV1,
+            ecFEF2575prctecFEV1,
+            model_spec_txt,
+            S,
+            n_days_consec,
+            cond_hfev1_card,
+            debug=debug,
+        )
+    )
+
+    # Assert there are 2 days
+    assert log_p_D_given_M.shape[0] == 2
+    # Keep  information from second day (which is curr day, not the rmax day)
+    log_p_D_given_M = log_p_D_given_M[1, :][np.newaxis, :]
+
+    log_p_S_given_D = fuse_results_to_compute_P_S_given_D(id, HFEV1, S, log_p_D_given_M)
+    return (
+        log_p_S_given_D,
+        res_dict,
+    )
+
+
+def load_long_noise_model_no_ar_interconnections(
+    df,
+    ar_prior="uniform",
+    ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
+):
+    """
+    Longitudinal model without AR interconnections
+    """
+    height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
+
+    (
+        _,
+        _,
+        HFEV1,
+        uFEV1,
+        ecFEV1,
+        AR,
+        _,
+        S,
+    ) = mb.fev1_fef2575_long_model_noise_shared_healthy_vars(
+        height,
+        age,
+        sex,
+        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        fef2575_cpt_suffix=fef2575_cpt_suffix,
+    )
+
+    def get_min_possible_HFEV1_given_max_FEV1():
+        max_ecfev1 = np.zeros(ecFEV1.card)
+        max_ecfev1[df["idx ecFEV1 (L)"].max()] = 1
+        # Compute underling ecFEV1 given observed max ecFEV1 = add noise to max ecFEV1
+        ufev1 = np.matmul(max_ecfev1, ecFEV1.cpt)
+        argmin_ufev1 = np.nonzero(ufev1)[0][0]
+        min_ufev1 = uFEV1.midbins[argmin_ufev1]
+        argmin_hfev1 = HFEV1.get_bin_idx_for_value(min_ufev1)
+        # This code is working
+        # print(f"ufev1: {ufev1}\nargmin_ufev1: {argmin_ufev1}\nmin_ufev1: {min_ufev1}\nargmin_hfev1: {argmin_hfev1}\nHFEV1 midbin: {HFEV1.midbins[argmin_hfev1]}")
+        return argmin_hfev1
+
+    min_possible_hfev1_under_model = get_min_possible_HFEV1_given_max_FEV1()
+    if min_possible_hfev1_under_model > 0:
+        print(
+            f"Warning - min_possible_hfev1_under_model: {min_possible_hfev1_under_model}"
+        )
+    HFEV1_obs_idx_list = range(min_possible_hfev1_under_model, HFEV1.card)
+    # HFEV1_obs_idx_list = [40]
+    cond_hfev1_card = len(HFEV1_obs_idx_list)
+
+    S_obs_idx_list = range(S.card)
+    h_s_obs_states = list(itertools.product(HFEV1_obs_idx_list, S_obs_idx_list))
+
+    (
+        _,
+        inf_alg,
+        HFEV1,
+        uFEV1,
+        ecFEV1,
+        AR,
+        ecFEF2575prctecFEV1,
+        S,
+    ) = mb.fev1_fef2575_long_model_noise_shared_healthy_vars(
+        height,
+        age,
+        sex,
+        ar_prior,
+        len(h_s_obs_states),
+        ecfev1_noise_model_suffix,
+        fef2575_cpt_suffix,
+    )
+
+    model_spec_txt = (
+        f"AR prior: {ar_prior}, ecFEV1 noise model {ecfev1_noise_model_suffix}"
+    )
+    return (
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+        S,
+        cond_hfev1_card,
+    )
+
+
+def calc_log_p_D_given_M_and_AR_for_ID_any_obs_no_ar_interconnections(
+    df,
+    inf_alg,
+    HFEV1,
+    h_s_obs_states,
+    AR,
+    ecFEV1,
+    ecFEF2575prctecFEV1,
+    model_spec_txt,
+    S,
+    n_days_consec,
+    cond_hfev1_card,
+    debug=False,
+):
+    df = df.copy().sort_values(by="Date Recorded").reset_index(drop=True)
+    id = df.loc[0, "ID"]
+
+    if debug:
+        print(f"ID {id}")
+
+    N = len(df)
+    df = df.copy()
+    H = len(h_s_obs_states)
+    log_p_D_given_M = np.zeros((N, H))
+    res_dict = {}
+    res_dict.update({"vevidence_ar": np.zeros((N, AR.card, H))})
+    res_dict.update({"ecFEV1": np.zeros((N, ecFEV1.card, H))})
+    res_dict.update({"ecFEF2575%ecFEV1": np.zeros((N, ecFEF2575prctecFEV1.card, H))})
+
+    arr = np.ones(AR.card)
+    arr /= arr.sum()
+
+    # Required for the query. Message from fef25-75 is computed manually and won't use this precomp message
+    uniform_from_fef2575 = {
+        "['ecFEF25-75 % ecFEV1 (%)', 'Airway resistance (%)'] -> Airway resistance (%)": arr
+    }
+    m_from_hfev1_key = "Healthy FEV1 (L) -> ['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)']"
+    m_from_hfev1_dict = {}
+    m_from_fev_factor_key = "['Underlying FEV1 (L)', 'Healthy FEV1 (L)', 'Airway resistance (%)'] -> Airway resistance (%)"
+    m_from_fev_factor_dict = {}
+
+    # Get the joint probability of ecFEV1 and ecFEF2575 given the model for this individual
+    # Process each row
+    # P(model | data) prop_to P(data | model) * P(model)
+    # P(data | model) = P(ecFEV1, ecFEF2575 | HFEV1) = P(ecFEV1 | HFEV1) * P( ecFEF2575 | HFEV1, ecFEV1)
+    tic = time.time()
+    for n, row in df.iterrows():
+        curr_date = df.loc[n, "Date Recorded"]
+        # There is no prev day if it's the first day
+        prev_date = df.iloc[n - 1]["Date Recorded"] if n > 0 else None
+        if debug:
+            print(f"Row {n + 1}/{N}, Date: {curr_date}, Prev Date: {prev_date}")
+
+        # For each model given an HFEV1 observation
+        for h, h_s_obs_state in enumerate(h_s_obs_states):
+            HFEV1_bin_idx, S_obs_idx = h_s_obs_state
+
+            # When prev_date is None, then the first day prior is always sent
+            vevidence_ar = (
+                cutseth.build_vevidence_cutset_conditioned_ar_with_shape_factor(
+                    AR,
+                    h,
+                    curr_date,
+                    S_obs_idx,
+                    prev_date=None,
+                    next_date=None,
+                    n_days_consec=n_days_consec,
+                    debug=debug,
+                )
+            )
+            res_dict["vevidence_ar"][n, :, h] = vevidence_ar.values
+
+            if debug:
+                print(
+                    f"HFEV1_obs_idx: {HFEV1_bin_idx}, S_obs_idx: {S_obs_idx}, vevidence_ar: {vevidence_ar.values}"
+                )
+
+            if not np.isnan(row["idx ecFEV1 (L)"]) and not np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print("Both ecFEV1 and ecFEF25-75 observed")
+                (
+                    log_p_D_given_M_for_row,
+                    dist_AR,
+                    dist_ecFEV1,
+                    dist_ecFEF2575prctecFEV1,
+                ) = cca.get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                    row,
+                    inf_alg,
+                    HFEV1,
+                    HFEV1_bin_idx,
+                    ecFEV1,
+                    ecFEF2575prctecFEV1,
+                    AR,
+                    vevidence_ar,
+                    {},
+                    m_from_hfev1_dict,
+                    m_from_hfev1_key,
+                    m_from_fev_factor_dict,
+                    m_from_fev_factor_key,
+                )
+            elif not np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print("Only ecFEV1 observed")
+                log_p_D_given_M_for_row, dist_AR, dist_ecFEV1 = (
+                    cca.get_AR_and_p_log_D_given_M_obs_fev1(
+                        row,
+                        inf_alg,
+                        HFEV1,
+                        HFEV1_bin_idx,
+                        ecFEV1,
+                        AR,
+                        vevidence_ar,
+                        uniform_from_fef2575,
+                        m_from_hfev1_dict,
+                        m_from_hfev1_key,
+                        m_from_fev_factor_dict,
+                        m_from_fev_factor_key,
+                    )
+                )
+                dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
+            elif np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
+                row["idx ecFEF25-75 % ecFEV1 (%)"]
+            ):
+                if debug:
+                    print(
+                        f"Warning - Both ecFEV1 and ecFEF25-75 not observed for ID {id}, row {n}, h {h}"
+                    )
+                log_p_D_given_M_for_row, dist_AR = (
+                    cca.get_AR_and_p_log_D_given_M_no_obs(
+                        inf_alg,
+                        HFEV1,
+                        HFEV1_bin_idx,
+                        AR,
+                        vevidence_ar,
+                        uniform_from_fef2575,
+                        m_from_hfev1_dict,
+                        m_from_hfev1_key,
+                    )
+                )
+                dist_ecFEV1 = np.zeros(ecFEV1.card)
+                dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
+            else:
+                raise ValueError(
+                    f"Unexpected combination of observed variables for row\n{row}"
+                )
+
+            log_p_D_given_M[n, h] = log_p_D_given_M_for_row
+            # # If dist_AR contains at least one nan then print
+            # if np.isnan(dist_AR).any():
+            #     print(f"Warning - dist_AR contains nan for ID {id}, row {n}, h {h}")
+            # AR_given_M_and_past_D[n, :, h] = dist_AR
+            # res_dict["ecFEV1"][n, :, h] = dist_ecFEV1
+            # res_dict["ecFEF2575%ecFEV1"][n, :, h] = dist_ecFEF2575prctecFEV1
+
+            # # Add the AR dist to be used for as next day's AR vevidence
+            # date_str = row["Date Recorded"].strftime("%Y-%m-%d")
+            # AR.add_or_update_posterior(h, date_str, dist_AR, debug)
+
+            # # Get the AR without the contribution from the past days' data
+            # # This will be used to get the contribution from the next days' data
+            # # Check that wherever vevidence_ar is 0, the res2[AR.name] is also 0
+            # AR_without_vevidence = np.divide(
+            #     dist_AR, vevidence_ar.values, where=vevidence_ar.values != 0
+            # )
+            # AR_without_vevidence /= AR_without_vevidence.sum()
+            # AR_given_M_and_same_day_D[n, :, h] = AR_without_vevidence
+
+    toc = time.time()
+    print(f"{id} - Time for {N} entries: {toc-tic:.2f} s")
+    return log_p_D_given_M, res_dict

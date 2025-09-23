@@ -1328,6 +1328,61 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
     )
 
 
+def fev1_fef2575_long_model_noise_shared_healthy_vars(
+    height,
+    age,
+    sex,
+    ar_prior="uniform",
+    n_cutset_conditioned_states=None,
+    ecfev1_noise_model_suffix=None,
+    fef2575_cpt_suffix=None,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides
+    The airway resistances has day-to-day temporal connection
+    """
+    hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
+    HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
+
+    uFEV1 = VariableNode("Underlying FEV1 (L)", 0, 6, 0.05, prior=None)
+    ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
+    ecFEF2575prctecFEV1 = VariableNode("ecFEF25-75 % ecFEV1 (%)", 0, 200, 2, prior=None)
+    # Lowest predicted FEV1 is 15% (AR = 1-predictedFEV1)
+
+    if n_cutset_conditioned_states is not None:
+        AR = CutsetConditionedTemporalVariableNode(
+            "Airway resistance (%)", 0, 90, 2, n_cutset_conditioned_states
+        )
+    else:
+        AR = TemporalVariableNode("Airway resistance (%)", 0, 90, 2)
+
+    # Unused later on
+    Var_ar_change = set_temporal_AR_params(
+        AR, "_shape_factor_single_laplace_1.6", ar_prior
+    )
+
+    # Set shared vars factor to node keys.
+    # Used to aggregate messages up in longitudinal model
+    key_hfev1 = f"['{uFEV1.name}', '{HFEV1.name}', '{AR.name}'] -> {HFEV1.name}"
+    HFEV1.set_factor_to_node_key(key_hfev1)
+
+    # Calculate CPTs
+    uFEV1.set_cpt(get_cpt([uFEV1, HFEV1, AR]))
+    ecFEV1.set_cpt(get_cpt([ecFEV1, uFEV1], suffix=ecfev1_noise_model_suffix))
+    ecFEF2575prctecFEV1.set_cpt(
+        get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix)
+    )
+
+    return (
+        HFEV1,
+        uFEV1,
+        ecFEV1,
+        AR,
+        ecFEF2575prctecFEV1,
+        Var_ar_change
+    )
+
+
 def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
     height,
     age,
