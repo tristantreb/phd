@@ -1,3 +1,4 @@
+import logging
 import os
 
 import numpy as np
@@ -180,3 +181,17 @@ def split_ID_data_in_groups(df, group_size):
         .rename(columns={"ID": "ID_init", "ID_chunks": "ID"})
     )
     return df_new
+
+
+def remove_recording(df, id, column, value):
+    """
+    Removes a recording from a dataframe
+    """
+    idx = df[(df.ID == id) & (df[column] == value)].index
+    logging.warning(
+        "Dropping {} entries with {} = {} for ID {}".format(
+            idx.shape[0], column, value, id
+        )
+    )
+    df.drop(idx, inplace=True)
+    return df

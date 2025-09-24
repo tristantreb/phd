@@ -225,20 +225,6 @@ def _remove_recordings_in_date_range(df, id, column, start_date, end_date):
     return df
 
 
-def _remove_recording(df, id, column, value):
-    """
-    Removes a recording from a dataframe
-    """
-    idx = df[(df.ID == id) & (df[column] == value)].index
-    logging.warning(
-        "Dropping {} entries with {} = {} for ID {}".format(
-            idx.shape[0], column, value, id
-        )
-    )
-    df.drop(idx, inplace=True)
-    return df
-
-
 def _correct_fev1(df):
     """
     Corrects FEV1 values
@@ -247,7 +233,7 @@ def _correct_fev1(df):
     # Corresponds to 24y, Female, 153.5cm -> predicted FEV1: 2.9
     # Let's remove this entry
     # UPDATE: one and only measurement for that ID
-    df = _remove_recording(df, "330", "FEV1", 6.0)
+    df = dh.remove_recording(df, "330", "FEV1", 6.0)
 
     # WARNING:root:r ID 202: FEV1 % Predicted should be in 0-140%, got 147.24696075623552
     # This is the case for many entries for this ID

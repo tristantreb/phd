@@ -82,12 +82,13 @@ def sex(value, id):
     return -1
 
 
-def age(value, id):
+def age(value, id, max=70):
     """
     Age should be in 18-70 years
+    Added max variable for non CF datasets
     """
-    if value < 18 or value > 70:
-        logging.warning(f"r ID {id}: Age should be in 18-70 years, got {value}")
+    if value < 18 or value > max:
+        logging.warning(f"r ID {id}: Age should be in 18-{max} years, got {value}")
     return -1
 
 
@@ -166,7 +167,7 @@ def data_types(df):
             case "ID" | "Sex" | "Date Recorded" | "ID T5" | "ID T6" | "ID T7":
                 if df[col].dtype != np.dtype("O"):
                     logging.warning(
-                        "Expected {col} to be of type object, got {df[col].dtype}"
+                        f"Expected {col} to be of type object, got {df[col].dtype}"
                     )
             case (
                 "Height"
