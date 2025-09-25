@@ -2,6 +2,7 @@ import logging
 
 import pandas as pd
 
+import data.breathe_data as bd
 import data.helpers as dh
 import data.sanity_checks as sanity_checks
 
@@ -64,6 +65,16 @@ def format_sex(x):
         return None
 
 
+def _correct_fev1(df):
+    # df = dh.remove_recording(df, 8971, "FEV1", 0.145)
+    # df = dh.remove_recording(df, 17547, "FEV1", 0.105)
+    return df
+
+
+def _correct_fef2575(df):
+    return df
+
+
 def process_tr_data(df, study_name):
     df.Age = df.Age.apply(format_age)
     df.Sex = df.Sex.apply(format_sex)
@@ -93,16 +104,7 @@ def process_tr_data(df, study_name):
     df.apply(lambda x: sanity_checks.o2_saturation(x["O2 Saturation"], x["ID"]), axis=1)
 
     # logging.info(f"{df.shape[0]} individuals in {study_name}")
-    return df
 
-
-def _correct_fev1(df):
-    # df = dh.remove_recording(df, 8971, "FEV1", 0.145)
-    # df = dh.remove_recording(df, 17547, "FEV1", 0.105)
-    return df
-
-
-def _correct_fef2575(df):
     return df
 
 
@@ -110,4 +112,17 @@ def load_tromso_data(study_name):
     df = fetch_dataset(study_name)
     df = to_breathe_colnames(df, study_name)
     df = process_tr_data(df, study_name)
+    return df
+
+
+def build_meas_df(study_name):
+    print("\n*** Building O2 Saturation and FEV1 dataframe ***")
+    df = load_tromso_data(study_name)
+
+    cols = ["Age", "Sex", "Height", "FEV1", "FEF2575", "O2 Saturation"]
+    df = df.dropna(subset=cols).reset_index(drop=True)
+    df = bd.calc_predicted_FEV1_LMS_df(df, 1, debug=False)
+    df = bd.calc_healthy_O2_sat_df(df)
+    df = bd.calc_FEV1_prct_predicted_df(df, with_ecFEV1=False)
+    df = bd.calc_O2_sat_prct_healthy_df(df)
     return df

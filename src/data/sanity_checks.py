@@ -101,12 +101,15 @@ def height(value, id):
     return -1
 
 
-def predicted_fev1(value, id):
+def predicted_fev1(value, id, min=2):
     """
     Predicted FEV1 should be in 2-5.5 L
+    Min goes below 2 for individuals > 70 yr
     """
-    if value < 2 or value > 5.5:
-        logging.warning(f"r ID {id}: Predicted FEV1 should be in 2-5.5 L, got {value}")
+    if value < min or value > 5.5:
+        logging.warning(
+            f"r ID {id}: Predicted FEV1 should be in {min}-5.5 L, got {value}"
+        )
     return -1
 
 

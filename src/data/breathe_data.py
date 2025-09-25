@@ -644,31 +644,34 @@ def build_O2_FEV1_FEF2575_PEF_df(remove_nan, meas_file=2):
     return df
 
 
-def calc_predicted_FEV1_LMS_df(df):
+def calc_predicted_FEV1_LMS_df(df, min=2, debug=False):
     """
     Returns a Series with Predicted FEV1 from a DataFrame with Sex, Height, Age
     """
     df["Predicted FEV1"] = df.apply(
         lambda x: pred_fev1.calc_predicted_value_LMS_straight(
-            x.Height,
-            x.Age,
-            x.Sex,
+            x.Height, x.Age, x.Sex, debug
         )["M"],
         axis=1,
     )
-    df.apply(lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID), axis=1)
+    df.apply(
+        lambda x: sanity_checks.predicted_fev1(x["Predicted FEV1"], x.ID, min), axis=1
+    )
     return df
 
 
-def calc_FEV1_prct_predicted_df(df):
+def calc_FEV1_prct_predicted_df(df, with_ecFEV1=True):
     """
     Returns input DataFrame with FEV1 % Predicted as a new column, after sanity check
     """
-    df["ecFEV1 % Predicted"] = df["ecFEV1"] / df["Predicted FEV1"] * 100
-    df.apply(
-        lambda x: sanity_checks.ecfev1_prct_predicted(x["ecFEV1 % Predicted"], x.ID),
-        axis=1,
-    )
+    if with_ecFEV1:
+        df["ecFEV1 % Predicted"] = df["ecFEV1"] / df["Predicted FEV1"] * 100
+        df.apply(
+            lambda x: sanity_checks.ecfev1_prct_predicted(
+                x["ecFEV1 % Predicted"], x.ID
+            ),
+            axis=1,
+        )
     df["FEV1 % Predicted"] = df["FEV1"] / df["Predicted FEV1"] * 100
     df.apply(
         lambda x: sanity_checks.fev1_prct_predicted(x["FEV1 % Predicted"], x.ID), axis=1

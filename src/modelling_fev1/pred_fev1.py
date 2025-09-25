@@ -39,6 +39,8 @@ def calc_predicted_FEV1_linear(height: int, age: int, sex: str):
 
 
 def calc_predicted_value_LMS_straight(height: int, age: int, sex: str, debug=False):
+    if debug:
+        print(f"{sex}, {age} yr, {height} cm")
     return glih.calc_predicted_value_LMS(
         load_FEV1_LMS_spline_vals(age, sex),
         load_FEV1_LMS_coeffs(sex),
@@ -247,6 +249,9 @@ def _get_FEV1_female_spline_vals(age: int):
         58: {"Mspline": -0.0528597065, "Sspline": 0.0313812287},
         59: {"Mspline": -0.0633529599, "Sspline": 0.0402366952},
         60: {"Mspline": -0.0740671946, "Sspline": 0.0491573819},
+        61: {"Mspline": -0.0849958406, "Sspline": 0.0581254206},
+        62: {"Mspline": -0.0961317733, "Sspline": 0.0671243818},
+        63: {"Mspline": -0.1074750464, "Sspline": 0.0761415079},
         64: {"Mspline": -0.1190269354, "Sspline": 0.0851666461},
         65: {"Mspline": -0.1307912904, "Sspline": 0.0941905083},
         66: {"Mspline": -0.1427713130, "Sspline": 0.1032036031},
