@@ -9,7 +9,8 @@ import inference.long_inf_slicing as slicing
 import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
-df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
+# df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
+df = bd.load_meas_from_excel("TR5_O2_FEV1_FEF2575_with_idx_28092025", study_folder="TR")
 
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
@@ -40,23 +41,11 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
         ecFEF2575prctecFEV1,
     ) = mb.fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
         height,
-
         age,
         sex,
         ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_cpt_suffix,
         ar_fef2575_cpt_suffix=ar_fef2575_cpt_suffix,
     )
-
-    vars = [AR]
-    shared_vars = [HFEV1]
-    # obs_vars = [ecFEV1.name]
-    obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
-
-    # Find the max FEV1 values
-    # Given an ID, get the data which maximises ecFEV1, then ecFEF2575, then O2 Saturation
-    idx_max_FEV1 = df_for_ID.sort_values(
-        by=["ecFEV1", "ecFEF2575"], ascending=False
-    ).index[0]
 
     # For each entry, create a two_days data structure that hold the current day as well as the day where the max FEV1 is observed
     # If the two idx are the same, then run a one day model.
@@ -114,8 +103,11 @@ if __name__ == "__main__":
 
     res = pd.concat(res, ignore_index=True)
 
-    print(f"Saving results to {dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_fef2575_11062025.xlsx")
+    print(
+        f"Saving results to {dh.get_path_to_main()}/ExcelFiles/TR/infer_AR_using_fev1_fef2575_TR5_25092025.xlsx"
+        # f"Saving results to {dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_fef2575_11062025.xlsx"
+    )
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_fef2575_11062025.xlsx",
+        f"{dh.get_path_to_main()}/ExcelFiles/TR/infer_AR_using_fev1_fef2575_TR5_25092025.xlsx",
         index=False,
     )

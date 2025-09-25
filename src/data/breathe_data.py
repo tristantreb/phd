@@ -16,8 +16,11 @@ def load_meas_from_excel(
     str_cols_to_arrays=None,
     date_cols=["Date Recorded"],
     bypass_sanity_checks=False,
+    study_folder="BR",
 ):
-    df = pd.read_excel(dh.get_path_to_main() + f"ExcelFiles/BR/{filename}.xlsx")
+    df = pd.read_excel(
+        dh.get_path_to_main() + f"ExcelFiles/{study_folder}/{filename}.xlsx"
+    )
     # ID column as type string
     df["ID"] = df["ID"].astype(str)
     # Date Redocrded as datetime
