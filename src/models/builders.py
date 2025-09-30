@@ -400,7 +400,7 @@ def build_longitudinal_FEV1_side(
     )
 
 
-def fev1_point_in_time_model(height, age, sex):
+def fev1_point_in_time_bn(height, age, sex):
     """
     Point in time model with full FEV1 side
     """
@@ -1337,7 +1337,7 @@ def o2sat_fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_ligh
     )
 
 
-def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
+def fev1_fef2575_n_days_BN_noise_shared_healthy_vars_and_temporal_ar(
     n,
     height,
     age,
@@ -1419,7 +1419,67 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar(
     )
 
 
-def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
+def fev1_fef2575_1_day_BN_noise(
+    height,
+    age,
+    sex,
+    ar_prior="uniform",
+    ar_fef2575_cpt_suffix=None,
+    ecfev1_noise_model_suffix=None,
+    check_model=False,
+):
+    """
+    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
+    HFEV1 and HO2Sat are shared across time points.
+
+    Must have a corresponding AR change CPT
+    Musn't necessarily use the cutset conditioning
+
+    FEV1 noise model suffix fixed to 0.7, high noise to compensate low granularity for the temporal ARs
+    """
+    (
+        HFEV1,
+        uFEV1,
+        ecFEV1,
+        AR,
+        ecFEF2575prctecFEV1
+    ) = var_builders.fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
+        height,
+        age,
+        sex,
+        ar_prior=ar_prior,
+        ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_suffix,
+        ar_fef2575_cpt_suffix=ar_fef2575_cpt_suffix,
+    )
+
+    (
+        model,
+        _,
+        AR,
+        uFEV1,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+    ) = graph_builders.fev1_fef2575_noise_1_day_BN(
+        HFEV1,
+        uFEV1,
+        ecFEV1,
+        AR,
+        ecFEF2575prctecFEV1,
+        check_model=check_model,
+    )
+    # inf_alg = apply_bayes_net_bp(model)
+    return (
+        model,
+        # inf_alg,
+        HFEV1,
+        AR,
+        uFEV1,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+    )
+
+
+def fev1_fef2575_n_days_BN_noise_shared_healthy_vars_and_shared_ar(
     n,
     height,
     age,
@@ -1501,7 +1561,7 @@ def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_shared_ar(
     )
 
 
-def fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_learn_S(
+def fev1_fef2575_n_days_BN_noise_shared_healthy_vars_and_temporal_ar_learn_S(
     n,
     height,
     age,
@@ -1672,7 +1732,7 @@ def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_and_temporal_ar_li
     )
 
 
-def o2sat_fev1_fef2575_n_days_model_noise_shared_healthy_vars_light(
+def o2sat_fev1_fef2575_n_days_BN_noise_shared_healthy_vars_light(
     n,
     height,
     age,

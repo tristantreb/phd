@@ -20,7 +20,7 @@ def get_data_df_template(n_days):
     return df_mock
 
 
-def get_mock_data(fev1_mode="changing"):
+def get_mock_data_3d(fev1_mode="changing"):
     if fev1_mode == "identical":
         df_mock = pd.DataFrame(
             {
@@ -61,7 +61,7 @@ def get_mock_data(fev1_mode="changing"):
     return df_mock
 
 
-def get_mock_data_2_days(fev1_mode):
+def get_mock_data_2d(fev1_mode):
     if fev1_mode == "identical":
         df_mock = pd.DataFrame(
             {
@@ -86,6 +86,25 @@ def get_mock_data_2_days(fev1_mode):
                 "ecFEF2575%ecFEV1": [30, 50],
             }
         )
+
+    df_mock["Date Recorded"] = pd.to_datetime(
+        df_mock["Date Recorded"], unit="D", origin="2020-01-01"
+    )
+    return df_mock
+
+
+def get_mock_data_1d():
+    df_mock = pd.DataFrame(
+        {
+            "ID": ["1"],
+            "Date Recorded": [1],
+            "Height": 180,
+            "Age": 35,
+            "Sex": "Male",
+            "ecFEV1": [3.5],
+            "ecFEF2575%ecFEV1": [50],
+        }
+    )
 
     df_mock["Date Recorded"] = pd.to_datetime(
         df_mock["Date Recorded"], unit="D", origin="2020-01-01"

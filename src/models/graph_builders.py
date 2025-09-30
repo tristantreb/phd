@@ -865,6 +865,58 @@ def fev1_fef2575_point_in_time_noise_factor_graph(
     return G
 
 
+def fev1_fef2575_noise_1_day_BN(
+    HFEV1,
+    uFEV1,
+    ecFEV1,
+    AR,
+    ecFEF2575prctecFEV1,
+    check_model=True,
+):
+    """
+    No direct link between AR and IA
+    """
+
+    # Priors and CPTs
+    AR_prior = build_pgmpy_ar_prior(AR)
+    uFEV1_cpt = build_pgmpy_ecfev1_cpt(uFEV1, HFEV1, AR)
+    ecFEV1_cpt = build_pgmpy_ecfev1_noise_cpt(ecFEV1, uFEV1)
+    ecFEF2575prctecFEV1_cpt = build_pgmpy_ecfef2575prctecfev1_cpt(
+        ecFEF2575prctecFEV1,
+        AR,
+    )
+    # Shared priors
+    prior_hfev1 = build_pgmpy_hfev1_prior(HFEV1)
+
+    network = [
+        (HFEV1.name, uFEV1.name),
+        (AR.name, uFEV1.name),
+        (uFEV1.name, ecFEV1.name),
+        (AR.name, ecFEF2575prctecFEV1.name),
+    ]
+
+    model = DiscreteBayesianNetwork(network)
+
+    model.add_cpds(
+        prior_hfev1,
+        AR_prior,
+        uFEV1_cpt,
+        ecFEV1_cpt,
+        ecFEF2575prctecFEV1_cpt,
+    )
+
+    if check_model:
+        model.check_model()
+    return (
+        model,
+        HFEV1,
+        AR,
+        uFEV1,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+    )
+
+
 def fev1_o2sat_fef2575_noise_n_days_model(
     n,
     HFEV1,
