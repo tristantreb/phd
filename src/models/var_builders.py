@@ -609,13 +609,15 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
                 "p": ar.get_breathe_prior_from_1_day_model_o2sat_ecFEV1(),
             }
         )
-    elif ar_prior == "breathe (2 days model, ecFEV1, ecFEF25-75, add mult noise)":
+    elif ar_prior == "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)":
         AR.cpt = AR.set_prior(
             {
                 "type": "custom",
                 "p": ar.get_breathe_prior_from_2_days_model_ecFEV1_ecFEF2575_ecfev1addmultnoise(),
             }
         )
+    else:
+        print("Warning: unrecognised AR prior")
 
     # Set shared vars factor to node keys.
     # Used to aggregate messages up in longitudinal model

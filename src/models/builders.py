@@ -675,10 +675,6 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise",
     check_model=False,
 ):
-    """
-    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
-    HFEV1 and HO2Sat are shared across time points.
-    """
     (
         HFEV1,
         uFEV1,
