@@ -346,7 +346,8 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                     dist_AR,
                     dist_ecFEV1,
                     dist_ecFEF2575prctecFEV1,
-                ) = cca.get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                # ) = cca.get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                ) = cca.get_AR_and_p_log_D_given_M_obs_fef2575_fev1(
                     row,
                     inf_alg,
                     HFEV1,
