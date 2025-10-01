@@ -1398,7 +1398,7 @@ def fev1_fef2575_n_days_BN_noise_shared_healthy_vars_and_temporal_ar(
         uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
-    ) = graph_builders.fev1_fef2575_noise_n_days_model_temporal_ar(
+    ) = graph_builders.fev1_fef2575_noise_n_days_BN_temporal_ar(
         n,
         HFEV1,
         uFEV1,
@@ -1437,19 +1437,15 @@ def fev1_fef2575_1_day_BN_noise(
 
     FEV1 noise model suffix fixed to 0.7, high noise to compensate low granularity for the temporal ARs
     """
-    (
-        HFEV1,
-        uFEV1,
-        ecFEV1,
-        AR,
-        ecFEF2575prctecFEV1
-    ) = var_builders.fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
-        height,
-        age,
-        sex,
-        ar_prior=ar_prior,
-        ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_suffix,
-        ar_fef2575_cpt_suffix=ar_fef2575_cpt_suffix,
+    (HFEV1, uFEV1, ecFEV1, AR, ecFEF2575prctecFEV1) = (
+        var_builders.fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
+            height,
+            age,
+            sex,
+            ar_prior=ar_prior,
+            ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_suffix,
+            ar_fef2575_cpt_suffix=ar_fef2575_cpt_suffix,
+        )
     )
 
     (
@@ -1479,68 +1475,36 @@ def fev1_fef2575_1_day_BN_noise(
     )
 
 
-def fev1_fef2575_n_days_BN_noise_shared_healthy_vars_and_shared_ar(
+def fev1_fef2575_n_day_BN_noise(
     n,
     height,
     age,
     sex,
     ar_prior="uniform",
-    ar_change_cpt_suffix="",
-    ecfev1_noise_model_suffix="_std0.7",
-    light=False,
+    ar_fef2575_cpt_suffix=None,
+    ecfev1_noise_model_suffix=None,
     check_model=False,
 ):
-    """
-    Longitudinal model with full FEV1, FEF25-75 and O2Sat sides.
-    HFEV1 and HO2Sat are shared across time points.
-
-    Must have a corresponding AR change CPT
-    Musn't necessarily use the cutset conditioning
-
-    There is one single AR variable shared across time points
-    """
-
-    if light:
-        (
-            HFEV1,
-            uFEV1,
-            ecFEV1,
-            AR,
-            ecFEF2575prctecFEV1,
-            _,
-        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
+    """ """
+    (HFEV1, uFEV1, ecFEV1, AR, ecFEF2575prctecFEV1) = (
+        var_builders.fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
             height,
             age,
             sex,
-            ar_prior,
-            ar_change_cpt_suffix,
-            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+            ar_prior=ar_prior,
+            ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_suffix,
+            ar_fef2575_cpt_suffix=ar_fef2575_cpt_suffix,
         )
-    else:
-        (
-            HFEV1,
-            uFEV1,
-            ecFEV1,
-            AR,
-            ecFEF2575prctecFEV1,
-            _,
-        ) = var_builders.fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar(
-            height,
-            age,
-            sex,
-            ar_prior,
-            ar_change_cpt_suffix,
-            ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
-        )
+    )
 
     (
         model,
-        _,
-        _,
+        HFEV1,
+        AR_vars,
         uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
-    ) = graph_builders.fev1_fef2575_noise_n_days_model_shared_ar(
+    ) = graph_builders.fev1_fef2575_noise_n_days_BN(
         n,
         HFEV1,
         uFEV1,
@@ -1549,12 +1513,10 @@ def fev1_fef2575_n_days_BN_noise_shared_healthy_vars_and_shared_ar(
         ecFEF2575prctecFEV1,
         check_model=check_model,
     )
-    # inf_alg = apply_bayes_net_bp(model)
     return (
         model,
-        # inf_alg,
         HFEV1,
-        AR,
+        AR_vars,
         uFEV1_vars,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
@@ -1777,7 +1739,7 @@ def o2sat_fev1_fef2575_n_days_BN_noise_shared_healthy_vars_light(
         UO2Sat_vars,
         O2Sat_vars,
         ecFEF2575prctecFEV1_vars,
-    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_model(
+    ) = graph_builders.fev1_o2sat_fef2575_noise_n_days_BN(
         n,
         HFEV1,
         uFEV1,

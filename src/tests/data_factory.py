@@ -82,8 +82,8 @@ def get_mock_data_2d(fev1_mode):
                 "Height": 180,
                 "Age": 35,
                 "Sex": "Male",
-                "ecFEV1": [3.5, 5.5],
-                "ecFEF2575%ecFEV1": [30, 50],
+                "ecFEV1": [5.5, 3.5],
+                "ecFEF2575%ecFEV1": [50, 30],
             }
         )
 

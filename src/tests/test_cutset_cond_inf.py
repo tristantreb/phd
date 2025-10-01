@@ -455,7 +455,6 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_and_fef2575_in
 def test_1d_cutset_cond_gives_correct_p_fev1_given_fef2575():
     df_mock = data.get_mock_data_1d()
     height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
-    n_days = df_mock.shape[0]
 
     # Model parameters
     ar_prior = "uniform"
