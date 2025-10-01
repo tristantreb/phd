@@ -158,7 +158,6 @@ def find_longest_conseq_sequence(df_for_ID, n_missing_days_allowed=0):
 
     end_idx = idx[idx_max_diff + 1]
 
-    df_for_ID[start_idx:end_idx]
     return df_for_ID[start_idx:end_idx], start_idx, end_idx
 
 
