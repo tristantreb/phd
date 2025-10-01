@@ -37,7 +37,7 @@ def process_data_AR_through_time(df):
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         fef2575_cpt_suffix=fef2575_cpt_suffix,
         n_days_consec=n_missing_days_allowed + 1,
-        get_p_s_given_d=True,
+        get_p_d_given_s=True,
         debug=False,
     )
 

@@ -33,7 +33,7 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 
 def process_id(inf_settings):
 
-    get_p_s_given_d = False
+    get_p_d_given_s = False
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_missing_days_allowed = 1
@@ -78,14 +78,14 @@ def process_id(inf_settings):
             ar_change_cpt_suffix=ar_change_cpt_suffix,
             ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
             fef2575_cpt_suffix="",
-            n_days_consec=n_missing_days_allowed+1,
+            n_days_consec=n_missing_days_allowed + 1,
             light=False,
             debug=False,
-            get_p_s_given_d=get_p_s_given_d,
+            get_p_d_given_s=get_p_d_given_s,
             save=True,
         )
 
-        if get_p_s_given_d:
+        if get_p_d_given_s:
             (
                 log_p_S_given_D,
                 res_dict,
@@ -110,9 +110,7 @@ def process_id(inf_settings):
                 res_dict,
             ) = out
 
-            dates = dftmp["Date Recorded"].apply(
-                lambda date: date.strftime("%Y-%m-%d")
-            )
+            dates = dftmp["Date Recorded"].apply(lambda date: date.strftime("%Y-%m-%d"))
 
             # Transform AR_given_D into a dataframe with one AR entry per day
             new_ar_hfev1_df = pd.DataFrame(
@@ -125,7 +123,7 @@ def process_id(inf_settings):
             new_ar_hfev1_df["p_HFEV1_given_D"] = [p_HFEV1_given_D] * len(
                 new_ar_hfev1_df
             )
-            new_ar_hfev1_df['Sequence length'] = ndays
+            new_ar_hfev1_df["Sequence length"] = ndays
             new_ar_hfev1_df.rename({"p_HFEV1_given_D": "HFEV1"}, axis=1, inplace=True)
 
     return new_ar_hfev1_df
@@ -157,12 +155,12 @@ if __name__ == "__main__":
         # "104",
     ]
     ids_narrowed_in_point_in_time = [
-        '104',
-        '107',
-        '202',
-        '210',
-        '372',
-        '433',
+        "104",
+        "107",
+        "202",
+        "210",
+        "372",
+        "433",
     ]
     interesting_ids = df.ID.unique()
     # interesting_ids = ['103', '109', '106', '101', '116', '123', '130', '138']
@@ -203,7 +201,8 @@ if __name__ == "__main__":
         results = list(executor.map(process_id, inf_settings))
         combined_df = pd.concat(results, ignore_index=True)
         combined_df.to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_30days_fev1_fef2575.xlsx", index=False
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_30days_fev1_fef2575.xlsx",
+            index=False,
         )
 
 

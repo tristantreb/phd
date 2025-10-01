@@ -986,6 +986,7 @@ def get_AR_and_p_log_D_given_M_obs_fef2575_fev1(
     dist_ecFEV1 = res2[ecFEV1.name].values
     p_ecFEV1 = dist_ecFEV1[data["idx ecFEV1 (L)"]]
     log_p_D_given_M += np.log(p_ecFEV1)
+    log_p_FEV1_given_M = np.log(p_ecFEV1)
 
     # Get P(AR | model conditionned on HFEV1_obs, ecFEF2575, ecFEV1)
     precomp_messages3 = precomp_messages
@@ -1011,7 +1012,7 @@ def get_AR_and_p_log_D_given_M_obs_fef2575_fev1(
         )
     dist_AR = res3[AR.name].values
 
-    return log_p_D_given_M, dist_AR, dist_ecFEV1, dist_ecFEF2575prctecFEV1
+    return log_p_D_given_M, dist_AR, dist_ecFEV1, dist_ecFEF2575prctecFEV1, log_p_FEV1_given_M
 
 
 def get_AR_and_p_log_D_given_M_obs_fev1(

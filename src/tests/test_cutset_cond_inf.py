@@ -134,7 +134,7 @@ def test_1d_fev1_fef2575_cutset_cond_inf_against_var_elim():
     End to end test for 1 day model when observing 1/ FEV1, 2/ FEV1 and FEF2575.
     """
     for obs_mode in ["FEV1", "FEV1 and FEF2575"]:
-    # for obs_mode in ["FEV1 and FEF2575"]:
+        # for obs_mode in ["FEV1 and FEF2575"]:
         df_mock = data.get_mock_data_1d()
         height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
 
@@ -161,8 +161,6 @@ def test_1d_fev1_fef2575_cutset_cond_inf_against_var_elim():
             ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         )
         var_elim = VariableElimination(model)
-
-        df_mock = data.add_idx_obs_cols(df_mock, ecFEV1)
 
         evidence_dict = {}
         if obs_mode == "FEV1":
@@ -375,7 +373,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_in_evidence():
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         n_days_consec=n_days_consec,
         light=False,
-        get_p_s_given_d=True,
+        get_p_d_given_s=True,
     )
 
     p_S_given_D = np.exp(log_p_S_given_D - np.max(log_p_S_given_D))
@@ -444,7 +442,7 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_and_fef2575_in
         ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
         n_days_consec=n_days_consec,
         light=False,
-        get_p_s_given_d=True,
+        get_p_d_given_s=True,
     )
 
     p_S_given_D = np.exp(log_p_S_given_D - np.max(log_p_S_given_D))
@@ -452,3 +450,59 @@ def test_cutset_cond_gives_same_p_S_given_D_as_var_elim_with_fev1_and_fef2575_in
 
     # Assert results are equal
     assert_low_element_wise_max_diff(p_S_given_D, s_ve)
+
+
+def test_1d_cutset_cond_gives_correct_p_fev1_given_fef2575():
+    df_mock = data.get_mock_data_1d()
+    height, age, sex = df_mock.iloc[0][["Height", "Age", "Sex"]]
+    n_days = df_mock.shape[0]
+
+    # Model parameters
+    ar_prior = "uniform"
+    ar_change_cpt_suffix = "_shape_factor_single_laplace_1.6"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
+
+    # Load variable eliminiation
+    (
+        model,
+        HFEV1,
+        AR,
+        _,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+    ) = mb.fev1_fef2575_1_day_BN_noise(
+        height,
+        age,
+        sex,
+        ar_prior=ar_prior,
+        ar_fef2575_cpt_suffix=fef2575_cpt_suffix,
+        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+    )
+    var_elim = VariableElimination(model)
+
+    df_mock = data.add_idx_obs_cols(df_mock, ecFEV1, ecFEF2575prctecFEV1)
+    evidence_dict = {}
+    evidence_dict[ecFEF2575prctecFEV1.name] = df_mock.loc[0, "idx ecFEF2575%ecFEV1"]
+
+    # P(ecFEV1 | M, ecFEF2575)
+    res_ve = var_elim.query(
+        variables=[ecFEV1.name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    dist_ecfev1_ve = res_ve[ecFEV1.name].values
+    p_ecfev1_ve = dist_ecfev1_ve[df_mock.loc[0, "idx ecFEV1 (L)"]]
+
+    # Run custom model
+    ([log_p_FEV1_given_S], _) = cca_ar_change_noo2sat.run_long_noise_model_through_time(
+        df_mock,
+        ar_prior=ar_prior,
+        ar_change_cpt_suffix=ar_change_cpt_suffix,
+        ecfev1_noise_model_suffix=ecfev1_noise_model_suffix,
+        fef2575_cpt_suffix=fef2575_cpt_suffix,
+        get_p_fev1_given_s=True,
+    )
+    p_ecfev1_cc = np.exp(log_p_FEV1_given_S)
+
+    assert_low_element_wise_max_diff(p_ecfev1_ve, p_ecfev1_cc)

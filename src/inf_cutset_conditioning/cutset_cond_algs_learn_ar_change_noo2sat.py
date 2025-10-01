@@ -28,7 +28,8 @@ def run_long_noise_model_through_time(
     fef2575_cpt_suffix=None,
     n_days_consec=3,
     light=False,
-    get_p_s_given_d=False,
+    get_p_d_given_s=False,
+    get_p_fev1_given_s=False,
     plot_res=False,
     debug=False,
     save=False,
@@ -54,30 +55,43 @@ def run_long_noise_model_through_time(
         light,
     )
 
-    (log_p_D_given_M, res_dict, AR_given_M_and_past_D, AR_given_M_and_same_day_D) = (
-        calc_log_p_D_given_M_and_AR_for_ID_any_obs(
-            df,
-            inf_alg,
-            HFEV1,
-            h_s_obs_states,
-            AR,
-            ecFEV1,
-            ecFEF2575prctecFEV1,
-            model_spec_txt,
-            S,
-            n_days_consec,
-            cond_hfev1_card,
-            debug=debug,
-            save=save,
-        )
+    (
+        log_p_D_given_M,
+        log_p_FEV1_given_M,
+        AR_given_M_and_past_D,
+        AR_given_M_and_same_day_D,
+        res_dict,
+    ) = calc_log_p_D_given_M_and_AR_for_ID_any_obs(
+        df,
+        inf_alg,
+        HFEV1,
+        h_s_obs_states,
+        AR,
+        ecFEV1,
+        ecFEF2575prctecFEV1,
+        model_spec_txt,
+        S,
+        n_days_consec,
+        cond_hfev1_card,
+        debug=debug,
+        save=save,
     )
 
-    if get_p_s_given_d:
-        log_p_S_given_D = fuse_results_to_compute_P_S_given_D(
+    if get_p_d_given_s:
+        log_p_D_given_S = fuse_results_to_compute_P_S_given_D(
             id, HFEV1, S, log_p_D_given_M
         )
         return (
-            log_p_S_given_D,
+            log_p_D_given_S,
+            res_dict,
+        )
+
+    elif get_p_fev1_given_s:
+        log_p_FEV1_given_S = fuse_results_to_compute_P_S_given_D(
+            id, HFEV1, S, log_p_FEV1_given_M
+        )
+        return (
+            log_p_FEV1_given_S,
             res_dict,
         )
 
@@ -93,7 +107,10 @@ def run_long_noise_model_through_time(
 
         p_M_given_D, AR_given_M_and_D, AR_given_M_and_all_D = (
             fuse_results_from_conditioned_models(
-                HFEV1, h_s_obs_states, log_p_D_given_M, AR_given_M_and_all_D
+                HFEV1,
+                h_s_obs_states,
+                log_p_D_given_M,
+                AR_given_M_and_all_D,
             )
         )
 
@@ -282,6 +299,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
     df = df.copy()
     H = len(h_s_obs_states)
     log_p_D_given_M = np.zeros((N, H))
+    log_p_FEV1_given_M = np.zeros((N, H))
     res_dict = {}
     res_dict.update({"vevidence_ar": np.zeros((N, AR.card, H))})
     res_dict.update({"ecFEV1": np.zeros((N, ecFEV1.card, H))})
@@ -346,7 +364,8 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                     dist_AR,
                     dist_ecFEV1,
                     dist_ecFEF2575prctecFEV1,
-                # ) = cca.get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
+                    log_p_FEV1_given_M_for_row,
+                    # ) = cca.get_AR_and_p_log_D_given_M_obs_fev1_and_fef2575(
                 ) = cca.get_AR_and_p_log_D_given_M_obs_fef2575_fev1(
                     row,
                     inf_alg,
@@ -384,6 +403,7 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                     )
                 )
                 dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
+                log_p_FEV1_given_M_for_row = log_p_D_given_M_for_row
             elif np.isnan(row["idx ecFEV1 (L)"]) and np.isnan(
                 row["idx ecFEF25-75 % ecFEV1 (%)"]
             ):
@@ -405,12 +425,14 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
                 )
                 dist_ecFEV1 = np.zeros(ecFEV1.card)
                 dist_ecFEF2575prctecFEV1 = np.zeros(ecFEF2575prctecFEV1.card)
+                log_p_FEV1_given_M_for_row = np.nan
             else:
                 raise ValueError(
                     f"Unexpected combination of observed variables for row\n{row}"
                 )
 
             log_p_D_given_M[n, h] = log_p_D_given_M_for_row
+            log_p_FEV1_given_M[n, h] = log_p_FEV1_given_M_for_row
             # If dist_AR contains at least one nan then print
             if np.isnan(dist_AR).any():
                 print(f"Warning - dist_AR contains nan for ID {id}, row {n}, h {h}")
@@ -433,7 +455,13 @@ def calc_log_p_D_given_M_and_AR_for_ID_any_obs(
 
     toc = time.time()
     print(f"{id} - Time for {N} entries: {toc-tic:.2f} s")
-    return log_p_D_given_M, res_dict, AR_given_M_and_past_D, AR_given_M_and_same_day_D
+    return (
+        log_p_D_given_M,
+        log_p_FEV1_given_M,
+        AR_given_M_and_past_D,
+        AR_given_M_and_same_day_D,
+        res_dict,
+    )
 
 
 def run_backward_sweep_to_get_ar_posteriors(
@@ -515,6 +543,7 @@ def fuse_results_from_conditioned_models(
     p_M_given_D = np.exp(log_p_M_given_D)
     p_M_given_D /= p_M_given_D.sum()
     AR_given_M_and_D = np.matmul(AR_given_M_and_all_D, p_M_given_D)
+
     return p_M_given_D, AR_given_M_and_D, AR_given_M_and_all_D
 
 

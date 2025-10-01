@@ -35,7 +35,7 @@ df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx
 
 def process_id(inf_settings):
 
-    get_p_s_given_d = False
+    get_p_d_given_s = False
 
     ar_change_cpt_suffix, ar_prior, id = inf_settings
     n_missing_days_allowed = 1
@@ -89,11 +89,11 @@ def process_id(inf_settings):
             light=False,
             plot_res=plot_res,
             debug=False,
-            get_p_s_given_d=get_p_s_given_d,
+            get_p_d_given_s=get_p_d_given_s,
             save=True,
         )
 
-        if get_p_s_given_d:
+        if get_p_d_given_s:
             (
                 log_p_S_given_D,
                 res_dict,
@@ -174,7 +174,6 @@ if __name__ == "__main__":
     # interesting_ids = ["101"]  # , '102', '103', '106', '107', '109']
     # interesting_ids = ['103', '109', '106', '101', '116', '123', '130', '138']
 
-
     ar_priors = [
         # "uniform",
         # "uniform message to HFEV1",
@@ -210,7 +209,8 @@ if __name__ == "__main__":
         results = list(executor.map(process_id, inf_settings))
         combined_df = pd.concat(results, ignore_index=True)
         combined_df.to_excel(
-            f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_20days_fev1_fef2575.xlsx", index=False
+            f"{dh.get_path_to_main()}/ExcelFiles/BR/long_model/laplace1.6_20days_fev1_fef2575.xlsx",
+            index=False,
         )
 
 
