@@ -1,7 +1,66 @@
 import numpy as np
 import pandas as pd
+from pgmpy.inference.ExactInference import VariableElimination
 
 import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
+import models.builders as mb
+
+
+def run_ve(df, with_fef2575=False, with_rmax=False, df_rmax_rows=None):
+    """
+    Last measurement on row 1
+    Robust max FEV1 on row 2
+    """
+    df = df.reset_index()
+
+    id, height, age, sex = df.iloc[0][["ID", "Height", "Age", "Sex"]]
+    # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
+    ar_prior = "uniform"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
+
+    (
+        model,
+        HFEV1,
+        AR_vars,
+        uFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+    ) = mb.fev1_fef2575_n_day_BN_noise(
+        2 if with_rmax else 1,
+        height,
+        age,
+        sex,
+        ar_prior,
+        fef2575_cpt_suffix,
+        ecfev1_noise_model_suffix,
+    )
+    var_elim = VariableElimination(model)
+
+    evidence_dict = {}
+    if with_fef2575:
+        evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = df.loc[
+            0, "idx ecFEF2575%ecFEV1"
+        ]
+    if with_rmax:
+        [rmax_fev1] = df_rmax_rows[df_rmax_rows.ID == id]["idx ecFEV1 (L)"].values
+        evidence_dict[ecFEV1_vars[1].name] = rmax_fev1
+    if with_rmax and with_fef2575:
+        [rmax_fef2575] = df_rmax_rows[df_rmax_rows.ID == id][
+            "idx ecFEF2575%ecFEV1"
+        ].values
+        evidence_dict[ecFEF2575prctecFEV1_vars[1].name] = rmax_fef2575
+
+    # print(f"n days: {len(AR_vars)}, evidence_dict: {evidence_dict}")
+
+    res_ve = var_elim.query(
+        variables=[ecFEV1_vars[0].name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    dist_ecfev1_ve = res_ve[ecFEV1_vars[0].name].values
+    p_ecfev1_ve = dist_ecfev1_ve[df.loc[0, "idx ecFEV1 (L)"]]
+    return p_ecfev1_ve
 
 
 def process_data_AR_through_time(df):
