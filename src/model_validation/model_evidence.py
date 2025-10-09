@@ -1,5 +1,5 @@
+import modin.pandas as pd
 import numpy as np
-import pandas as pd
 from pgmpy.inference.ExactInference import VariableElimination
 
 import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
@@ -61,6 +61,102 @@ def run_ve(df, with_fef2575=False, with_rmax=False, df_rmax_rows=None):
     dist_ecfev1_ve = res_ve[ecFEV1_vars[0].name].values
     p_ecfev1_ve = dist_ecfev1_ve[df.loc[0, "idx ecFEV1 (L)"]]
     return p_ecfev1_ve
+
+
+def run_ve_for_ID(
+    df,
+    colname="log P(FEV1|M1)",
+    with_fef2575=False,
+    with_rmax=False,
+    df_rmax_rows=None,
+    drop_cols=True,
+):
+    """
+    Returns log p(FEV1|M), the log probability of the FEV1 data, as new col in df
+    Uses exact inference with variable elimination
+    Model M selected depending on the two with_x inputs
+    Uniform AR prior
+    """
+    df = df.reset_index(drop=True)
+
+    id, height, age, sex = df.iloc[0][["ID", "Height", "Age", "Sex"]]
+    # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
+    ar_prior = "uniform"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
+
+    (
+        model,
+        _,
+        _,
+        _,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+    ) = mb.fev1_fef2575_n_day_BN_noise(
+        2 if with_rmax else 1,
+        height,
+        age,
+        sex,
+        ar_prior,
+        fef2575_cpt_suffix,
+        ecfev1_noise_model_suffix,
+    )
+    var_elim = VariableElimination(model)
+
+    df[colname] = df.apply(
+        lambda row: run_ve_for_ID_entry(
+            row,
+            var_elim,
+            ecFEV1_vars,
+            ecFEF2575prctecFEV1_vars,
+            with_fef2575,
+            with_rmax,
+            df_rmax_rows,
+        ),
+        axis=1,
+    )
+
+    if drop_cols:
+        cols2keep = ["ID", "Date Recorded", colname]
+        return df[cols2keep]
+
+    return df
+
+
+def run_ve_for_ID_entry(
+    row,
+    inf,
+    ecFEV1_vars,
+    ecFEF2575prctecFEV1_vars,
+    with_fef2575=False,
+    with_rmax=False,
+    df_rmax_rows=None,
+):
+    """
+    Returns the log prob of the FEV1 observation for this row
+    inf contains the single or two days model depending on the with_rmax value
+    """
+
+    evidence_dict = {}
+    if with_fef2575:
+        evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = row["idx ecFEF2575%ecFEV1"]
+    if with_rmax:
+        [rmax_fev1] = df_rmax_rows[df_rmax_rows.ID == id]["idx ecFEV1 (L)"].values
+        evidence_dict[ecFEV1_vars[1].name] = rmax_fev1
+    if with_rmax and with_fef2575:
+        [rmax_fef2575] = df_rmax_rows[df_rmax_rows.ID == id][
+            "idx ecFEF2575%ecFEV1"
+        ].values
+        evidence_dict[ecFEF2575prctecFEV1_vars[1].name] = rmax_fef2575
+
+    res_ve = inf.query(
+        variables=[ecFEV1_vars[0].name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    dist_ecfev1_ve = res_ve[ecFEV1_vars[0].name].values
+    p_ecfev1_ve = dist_ecfev1_ve[row["idx ecFEV1 (L)"]]
+    return np.log(p_ecfev1_ve)
 
 
 def process_data_AR_through_time(df):
