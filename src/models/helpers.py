@@ -1,7 +1,6 @@
 # Helper functions to create models for belief propagation
 import json
-from datetime import datetime
-from typing import List
+import logging
 
 import numpy as np
 import pandas as pd
@@ -448,7 +447,14 @@ class VariableNode:
     def get_bin_idx_for_value(self, obs: float, tol=TOL_GLOBAL):
         """
         Given an observation and an array of bins, this returns the bin that the value falls into
+
+        If the value falls outside the range, it gets put into the closest range boundary
         """
+        if obs < self.a & obs > self.b:
+            logging.warning(
+                f"Obs {obs} outside of variable range [{self.a}, {self.b})]"
+            )
+
         # Center bins around value observed
         relative_bins = self.bins - obs - tol
 

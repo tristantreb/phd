@@ -68,6 +68,7 @@ def run_ve_for_ID(
     colname="log P(FEV1|M1)",
     with_fef2575=False,
     with_rmax=False,
+    with_fef2575_day2=False,
     df_rmax_rows=None,
     drop_cols=True,
 ):
@@ -79,7 +80,7 @@ def run_ve_for_ID(
     """
     df = df.reset_index(drop=True)
 
-    id, height, age, sex = df.iloc[0][["ID", "Height", "Age", "Sex"]]
+    height, age, sex = df.iloc[0][["Height", "Age", "Sex"]]
     # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
     ar_prior = "uniform"
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
@@ -111,6 +112,7 @@ def run_ve_for_ID(
             ecFEF2575prctecFEV1_vars,
             with_fef2575,
             with_rmax,
+            with_fef2575_day2,
             df_rmax_rows,
         ),
         axis=1,
@@ -130,6 +132,7 @@ def run_ve_for_ID_entry(
     ecFEF2575prctecFEV1_vars,
     with_fef2575=False,
     with_rmax=False,
+    with_fef2575_day2=False,
     df_rmax_rows=None,
 ):
     """
@@ -141,13 +144,13 @@ def run_ve_for_ID_entry(
     if with_fef2575:
         evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = row["idx ecFEF2575%ecFEV1"]
     if with_rmax:
-        [rmax_fev1] = df_rmax_rows[df_rmax_rows.ID == id]["idx ecFEV1 (L)"].values
+        [rmax_fev1] = df_rmax_rows[df_rmax_rows.ID == row.ID]["idx ecFEV1 (L)"].values
         evidence_dict[ecFEV1_vars[1].name] = rmax_fev1
-    if with_rmax and with_fef2575:
-        [rmax_fef2575] = df_rmax_rows[df_rmax_rows.ID == id][
-            "idx ecFEF2575%ecFEV1"
-        ].values
-        evidence_dict[ecFEF2575prctecFEV1_vars[1].name] = rmax_fef2575
+        if with_fef2575_day2:
+            [rmax_fef2575] = df_rmax_rows[df_rmax_rows.ID == row.ID][
+                "idx ecFEF2575%ecFEV1"
+            ].values
+            evidence_dict[ecFEF2575prctecFEV1_vars[1].name] = rmax_fef2575
 
     res_ve = inf.query(
         variables=[ecFEV1_vars[0].name],
