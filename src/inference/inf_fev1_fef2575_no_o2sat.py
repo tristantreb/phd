@@ -13,6 +13,7 @@ import models.builders as mb
 # df = bd.load_meas_from_excel("TR5_O2_FEV1_FEF2575_with_idx_28092025", study_folder="TR")
 df = bd.load_meas_from_excel("CF_Registry_processed_with_idx", study_folder="CFT")
 
+
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     """
     General function to infer values on the 2 days model for a given ID.
@@ -55,8 +56,8 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     res_for_ID = pd.DataFrame({})
 
     # Get precompupted messages to speedup inference
-    arr = np.ones(AR.card)
-    arr /= arr.sum()
+    # arr = np.ones(AR.card)
+    # arr /= arr.sum()
     # Create precomp messages for FEF25-75 given it's unobserved
     # arr = np.ones(ecFEF2575prctecFEV1.card)
     # arr /= arr.sum()
@@ -76,7 +77,6 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
                 ecFEF2575prctecFEV1.name: ecfef2575prctecfev1_obs_idx,
             },
         )
-
         new_row = pd.DataFrame(
             {
                 "ID": [id],
@@ -102,7 +102,6 @@ if __name__ == "__main__":
         res = executor.map(process_id, ids)
 
     res = pd.concat(res, ignore_index=True)
-
     save_path = f"{dh.get_path_to_main()}/ExcelFiles/CFT/infer_AR_using_fev1_fef2575_CFT_10122025.xlsx"
 
     print(
