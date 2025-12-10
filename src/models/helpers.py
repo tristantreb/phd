@@ -450,7 +450,7 @@ class VariableNode:
 
         If the value falls outside the range, it gets put into the closest range boundary
         """
-        if obs < self.a & obs > self.b:
+        if (obs < self.a) & (obs > self.b):
             logging.warning(
                 f"Obs {obs} outside of variable range [{self.a}, {self.b})]"
             )
