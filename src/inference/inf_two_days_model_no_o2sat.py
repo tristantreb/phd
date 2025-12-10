@@ -9,8 +9,12 @@ import inference.long_inf_slicing as slicing
 import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
-df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
+# df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
+df = bd.load_meas_from_excel("CF_Registry_19_23_processed_with_idx", study_folder="CFR")
 
+ids_with_2_entries = df['ID'].value_counts()[df['ID'].value_counts() == 2].index.tolist()
+df = df[df.ID.isin(ids_with_2_entries)]
+df = df.sort_values(['ID', 'Date Recorded'], ascending=False)
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     """
@@ -76,29 +80,32 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     #     "['ecFEF2575%ecFEV1', 'Airway resistance (%)'] -> Airway resistance (%)": arr
     # }
 
-    for i, _ in df_for_ID.iterrows():
-        if i != idx_max_FEV1:
-            df_two_days = df_for_ID.iloc[[i, idx_max_FEV1]]
-        else:
-            df_two_days = df_for_ID.iloc[[i]]
 
-        df_query_res_two_days, _, _ = slicing.query_forwardly_across_days(
-            df_two_days,
-            inf_alg,
-            shared_vars,
-            vars,
-            obs_vars,
-            diff_threshold,
-            [],
-            debug=debug,
-        )
+    # NOT NEEDED BECAUSE ONLY TWO DAYS IN INPUT!
+    # for i, _ in df_for_ID.iterrows():
+    #     if i != idx_max_FEV1:
+    #         df_two_days = df_for_ID.iloc[[i, idx_max_FEV1]]
+    #     else:
+    #         df_two_days = df_for_ID.iloc[[i]]
+    df_two_days = df_for_ID
 
-        new_row = df_query_res_two_days.loc[
-            # 0, ["ID", "Day", HFEV1.name, HO2Sat.name, AR.name, IA.name]
-            0,
-            ["ID", "Day", HFEV1.name, AR.name],
-        ]
-        df_current_day_res = pd.concat([df_current_day_res, pd.DataFrame(new_row).T])
+    df_query_res_two_days, _, _ = slicing.query_forwardly_across_days(
+        df_two_days,
+        inf_alg,
+        shared_vars,
+        vars,
+        obs_vars,
+        diff_threshold,
+        [],
+        debug=debug,
+    )
+
+    new_row = df_query_res_two_days.loc[
+        # 0, ["ID", "Day", HFEV1.name, HO2Sat.name, AR.name, IA.name]
+        0,
+        ["ID", "Day", HFEV1.name, AR.name],
+    ]
+    df_current_day_res = pd.concat([df_current_day_res, pd.DataFrame(new_row).T])
 
     return df_current_day_res
 
@@ -116,7 +123,11 @@ if __name__ == "__main__":
 
     res = pd.concat(res, ignore_index=True)
 
-    res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_fev1_06062025.xlsx",
+    # res.to_excel(
+    #     f"{dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_two_days_model_fev1_06062025.xlsx",
+    #     index=False,
+    # )
+    res.to_csv(
+        f"{dh.get_path_to_main()}/ExcelFiles/CFR/infer_AR_using_two_days_model_19_23_data_with2entries_fev1_10122025.csv",
         index=False,
     )
