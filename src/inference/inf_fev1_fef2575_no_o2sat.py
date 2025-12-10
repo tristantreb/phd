@@ -10,8 +10,8 @@ import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
-df = bd.load_meas_from_excel("TR5_O2_FEV1_FEF2575_with_idx_28092025", study_folder="TR")
-
+# df = bd.load_meas_from_excel("TR5_O2_FEV1_FEF2575_with_idx_28092025", study_folder="TR")
+df = bd.load_meas_from_excel("CF_Registry_processed_with_idx", study_folder="CFT")
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
     """
@@ -90,7 +90,7 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
 
 
 def process_id(id):
-    print(f"Processing ID: {id}")
+    # print(f"Processing ID: {id}")
     df_for_ID = df[df.ID == id]
     res = infer_for_id(df_for_ID, debug=False)
     return res
@@ -103,11 +103,13 @@ if __name__ == "__main__":
 
     res = pd.concat(res, ignore_index=True)
 
+    save_path = f"{dh.get_path_to_main()}/ExcelFiles/CFT/infer_AR_using_fev1_fef2575_CFT_10122025.xlsx"
+
     print(
-        f"Saving results to {dh.get_path_to_main()}/ExcelFiles/TR/infer_AR_using_fev1_fef2575_TR5_25092025.xlsx"
+        f"Saving results to {save_path}"
         # f"Saving results to {dh.get_path_to_main()}/ExcelFiles/BR/infer_AR_using_fev1_fef2575_11062025.xlsx"
     )
     res.to_excel(
-        f"{dh.get_path_to_main()}/ExcelFiles/TR/infer_AR_using_fev1_fef2575_TR5_25092025.xlsx",
+        save_path,
         index=False,
     )
