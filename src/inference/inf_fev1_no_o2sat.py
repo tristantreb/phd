@@ -10,7 +10,7 @@ import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
-df = bd.load_meas_from_excel("CF_Registry_processed_with_idx", study_folder="CFT")
+df = bd.load_meas_from_excel("CF_Registry_19_23_processed_with_idx", study_folder="CFR")
 
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
@@ -113,7 +113,9 @@ if __name__ == "__main__":
 
     res = pd.concat(res, ignore_index=True)
 
-    save_path = f"{dh.get_path_to_main()}/ExcelFiles/CFT/infer_AR_using_fev1_CFT_10122025.xlsx"
+    save_path = (
+        f"{dh.get_path_to_main()}/ExcelFiles/CFR/infer_19_23_AR_using_fev1_CFT_10122025.xlsx"
+    )
 
     res.to_excel(
         save_path,
