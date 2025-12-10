@@ -1,9 +1,21 @@
 import modin.pandas as pd
 import numpy as np
 from pgmpy.inference.ExactInference import VariableElimination
+from scipy.stats import chi2
 
 import inf_cutset_conditioning.cutset_cond_algs_learn_ar_change_noo2sat as cca_ar_change_noo2sat
 import models.builders as mb
+
+
+def run_LRT(lp1, lp2, n_df, disp=True):
+    """
+    Log likelihood ratio test
+    """
+    LR = -2 * (lp1 - lp2)
+    p_val = chi2.sf(LR, df=n_df)
+    if disp:
+        print(f"LR: {LR:.2f}, p_value: {p_val:.4f}")
+    return LR, p_val
 
 
 def run_ve(df, with_fef2575=False, with_rmax=False, df_rmax_rows=None):
