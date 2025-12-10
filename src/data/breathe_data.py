@@ -17,13 +17,29 @@ def load_meas_from_excel(
     date_cols=["Date Recorded"],
     bypass_sanity_checks=False,
     study_folder="BR",
+    use_csv=False,
 ):
-    df = pd.read_excel(
-        dh.get_path_to_main() + f"ExcelFiles/{study_folder}/{filename}.xlsx"
-    )
+    """
+    Loads measurement data from Excel (default) or CSV, controlled via use_csv flag.
+    Args:
+        filename (str): base name (without extension)
+        str_cols_to_arrays (list): columns to convert from string to array
+        date_cols (list): columns which should be converted to datetime.date
+        bypass_sanity_checks (bool): if True, skips sanity checks
+        study_folder (str): study folder subdirectory
+        use_csv (bool): if True, load a .csv file instead of .xlsx
+    Returns:
+        pd.DataFrame
+    """
+    file_path = dh.get_path_to_main() + f"ExcelFiles/{study_folder}/{filename}"
+    if use_csv:
+        df = pd.read_csv(file_path + ".csv")
+    else:
+        df = pd.read_excel(file_path + ".xlsx")
+
     # ID column as type string
     df["ID"] = df["ID"].astype(str)
-    # Date Redocrded as datetime
+    # Date Recorded as datetime.date
     for col in date_cols:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col]).dt.date

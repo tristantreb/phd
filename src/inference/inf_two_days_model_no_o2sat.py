@@ -10,10 +10,11 @@ import models.builders as mb
 
 # Checked that obs indices are correct, see ipynb mentioned above(01.05.2025)
 # df = bd.load_meas_from_excel("BR_O2_FEV1_FEF2575_conservative_smoothing_with_idx")
-df = bd.load_meas_from_excel("CF_Registry_19_23_processed_with_idx", study_folder="CFR")
+# df = bd.load_meas_from_excel("CF_Registry_19_23_processed_with_idx", study_folder="CFR")
+df = bd.load_meas_from_excel("CF_Registry_19_23_2entries_processed_with_idx", study_folder="CFR")
 
-ids_with_2_entries = df['ID'].value_counts()[df['ID'].value_counts() == 2].index.tolist()
-df = df[df.ID.isin(ids_with_2_entries)]
+# ids_with_2_entries = df['ID'].value_counts()[df['ID'].value_counts() == 2].index.tolist()
+# df = df[df.ID.isin(ids_with_2_entries)]
 df = df.sort_values(['ID', 'Date Recorded'], ascending=False)
 
 def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
@@ -52,9 +53,9 @@ def infer_for_id(df_for_ID, debug, diff_threshold=1e-8):
 
     vars = [AR]
     shared_vars = [HFEV1]
-    obs_vars = [ecFEV1.name]
+    # obs_vars = [ecFEV1.name]
     # obs_vars = [ecFEV1.name, O2Sat.name]
-    # obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
+    obs_vars = [ecFEV1.name, ecFEF2575prctecFEV1.name]
     # obs_vars = [ecFEV1.name, O2Sat.name, ecFEF2575prctecFEV1.name]
 
     # Find the max FEV1 values
@@ -128,6 +129,7 @@ if __name__ == "__main__":
     #     index=False,
     # )
     res.to_csv(
-        f"{dh.get_path_to_main()}/ExcelFiles/CFR/infer_AR_using_two_days_model_19_23_data_with2entries_fev1_10122025.csv",
+        f"{dh.get_path_to_main()}/ExcelFiles/CFR/infer_AR_using_two_days_model_19_23_data_with2entries_fev1_fef2575_10122025.csv",
+        # f"{dh.get_path_to_main()}/ExcelFiles/CFR/infer_AR_using_two_days_model_19_23_data_with2entries_fev1_10122025_2.csv",
         index=False,
     )
