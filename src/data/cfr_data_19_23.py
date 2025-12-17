@@ -1,24 +1,14 @@
 import logging
 
 import pandas as pd
-import data.breathe_data as bd
 
+import data.breathe_data as bd
 import data.helpers as dh
 import data.sanity_checks as sanity_checks
 
 
-def load_cfr_data(year):
+def load_cfr_data(year, cols2read, colnames):
     sheet_name = f"{year} Annual Review"
-
-    cols2read = [
-        "s01caseid_original",
-        # "s01sex",
-        "s01height",
-        "s01encounterageyears",
-        "s03cliqtrfev1",  # Value at annual review
-        # "s03clibestfev1",
-        "s03clifef2575",  # Value at annual review
-    ]
 
     df = pd.read_excel(
         dh.get_path_to_main() + f"DataFiles/CFR/CF_Registry_2019_23_Floto_Output.xlsx",
@@ -26,7 +16,11 @@ def load_cfr_data(year):
         usecols=cols2read,
     )
 
+    rename_dict = dict(zip(cols2read, colnames))
+    df = df.rename(rename_dict)
+
     return df
+
 
 def load_demographics_data():
     # Demographics
@@ -44,9 +38,18 @@ def build_cfr_df(year):
     """
     Build CF registry
     """
-    df_meas = load_cfr_data(year)
+    cols2read = [
+        "s01caseid_original",
+        # "s01sex",
+        "s01height",
+        "s01encounterageyears",
+        "s03cliqtrfev1",  # Value at annual review
+        # "s03clibestfev1",
+        "s03clifef2575",  # Value at annual review
+    ]
+    df_meas = load_cfr_data(year, cols2read)
     df_demo = load_demographics_data()
-    df = df_meas.merge(df_demo, on=['s01caseid_original'])
+    df = df_meas.merge(df_demo, on=["s01caseid_original"])
 
     # Drop NaN
     logging.info(f"Loaded {df.shape[0]} entries")
