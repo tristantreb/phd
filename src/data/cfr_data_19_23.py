@@ -17,7 +17,7 @@ def load_cfr_data(year, cols2read, colnames):
     )
 
     rename_dict = dict(zip(cols2read, colnames))
-    df = df.rename(rename_dict)
+    df = df.rename(columns=rename_dict)
 
     return df
 
