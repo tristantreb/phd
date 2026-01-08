@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import src.models.helpers as mh
 
 
-def get_dumbell_plot_data(df, ac_row, AC):
+def get_dumbell_plot_data(df, ac_row, AC, ppfev1_row="ecFEV1 % Predicted"):
     # Avoid modifying the original dataframe
     df_res = df.copy()
 
@@ -17,10 +17,10 @@ def get_dumbell_plot_data(df, ac_row, AC):
     df_res[f"{ac_row} high"] = mean + std
 
     # Get Sorted IDs
-    ids_sorted = df_res.sort_values("ecFEV1 % Predicted", ascending=False)["ID"].values
+    ids_sorted = df_res.sort_values(ppfev1_row, ascending=False)["ID"].values
     # Sort by diff
-    df_res['Healhtier diff'] = df_res[f"{AC.name} mean"] - df_res['ecFEV1 % Predicted']
-    ids_sorted = df_res.sort_values('Healhtier diff')["ID"].values
+    df_res["Healhtier diff"] = df_res[f"{AC.name} mean"] - df_res[ppfev1_row]
+    ids_sorted = df_res.sort_values("Healhtier diff")["ID"].values
 
     # Prepare for Plotting
     # Map 'low' and 'high' to the same name ('dist') to group them using melt
@@ -33,7 +33,7 @@ def get_dumbell_plot_data(df, ac_row, AC):
         df_res.rename(columns=plot_cols)
         .melt(
             id_vars=["ID"],
-            value_vars=["ecFEV1 % Predicted", f"{ac_row} dist", f"{ac_row} mean"],
+            value_vars=[ppfev1_row, f"{ac_row} dist", f"{ac_row} mean"],
             var_name="measure",
             value_name="value",
         )
@@ -46,7 +46,7 @@ def get_dumbell_plot_data(df, ac_row, AC):
 
 
 def plot_dumbell_for_df(fig, df, measures, col):
-    ac_dist = measures[0] # sigma up, sigma down
+    ac_dist = measures[0]  # sigma up, sigma down
     ac_mean = measures[1]
     baseline = measures[2]
 
@@ -68,8 +68,7 @@ def plot_dumbell_for_df(fig, df, measures, col):
             row=1,
             col=col,
         )
-
-
+    # Add ac mean marker
     mask = df["measure"] == ac_mean
     fig.add_trace(
         go.Scatter(
@@ -77,7 +76,7 @@ def plot_dumbell_for_df(fig, df, measures, col):
             y=df[mask]["ID"],
             mode="markers",
             marker=dict(color="black", size=2),
-            showlegend=(True if id == df["ID"].unique()[0] else False),
+            # showlegend=(True if id == df["ID"].unique()[0] else False),
         ),
         row=1,
         col=col,
