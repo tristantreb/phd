@@ -25,31 +25,42 @@ def load_cfr_data(year, cols2read, colnames):
 def load_demographics_data():
     # Demographics
     cols2read = ["s01caseid_original", "s01sex"]
+    colnames = ["ID", "Sex"]
 
     df_demo = pd.read_excel(
         dh.get_path_to_main() + f"DataFiles/CFR/CF_Registry_2019_23_Floto_Output.xlsx",
         sheet_name="Demographics",
         usecols=cols2read,
     )
+
+    rename_dict = dict(zip(cols2read, colnames))
+    df_demo = df_demo.rename(columns=rename_dict)
     return df_demo
 
 
-def build_cfr_df(year):
+def build_cfr_df(
+    year,
+):
     """
     Build CF registry
     """
-    cols2read = [
-        "s01caseid_original",
-        # "s01sex",
-        "s01height",
-        "s01encounterageyears",
-        "s03cliqtrfev1",  # Value at annual review
-        # "s03clibestfev1",
-        "s03clifef2575",  # Value at annual review
-    ]
-    df_meas = load_cfr_data(year, cols2read)
+    cols2read = (
+        [
+            "s01caseid_original",
+            # "s01sex",
+            "s01height",
+            "s01encounterageyears",
+            "s03cliqtrfev1",  # Value at annual review
+            # "s03clibestfev1",
+            "s03clifef2575",  # Value at annual review
+        ],
+    )
+    colnames = (["ID", "Height", "Age", "FEV1", "FEF2575"],)
+
+    df_meas = load_cfr_data(year, cols2read, colnames)
     df_demo = load_demographics_data()
-    df = df_meas.merge(df_demo, on=["s01caseid_original"])
+
+    df = df_meas.merge(df_demo, on=["ID"])
 
     # Drop NaN
     logging.info(f"Loaded {df.shape[0]} entries")
@@ -57,17 +68,7 @@ def build_cfr_df(year):
     logging.info(f"{df.shape[0]} after removing all NaN")
 
     # Format to known colnames
-    df = df.rename(
-        columns={
-            "s01caseid_original": "ID",
-            "s01encounterageyears": "Age",
-            "s01sex": "Sex",
-            "s01height": "Height",
-            "s03cliqtrfev1": "FEV1",
-            "s03clifef2575": "FEF2575",
-        }
-    )
-    sanity_checks.data_types(df)
+    sanity_checks.data_types()
 
     df.Sex = df.Sex.apply(lambda row: "Female" if "F" else "Male")
     df.Height = df.Height.round()
