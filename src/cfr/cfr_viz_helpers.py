@@ -4,6 +4,32 @@ import plotly.graph_objects as go
 import src.models.helpers as mh
 
 
+def calc_P_ppFEV1_given_AC(df, AC, corr=False):
+    """
+    Calc P(ppFEV1 | AC), when ppFEV1 is in the tail of the AC posterior
+    If ratioed, then calc P(ppFEV1 | AC/max_AC) to correct for probability dilution for wide posteriors
+    """
+
+    def get_P_ppFEV1_given_AC(row, corr):
+        dist_AC = row[AC.name].copy()
+
+        if corr:
+            dist_AC /= max(dist_AC)
+
+        return dist_AC[AC.get_bin_idx_for_value(row["ecFEV1 % Predicted"])]
+
+    return df.apply(
+        lambda row: get_P_ppFEV1_given_AC(row, corr),
+        axis=1,
+    )
+
+
+def filter_confidently_disagreeing_examples(df, prctile, corr):
+    col = "P(ppFEV1|AC) ratioed" if corr else "P(ppFEV1|AC)"
+    t = df[col].quantile(prctile / 100)
+    return df[df[col] <= t], t
+
+
 def get_dumbell_plot_data(df, ac_row, AC, ppfev1_row="ecFEV1 % Predicted"):
     # Avoid modifying the original dataframe
     df_res = df.copy()
