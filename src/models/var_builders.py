@@ -1375,14 +1375,7 @@ def fev1_fef2575_long_model_noise_shared_healthy_vars(
         get_cpt([ecFEF2575prctecFEV1, AR], suffix=fef2575_cpt_suffix)
     )
 
-    return (
-        HFEV1,
-        uFEV1,
-        ecFEV1,
-        AR,
-        ecFEF2575prctecFEV1,
-        Var_ar_change
-    )
+    return (HFEV1, uFEV1, ecFEV1, AR, ecFEF2575prctecFEV1, Var_ar_change)
 
 
 def fev1_fef2575_long_model_noise_shared_healthy_vars_and_temporal_ar_light(
