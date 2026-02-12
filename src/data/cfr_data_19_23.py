@@ -35,27 +35,35 @@ def load_demographics_data():
 
     rename_dict = dict(zip(cols2read, colnames))
     df_demo = df_demo.rename(columns=rename_dict)
+
+    def get_back_sex(sex):
+        if sex == "F":
+            return "Female"
+        elif sex == "M":
+            return "Male"
+        else:
+            logging.warning(f"Sex: Error converting {sex} to string")
+            return None
+
+    df_demo.Sex = df_demo.Sex.apply(get_back_sex)
+
     return df_demo
 
 
-def build_cfr_df(
-    year,
-):
+def build_cfr_df(year):
     """
     Build CF registry
     """
-    cols2read = (
-        [
-            "s01caseid_original",
-            # "s01sex",
-            "s01height",
-            "s01encounterageyears",
-            "s03cliqtrfev1",  # Value at annual review
-            # "s03clibestfev1",
-            "s03clifef2575",  # Value at annual review
-        ],
-    )
-    colnames = (["ID", "Height", "Age", "FEV1", "FEF2575"],)
+    cols2read = [
+        "s01caseid_original",
+        # "s01sex",
+        "s01height",
+        "s01encounterageyears",
+        "s03cliqtrfev1",  # Value at annual review
+        # "s03clibestfev1",
+        "s03clifef2575",  # Value at annual review
+    ]
+    colnames = ["ID", "Height", "Age", "FEV1", "FEF2575"]
 
     df_meas = load_cfr_data(year, cols2read, colnames)
     df_demo = load_demographics_data()
@@ -68,9 +76,8 @@ def build_cfr_df(
     logging.info(f"{df.shape[0]} after removing all NaN")
 
     # Format to known colnames
-    sanity_checks.data_types()
+    sanity_checks.data_types(df)
 
-    df.Sex = df.Sex.apply(lambda row: "Female" if "F" else "Male")
     df.Height = df.Height.round()
     df["Date Recorded"] = f"{year}-01-01"
     df["Date Recorded"] = pd.to_datetime(df["Date Recorded"]).dt.date
