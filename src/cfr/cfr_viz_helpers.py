@@ -71,6 +71,46 @@ def get_dumbell_plot_data(df, ac_row, AC, ppfev1_row="ecFEV1 % Predicted"):
     return df_melted, df_res, ids_sorted
 
 
+def get_dumbell_plot_data_model_ppfev1(df, ac_row, AC, ppfev1_row="ecFEV1 % Predicted"):
+    # Avoid modifying the original dataframe
+    df_res = df.copy()
+
+    # Get model ppFEV1
+    mean = df_res[ac_row]
+
+    df_res[f"{ac_row} mean"] = mean
+    df_res[f"{ac_row} low"] = mean
+    df_res[f"{ac_row} high"] = mean
+
+    # Get Sorted IDs
+    ids_sorted = df_res.sort_values(ppfev1_row, ascending=False)["ID"].values
+    # Sort by diff
+    df_res["Healhtier diff"] = df_res[f"{AC.name} mean"] - df_res[ppfev1_row]
+    ids_sorted = df_res.sort_values("Healhtier diff")["ID"].values
+
+    # Prepare for Plotting
+    # Map 'low' and 'high' to the same name ('dist') to group them using melt
+    plot_cols = {
+        f"{ac_row} low": f"{ac_row} dist",
+        f"{ac_row} high": f"{ac_row} dist",
+    }
+
+    df_melted = (
+        df_res.rename(columns=plot_cols)
+        .melt(
+            id_vars=["ID"],
+            value_vars=[ppfev1_row, f"{ac_row} dist", f"{ac_row} mean"],
+            var_name="measure",
+            value_name="value",
+        )
+        .set_index("ID")
+        .loc[ids_sorted]
+        .reset_index()
+    )
+
+    return df_melted, df_res, ids_sorted
+
+
 def plot_dumbell_for_df(fig, df, measures, col):
     ac_dist = measures[0]  # sigma up, sigma down
     ac_mean = measures[1]
