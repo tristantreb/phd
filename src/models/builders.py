@@ -1429,6 +1429,7 @@ def fev1_fef2575_1_day_BN_noise(
     ar_prior="uniform",
     ar_fef2575_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
+    hfev1_prior=None,
     check_model=False,
 ):
     """
@@ -1448,6 +1449,7 @@ def fev1_fef2575_1_day_BN_noise(
             ar_prior=ar_prior,
             ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_suffix,
             ar_fef2575_cpt_suffix=ar_fef2575_cpt_suffix,
+            hfev1_prior=hfev1_prior,
         )
     )
 
@@ -1486,6 +1488,7 @@ def fev1_fef2575_n_day_BN_noise(
     ar_prior="uniform",
     ar_fef2575_cpt_suffix=None,
     ecfev1_noise_model_suffix=None,
+    hfev1_prior=None,
     check_model=False,
 ):
     """ """
@@ -1497,6 +1500,7 @@ def fev1_fef2575_n_day_BN_noise(
             ar_prior=ar_prior,
             ecfev1_noise_model_cpt_suffix=ecfev1_noise_model_suffix,
             ar_fef2575_cpt_suffix=ar_fef2575_cpt_suffix,
+            hfev1_prior=hfev1_prior,
         )
     )
 

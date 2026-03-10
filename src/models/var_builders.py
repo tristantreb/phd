@@ -570,13 +570,15 @@ def fev1_fef2575_point_in_time_model_noise_shared_healthy_vars(
     ar_prior="uniform",
     ecfev1_noise_model_cpt_suffix="_std_add_mult",
     ar_fef2575_cpt_suffix="_ecfev1_2_days_model_add_mult_noise",
+    hfev1_prior=None
 ):
     """
     Point in time model with full FEV1, FEF25-75 and O2Sat sides
 
     There is no factor linking AR and IA in this model. The priors for AR, IA are uniform
     """
-    hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
+    if hfev1_prior is None:
+        hfev1_prior = {"type": "default", "height": height, "age": age, "sex": sex}
     HFEV1 = SharedVariableNode("Healthy FEV1 (L)", 1, 6, 0.05, prior=hfev1_prior)
 
     ecFEV1 = VariableNode("ecFEV1 (L)", 0, 6, 0.05, prior=None)
