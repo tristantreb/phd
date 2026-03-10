@@ -177,6 +177,7 @@ def data_types(df):
                 | "FEV1"
                 | "FEF2575"
                 | "ecFEV1"
+                | "best FEV1"
                 | "Predicted FEV1"
                 | "FEV1 % Predicted"
                 | "ecFEV1 % Predicted"

@@ -50,11 +50,9 @@ def load_demographics_data():
     return df_demo
 
 
-def build_cfr_df(year):
-    """
-    Build CF registry
-    """
-    cols2read = [
+def build_cfr_df(
+    year,
+    cols2read=[
         "s01caseid_original",
         # "s01sex",
         "s01height",
@@ -62,8 +60,12 @@ def build_cfr_df(year):
         "s03cliqtrfev1",  # Value at annual review
         # "s03clibestfev1",
         "s03clifef2575",  # Value at annual review
-    ]
-    colnames = ["ID", "Height", "Age", "FEV1", "FEF2575"]
+    ],
+    colnames=["ID", "Height", "Age", "FEV1", "FEF2575"],
+):
+    """
+    Build CF registry
+    """
 
     df_meas = load_cfr_data(year, cols2read, colnames)
     df_demo = load_demographics_data()
