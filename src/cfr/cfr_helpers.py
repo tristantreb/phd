@@ -77,15 +77,15 @@ def infer_hfev1_soft_truncation(row):
     evidence_dict[ecFEV1.name] = row["idx FEV1"]
 
     res_ve = var_elim.query(
-        variables=[ecFEV1.name],
+        variables=[HFEV1.name],
         evidence=evidence_dict,
         joint=False,
     )
-    dist_ecfev1 = res_ve[ecFEV1.name].values
-    return dist_ecfev1
+    dist_hfev1_soft_trunc = res_ve[HFEV1.name].values
+    return dist_hfev1_soft_trunc
 
 
-def infer_hfev1_pers(row, with_fev1_d1=True):
+def infer_hfev1_pers(row):
     """
     Personalised HFEV1 inference
     """
@@ -115,16 +115,16 @@ def infer_hfev1_pers(row, with_fev1_d1=True):
 
     evidence_dict = {}
     evidence_dict[ecFEV1_vars[0].name] = row["idx FEV1"]
-    evidence_dict[ecFEV1_vars[1].name] = row["idx best FEV1"]
     evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = row["idx FEF2575%FEV1"]
+    evidence_dict[ecFEV1_vars[1].name] = row["idx best FEV1"]
 
     res_ve = var_elim.query(
         variables=[HFEV1.name],
         evidence=evidence_dict,
         joint=False,
     )
-    dist_hfev1 = res_ve[HFEV1.name].values
-    return dist_hfev1
+    dist_hfev1_pers = res_ve[HFEV1.name].values
+    return dist_hfev1_pers
 
 
 def infer_fev1_pred(row):
