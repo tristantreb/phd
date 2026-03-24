@@ -163,3 +163,4 @@ def plot_dumbell_for_df(fig, df, measures, col):
         row=1,
         col=col,
     )
+
