@@ -1,6 +1,9 @@
+from turtle import write
+
 import numpy as np
 import plotly.graph_objects as go
 
+import src.data.helpers as dh
 import src.models.helpers as mh
 
 
@@ -163,4 +166,64 @@ def plot_dumbell_for_df(fig, df, measures, col):
         row=1,
         col=col,
     )
+
+
+def plot_sidebyside_scatter(df, x_col, y_col, color_col, title, write=True):
+    """
+    x_col = baseline
+    y_col = prediction
+    color_col = associated variable
+    """
+    fig = go.Figure(
+        data=go.Scatter(
+            x=df[x_col],
+            y=df[y_col],
+            mode="markers",
+            marker=dict(
+                color=df[color_col],
+                colorbar=dict(title=color_col),
+                colorscale="Turbo",
+                # colorscale=[
+                #     [0.0, "white"],
+                #     [[i/(len(px.colors.sequential.Turbo)-1), c] for i, c in enumerate(px.colors.sequential.Turbo)],
+                # ],
+                # line=dict(
+                #     color=np.where(df[color_col] == 0, "black", "rgba(0,0,0,0)"),
+                #     width=np.where(df[color_col] == 0, 1.5, 0),
+                # ),
+            ),
+            hovertemplate="ID: %{customdata[0]}<br>"
+            + f"{x_col}: "
+            + "%{x}<br>"
+            + f"{y_col}: "
+            + "%{y}<br>"
+            + f"{color_col}: "
+            + "%{marker.color}<extra></extra>",
+            customdata=np.stack([df["ID"]], axis=-1),
+        )
+    )
+    # Draw a proportional line (y = x) for reference
+    fig.add_trace(
+        go.Scatter(
+            x=[-1, 101],
+            y=[-1, 101],
+            mode="lines",
+            line=dict(color="black", dash="dash"),
+        )
+    )
+
+    fig.update_layout(
+        title=title,
+        xaxis_title=x_col,
+        yaxis_title=y_col,
+        width=800,
+        height=700,
+        showlegend=False,
+    )
+    if write:
+        fig.write_image(
+            f"{dh.get_path_to_main()}PlotsCFR/Antibiotics associations/{title}.pdf"
+        )
+    return fig
+
 
