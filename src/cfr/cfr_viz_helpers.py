@@ -227,3 +227,28 @@ def plot_sidebyside_scatter(df, x_col, y_col, color_col, title, write=True):
     return fig
 
 
+def plot_scalar_dumbell(fig, df, baseline_col, model_col, col):
+    # Plot baseline
+    fig.add_trace(
+        go.Scatter(
+            x=df[model_col],
+            y=df["ID"],
+            mode="markers",
+            marker=dict(color="red", size=4),
+            name="FEV1 % pers. pred.",
+        ),
+        row=1,
+        col=col,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=df[baseline_col],
+            y=df["ID"],
+            mode="markers",
+            name="FEV1 % pred. (soft truncation)",
+            marker=dict(size=4, color="blue"),
+        ),
+        row=1,
+        col=col,
+    )
