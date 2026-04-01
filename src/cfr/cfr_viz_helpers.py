@@ -236,19 +236,22 @@ def plot_scalar_dumbell(fig, df, baseline_col, model_col, col):
             mode="markers",
             marker=dict(color="red", size=4),
             name="FEV1 % pers. pred.",
+            showlegend=(col == 1),
         ),
         row=1,
         col=col,
     )
-
     fig.add_trace(
         go.Scatter(
             x=df[baseline_col],
             y=df["ID"],
             mode="markers",
-            name="FEV1 % pred. (soft truncation)",
-            marker=dict(size=4, color="blue"),
+            marker=dict(color="blue", size=4),
+            name="ecFEV1%Predicted",
+            showlegend=(col == 1),
         ),
         row=1,
         col=col,
     )
+    return -1
+
