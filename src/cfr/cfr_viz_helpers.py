@@ -235,7 +235,7 @@ def plot_scalar_dumbell(fig, df, baseline_col, model_col, col):
             y=df["ID"],
             mode="markers",
             marker=dict(color="red", size=4),
-            name="FEV1 % pers. pred.",
+            name=model_col,
             showlegend=(col == 1),
         ),
         row=1,
@@ -247,11 +247,10 @@ def plot_scalar_dumbell(fig, df, baseline_col, model_col, col):
             y=df["ID"],
             mode="markers",
             marker=dict(color="blue", size=4),
-            name="ecFEV1%Predicted",
+            name=baseline_col,
             showlegend=(col == 1),
         ),
         row=1,
         col=col,
     )
     return -1
-
