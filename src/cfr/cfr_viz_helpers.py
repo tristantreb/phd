@@ -302,6 +302,8 @@ def plot_IV_days_hist(df, col, title=None, save_image=True):
         title=title,
         xaxis_title="Number of IV days (binned)",
         yaxis_title="Percentage of patients",
+        width=1000,
+        height=600,
     )
     if save_image:
         fig.write_image(f"{dh.get_path_to_main()}PlotsCFR/{title}.pdf")
