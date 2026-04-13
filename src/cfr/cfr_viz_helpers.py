@@ -1,6 +1,8 @@
 from turtle import write
 
 import numpy as np
+import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 
 import src.data.helpers as dh
@@ -254,3 +256,53 @@ def plot_scalar_dumbell(fig, df, baseline_col, model_col, col):
         col=col,
     )
     return -1
+
+
+def plot_IV_days_hist(df, col, title=None, save_image=True):
+
+    if title is None:
+        title = "Histogram of IV Antibiotic Overall Days (Binned)"
+
+    max_val = df[col].max(skipna=True)
+    upper = int(np.ceil(max_val / 10) * 10) if pd.notnull(max_val) else 100
+
+    def bin_label(val):
+        if pd.isna(val):
+            return np.nan
+        val = int(val)
+        if val == 0:
+            return "0"
+        elif 1 <= val <= 10:
+            return "1-10"
+        else:
+            lower = ((val - 1) // 10) * 10 + 1
+            return f"{lower}-{lower + 9}"
+
+    df["_iv_abx_bins"] = df[col].apply(bin_label)
+
+    category_order = ["0", "1-10"] + [f"{i}-{i+9}" for i in range(11, upper, 10)]
+
+    fig = px.histogram(
+        df,
+        x="_iv_abx_bins",
+        histnorm="percent",
+        category_orders={"_iv_abx_bins": category_order},
+        text_auto=".2f",
+        title=title,
+        labels={
+            "_iv_abx_bins": "Number of IV days (binned)",
+            "count": "Number of Patients",
+        },
+    )
+    fig.update_traces(textangle=90)
+    fig.update_xaxes(
+        type="category", categoryorder="array", categoryarray=category_order
+    )
+    fig.update_layout(
+        title=title,
+        xaxis_title="Number of IV days (binned)",
+        yaxis_title="Percentage of patients",
+    )
+    if save_image:
+        fig.write_image(f"{dh.get_path_to_main()}PlotsCFR/{title}.pdf")
+    return fig
