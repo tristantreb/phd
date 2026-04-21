@@ -47,7 +47,7 @@ def run_ve(row):
     return dist_ar
 
 
-def infer_hfev1_soft_truncation(row):
+def infer_hfev1_soft_truncation(row, best_fev1=False):
     id, height, age, sex = row[["ID", "Height", "Age", "Sex"]]
     # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
     ar_prior = "uniform"
@@ -74,7 +74,10 @@ def infer_hfev1_soft_truncation(row):
 
     evidence_dict = {}
 
-    evidence_dict[ecFEV1.name] = row["idx FEV1"]
+    if best_fev1:
+        evidence_dict[ecFEV1.name] = row["idx best FEV1"]
+    else:
+        evidence_dict[ecFEV1.name] = row["idx FEV1"]
 
     res_ve = var_elim.query(
         variables=[HFEV1.name],
