@@ -1,5 +1,6 @@
 import numpy as np
 from pgmpy.inference.ExactInference import VariableElimination
+import pandas as pd
 
 import models.builders as mb
 
@@ -174,3 +175,75 @@ def infer_fev1_pred(row):
     )
     dist_ecfev1 = res_ve[ecFEV1.name].values
     return dist_ecfev1
+
+
+def get_p_data_under_model(row):
+    """ """
+    id, height, age, sex = row[["ID", "Height", "Age", "Sex"]]
+    # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
+    ar_prior = "uniform"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
+
+    (
+        model,
+        HFEV1,
+        AR_vars,
+        uFEV1_vars,
+        ecFEV1_vars,
+        ecFEF2575prctecFEV1_vars,
+    ) = mb.fev1_fef2575_n_day_BN_noise(
+        2,
+        height,
+        age,
+        sex,
+        ar_prior,
+        fef2575_cpt_suffix,
+        ecfev1_noise_model_suffix,
+    )
+    var_elim = VariableElimination(model)
+
+    # P(FEV1|M)
+    evidence_dict = {}
+    res_ve = var_elim.query(
+        variables=[ecFEV1_vars[0].name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    dist_fev1 = res_ve[ecFEV1_vars[0].name].values
+    p_fev1 = dist_fev1[row["idx FEV1"]]
+
+    # P(FEF25-75 % FEV1 | M, FEV1)
+    evidence_dict = {}
+    evidence_dict[ecFEV1_vars[0].name] = row["idx FEV1"]
+
+    res_ve = var_elim.query(
+        variables=[ecFEF2575prctecFEV1_vars[0].name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    dist_fefprctfev1 = res_ve[ecFEF2575prctecFEV1_vars[0].name].values
+    p_fefprctfev1 = dist_fefprctfev1[row["idx FEF2575%FEV1"]]
+
+    # P(best FEV1 | FEF2575%FEV1, FEV1, M)
+    evidence_dict = {}
+    evidence_dict[ecFEV1_vars[0].name] = row["idx FEV1"]
+    evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = row["idx FEF2575%FEV1"]
+    res_ve = var_elim.query(
+        variables=[ecFEV1_vars[1].name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    dist_bfev1 = res_ve[ecFEV1_vars[1].name].values
+    p_bfev1 = dist_bfev1[row["idx best FEV1"]]
+
+    p_d_given_m = p_fev1 * p_fefprctfev1 * p_bfev1
+
+    return pd.Series(
+        [
+            p_fev1,
+            p_fefprctfev1,
+            p_bfev1,
+            p_d_given_m
+        ]
+    )
