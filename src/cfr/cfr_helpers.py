@@ -85,7 +85,7 @@ def infer_hfev1_soft_truncation(row):
     return dist_hfev1_soft_trunc
 
 
-def infer_hfev1_pers(row):
+def infer_hfev1_pers(row, with_fef2575=True):
     """
     Personalised HFEV1 inference
     """
@@ -115,8 +115,9 @@ def infer_hfev1_pers(row):
 
     evidence_dict = {}
     evidence_dict[ecFEV1_vars[0].name] = row["idx FEV1"]
-    evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = row["idx FEF2575%FEV1"]
     evidence_dict[ecFEV1_vars[1].name] = row["idx best FEV1"]
+    if with_fef2575:
+        evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = row["idx FEF2575%FEV1"]
 
     res_ve = var_elim.query(
         variables=[HFEV1.name],
