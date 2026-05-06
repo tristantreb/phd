@@ -4,6 +4,13 @@ import pandas as pd
 
 import models.builders as mb
 
+def compute_hfev1_priors(df):
+    df["P(HFEV1|FEF2575, bFEV1, FEV1)"] = df.apply(infer_hfev1_pers, axis=1)
+    df["P(HFEV1|FEV1)"] = df.apply(infer_hfev1_truncation, axis=1)
+    df["P(HFEV1|bFEV1)"] = df.apply(
+        lambda row: infer_hfev1_truncation(row, best_fev1=True), axis=1
+    )
+    return df
 
 def run_ve(row):
     """
@@ -48,7 +55,11 @@ def run_ve(row):
     return dist_ar
 
 
-def infer_hfev1_soft_truncation(row, best_fev1=False):
+def infer_hfev1_truncation(row, best_fev1=False):
+    """
+    best_fev1 = False -> soft truncation
+    best_fev1 = True -> full truncation
+    """
     id, height, age, sex = row[["ID", "Height", "Age", "Sex"]]
     # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
     ar_prior = "uniform"
@@ -239,11 +250,4 @@ def get_p_data_under_model(row):
 
     p_d_given_m = p_fev1 * p_fefprctfev1 * p_bfev1
 
-    return pd.Series(
-        [
-            p_fev1,
-            p_fefprctfev1,
-            p_bfev1,
-            p_d_given_m
-        ]
-    )
+    return pd.Series([p_fev1, p_fefprctfev1, p_bfev1, p_d_given_m])
