@@ -4,13 +4,15 @@ import pandas as pd
 
 import models.builders as mb
 
-def compute_hfev1_priors(df):
-    df["P(HFEV1|FEF2575, bFEV1, FEV1)"] = df.apply(infer_hfev1_pers, axis=1)
+
+def compute_hfev1_priors(df, bFEV1="best FEV1"):
+    # df["P(HFEV1|FEF2575, bFEV1, FEV1)"] = df.apply(infer_hfev1_pers, axis=1)
     df["P(HFEV1|FEV1)"] = df.apply(infer_hfev1_truncation, axis=1)
     df["P(HFEV1|bFEV1)"] = df.apply(
-        lambda row: infer_hfev1_truncation(row, best_fev1=True), axis=1
+        lambda row: infer_hfev1_truncation(row, fev1_col=bFEV1), axis=1
     )
     return df
+
 
 def run_ve(row):
     """
@@ -55,10 +57,10 @@ def run_ve(row):
     return dist_ar
 
 
-def infer_hfev1_truncation(row, best_fev1=False):
+def infer_hfev1_truncation(row, fev1_col="FEV1"):
     """
-    best_fev1 = False -> soft truncation
-    best_fev1 = True -> full truncation
+    FEV1 for soft truncation
+    best FEV1 for full truncation
     """
     id, height, age, sex = row[["ID", "Height", "Age", "Sex"]]
     # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
@@ -86,10 +88,7 @@ def infer_hfev1_truncation(row, best_fev1=False):
 
     evidence_dict = {}
 
-    if best_fev1:
-        evidence_dict[ecFEV1.name] = row["idx best FEV1"]
-    else:
-        evidence_dict[ecFEV1.name] = row["idx FEV1"]
+    evidence_dict[ecFEV1.name] = row[f"idx {fev1_col}"]
 
     res_ve = var_elim.query(
         variables=[HFEV1.name],
@@ -100,7 +99,7 @@ def infer_hfev1_truncation(row, best_fev1=False):
     return dist_hfev1_soft_trunc
 
 
-def infer_hfev1_pers(row, with_fef2575=True):
+def infer_hfev1_pers(row, with_fef2575=True, bFEV1="best FEV1"):
     """
     Personalised HFEV1 inference
     """
@@ -130,7 +129,7 @@ def infer_hfev1_pers(row, with_fef2575=True):
 
     evidence_dict = {}
     evidence_dict[ecFEV1_vars[0].name] = row["idx FEV1"]
-    evidence_dict[ecFEV1_vars[1].name] = row["idx best FEV1"]
+    evidence_dict[ecFEV1_vars[1].name] = row[f"idx {bFEV1}"]
     if with_fef2575:
         evidence_dict[ecFEF2575prctecFEV1_vars[0].name] = row["idx FEF2575%FEV1"]
 
