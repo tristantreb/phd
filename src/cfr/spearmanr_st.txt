@@ -1,0 +1,50 @@
+
+===========================================================================
+PERCENTILE THRESHOLD OF ppFEV1FT - ppFEV1ST: 0%
+===========================================================================
+
+  Population: abs(ppFEV1FT - ppFEV1ST) >= 0.00, n=2037
+  [Population] n=2037 | r_baseline=-0.514, r_predicted=-0.523 | diff=+0.010, 95%CI=[+0.004, +0.015] -> ** SIGNIFICANT **
+  [Severe (<40)] n=341 | r_baseline=-0.204, r_predicted=-0.203 | diff=-0.000, 95%CI=[-0.009, +0.007] -> not significant
+  [Moderate (40-69)] n=772 | r_baseline=-0.334, r_predicted=-0.353 | diff=+0.019, 95%CI=[+0.006, +0.034] -> ** SIGNIFICANT **
+  [Mild 1 (>=90)] n=924 | r_baseline=-0.177, r_predicted=-0.219 | diff=+0.042, 95%CI=[+0.017, +0.067] -> ** SIGNIFICANT **
+
+===========================================================================
+PERCENTILE THRESHOLD OF ppFEV1FT - ppFEV1ST: 25%
+===========================================================================
+
+  Population: abs(ppFEV1FT - ppFEV1ST) >= 0.01, n=1528
+  [Population] n=1528 | r_baseline=-0.454, r_predicted=-0.470 | diff=+0.015, 95%CI=[+0.007, +0.024] -> ** SIGNIFICANT **
+  [Severe (<40)] n=256 | r_baseline=-0.226, r_predicted=-0.226 | diff=+0.000, 95%CI=[-0.014, +0.012] -> not significant
+  [Moderate (40-69)] n=579 | r_baseline=-0.326, r_predicted=-0.352 | diff=+0.026, 95%CI=[+0.006, +0.047] -> ** SIGNIFICANT **
+  [Mild 1 (>=90)] n=693 | r_baseline=-0.191, r_predicted=-0.235 | diff=+0.044, 95%CI=[+0.015, +0.074] -> ** SIGNIFICANT **
+
+===========================================================================
+PERCENTILE THRESHOLD OF ppFEV1FT - ppFEV1ST: 50%
+===========================================================================
+
+  Population: abs(ppFEV1FT - ppFEV1ST) >= 0.46, n=1019
+  [Population] n=1019 | r_baseline=-0.366, r_predicted=-0.391 | diff=+0.025, 95%CI=[+0.009, +0.042] -> ** SIGNIFICANT **
+  [Severe (<40)] n=171 | r_baseline=-0.263, r_predicted=-0.261 | diff=-0.001, 95%CI=[-0.023, +0.019] -> not significant
+  [Moderate (40-69)] n=386 | r_baseline=-0.365, r_predicted=-0.387 | diff=+0.022, 95%CI=[-0.008, +0.056] -> not significant
+  [Mild 1 (>=90)] n=462 | r_baseline=-0.218, r_predicted=-0.231 | diff=+0.013, 95%CI=[-0.024, +0.049] -> not significant
+
+===========================================================================
+PERCENTILE THRESHOLD OF ppFEV1FT - ppFEV1ST: 75%
+===========================================================================
+
+  Population: abs(ppFEV1FT - ppFEV1ST) >= 2.15, n=510
+  [Population] n=510 | r_baseline=-0.317, r_predicted=-0.325 | diff=+0.008, 95%CI=[-0.020, +0.036] -> not significant
+  [Severe (<40)] n= 86 | r_baseline=-0.166, r_predicted=-0.164 | diff=-0.002, 95%CI=[-0.040, +0.037] -> not significant
+  [Moderate (40-69)] n=193 | r_baseline=-0.366, r_predicted=-0.397 | diff=+0.032, 95%CI=[-0.025, +0.094] -> not significant
+  [Mild 1 (>=90)] n=231 | r_baseline=-0.283, r_predicted=-0.255 | diff=-0.028, 95%CI=[-0.090, +0.031] -> not significant
+
+===========================================================================
+PERCENTILE THRESHOLD OF ppFEV1FT - ppFEV1ST: 90%
+===========================================================================
+
+  Population: abs(ppFEV1FT - ppFEV1ST) >= 4.57, n=204
+  [Population] n=204 | r_baseline=-0.319, r_predicted=-0.294 | diff=-0.025, 95%CI=[-0.086, +0.033] -> not significant
+  [Severe (<40)] n= 35 | r_baseline=-0.207, r_predicted=-0.184 | diff=-0.023, 95%CI=[-0.142, +0.100] -> not significant
+  [Moderate (40-69)] n= 78 | r_baseline=-0.375, r_predicted=-0.421 | diff=+0.046, 95%CI=[-0.075, +0.181] -> not significant
+  [Mild 1 (>=90)] n= 93 | r_baseline=-0.223, r_predicted=-0.172 | diff=-0.051, 95%CI=[-0.193, +0.080] -> not significant
