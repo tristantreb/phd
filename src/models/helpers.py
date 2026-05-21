@@ -317,6 +317,17 @@ class VariableNode:
     def set_prior(self, prior):
         """
         The prior should be a 1D array of probabilities
+
+        Prior can be
+            None for child variables
+            Default
+                {"type": "default", "height": height, "age": age, "sex": sex}
+            Custom
+                {"type": "custom", "p": p}
+            Parametric
+                {"type": "uniform"}
+                {"type": "gaussian", "mu": mu, "sigma": sigma}
+                {"type": "uniform + gaussian tail", "constant": constant, "sigma": sigma}
         """
         # Child variables have no prior
         if prior == None:

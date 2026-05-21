@@ -137,6 +137,54 @@ def run_ve_for_ID(
     return df
 
 
+def get_log_prob_fev1_data_1_day_model_different_hfev1_priors_for_row(
+    row,
+    hfev1_prior=None,
+):
+    """
+    Compute log p(FEV1|M) on the 1 day model for different HFEV1 priors
+
+    hfev1_prior:
+        - None:  P(HFEV1|age, sex, height)
+        - Custom: {"type": "custom", "p": p}, ex: for P(HFEV1|age, sex, height, best FEV1)
+
+    Uses exact inference with variable elimination
+    """
+
+    height, age, sex = row[["Height", "Age", "Sex"]]
+    ar_prior = "uniform"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
+
+    (
+        model,
+        _,
+        _,
+        _,
+        ecFEV1_vars,
+        _,
+    ) = mb.fev1_fef2575_n_day_BN_noise(
+        1,
+        height,
+        age,
+        sex,
+        ar_prior,
+        fef2575_cpt_suffix,
+        ecfev1_noise_model_suffix,
+        hfev1_prior=hfev1_prior,
+    )
+    var_elim = VariableElimination(model)
+
+    res_ve = var_elim.query(
+        variables=[ecFEV1_vars[0].name],
+        evidence={},
+        joint=False,
+    )
+    dist_ecfev1_ve = res_ve[ecFEV1_vars[0].name].values
+    p_ecfev1_ve = dist_ecfev1_ve[row["idx ecFEV1 (L)"]]
+    return np.log(p_ecfev1_ve)
+
+
 def run_ve_for_ID_entry(
     row,
     inf,
