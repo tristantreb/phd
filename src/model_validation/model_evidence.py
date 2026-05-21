@@ -138,9 +138,7 @@ def run_ve_for_ID(
 
 
 def get_log_prob_fev1_data_1_day_model_different_hfev1_priors_for_row(
-    row,
-    hfev1_prior=None,
-    fev1_col="FEV1"
+    row, hfev1_prior=None, fev1_col="FEV1", ar_prior="uniform", debug=False
 ):
     """
     Compute log p(FEV1|M) on the 1 day model for different HFEV1 priors
@@ -151,7 +149,6 @@ def get_log_prob_fev1_data_1_day_model_different_hfev1_priors_for_row(
 
     Uses exact inference with variable elimination
     """
-    ar_prior = "uniform"
     ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
     fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
 
@@ -181,7 +178,11 @@ def get_log_prob_fev1_data_1_day_model_different_hfev1_priors_for_row(
     )
     dist_fev1_ve = res_ve[FEV1_vars[0].name].values
     p_ecfev1_ve = dist_fev1_ve[row[f"idx {fev1_col}"]]
-    return np.log(p_ecfev1_ve)
+    if debug:
+        print(
+            f"row ID: {row.ID}, idx FEV1: {row[f'idx {fev1_col}']}, dist_fev1_ve: {dist_fev1_ve}"
+        )
+    return np.log(p_ecfev1_ve), dist_fev1_ve
 
 
 def run_ve_for_ID_entry(

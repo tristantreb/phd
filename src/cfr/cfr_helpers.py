@@ -71,10 +71,10 @@ def infer_hfev1_truncation(row, fev1_col="FEV1"):
     (
         model,
         HFEV1,
-        AR,
-        uFEV1,
+        _,
+        _,
         ecFEV1,
-        ecFEF2575prctecFEV1,
+        _,
     ) = mb.fev1_fef2575_1_day_BN_noise(
         height,
         age,
@@ -95,8 +95,8 @@ def infer_hfev1_truncation(row, fev1_col="FEV1"):
         evidence=evidence_dict,
         joint=False,
     )
-    dist_hfev1_soft_trunc = res_ve[HFEV1.name].values
-    return dist_hfev1_soft_trunc
+    dist_hfev1_trunc = res_ve[HFEV1.name].values
+    return dist_hfev1_trunc
 
 
 def infer_hfev1_pers(row, with_fef2575=True, bFEV1="best FEV1"):
@@ -112,8 +112,8 @@ def infer_hfev1_pers(row, with_fef2575=True, bFEV1="best FEV1"):
     (
         model,
         HFEV1,
-        AR_vars,
-        uFEV1_vars,
+        _,
+        _,
         ecFEV1_vars,
         ecFEF2575prctecFEV1_vars,
     ) = mb.fev1_fef2575_n_day_BN_noise(
