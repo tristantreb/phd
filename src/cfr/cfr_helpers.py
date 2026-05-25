@@ -5,11 +5,28 @@ import pandas as pd
 import models.builders as mb
 
 
-def compute_hfev1_priors(df, bFEV1="best FEV1"):
+def compute_hfev1_priors_1day_model(df, bFEV1="best FEV1"):
     # df["P(HFEV1|FEF2575, bFEV1, FEV1)"] = df.apply(infer_hfev1_pers, axis=1)
-    df["P(HFEV1|FEV1)"] = df.apply(infer_hfev1_truncation, axis=1)
+    df["P(HFEV1|FEV1)"] = df.apply(infer_truncated_hfev1_1day_model, axis=1)
     df["P(HFEV1|bFEV1)"] = df.apply(
-        lambda row: infer_hfev1_truncation(row, fev1_col=bFEV1), axis=1
+        lambda row: infer_truncated_hfev1_1day_model(row, fev1_col=bFEV1), axis=1
+    )
+    return df
+
+
+def compute_hfev1_priors_2day_model(df, FEV1_col, bFEV1_col):
+    # df["P(HFEV1|FEF2575, bFEV1, FEV1)"] = df.apply(infer_hfev1_pers, axis=1)
+    df["P(HFEV1|FEV1)_2day"] = df.apply(
+        lambda row: infer_truncated_hfev1_2day_model(
+            row, fev1_day1_col=FEV1_col, fev1_day2_col=None
+        ),
+        axis=1,
+    )
+    df["P(HFEV1|bFEV1)_2day"] = df.apply(
+        lambda row: infer_truncated_hfev1_2day_model(
+            row, fev1_day1_col=None, fev1_day2_col=bFEV1_col
+        ),
+        axis=1,
     )
     return df
 
@@ -57,7 +74,7 @@ def run_ve(row):
     return dist_ar
 
 
-def infer_hfev1_truncation(row, fev1_col="FEV1"):
+def infer_truncated_hfev1_1day_model(row, fev1_col="FEV1"):
     """
     FEV1 for soft truncation
     best FEV1 for full truncation
@@ -89,6 +106,55 @@ def infer_hfev1_truncation(row, fev1_col="FEV1"):
     evidence_dict = {}
 
     evidence_dict[ecFEV1.name] = row[f"idx {fev1_col}"]
+
+    res_ve = var_elim.query(
+        variables=[HFEV1.name],
+        evidence=evidence_dict,
+        joint=False,
+    )
+    dist_hfev1_trunc = res_ve[HFEV1.name].values
+    return dist_hfev1_trunc
+
+
+def infer_truncated_hfev1_2day_model(row, fev1_day1_col, fev1_day2_col):
+    """
+    FEV1 for soft truncation
+    best FEV1 for full truncation
+
+    fev1_day1_col: None or string
+    fev1_day2_col: None or string
+    """
+    height, age, sex = row[["Height", "Age", "Sex"]]
+    # ar_prior = "breathe (2 days model, ecFEV1 addmultnoise, ecFEF25-75)"
+    ar_prior = "uniform"
+    ecfev1_noise_model_suffix = "_std_add_mult_ecfev1"
+    fef2575_cpt_suffix = "_ecfev1_2_days_model_add_mult_noise"
+
+    (
+        model,
+        HFEV1,
+        _,
+        _,
+        ecFEV1_vars,
+        _,
+    ) = mb.fev1_fef2575_n_day_BN_noise(
+        2,
+        height,
+        age,
+        sex,
+        ar_prior,
+        fef2575_cpt_suffix,
+        ecfev1_noise_model_suffix,
+    )
+
+    var_elim = VariableElimination(model)
+
+    evidence_dict = {}
+
+    if fev1_day1_col is not None:
+        evidence_dict[ecFEV1_vars[0].name] = row[f"idx {fev1_day1_col}"]
+    if fev1_day2_col is not None:
+        evidence_dict[ecFEV1_vars[1].name] = row[f"idx {fev1_day2_col}"]
 
     res_ve = var_elim.query(
         variables=[HFEV1.name],
