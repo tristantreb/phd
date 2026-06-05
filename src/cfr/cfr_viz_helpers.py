@@ -5,8 +5,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-import src.data.helpers as dh
-import src.models.helpers as mh
+import data.helpers as dh
+import models.helpers as mh
 
 
 def calc_P_ppFEV1_given_AC(df, AC, corr=False):
