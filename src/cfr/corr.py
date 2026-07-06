@@ -8,7 +8,7 @@ def bootstrap_corr_diff(pred, base, iv, n_bootstrap=10_000, seed=42):
       diff = r(pred, iv) - r(base, iv)
       diff = pred - baseline
 
-    1. Randomly select len(pred) samples with replacement 
+    1. Randomly select len(pred) samples with replacement
     2. Compute difference in correlations
     3. Repeat 1-2 n_bootstrap times, check if 0 is within the 95% CI of the differences
     Intepretation: you want to correlations differences of the true distribution to be significantly above 0.
@@ -35,10 +35,9 @@ def bootstrap_corr_diff(pred, base, iv, n_bootstrap=10_000, seed=42):
             - stats.spearmanr(base[idx], iv[idx], alternative="less").statistic
         )
 
-    ci_lo_95 = np.percentile(boot_diffs, 2.5)
-    ci_hi_95 = np.percentile(boot_diffs, 97.5)
-    ci_lo_90 = np.percentile(boot_diffs, 5.0)
-    ci_hi_90 = np.percentile(boot_diffs, 95.0)
+ 
+    # Compute the p-value for the correlation differences
+    p_val_corr_diffs = bootstrap_pvalue(boot_diffs)
 
     return {
         "r_baseline": res_x.statistic,
@@ -46,11 +45,15 @@ def bootstrap_corr_diff(pred, base, iv, n_bootstrap=10_000, seed=42):
         "r_predicted": res_y.statistic,
         "p_predicted": res_y.pvalue,
         "diff": obs_diff,
-        "ci_lo_95": ci_lo_95,
-        "ci_hi_95": ci_hi_95,
-        "significant_95": not (ci_lo_95 <= 0 <= ci_hi_95),
-        "ci_lo_90": ci_lo_90,
-        "ci_hi_90": ci_hi_90,
-        "significant_90": not (ci_lo_90 <= 0 <= ci_hi_90),
         "n": n,
+        "diffs": boot_diffs,
+        "p_val_corr_diffs": p_val_corr_diffs
     }
+
+
+def bootstrap_pvalue(diffs):
+    diffs = np.asarray(diffs, dtype=float)
+    n = len(diffs)
+    # proportion of bootstrap stats on the "wrong" side of 0
+    p_one_sided = np.mean(diffs >= 0)   # for H1: mean < 0
+    return p_one_sided
