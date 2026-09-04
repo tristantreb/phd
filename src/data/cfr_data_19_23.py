@@ -22,11 +22,9 @@ def load_cfr_data(year, cols2read, colnames):
     return df
 
 
-def load_demographics_data():
-    # Demographics
-    cols2read = ["s01caseid_original", "s01sex"]
-    colnames = ["ID", "Sex"]
-
+def load_demographics_data(
+    cols2read=["s01caseid_original", "s01sex"], colnames=["ID", "Sex"]
+):
     df_demo = pd.read_excel(
         dh.get_path_to_main() + f"DataFiles/CFR/CF_Registry_2019_23_Floto_Output.xlsx",
         sheet_name="Demographics",
@@ -62,13 +60,16 @@ def build_cfr_df(
         "s03clifef2575",  # Value at annual review
     ],
     colnames=["ID", "Height", "Age", "FEV1", "FEF2575"],
+    demo2read=["s01caseid_original", "s01sex"],
+    demonames=["ID", "Sex"],
+    bypass_sanity_checks=False,
 ):
     """
     Build CF registry
     """
 
     df_meas = load_cfr_data(year, cols2read, colnames)
-    df_demo = load_demographics_data()
+    df_demo = load_demographics_data(demo2read, demonames)
 
     df = df_meas.merge(df_demo, on=["ID"])
 
@@ -78,7 +79,8 @@ def build_cfr_df(
     logging.info(f"{df.shape[0]} after removing all NaN")
 
     # Format to known colnames
-    sanity_checks.data_types(df)
+    if not bypass_sanity_checks:
+        sanity_checks.data_types(df)
 
     df.Height = df.Height.round()
     df["Date Recorded"] = f"{year}-01-01"
